@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AbpIoTemplateProject</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AbpIoTemplateProject.Domain\AbpIoTemplateProject.Domain.csproj" />
+    <ProjectReference Include="..\AbpIoTemplateProject.TestBase\AbpIoTemplateProject.TestBase.csproj" />
+  </ItemGroup>
+
+</Project>

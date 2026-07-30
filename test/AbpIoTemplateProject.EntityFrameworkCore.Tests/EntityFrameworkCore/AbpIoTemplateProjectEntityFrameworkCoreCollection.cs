@@ -1,0 +1,9 @@
+﻿using Xunit;
+
+namespace AbpIoTemplateProject.EntityFrameworkCore;
+
+[CollectionDefinition(AbpIoTemplateProjectTestConsts.CollectionDefinitionName)]
+public class AbpIoTemplateProjectEntityFrameworkCoreCollection : ICollectionFixture<AbpIoTemplateProjectEntityFrameworkCoreFixture>
+{
+
+}
