@@ -1,0 +1,7 @@
+@page "/admin/store/inventory"
+@model AbpIoTemplateProject.Web.Pages.Admin.Store.InventoryModel
+@{ Layout = "/Pages/Shared/Store/_AdminLayout.cshtml"; ViewData["Title"] = "Tồn kho"; }
+<div class="store-admin-title"><div><span>Warehouse</span><h1>Quản lý tồn kho</h1></div></div>
+<section class="store-admin-card"><div class="store-admin-card-head"><h2>@Model.Items.Count dòng tồn kho</h2></div><div class="store-admin-table-wrap"><table><thead><tr><th>Sản phẩm</th><th>Kho</th><th>On hand</th><th>Đã giữ</th><th>Khả dụng</th><th>Điều chỉnh</th></tr></thead><tbody>
+@foreach(var x in Model.Items){<tr class="@(x.AvailableQuantity <= x.LowStockThreshold ? "is-low-stock" : "")"><td><strong>@x.ProductName</strong><br/><small>@x.Sku</small></td><td>@x.WarehouseName</td><td>@x.OnHandQuantity</td><td>@x.ReservedQuantity</td><td><strong>@x.AvailableQuantity</strong></td><td><form method="post" asp-page-handler="Adjust" class="store-admin-inline-form"><input type="hidden" name="input.InventoryItemId" value="@x.Id"/><input type="number" name="input.QuantityDelta" placeholder="+/-" required/><input name="input.Note" placeholder="Lý do" required/><button type="submit">Lưu</button></form></td></tr>}
+</tbody></table></div></section>

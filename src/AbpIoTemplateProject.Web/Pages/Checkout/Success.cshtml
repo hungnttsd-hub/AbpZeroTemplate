@@ -1,0 +1,28 @@
+@page "/checkout/success"
+@using System.Globalization
+@model AbpIoTemplateProject.Web.Pages.Checkout.SuccessModel
+@{
+    Layout = "/Pages/Shared/Store/_StoreLayout.cshtml";
+    ViewData["Title"] = "Đặt hàng thành công";
+    var culture = CultureInfo.GetCultureInfo("vi-VN");
+}
+<section class="store-checkout-section">
+    <div class="container">
+        <div class="store-success-card">
+            <span class="store-success-icon"><i class="fa-solid fa-check"></i></span>
+            <span class="store-section-eyebrow">Đặt hàng thành công</span>
+            <h1>Cảm ơn @Model.Order.CustomerName!</h1>
+            <p>Đơn hàng <strong>@Model.Order.OrderNumber</strong> đã được tiếp nhận. Chúng tôi sẽ liên hệ xác nhận sớm nhất.</p>
+            <div class="store-success-summary">
+                <span><small>Tổng thanh toán</small><strong>@string.Format(culture, "{0:N0} ₫", Model.Order.GrandTotal)</strong></span>
+                <span><small>Phương thức</small><strong>@Model.Order.PaymentMethod</strong></span>
+                <span><small>Trạng thái</small><strong>@Model.Order.Status</strong></span>
+            </div>
+            @if (Model.Order.PaymentMethod == PaymentMethod.BankTransfer)
+            {
+                <div class="store-bank-note"><strong>Hướng dẫn chuyển khoản</strong><p>@Model.Order.PaymentInstructions</p><small>Tham chiếu: @Model.Order.PaymentReference</small></div>
+            }
+            <div class="store-hero-actions"><a class="store-button-primary" href="/products">Tiếp tục mua sắm</a><a class="store-button-secondary" href="/track-order?orderNumber=@Model.Order.OrderNumber">Theo dõi đơn</a></div>
+        </div>
+    </div>
+</section>

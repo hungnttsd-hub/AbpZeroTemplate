@@ -1,0 +1,7 @@
+@page "/stores"
+@model AbpIoTemplateProject.Web.Pages.Stores.IndexModel
+@{ Layout = "/Pages/Shared/Store/_StoreLayout.cshtml"; ViewData["Title"] = "Hệ thống cửa hàng"; }
+<section class="store-page-hero"><div class="container"><span class="store-section-eyebrow">Ghé thăm chúng tôi</span><h1>Hệ thống cửa hàng</h1><p>Trải nghiệm sản phẩm trực tiếp và nhận tư vấn từ đội ngũ Aqua Garden.</p></div></section>
+<section class="store-content-section"><div class="container store-location-grid">
+@foreach(var store in Model.Stores) { <article class="store-location-card"><img src="@(store.ImageUrl ?? "/images/store/store-placeholder.svg")" alt="@store.Name" /><div><h2>@store.Name</h2><p><i class="fa-solid fa-location-dot"></i> @store.Address</p><p><i class="fa-solid fa-phone"></i> <a href="tel:@store.Phone">@store.Phone</a></p><p><i class="fa-solid fa-clock"></i> @store.OpeningHours</p>@if(!string.IsNullOrWhiteSpace(store.MapUrl)){<a class="store-button-secondary" href="@store.MapUrl" target="_blank" rel="noopener">Xem bản đồ</a>}</div></article> }
+</div></section>

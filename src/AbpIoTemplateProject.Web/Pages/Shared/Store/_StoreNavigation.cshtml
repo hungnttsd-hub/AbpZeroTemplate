@@ -1,0 +1,135 @@
+@using AbpIoTemplateProject.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<AbpIoTemplateProjectResource> L
+
+<nav class="store-desktop-navigation" aria-label="@L["Store:MainNavigation"]">
+    <div class="container store-navigation-inner">
+        <div class="store-category-menu">
+            <button type="button" aria-haspopup="true">
+                <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
+                <span>@L["Store:ProductCategories"]</span>
+                <i class="fa-solid fa-chevron-down store-nav-chevron" aria-hidden="true"></i>
+            </button>
+
+            <div class="store-category-mega-menu">
+                <div class="store-category-column">
+                    <span class="store-category-heading">@L["Store:Category:AquariumEquipment"]</span>
+                    <a href="/products?category=filtration">@L["Store:Category:Filtration"]</a>
+                    <a href="/products?category=lighting">@L["Store:Category:Lighting"]</a>
+                    <a href="/products?category=oxygen-heating">@L["Store:Category:OxygenHeating"]</a>
+                </div>
+                <div class="store-category-column">
+                    <span class="store-category-heading">@L["Store:Category:Aquascaping"]</span>
+                    <a href="/products?category=aquatic-plants">@L["Store:Category:AquaticPlants"]</a>
+                    <a href="/products?category=substrate">@L["Store:Category:Substrate"]</a>
+                    <a href="/products?category=decorations">@L["Store:Category:Decorations"]</a>
+                </div>
+                <div class="store-category-column">
+                    <span class="store-category-heading">@L["Store:Category:Care"]</span>
+                    <a href="/products?category=fish-food">@L["Store:Category:FishFood"]</a>
+                    <a href="/products?category=water-care">@L["Store:Category:WaterCare"]</a>
+                    <a href="/products?category=tools">@L["Store:Category:Tools"]</a>
+                </div>
+                <a class="store-category-feature" href="/products">
+                    <span>@L["Store:ExploreCollection"]</span>
+                    <strong>@L["Store:BuildYourAquarium"]</strong>
+                    <small>@L["Store:SeeAllProducts"] <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></small>
+                </a>
+            </div>
+        </div>
+
+        <ul class="store-primary-menu">
+            <li><a class="is-active" href="/">@L["Menu:Home"]</a></li>
+            <li><a href="/products">@L["Store:Products"]</a></li>
+            <li><a href="/products?sort=newest">@L["Store:NewProducts"]</a></li>
+            <li><a href="/products?sort=best-selling">@L["Store:BestSellers"]</a></li>
+            <li>
+                <a class="store-sale-link" href="/promotions">
+                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                    @L["Store:Promotions"]
+                </a>
+            </li>
+            <li><a href="/articles">@L["Store:Knowledge"]</a></li>
+            <li><a href="/stores">@L["Store:Stores"]</a></li>
+            <li><a href="/contact">@L["Store:Contact"]</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="offcanvas offcanvas-start store-mobile-navigation"
+     tabindex="-1"
+     id="storeMobileNavigation"
+     aria-labelledby="storeMobileNavigationLabel">
+    <div class="offcanvas-header">
+        <div>
+            <small>@L["Store:Browse"]</small>
+            <h2 class="offcanvas-title" id="storeMobileNavigationLabel">@L["Store:Menu"]</h2>
+        </div>
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="@L["Store:CloseMenu"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <nav aria-label="@L["Store:MobileNavigation"]">
+            <a class="store-mobile-nav-link is-active" href="/">
+                <i class="fa-solid fa-house" aria-hidden="true"></i>
+                @L["Menu:Home"]
+            </a>
+
+            <button class="store-mobile-nav-link store-mobile-nav-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#storeMobileCategories"
+                    aria-expanded="false"
+                    aria-controls="storeMobileCategories">
+                <span><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> @L["Store:ProductCategories"]</span>
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+            <div class="collapse store-mobile-submenu" id="storeMobileCategories">
+                <a href="/products?category=filtration">@L["Store:Category:Filtration"]</a>
+                <a href="/products?category=lighting">@L["Store:Category:Lighting"]</a>
+                <a href="/products?category=aquatic-plants">@L["Store:Category:AquaticPlants"]</a>
+                <a href="/products?category=fish-food">@L["Store:Category:FishFood"]</a>
+                <a href="/products">@L["Store:SeeAllProducts"]</a>
+            </div>
+
+            <a class="store-mobile-nav-link" href="/products">
+                <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+                @L["Store:Products"]
+            </a>
+            <a class="store-mobile-nav-link" href="/products?sort=newest">
+                <i class="fa-regular fa-star" aria-hidden="true"></i>
+                @L["Store:NewProducts"]
+            </a>
+            <a class="store-mobile-nav-link" href="/products?sort=best-selling">
+                <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
+                @L["Store:BestSellers"]
+            </a>
+            <a class="store-mobile-nav-link store-sale-link" href="/promotions">
+                <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                @L["Store:Promotions"]
+            </a>
+            <a class="store-mobile-nav-link" href="/articles">
+                <i class="fa-regular fa-newspaper" aria-hidden="true"></i>
+                @L["Store:Knowledge"]
+            </a>
+            <a class="store-mobile-nav-link" href="/stores">
+                <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                @L["Store:Stores"]
+            </a>
+            <a class="store-mobile-nav-link" href="/contact">
+                <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                @L["Store:Contact"]
+            </a>
+        </nav>
+
+        <div class="store-mobile-support">
+            <span class="store-action-icon"><i class="fa-solid fa-headset" aria-hidden="true"></i></span>
+            <span>
+                <small>@L["Store:NeedHelp"]</small>
+                <strong>@L["Store:TalkToUs"]</strong>
+            </span>
+        </div>
+    </div>
+</div>

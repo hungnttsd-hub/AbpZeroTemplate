@@ -1,0 +1,17 @@
+@page "/admin/store"
+@using System.Globalization
+@model AbpIoTemplateProject.Web.Pages.Admin.Store.IndexModel
+@{ Layout = "/Pages/Shared/Store/_AdminLayout.cshtml"; ViewData["Title"] = "Tổng quan"; var culture = CultureInfo.GetCultureInfo("vi-VN"); }
+<div class="store-admin-title"><div><span>Tổng quan vận hành</span><h1>Cửa hàng Aqua Garden</h1></div><a href="/admin/store/products" class="store-admin-primary"><i class="fa-solid fa-plus"></i> Thêm sản phẩm</a></div>
+<section class="store-admin-stats">
+    <article><i class="fa-solid fa-box-open"></i><span><small>Sản phẩm</small><strong>@Model.Dashboard.ProductCount</strong></span></article>
+    <article class="is-warning"><i class="fa-solid fa-triangle-exclamation"></i><span><small>Sắp hết hàng</small><strong>@Model.Dashboard.LowStockCount</strong></span></article>
+    <article><i class="fa-solid fa-clock"></i><span><small>Đơn đang xử lý</small><strong>@Model.Dashboard.PendingOrderCount</strong></span></article>
+    <article><i class="fa-solid fa-users"></i><span><small>Khách hàng</small><strong>@Model.Dashboard.CustomerCount</strong></span></article>
+</section>
+<section class="store-admin-card">
+    <div class="store-admin-card-head"><h2>Đơn hàng gần đây</h2><a href="/admin/store/orders">Xem tất cả</a></div>
+    <div class="store-admin-table-wrap"><table><thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Thời gian</th><th>Trạng thái</th><th class="text-end">Tổng tiền</th></tr></thead><tbody>
+    @foreach(var order in Model.Dashboard.RecentOrders){<tr><td><strong>@order.OrderNumber</strong></td><td>@order.CustomerName<br/><small>@order.Phone</small></td><td>@order.CreationTime.ToString("dd/MM/yyyy HH:mm")</td><td><span class="store-admin-status">@order.Status</span></td><td class="text-end"><strong>@string.Format(culture, "{0:N0} ₫", order.GrandTotal)</strong></td></tr>}
+    </tbody></table></div>
+</section>

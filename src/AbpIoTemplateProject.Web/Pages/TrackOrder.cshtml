@@ -1,0 +1,40 @@
+@page "/track-order"
+@using System.Globalization
+@model AbpIoTemplateProject.Web.Pages.TrackOrderModel
+@{
+    Layout = "/Pages/Shared/Store/_StoreLayout.cshtml";
+    ViewData["Title"] = "Theo dõi đơn hàng";
+    var culture = CultureInfo.GetCultureInfo("vi-VN");
+}
+<section class="store-page-hero"><div class="container"><span class="store-section-eyebrow">Luôn cập nhật</span><h1>Theo dõi đơn hàng</h1><p>Nhập mã đơn cùng email hoặc số điện thoại đã dùng khi đặt hàng.</p></div></section>
+<section class="store-checkout-section">
+    <div class="container store-track-container">
+        <form method="post" class="store-track-form">
+            <div asp-validation-summary="All" class="store-form-error"></div>
+            <label>Mã đơn hàng<input asp-for="OrderNumber" placeholder="Ví dụ: AQ260731..." /></label>
+            <label>Email hoặc số điện thoại<input asp-for="Verification" placeholder="Email hoặc số điện thoại" /></label>
+            <button class="store-button-primary" type="submit">Tra cứu đơn hàng</button>
+        </form>
+        @if (Model.Order is not null)
+        {
+            <div class="store-tracking-result">
+                <div class="store-tracking-head"><div><small>Mã đơn</small><h2>@Model.Order.OrderNumber</h2></div><span>@Model.Order.Status</span></div>
+                <div class="store-order-timeline">
+                    @{
+                        var statuses = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Preparing, OrderStatus.ReadyToShip, OrderStatus.Shipping, OrderStatus.Completed };
+                    }
+                    @foreach (var status in statuses)
+                    {
+                        <div class="@((int)status <= (int)Model.Order.Status ? "is-complete" : "")"><span><i class="fa-solid fa-check"></i></span><small>@status</small></div>
+                    }
+                </div>
+                <dl class="store-order-facts">
+                    <div><dt>Người nhận</dt><dd>@Model.Order.CustomerName · @Model.Order.Phone</dd></div>
+                    <div><dt>Địa chỉ</dt><dd>@Model.Order.FullAddress</dd></div>
+                    <div><dt>Vận chuyển</dt><dd>@Model.Order.ShippingMethodName @Model.Order.TrackingCode</dd></div>
+                    <div><dt>Tổng cộng</dt><dd>@string.Format(culture, "{0:N0} ₫", Model.Order.GrandTotal)</dd></div>
+                </dl>
+            </div>
+        }
+    </div>
+</section>

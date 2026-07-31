@@ -9,6 +9,7 @@ using AbpIoTemplateProject.EntityFrameworkCore;
 using AbpIoTemplateProject.Localization;
 using AbpIoTemplateProject.MultiTenancy;
 using AbpIoTemplateProject.Web.Menus;
+using AbpIoTemplateProject.Web.Options;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Validation.AspNetCore;
 using Volo.Abp;
@@ -104,6 +105,7 @@ public class AbpIoTemplateProjectWebModule : AbpModule
         var configuration = context.Services.GetConfiguration();
 
         ConfigureAuthentication(context);
+        ConfigureStorefrontOptions(context, configuration);
         ConfigureUrls(configuration);
         ConfigureBundles();
         ConfigureAutoMapper();
@@ -120,6 +122,15 @@ public class AbpIoTemplateProjectWebModule : AbpModule
         {
             options.IsDynamicClaimsEnabled = true;
         });
+    }
+
+    private static void ConfigureStorefrontOptions(
+        ServiceConfigurationContext context,
+        IConfiguration configuration)
+    {
+        context.Services.Configure<StorefrontOptions>(
+            configuration.GetSection(StorefrontOptions.SectionName)
+        );
     }
 
     private void ConfigureUrls(IConfiguration configuration)

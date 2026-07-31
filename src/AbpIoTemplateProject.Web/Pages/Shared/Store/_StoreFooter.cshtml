@@ -1,0 +1,127 @@
+@using AbpIoTemplateProject.Localization
+@using AbpIoTemplateProject.Web.Options
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.Options
+@inject IStringLocalizer<AbpIoTemplateProjectResource> L
+@inject IOptions<StorefrontOptions> StorefrontOptionsAccessor
+@{
+    var storefront = StorefrontOptionsAccessor.Value;
+}
+
+<footer class="store-footer">
+    <section class="store-newsletter" aria-labelledby="store-newsletter-heading">
+        <div class="container store-newsletter-inner">
+            <div class="store-newsletter-copy">
+                <span class="store-newsletter-icon" aria-hidden="true">
+                    <i class="fa-regular fa-paper-plane"></i>
+                </span>
+                <div>
+                    <h2 id="store-newsletter-heading">@L["Store:NewsletterTitle"]</h2>
+                    <p>@L["Store:NewsletterDescription"]</p>
+                </div>
+            </div>
+            <form class="store-newsletter-form"
+                  data-store-newsletter
+                  data-success-message="@L["Store:NewsletterSuccess"]"
+                  novalidate>
+                <label class="visually-hidden" for="store-newsletter-email">@L["Store:EmailAddress"]</label>
+                <input id="store-newsletter-email"
+                       type="email"
+                       name="email"
+                       autocomplete="email"
+                       required
+                       placeholder="@L["Store:NewsletterPlaceholder"]" />
+                <button type="submit">@L["Store:Subscribe"]</button>
+                <p class="store-newsletter-status" data-store-newsletter-status aria-live="polite"></p>
+            </form>
+        </div>
+    </section>
+
+    <div class="store-footer-main">
+        <div class="container">
+            <div class="store-footer-grid">
+                <section class="store-footer-company">
+                    <a class="store-brand store-footer-brand" href="/">
+                        <span class="store-brand-mark" aria-hidden="true">
+                            <i class="fa-solid fa-leaf"></i>
+                            <i class="fa-solid fa-water"></i>
+                        </span>
+                        <span class="store-brand-copy">
+                            <strong>@storefront.BrandName</strong>
+                            <small>@L["Store:BrandTagline"]</small>
+                        </span>
+                    </a>
+                    <p>@L["Store:FooterIntroduction"]</p>
+                    <ul class="store-contact-list">
+                        <li>
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            <span>@storefront.Address</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                            <a href="tel:@storefront.Hotline">@storefront.Hotline</a>
+                        </li>
+                        <li>
+                            <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                            <a href="mailto:@storefront.Email">@storefront.Email</a>
+                        </li>
+                        <li>
+                            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                            <span>@storefront.SupportHours</span>
+                        </li>
+                    </ul>
+                </section>
+
+                <nav aria-labelledby="store-footer-shopping">
+                    <h2 id="store-footer-shopping">@L["Store:ShoppingGuide"]</h2>
+                    <a href="/pages/how-to-buy">@L["Store:HowToBuy"]</a>
+                    <a href="/pages/payment-guide">@L["Store:PaymentGuide"]</a>
+                    <a href="/pages/shipping-policy">@L["Store:ShippingPolicy"]</a>
+                    <a href="/track-order">@L["Store:TrackOrder"]</a>
+                    <a href="/stores">@L["Store:StoreSystem"]</a>
+                </nav>
+
+                <nav aria-labelledby="store-footer-policy">
+                    <h2 id="store-footer-policy">@L["Store:Policies"]</h2>
+                    <a href="/pages/return-policy">@L["Store:ReturnPolicy"]</a>
+                    <a href="/pages/privacy-policy">@L["Store:PrivacyPolicy"]</a>
+                    <a href="/pages/terms">@L["Store:TermsOfService"]</a>
+                    <a href="/pages/warranty-policy">@L["Store:WarrantyPolicy"]</a>
+                    <a href="/contact">@L["Store:Contact"]</a>
+                </nav>
+
+                <section class="store-footer-support">
+                    <h2>@L["Store:CustomerSupport"]</h2>
+                    <p>@L["Store:SupportDescription"]</p>
+                    <a class="store-footer-hotline" href="tel:@storefront.Hotline">
+                        <i class="fa-solid fa-headset" aria-hidden="true"></i>
+                        <span>
+                            <small>@L["Store:ConsultationHotline"]</small>
+                            <strong>@storefront.Hotline</strong>
+                        </span>
+                    </a>
+                    @if (!string.IsNullOrWhiteSpace(storefront.StoreMapUrl))
+                    {
+                        <a class="store-map-link" href="@storefront.StoreMapUrl" target="_blank" rel="noopener">
+                            @L["Store:ViewMap"]
+                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                        </a>
+                    }
+                    <div class="store-payment-methods" aria-label="@L["Store:PaymentMethods"]">
+                        <span>COD</span>
+                        <span>VISA</span>
+                        <span>MASTER</span>
+                        <span>@L["Store:BankTransferShort"]</span>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div class="store-footer-bottom">
+        <div class="container">
+            <p>&copy; @DateTime.UtcNow.Year @storefront.BrandName. @L["Store:AllRightsReserved"]</p>
+            <p>@L["Store:IndependentBrandNotice"]</p>
+        </div>
+    </div>
+</footer>

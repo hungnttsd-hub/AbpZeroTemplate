@@ -1,4 +1,5 @@
 ﻿using Volo.Abp.Settings;
+using Volo.Abp.Localization;
 
 namespace AbpIoTemplateProject.Settings;
 
@@ -6,7 +7,10 @@ public class AbpIoTemplateProjectSettingDefinitionProvider : SettingDefinitionPr
 {
     public override void Define(ISettingDefinitionContext context)
     {
-        //Define your own settings here. Example:
-        //context.Add(new SettingDefinition(AbpIoTemplateProjectSettings.MySetting1));
+        var defaultLanguage = context.GetOrNull(LocalizationSettingNames.DefaultLanguage);
+        if (defaultLanguage is not null)
+        {
+            defaultLanguage.DefaultValue = "vi";
+        }
     }
 }

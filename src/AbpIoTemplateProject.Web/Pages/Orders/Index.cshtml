@@ -1,0 +1,30 @@
+@page "/orders"
+@using System.Globalization
+@model AbpIoTemplateProject.Web.Pages.Orders.IndexModel
+@{
+    Layout = "/Pages/Shared/Store/_StoreLayout.cshtml";
+    ViewData["Title"] = "Đơn hàng của tôi";
+    var culture = CultureInfo.GetCultureInfo("vi-VN");
+}
+<section class="store-page-hero is-compact"><div class="container"><h1>Đơn hàng của tôi</h1><p>Theo dõi lịch sử mua hàng và trạng thái giao nhận.</p></div></section>
+<section class="store-checkout-section"><div class="container">
+    @if (Model.Orders.Count == 0)
+    {
+        <div class="store-empty-state"><i class="fa-solid fa-receipt"></i><h2>Bạn chưa có đơn hàng</h2><a class="store-button-primary" href="/products">Bắt đầu mua sắm</a></div>
+    }
+    else
+    {
+        <div class="store-order-list">
+            @foreach (var order in Model.Orders)
+            {
+                <article>
+                    <div><small>@order.CreationTime.ToString("dd/MM/yyyy HH:mm")</small><h2>@order.OrderNumber</h2></div>
+                    <span class="store-status-pill">@order.Status</span>
+                    <span>@order.Items.Sum(x => x.Quantity) sản phẩm</span>
+                    <strong>@string.Format(culture, "{0:N0} ₫", order.GrandTotal)</strong>
+                    <a href="/track-order?orderNumber=@order.OrderNumber">Theo dõi</a>
+                </article>
+            }
+        </div>
+    }
+</div></section>

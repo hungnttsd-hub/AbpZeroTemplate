@@ -48,10 +48,10 @@ public class AbpIoTemplateProjectWebTestModule : AbpModule
 
     private static void ConfigureLocalizationServices(IServiceCollection services)
     {
-        var cultures = new List<CultureInfo> { new CultureInfo("en"), new CultureInfo("tr") };
+        var cultures = new List<CultureInfo> { new CultureInfo("vi"), new CultureInfo("en") };
         services.Configure<RequestLocalizationOptions>(options =>
         {
-            options.DefaultRequestCulture = new RequestCulture("en");
+            options.DefaultRequestCulture = new RequestCulture("vi");
             options.SupportedCultures = cultures;
             options.SupportedUICultures = cultures;
         });

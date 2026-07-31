@@ -12,6 +12,7 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using AbpIoTemplateProject.Store;
 
 namespace AbpIoTemplateProject.EntityFrameworkCore;
 
@@ -23,7 +24,32 @@ public class AbpIoTemplateProjectDbContext :
     IIdentityDbContext,
     ITenantManagementDbContext
 {
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
+    public DbSet<Category> StoreCategories { get; set; }
+    public DbSet<Brand> StoreBrands { get; set; }
+    public DbSet<Supplier> StoreSuppliers { get; set; }
+    public DbSet<Product> StoreProducts { get; set; }
+    public DbSet<ProductVariant> StoreProductVariants { get; set; }
+    public DbSet<ProductImage> StoreProductImages { get; set; }
+    public DbSet<Warehouse> StoreWarehouses { get; set; }
+    public DbSet<InventoryItem> StoreInventoryItems { get; set; }
+    public DbSet<InventoryTransaction> StoreInventoryTransactions { get; set; }
+    public DbSet<ShoppingCart> StoreShoppingCarts { get; set; }
+    public DbSet<ShoppingCartItem> StoreShoppingCartItems { get; set; }
+    public DbSet<Customer> StoreCustomers { get; set; }
+    public DbSet<CustomerAddress> StoreCustomerAddresses { get; set; }
+    public DbSet<Order> StoreOrders { get; set; }
+    public DbSet<OrderItem> StoreOrderItems { get; set; }
+    public DbSet<OrderStatusHistory> StoreOrderStatusHistories { get; set; }
+    public DbSet<Payment> StorePayments { get; set; }
+    public DbSet<ShippingMethod> StoreShippingMethods { get; set; }
+    public DbSet<Promotion> StorePromotions { get; set; }
+    public DbSet<PromotionUsage> StorePromotionUsages { get; set; }
+    public DbSet<Banner> StoreBanners { get; set; }
+    public DbSet<StoreLocation> StoreLocations { get; set; }
+    public DbSet<ArticleCategory> StoreArticleCategories { get; set; }
+    public DbSet<Article> StoreArticles { get; set; }
+    public DbSet<HomePageSection> StoreHomePageSections { get; set; }
+    public DbSet<SiteSetting> StoreSiteSettings { get; set; }
 
     #region Entities from the modules
 
@@ -74,13 +100,6 @@ public class AbpIoTemplateProjectDbContext :
         builder.ConfigureFeatureManagement();
         builder.ConfigureTenantManagement();
 
-        /* Configure your own tables/entities inside here */
-
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(AbpIoTemplateProjectConsts.DbTablePrefix + "YourEntities", AbpIoTemplateProjectConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
+        builder.ConfigureStore();
     }
 }

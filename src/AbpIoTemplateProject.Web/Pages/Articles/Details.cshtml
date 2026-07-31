@@ -1,0 +1,12 @@
+@page "/articles/{slug}"
+@model AbpIoTemplateProject.Web.Pages.Articles.DetailsModel
+@{
+    Layout = "/Pages/Shared/Store/_StoreLayout.cshtml";
+    ViewData["Title"] = Model.Article.MetaTitle ?? Model.Article.Title;
+    ViewData["MetaDescription"] = Model.Article.MetaDescription ?? Model.Article.Summary;
+}
+<article class="store-article-detail">
+    <header><div class="container"><nav class="store-breadcrumb"><a href="/">Trang chủ</a><i class="fa-solid fa-chevron-right"></i><a href="/articles">Kiến thức</a></nav><span class="store-section-eyebrow">@Model.Article.CategoryName</span><h1>@Model.Article.Title</h1><p>@Model.Article.Summary</p><small>@Model.Article.AuthorName · @Model.Article.PublishTime?.ToString("dd/MM/yyyy")</small></div></header>
+    @if (!string.IsNullOrWhiteSpace(Model.Article.FeaturedImageUrl)) { <div class="container"><img class="store-article-cover" src="@Model.Article.FeaturedImageUrl" alt="@Model.Article.Title" /></div> }
+    <div class="container store-rich-text store-article-content">@Html.Raw(Model.Article.Content)</div>
+</article>

@@ -1,0 +1,18 @@
+@model AbpIoTemplateProject.Web.Pages.Shared.Store.ProductSectionViewModel
+@if (Model.Products.Count > 0)
+{
+    <section class="store-content-section">
+        <div class="container">
+            <div class="store-section-heading">
+                <div><span class="store-section-eyebrow">@Model.Subtitle</span><h2>@Model.Title</h2></div>
+                <a class="store-text-link" href="/products">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="store-product-grid">
+                @foreach (var product in Model.Products)
+                {
+                    <partial name="/Pages/Shared/Store/_ProductCard.cshtml" model="product" />
+                }
+            </div>
+        </div>
+    </section>
+}

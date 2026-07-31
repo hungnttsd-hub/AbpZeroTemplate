@@ -1,0 +1,99 @@
+@page "/products"
+@using System.Globalization
+@model AbpIoTemplateProject.Web.Pages.Products.IndexModel
+@{
+    Layout = "/Pages/Shared/Store/_StoreLayout.cshtml";
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Q) ? "Sản phẩm" : $"Tìm kiếm: {Model.Q}";
+}
+
+<section class="store-page-hero is-compact">
+    <div class="container">
+        <nav class="store-breadcrumb" aria-label="Breadcrumb"><a href="/">Trang chủ</a><i class="fa-solid fa-chevron-right"></i><span>Sản phẩm</span></nav>
+        <h1>@(string.IsNullOrWhiteSpace(Model.Q) ? "Tất cả sản phẩm" : $"Kết quả cho “{Model.Q}”")</h1>
+        <p>@Model.Products.TotalCount sản phẩm phù hợp</p>
+    </div>
+</section>
+
+<section class="store-listing-section">
+    <div class="container store-listing-layout">
+        <aside class="store-filter-panel">
+            <form method="get">
+                <input type="hidden" name="q" value="@Model.Q" />
+                <h2>Bộ lọc</h2>
+                <label>Danh mục</label>
+                <select name="category">
+                    <option value="">Tất cả danh mục</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Slug" selected="@(Model.Category == category.Slug)">@category.Name (@category.ProductCount)</option>
+                    }
+                </select>
+                <label>Thương hiệu</label>
+                <select name="brandId">
+                    <option value="">Tất cả thương hiệu</option>
+                    @foreach (var brand in Model.Brands)
+                    {
+                        <option value="@brand.Id" selected="@(Model.BrandId == brand.Id)">@brand.Name</option>
+                    }
+                </select>
+                <div class="store-filter-price">
+                    <div><label>Giá từ</label><input type="number" min="0" name="minPrice" value="@Model.MinPrice" /></div>
+                    <div><label>Đến</label><input type="number" min="0" name="maxPrice" value="@Model.MaxPrice" /></div>
+                </div>
+                <label class="store-check"><input type="checkbox" name="inStock" value="true" checked="@Model.InStock" /> Chỉ sản phẩm còn hàng</label>
+                <label class="store-check"><input type="checkbox" name="onSale" value="true" checked="@Model.OnSale" /> Đang giảm giá</label>
+                <button class="store-button-primary w-100" type="submit">Áp dụng</button>
+                <a class="store-filter-reset" href="/products">Xóa bộ lọc</a>
+            </form>
+        </aside>
+
+        <div class="store-listing-main">
+            <form class="store-sort-row" method="get">
+                <input type="hidden" name="q" value="@Model.Q" />
+                <input type="hidden" name="category" value="@Model.Category" />
+                <span>Hiển thị @Model.Products.Items.Count / @Model.Products.TotalCount</span>
+                <label>
+                    <span>Sắp xếp</span>
+                    <select name="sort" onchange="this.form.submit()">
+                        <option value="">Nổi bật</option>
+                        <option value="newest" selected="@(Model.Sort == "newest")">Mới nhất</option>
+                        <option value="best-selling" selected="@(Model.Sort == "best-selling")">Bán chạy</option>
+                        <option value="price-asc" selected="@(Model.Sort == "price-asc")">Giá tăng dần</option>
+                        <option value="price-desc" selected="@(Model.Sort == "price-desc")">Giá giảm dần</option>
+                        <option value="name" selected="@(Model.Sort == "name")">Tên A–Z</option>
+                    </select>
+                </label>
+            </form>
+
+            @if (Model.Products.Items.Count == 0)
+            {
+                <div class="store-empty-state">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <h2>Chưa tìm thấy sản phẩm</h2>
+                    <p>Thử thay đổi từ khóa hoặc bỏ bớt bộ lọc.</p>
+                    <a class="store-button-primary" href="/products">Xem tất cả sản phẩm</a>
+                </div>
+            }
+            else
+            {
+                <div class="store-product-grid">
+                    @foreach (var product in Model.Products.Items)
+                    {
+                        <partial name="/Pages/Shared/Store/_ProductCard.cshtml" model="product" />
+                    }
+                </div>
+            }
+
+            @if (Model.PageCount > 1)
+            {
+                <nav class="store-pagination" aria-label="Phân trang">
+                    @for (var pageIndex = 1; pageIndex <= Model.PageCount; pageIndex++)
+                    {
+                        <a class="@(pageIndex == Model.PageNumber ? "is-active" : "")"
+                           href="/products?q=@Model.Q&category=@Model.Category&brandId=@Model.BrandId&sort=@Model.Sort&pageNumber=@pageIndex">@pageIndex</a>
+                    }
+                </nav>
+            }
+        </div>
+    </div>
+</section>

@@ -1,62 +1,204 @@
 @page
+@using AbpIoTemplateProject.Localization
+@using Microsoft.Extensions.Localization
 @model AbpIoTemplateProject.Web.Pages.IndexModel
+@inject IStringLocalizer<AbpIoTemplateProjectResource> L
+@{
+    Layout = "/Pages/Shared/Store/_StoreLayout.cshtml";
+    ViewData["Title"] = L["Store:HomePageTitle"];
+    ViewData["MetaDescription"] = L["Store:MetaDescription"];
+}
 
-<div class="row mb-3">
-    <div class="col-xl-6 col-12 d-flex">
-        <div class="card h-lg-100 w-100 overflow-hidden">
-            <div class="card-body">
-                <div class="starting-content">
-                    <h3>Getting Started</h3>
-                    <p class="lead text-muted mb-2">Learn how to create and run a new web application using the application startup template.</p>
-                    <a href="https://docs.abp.io/en/commercial/latest/getting-started" class="btn btn-brand mb-4" target="_blank">Getting Started</a>
+<section class="store-home-hero">
+    <div class="container store-hero-grid">
+        <div class="store-hero-copy">
+            <span class="store-hero-eyebrow">@L["Store:HeroEyebrow"]</span>
+            <h1>
+                @L["Store:HeroTitlePrefix"]
+                <span>@L["Store:HeroTitleHighlight"]</span>
+            </h1>
+            <p>@L["Store:HeroDescription"]</p>
 
-                    <h4>Web Application Development Tutorial</h4>
-                    <p class="text-muted mb-2">Learn how to build an ABP based web application named Acme.BookStore.</p>
-                    <a href="https://docs.abp.io/en/commercial/latest/tutorials/book-store/part-1?UI=MVC&DB=EF" class="btn btn-primary soft mb-4" target="_blank">Explore Tutorial</a>
+            <div class="store-hero-actions">
+                <a class="store-button-primary" href="/products">
+                    @L["Store:ExploreProducts"]
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a class="store-button-secondary" href="/articles">
+                    <i class="fa-regular fa-lightbulb" aria-hidden="true"></i>
+                    @L["Store:ReadKnowledge"]
+                </a>
+            </div>
 
-                    <h4>Customize Lepton Theme</h4>
-                    <p class="text-muted mb-2">Learn how to customize LeptonX Theme as you wish.</p>
-                    <a href="https://docs.abp.io/en/commercial/latest/themes/lepton/customizing-lepton-theme" class="btn btn-primary soft mb-5 mb-xl-0" target="_blank">Customize Lepton</a>
-                </div>
-                <img class="card-bg-image" src="/images/getting-started/bg-01.png">
+            <div class="store-hero-trust" aria-label="@L["Store:ServiceHighlights"]">
+                <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> @L["Store:TrustedOrigin"]</span>
+                <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> @L["Store:CarefullyPacked"]</span>
+                <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> @L["Store:ExpertAdvice"]</span>
             </div>
         </div>
-    </div>
 
-    <div class="col-xl-3 col-md-6 d-flex">
-        <div class="row">
-            <div class="col-12 d-flex">
-                <div class="card overflow-hidden">
-                    <div class="card-body pb-0">
-                        <div class="abp-support abp-logo mb-2"></div>
-                        <p class="text-muted mb-2">You can check for similar problems and solutions, or open a new topic to discuss your specific issue.</p>
-                        <a href="https://support.abp.io/QA/Questions" class="btn btn-brand soft" target="_blank">Visit Support</a>
-                        <img class="" src="/images/getting-started/img-support.png">
-                    </div>
-                </div>
+        <div class="store-hero-visual" aria-hidden="true">
+            <div class="store-hero-aquarium">
+                <span class="store-aquarium-plant is-one"></span>
+                <span class="store-aquarium-plant is-two"></span>
+                <span class="store-aquarium-plant is-three"></span>
+                <span class="store-aquarium-fish"></span>
+                <span class="store-aquarium-bubble is-one"></span>
+                <span class="store-aquarium-bubble is-two"></span>
+                <span class="store-aquarium-bubble is-three"></span>
             </div>
-            <div class="col-12 d-flex">
-                <div class="card h-md-100 overflow-hidden">
-                    <div class="card-body pb-0">
-                        <div class="abp-blog abp-logo mb-2"></div>
-                        <p class="text-muted mb-2">You can find content on .NET development, cross-platform, ASP.NET application templates, ABP-related news, and more.</p>
-                        <a href="https://blog.abp.io/abp" class="btn btn-brand soft" target="_blank">Visit Blog</a>
-                        <img style="margin-bottom: -24px;" src="/images/getting-started/img-blog.png">
-                    </div>
-                </div>
-            </div>
+            <span class="store-floating-card is-top">
+                <i class="fa-solid fa-seedling"></i>
+                <span>
+                    <small>@L["Store:CuratedForYou"]</small>
+                    <strong>@L["Store:HealthyAquaticPlants"]</strong>
+                </span>
+            </span>
+            <span class="store-floating-card is-bottom">
+                <i class="fa-solid fa-droplet"></i>
+                <span>
+                    <small>@L["Store:WaterCare"]</small>
+                    <strong>@L["Store:ClearBalancedWater"]</strong>
+                </span>
+            </span>
         </div>
     </div>
+</section>
 
-    <div class="col-xl-3 col-md-6 d-flex">
-        <div class="card h-100 overflow-hidden">
-            <div class="card-body">
-                <div class="abp-community abp-logo mb-2"></div>
-                <p class="lead text-muted">A unique community platform for <span class="fw-bold">ABP Lovers!</span></p>
-                <p class="text-muted mb-2">Explore all ABP users' experiences with the ABP Framework, discover articles and videos on how to use ABP, and join raffles for a chance to win surprise gifts!</p>
-                <a class="btn btn-brand soft mb-3" href="https://community.abp.io/" target="_blank">Join ABP Community</a>
+@if (Model.Home.Banners.Count > 0)
+{
+    <section class="store-banner-section">
+        <div class="container store-banner-strip">
+            @foreach (var banner in Model.Home.Banners.Take(3))
+            {
+                <a class="store-promo-banner" href="@(banner.TargetUrl ?? "/products")">
+                    <img src="@banner.DesktopImageUrl" alt="" />
+                    <span><small>@banner.Description</small><strong>@banner.Title</strong><b>@(banner.ButtonText ?? "Khám phá") <i class="fa-solid fa-arrow-right"></i></b></span>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+@if (Model.Home.FeaturedCategories.Count > 0)
+{
+    <section class="store-content-section">
+        <div class="container">
+            <div class="store-section-heading">
+                <div><span class="store-section-eyebrow">Danh mục</span><h2>Khám phá theo nhu cầu</h2></div>
+                <a class="store-text-link" href="/products">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
             </div>
-            <img class="mt-3" src="/images/getting-started/img-community.png">
+            <div class="store-category-card-grid">
+                @foreach (var category in Model.Home.FeaturedCategories)
+                {
+                    <a class="store-category-card" href="/products?category=@category.Slug">
+                        <span class="store-category-card-icon"><i class="fa-solid fa-water"></i></span>
+                        <strong>@category.Name</strong>
+                        <small>@category.ProductCount sản phẩm</small>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@await Html.PartialAsync("/Pages/Shared/Store/_ProductSection.cshtml",
+    new AbpIoTemplateProject.Web.Pages.Shared.Store.ProductSectionViewModel(
+        "Sản phẩm nổi bật", "Được cộng đồng thủy sinh lựa chọn", Model.Home.FeaturedProducts))
+@await Html.PartialAsync("/Pages/Shared/Store/_ProductSection.cshtml",
+    new AbpIoTemplateProject.Web.Pages.Shared.Store.ProductSectionViewModel(
+        "Bán chạy", "Những sản phẩm đang được yêu thích", Model.Home.BestSellers))
+@await Html.PartialAsync("/Pages/Shared/Store/_ProductSection.cshtml",
+    new AbpIoTemplateProject.Web.Pages.Shared.Store.ProductSectionViewModel(
+        "Sản phẩm mới", "Cập nhật lựa chọn mới nhất", Model.Home.NewProducts))
+
+@if (Model.Home.Articles.Count > 0)
+{
+    <section class="store-content-section store-soft-section">
+        <div class="container">
+            <div class="store-section-heading">
+                <div><span class="store-section-eyebrow">Kiến thức</span><h2>Chăm hồ tốt hơn mỗi ngày</h2></div>
+                <a class="store-text-link" href="/articles">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="store-article-grid">
+                @foreach (var article in Model.Home.Articles)
+                {
+                    <article class="store-article-card">
+                        <a href="/articles/@article.Slug">
+                            <img src="@(article.FeaturedImageUrl ?? "/images/store/article-placeholder.svg")" alt="@article.Title" />
+                        </a>
+                        <div>
+                            <small>@article.CategoryName</small>
+                            <h3><a href="/articles/@article.Slug">@article.Title</a></h3>
+                            <p>@article.Summary</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="store-service-section" aria-labelledby="store-service-title">
+    <h2 id="store-service-title" class="visually-hidden">@L["Store:ServiceCommitments"]</h2>
+    <div class="container store-service-grid">
+        <article class="store-service-item">
+            <span class="store-service-icon"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></span>
+            <span>
+                <strong>@L["Store:DeliveryTitle"]</strong>
+                <small>@L["Store:DeliveryDescription"]</small>
+            </span>
+        </article>
+        <article class="store-service-item">
+            <span class="store-service-icon"><i class="fa-solid fa-credit-card" aria-hidden="true"></i></span>
+            <span>
+                <strong>@L["Store:PaymentTitle"]</strong>
+                <small>@L["Store:PaymentDescription"]</small>
+            </span>
+        </article>
+        <article class="store-service-item">
+            <span class="store-service-icon"><i class="fa-solid fa-headset" aria-hidden="true"></i></span>
+            <span>
+                <strong>@L["Store:SupportTitle"]</strong>
+                <small>@L["Store:SupportCommitmentDescription"]</small>
+            </span>
+        </article>
+        <article class="store-service-item">
+            <span class="store-service-icon"><i class="fa-solid fa-shield-heart" aria-hidden="true"></i></span>
+            <span>
+                <strong>@L["Store:AuthenticTitle"]</strong>
+                <small>@L["Store:AuthenticDescription"]</small>
+            </span>
+        </article>
+    </div>
+</section>
+
+<section class="store-home-intro" aria-labelledby="store-discovery-title">
+    <div class="container">
+        <div class="store-section-heading">
+            <div>
+                <span class="store-section-eyebrow">@L["Store:DiscoverEyebrow"]</span>
+                <h2 id="store-discovery-title">@L["Store:DiscoverTitle"]</h2>
+            </div>
+            <p>@L["Store:DiscoverDescription"]</p>
+        </div>
+
+        <div class="store-discovery-grid">
+            <a class="store-discovery-card is-primary" href="/products?category=aquatic-plants">
+                <span>@L["Store:Discovery:LivingGreen"]</span>
+                <h3>@L["Store:Category:AquaticPlants"]</h3>
+                <small>@L["Store:ExploreNow"] <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></small>
+            </a>
+            <a class="store-discovery-card is-secondary" href="/products?category=lighting">
+                <span>@L["Store:Discovery:BetterLight"]</span>
+                <h3>@L["Store:Category:Lighting"]</h3>
+                <small>@L["Store:ExploreNow"] <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></small>
+            </a>
+            <a class="store-discovery-card is-accent" href="/products?category=filtration">
+                <span>@L["Store:Discovery:CleanerWater"]</span>
+                <h3>@L["Store:Category:Filtration"]</h3>
+                <small>@L["Store:ExploreNow"] <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></small>
+            </a>
         </div>
     </div>
-</div>
+</section>
