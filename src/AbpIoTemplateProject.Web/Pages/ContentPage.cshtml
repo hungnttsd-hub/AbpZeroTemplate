@@ -1,5 +1,0 @@
-@page "/pages/{slug}"
-@model AbpIoTemplateProject.Web.Pages.ContentPageModel
-@{ Layout = "/Pages/Shared/Store/_StoreLayout.cshtml"; ViewData["Title"] = Model.Title; }
-<section class="store-page-hero is-compact"><div class="container"><nav class="store-breadcrumb"><a href="/">Trang chủ</a><i class="fa-solid fa-chevron-right"></i><span>@Model.Title</span></nav><h1>@Model.Title</h1></div></section>
-<section class="store-content-section"><div class="container store-rich-text store-article-content">@Html.Raw(Model.BodyHtml)</div></section>

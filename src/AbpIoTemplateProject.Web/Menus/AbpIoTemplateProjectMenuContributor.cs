@@ -34,49 +34,13 @@ public class AbpIoTemplateProjectMenuContributor : IMenuContributor
             )
         );
 
-        context.Menu.AddItem(
-            new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StoreAdmin,
-                    "Cửa hàng",
-                    icon: "fas fa-store",
-                    order: 1)
-                .AddItem(new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StoreProducts,
-                    "Sản phẩm",
-                    "/admin/store/products",
-                    icon: "fas fa-box",
-                    requiredPermissionName: AbpIoTemplateProjectPermissions.Products.View))
-                .AddItem(new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StoreInventory,
-                    "Tồn kho",
-                    "/admin/store/inventory",
-                    icon: "fas fa-warehouse",
-                    requiredPermissionName: AbpIoTemplateProjectPermissions.Inventory.View))
-                .AddItem(new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StoreOrders,
-                    "Đơn hàng",
-                    "/admin/store/orders",
-                    icon: "fas fa-receipt",
-                    requiredPermissionName: AbpIoTemplateProjectPermissions.Orders.View))
-                .AddItem(new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StoreCustomers,
-                    "Khách hàng",
-                    "/admin/store/customers",
-                    icon: "fas fa-users",
-                    requiredPermissionName: AbpIoTemplateProjectPermissions.Customers.View))
-                .AddItem(new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StorePayments,
-                    "Thanh toán",
-                    "/admin/store/payments",
-                    icon: "fas fa-credit-card",
-                    requiredPermissionName: AbpIoTemplateProjectPermissions.Payments.View))
-                .AddItem(new ApplicationMenuItem(
-                    AbpIoTemplateProjectMenus.StoreContent,
-                    "Nội dung & ưu đãi",
-                    "/admin/store/content",
-                    icon: "fas fa-bullhorn",
-                    requiredPermissionName: AbpIoTemplateProjectPermissions.Promotions.Default))
-        );
+        context.Menu.Items.Add(new ApplicationMenuItem(
+            "Education.Admin",
+            "Quản trị IZONE",
+            "~/Admin",
+            icon: "fas fa-graduation-cap",
+            requiredPermissionName: AbpIoTemplateProjectPermissions.Courses.Default,
+            order: 1));
 
         administration.SetSubItemOrder(TenantManagementMenuNames.GroupName, 1);
         administration.SetSubItemOrder(IdentityMenuNames.GroupName, 2);

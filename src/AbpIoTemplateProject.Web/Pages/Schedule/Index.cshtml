@@ -1,0 +1,13 @@
+@page
+@model AbpIoTemplateProject.Web.Pages.Schedule.IndexModel
+@{
+    Layout = "/Pages/Shared/_IzoneLayout.cshtml";
+    ViewData["Title"] = "Lịch khai giảng";
+}
+
+<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">BẮT ĐẦU ĐÚNG THỜI ĐIỂM</p><h1>Lịch khai giảng các lớp IELTS</h1><p>Chọn lớp phù hợp rồi để lại thông tin để được tư vấn giữ chỗ.</p></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Khóa học</th><th>Mã lớp</th><th>Khai giảng</th><th>Lịch học</th><th>Giảng viên</th><th>Còn chỗ</th><th></th></tr></thead><tbody>
+@foreach (var courseClass in Model.Classes)
+{
+    <tr><td>@courseClass.CourseName</td><td>@courseClass.Code</td><td>@courseClass.StartDate.ToString("dd/MM/yyyy")</td><td>@courseClass.ScheduleText</td><td>@courseClass.TeacherName</td><td>@courseClass.RemainingSeats</td><td><a class="iz-btn iz-btn-primary" href="/#dang-ky">Đăng ký</a></td></tr>
+}
+</tbody></table></div></div></section>

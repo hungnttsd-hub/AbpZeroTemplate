@@ -1,6 +1,0 @@
-@page "/contact"
-@model AbpIoTemplateProject.Web.Pages.ContactModel
-@inject Microsoft.Extensions.Options.IOptions<AbpIoTemplateProject.Web.Options.StorefrontOptions> Options
-@{ Layout = "/Pages/Shared/Store/_StoreLayout.cshtml"; ViewData["Title"] = "Liên hệ"; var store = Options.Value; }
-<section class="store-page-hero"><div class="container"><span class="store-section-eyebrow">Aqua Garden đồng hành cùng bạn</span><h1>Liên hệ tư vấn</h1><p>Gửi câu hỏi về sản phẩm, thiết kế hồ hoặc chăm sóc hệ sinh thái.</p></div></section>
-<section class="store-content-section"><div class="container store-contact-grid"><div><h2>Thông tin liên hệ</h2><p><i class="fa-solid fa-phone"></i> <a href="tel:@store.Hotline">@store.Hotline</a></p><p><i class="fa-solid fa-envelope"></i> <a href="mailto:@store.Email">@store.Email</a></p><p><i class="fa-solid fa-location-dot"></i> @store.Address</p></div><form class="store-form-card" onsubmit="event.preventDefault(); this.querySelector('output').textContent='Cảm ơn bạn! Chúng tôi sẽ liên hệ sớm.';"><label>Họ tên<input required /></label><label>Email<input type="email" required /></label><label>Nội dung<textarea rows="5" required></textarea></label><button class="store-button-primary" type="submit">Gửi yêu cầu</button><output></output></form></div></section>

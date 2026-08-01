@@ -1,0 +1,4 @@
+@page
+@model AbpIoTemplateProject.Web.Pages.Achievements.IndexModel
+@{ Layout = "/Pages/Shared/_IzoneLayout.cshtml"; ViewData["Title"] = "Học viên tiêu biểu"; }
+<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">CÂU CHUYỆN TỪ HỌC VIÊN</p><h1>Thành tích học viên</h1><p>Mỗi kết quả là một hành trình nỗ lực bền bỉ, với lộ trình phù hợp và sự đồng hành đúng lúc.</p></div><div class="iz-achievement-grid">@foreach (var item in Model.Achievements) { <article class="iz-achievement"><img src="@(item.PhotoUrl ?? Url.Content("~/izone-assets/images/students/1.jpg"))" alt="@item.StudentName" /><div><p class="iz-eyebrow">@item.BeforeResult → @item.AfterResult</p><h2>@item.StudentName</h2><p>@item.Story</p></div></article> }</div></div></section>

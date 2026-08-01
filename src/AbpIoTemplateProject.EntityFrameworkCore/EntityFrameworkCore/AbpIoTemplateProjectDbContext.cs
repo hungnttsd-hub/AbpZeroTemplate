@@ -10,46 +10,23 @@ using Volo.Abp.Identity.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
+using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
-using AbpIoTemplateProject.Store;
+using AbpIoTemplateProject.Education;
 
 namespace AbpIoTemplateProject.EntityFrameworkCore;
 
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
+[ReplaceDbContext(typeof(ISettingManagementDbContext))]
 [ConnectionStringName("Default")]
 public class AbpIoTemplateProjectDbContext :
     AbpDbContext<AbpIoTemplateProjectDbContext>,
     IIdentityDbContext,
-    ITenantManagementDbContext
+    ITenantManagementDbContext,
+    ISettingManagementDbContext
 {
-    public DbSet<Category> StoreCategories { get; set; }
-    public DbSet<Brand> StoreBrands { get; set; }
-    public DbSet<Supplier> StoreSuppliers { get; set; }
-    public DbSet<Product> StoreProducts { get; set; }
-    public DbSet<ProductVariant> StoreProductVariants { get; set; }
-    public DbSet<ProductImage> StoreProductImages { get; set; }
-    public DbSet<Warehouse> StoreWarehouses { get; set; }
-    public DbSet<InventoryItem> StoreInventoryItems { get; set; }
-    public DbSet<InventoryTransaction> StoreInventoryTransactions { get; set; }
-    public DbSet<ShoppingCart> StoreShoppingCarts { get; set; }
-    public DbSet<ShoppingCartItem> StoreShoppingCartItems { get; set; }
-    public DbSet<Customer> StoreCustomers { get; set; }
-    public DbSet<CustomerAddress> StoreCustomerAddresses { get; set; }
-    public DbSet<Order> StoreOrders { get; set; }
-    public DbSet<OrderItem> StoreOrderItems { get; set; }
-    public DbSet<OrderStatusHistory> StoreOrderStatusHistories { get; set; }
-    public DbSet<Payment> StorePayments { get; set; }
-    public DbSet<ShippingMethod> StoreShippingMethods { get; set; }
-    public DbSet<Promotion> StorePromotions { get; set; }
-    public DbSet<PromotionUsage> StorePromotionUsages { get; set; }
-    public DbSet<Banner> StoreBanners { get; set; }
-    public DbSet<StoreLocation> StoreLocations { get; set; }
-    public DbSet<ArticleCategory> StoreArticleCategories { get; set; }
-    public DbSet<Article> StoreArticles { get; set; }
-    public DbSet<HomePageSection> StoreHomePageSections { get; set; }
-    public DbSet<SiteSetting> StoreSiteSettings { get; set; }
 
     #region Entities from the modules
 
@@ -76,6 +53,39 @@ public class AbpIoTemplateProjectDbContext :
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
+    public DbSet<Setting> Settings { get; set; }
+    public DbSet<SettingDefinitionRecord> SettingDefinitionRecords { get; set; }
+
+    // Education
+    public DbSet<CourseCategory> CourseCategories { get; set; }
+    public DbSet<CourseLevel> CourseLevels { get; set; }
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<CourseTeacher> CourseTeachers { get; set; }
+    public DbSet<CourseBenefit> CourseBenefits { get; set; }
+    public DbSet<CourseFaq> CourseFaqs { get; set; }
+    public DbSet<CourseModule> CourseModules { get; set; }
+    public DbSet<CourseLesson> CourseLessons { get; set; }
+    public DbSet<LearningPath> LearningPaths { get; set; }
+    public DbSet<LearningPathStep> LearningPathSteps { get; set; }
+    public DbSet<LearningPathCourse> LearningPathCourses { get; set; }
+    public DbSet<Teacher> Teachers { get; set; }
+    public DbSet<Student> Students { get; set; }
+    public DbSet<Lead> Leads { get; set; }
+    public DbSet<Campus> Campuses { get; set; }
+    public DbSet<CourseClass> CourseClasses { get; set; }
+    public DbSet<Enrollment> Enrollments { get; set; }
+    public DbSet<PlacementTest> PlacementTests { get; set; }
+    public DbSet<PlacementQuestion> PlacementQuestions { get; set; }
+    public DbSet<PlacementAttempt> PlacementAttempts { get; set; }
+    public DbSet<PlacementAnswer> PlacementAnswers { get; set; }
+    public DbSet<ArticleCategory> ArticleCategories { get; set; }
+    public DbSet<Article> Articles { get; set; }
+    public DbSet<LearningDocument> LearningDocuments { get; set; }
+    public DbSet<StudentAchievement> StudentAchievements { get; set; }
+    public DbSet<Banner> Banners { get; set; }
+    public DbSet<SiteSetting> SiteSettings { get; set; }
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+    public DbSet<NotificationMessage> NotificationMessages { get; set; }
 
     #endregion
 
@@ -99,7 +109,7 @@ public class AbpIoTemplateProjectDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureFeatureManagement();
         builder.ConfigureTenantManagement();
+        builder.ConfigureEducation();
 
-        builder.ConfigureStore();
     }
 }

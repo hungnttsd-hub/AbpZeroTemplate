@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 650" role="img" aria-label="Sản phẩm thủy sinh">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dff5ef"/><stop offset="1" stop-color="#b9ddd2"/></linearGradient></defs>
-  <rect width="800" height="650" fill="url(#g)"/>
-  <path d="M0 520c130-70 240 20 370-35 150-64 255-14 430-95v260H0z" fill="#0d7f6c" opacity=".14"/>
-  <path d="M305 470c-8-126 48-233 98-307 17 91-4 184-65 252 48-78 109-126 185-150-30 111-101 182-218 205z" fill="#0b806c"/>
-  <circle cx="577" cy="168" r="24" fill="#fff" opacity=".55"/><circle cx="624" cy="118" r="12" fill="#fff" opacity=".45"/>
-  <text x="400" y="565" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#075f52">AQUA GARDEN</text>
-</svg>

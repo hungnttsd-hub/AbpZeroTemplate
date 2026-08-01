@@ -1,0 +1,7 @@
+@page
+@model AbpIoTemplateProject.Web.Pages.Documents.IndexModel
+@{
+    Layout = "/Pages/Shared/_IzoneLayout.cshtml";
+    ViewData["Title"] = "Tài liệu IELTS miễn phí";
+}
+<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">TÀI LIỆU MIỄN PHÍ</p><h1>Tài liệu IELTS</h1><p>Tải các checklist và tài liệu hỗ trợ quá trình tự học.</p></div><div class="iz-resource-list">@foreach (var document in Model.Documents) { <a href="@document.FileUrl" download><span>@document.Skill · @document.Level</span><b>@document.Name</b><i>↓</i><small>@document.Description</small></a> }</div></div></section>

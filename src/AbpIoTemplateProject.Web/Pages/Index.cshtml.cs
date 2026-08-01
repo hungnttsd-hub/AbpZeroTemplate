@@ -1,23 +1,52 @@
-﻿namespace AbpIoTemplateProject.Web.Pages;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AbpIoTemplateProject.Education;
+using Microsoft.AspNetCore.Mvc;
+
+namespace AbpIoTemplateProject.Web.Pages;
 
 public class IndexModel : AbpIoTemplateProjectPageModel
 {
-    private readonly global::AbpIoTemplateProject.Store.IStorefrontAppService _storefrontAppService;
-    private readonly global::AbpIoTemplateProject.Store.ICartAppService _cartAppService;
+    private readonly IPublicEducationAppService _educationAppService;
+    private readonly IPublicContentAppService _contentAppService;
 
-    public global::AbpIoTemplateProject.Store.HomePageDto Home { get; private set; } = new();
+    public List<CourseCardDto> Courses { get; private set; } = new();
+    public List<TeacherCardDto> Teachers { get; private set; } = new();
+    public List<ArticleCardDto> Articles { get; private set; } = new();
+    public List<StudentAchievementDto> Achievements { get; private set; } = new();
 
-    public IndexModel(
-        global::AbpIoTemplateProject.Store.IStorefrontAppService storefrontAppService,
-        global::AbpIoTemplateProject.Store.ICartAppService cartAppService)
+    [BindProperty]
+    public SubmitLeadDto Input { get; set; } = new();
+
+    public IndexModel(IPublicEducationAppService educationAppService, IPublicContentAppService contentAppService)
     {
-        _storefrontAppService = storefrontAppService;
-        _cartAppService = cartAppService;
+        _educationAppService = educationAppService;
+        _contentAppService = contentAppService;
     }
 
-    public async System.Threading.Tasks.Task OnGetAsync()
+    public async Task OnGetAsync()
     {
-        Home = await _storefrontAppService.GetHomeAsync();
-        await LoadCartSummaryAsync(_cartAppService);
+        await LoadAsync();
+    }
+
+    public async Task<IActionResult> OnPostLeadAsync()
+    {
+        if (!ModelState.IsValid)
+        {
+            await LoadAsync();
+            return Page();
+        }
+
+        await _educationAppService.SubmitLeadAsync(Input);
+        TempData["LeadSubmitted"] = true;
+        return RedirectToPage("/Index", pageHandler: null, routeValues: null, fragment: "dang-ky");
+    }
+
+    private async Task LoadAsync()
+    {
+        Courses = await _educationAppService.GetFeaturedCoursesAsync();
+        Teachers = await _educationAppService.GetFeaturedTeachersAsync();
+        Articles = await _contentAppService.GetArticlesAsync();
+        Achievements = await _contentAppService.GetFeaturedAchievementsAsync();
     }
 }

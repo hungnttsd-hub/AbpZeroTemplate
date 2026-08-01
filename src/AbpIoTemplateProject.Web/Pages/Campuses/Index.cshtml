@@ -1,0 +1,4 @@
+@page
+@model AbpIoTemplateProject.Web.Pages.Campuses.IndexModel
+@{ Layout = "/Pages/Shared/_IzoneLayout.cshtml"; ViewData["Title"] = "Cơ sở đào tạo"; }
+<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">KHÔNG GIAN HỌC TẬP</p><h1>Cơ sở đào tạo</h1><p>Chọn cơ sở thuận tiện để bắt đầu hành trình học tập của bạn.</p></div><div class="iz-campus-grid">@foreach (var campus in Model.Campuses) { <article class="iz-campus"><i class="fas fa-location-dot"></i><h2>@campus.Name</h2><p>@campus.Address</p><a href="tel:@campus.Hotline">@campus.Hotline</a>@if (!string.IsNullOrEmpty(campus.MapUrl)) { <a class="iz-text-link" href="@campus.MapUrl" target="_blank">Xem bản đồ →</a> }</article> }</div></div></section>

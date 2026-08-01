@@ -3,7 +3,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-AquaGarden_ChangeMe123!}"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-IzoneEducation_ChangeMe123!}"
     ports:
       - "1433:1433"
     volumes:
@@ -19,7 +19,7 @@ services:
       context: .
       target: migrator
     environment:
-      ConnectionStrings__Default: "Server=sqlserver;Database=AbpIoTemplateProject;User Id=sa;Password=${MSSQL_SA_PASSWORD:-AquaGarden_ChangeMe123!};TrustServerCertificate=True"
+      ConnectionStrings__Default: "Server=sqlserver;Database=IzoneEducation;User Id=sa;Password=${MSSQL_SA_PASSWORD:-IzoneEducation_ChangeMe123!};TrustServerCertificate=True"
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       App__SelfUrl: "${APP_SELF_URL:-http://localhost:8080}"
-      ConnectionStrings__Default: "Server=sqlserver;Database=AbpIoTemplateProject;User Id=sa;Password=${MSSQL_SA_PASSWORD:-AquaGarden_ChangeMe123!};TrustServerCertificate=True"
+      ConnectionStrings__Default: "Server=sqlserver;Database=IzoneEducation;User Id=sa;Password=${MSSQL_SA_PASSWORD:-IzoneEducation_ChangeMe123!};TrustServerCertificate=True"
       StringEncryption__DefaultPassPhrase: "${STRING_ENCRYPTION_PASSPHRASE:-change-this-production-passphrase}"
     ports:
       - "8080:8080"

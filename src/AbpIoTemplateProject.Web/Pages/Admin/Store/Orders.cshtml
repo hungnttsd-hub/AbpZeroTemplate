@@ -1,8 +1,0 @@
-@page "/admin/store/orders"
-@using System.Globalization
-@model AbpIoTemplateProject.Web.Pages.Admin.Store.OrdersModel
-@{ Layout = "/Pages/Shared/Store/_AdminLayout.cshtml"; ViewData["Title"] = "Đơn hàng"; var culture = CultureInfo.GetCultureInfo("vi-VN"); }
-<div class="store-admin-title"><div><span>Sales</span><h1>Quản lý đơn hàng</h1></div></div>
-<section class="store-admin-card"><div class="store-admin-card-head"><h2>@Model.Orders.TotalCount đơn hàng</h2></div><div class="store-admin-table-wrap"><table><thead><tr><th>Đơn hàng</th><th>Khách hàng</th><th>Trạng thái</th><th>Tổng tiền</th><th>Cập nhật</th></tr></thead><tbody>
-@foreach(var x in Model.Orders.Items){<tr><td><strong>@x.OrderNumber</strong><br/><small>@x.CreationTime.ToString("dd/MM/yyyy HH:mm")</small></td><td>@x.CustomerName<br/><small>@x.Phone</small></td><td><span class="store-admin-status">@x.Status</span><br/><small>@x.PaymentStatus</small></td><td><strong>@string.Format(culture, "{0:N0} ₫", x.GrandTotal)</strong></td><td><form method="post" asp-page-handler="Status" class="store-admin-inline-form"><input type="hidden" name="input.OrderId" value="@x.Id"/><select name="input.TargetStatus">@foreach(var status in Enum.GetValues<OrderStatus>()){<option value="@status">@status</option>}</select><input name="input.TrackingCode" placeholder="Mã vận đơn"/><input name="input.Note" placeholder="Ghi chú"/><button type="submit">Cập nhật</button></form></td></tr>}
-</tbody></table></div></section>

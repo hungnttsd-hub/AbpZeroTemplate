@@ -1,8 +1,0 @@
-@page "/admin/store/payments"
-@using System.Globalization
-@model AbpIoTemplateProject.Web.Pages.Admin.Store.PaymentsModel
-@{ Layout = "/Pages/Shared/Store/_AdminLayout.cshtml"; ViewData["Title"] = "Thanh toán"; var culture = CultureInfo.GetCultureInfo("vi-VN"); }
-<div class="store-admin-title"><div><span>Finance</span><h1>Đối soát thanh toán</h1></div></div>
-<section class="store-admin-card"><div class="store-admin-card-head"><h2>@Model.Payments.Count giao dịch</h2></div><div class="store-admin-table-wrap"><table><thead><tr><th>Đơn hàng</th><th>Phương thức</th><th>Trạng thái</th><th>Số tiền</th><th>Tham chiếu</th><th>Xác nhận</th></tr></thead><tbody>
-@foreach(var x in Model.Payments){<tr><td><strong>@x.OrderNumber</strong><br/><small>@x.CreationTime.ToString("dd/MM/yyyy HH:mm")</small></td><td>@x.Method</td><td><span class="store-admin-status">@x.Status</span></td><td><strong>@string.Format(culture, "{0:N0} ₫", x.Amount)</strong></td><td>@x.ReferenceNumber</td><td>@if(x.Status != PaymentStatus.Paid){<form method="post" asp-page-handler="Confirm" class="store-admin-inline-form"><input type="hidden" name="input.PaymentId" value="@x.Id"/><input name="input.ReferenceNumber" placeholder="Mã tham chiếu"/><button type="submit">Đã nhận tiền</button></form>}</td></tr>}
-</tbody></table></div></section>

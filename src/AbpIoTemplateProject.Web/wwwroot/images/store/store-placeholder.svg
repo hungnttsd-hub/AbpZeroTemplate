@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Cửa hàng Aqua Garden">
-  <rect width="800" height="600" fill="#dff5ef"/><rect x="110" y="235" width="580" height="275" rx="16" fill="#fff"/>
-  <path d="M85 235h630l-75-120H160z" fill="#087f6d"/><path d="M180 115h95l-28 120h-112zm190 0h95l-2 120h-120zm190 0h80l75 120H584z" fill="#f5c35b"/>
-  <rect x="190" y="320" width="150" height="190" fill="#a8ddd1"/><rect x="410" y="310" width="205" height="120" rx="8" fill="#b8e6dc"/>
-  <path d="M475 405c0-64 36-111 78-146 1 57-22 104-78 146z" fill="#087f6d"/>
-</svg>

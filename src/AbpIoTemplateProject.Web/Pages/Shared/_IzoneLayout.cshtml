@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="IZONE - Trung tâm luyện thi IELTS với lộ trình học phù hợp cho người Việt." />
+    <title>@ViewData["Title"] | IZONE</title>
+    <link rel="icon" href="~/izone-assets/images/favicon.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Montserrat:wght@600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/izone.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="iz-skip" href="#main">Đến nội dung chính</a>
+    <header class="iz-header"><div class="iz-container iz-nav"><a class="iz-logo" href="/"><img src="~/izone-assets/images/logo.png" alt="IZONE" /></a><button class="iz-menu-toggle" type="button" aria-expanded="false" aria-controls="iz-menu"><span></span><span></span><span></span><b>Menu</b></button><nav id="iz-menu" aria-label="Điều hướng chính"><a href="/">Về IZONE</a><a href="/Courses">Khóa học</a><a href="/Learning-Paths">Lộ trình học</a><a href="/Teachers">Giảng viên</a><a href="/Schedule">Lịch khai giảng</a><a href="/Knowledge">Góc IELTS</a><a href="/Documents">Tài liệu</a><a href="/Placement-Test">Kiểm tra trình độ</a></nav>@if (User.Identity?.IsAuthenticated == true) { <a class="iz-login" href="/MyLearning">Hồ sơ học viên</a> } else { <a class="iz-login" href="/Contact">Đăng ký</a> }</div></header>
+    <main id="main">@RenderBody()</main>
+    <footer class="iz-footer"><div class="iz-container iz-footer-grid"><div><img src="~/izone-assets/images/logo.png" alt="IZONE" /><p>Trung tâm luyện thi IELTS với lộ trình học phù hợp cho người Việt.</p><a href="mailto:ielts.izone@gmail.com">ielts.izone@gmail.com</a><a href="tel:0969091503">0969 091 503</a></div><div><h2>Đào tạo</h2><a href="/Courses">Khóa học</a><a href="/Learning-Paths">Lộ trình học</a><a href="/Teachers">Giảng viên</a><a href="/Schedule">Lịch khai giảng</a></div><div><h2>Khám phá</h2><a href="/Knowledge">Kho kiến thức</a><a href="/Documents">Tài liệu miễn phí</a><a href="/Achievements">Học viên tiêu biểu</a><a href="/Campuses">Cơ sở đào tạo</a><a href="/Contact">Liên hệ & tư vấn</a></div></div><div class="iz-container iz-copyright">© @DateTime.Now.Year IZONE. All rights reserved.</div></footer>
+    <button class="iz-to-top" type="button" aria-label="Lên đầu trang">↑</button>
+    <script src="~/js/izone.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

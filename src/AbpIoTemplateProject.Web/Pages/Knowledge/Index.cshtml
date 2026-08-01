@@ -1,0 +1,7 @@
+@page
+@model AbpIoTemplateProject.Web.Pages.Knowledge.IndexModel
+@{
+    Layout = "/Pages/Shared/_IzoneLayout.cshtml";
+    ViewData["Title"] = "Kho kiến thức IELTS";
+}
+<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">GÓC IELTS</p><h1>Kho kiến thức</h1><p>Bài học, chiến thuật và tài liệu theo từng kỹ năng.</p></div><div class="iz-course-grid">@foreach (var article in Model.Articles) { <a class="iz-course-card" href="/Knowledge/@article.Slug"><img src="@(article.CoverImageUrl ?? Url.Content("~/izone-assets/images/khoahoc/2.jpg"))" alt="@article.Title" /><div><span>@article.CategoryName · @article.PublishedAt?.ToString("dd/MM/yyyy")</span><h2>@article.Title</h2><p>@article.Excerpt</p><b>Đọc bài viết <i>→</i></b></div></a> }</div></div></section>

@@ -1,5 +1,0 @@
-@page "/promotions"
-@model AbpIoTemplateProject.Web.Pages.PromotionsModel
-@{ Layout = "/Pages/Shared/Store/_StoreLayout.cshtml"; ViewData["Title"] = "Khuyến mãi"; }
-<section class="store-page-hero store-promotion-hero"><div class="container"><span class="store-section-eyebrow">Ưu đãi đang diễn ra</span><h1>Giá tốt cho hồ xanh</h1><p>Sản phẩm chính hãng với mức giá được cập nhật trực tiếp từ hệ thống.</p></div></section>
-<section class="store-content-section"><div class="container"><div class="store-product-grid">@foreach(var product in Model.Products.Items){<partial name="/Pages/Shared/Store/_ProductCard.cshtml" model="product" />}</div></div></section>

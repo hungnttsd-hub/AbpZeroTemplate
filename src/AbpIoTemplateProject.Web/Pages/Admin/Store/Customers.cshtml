@@ -1,8 +1,0 @@
-@page "/admin/store/customers"
-@using System.Globalization
-@model AbpIoTemplateProject.Web.Pages.Admin.Store.CustomersModel
-@{ Layout = "/Pages/Shared/Store/_AdminLayout.cshtml"; ViewData["Title"] = "Khách hàng"; var culture = CultureInfo.GetCultureInfo("vi-VN"); }
-<div class="store-admin-title"><div><span>CRM</span><h1>Khách hàng</h1></div></div>
-<section class="store-admin-card"><div class="store-admin-card-head"><h2>@Model.Customers.Count khách hàng</h2></div><div class="store-admin-table-wrap"><table><thead><tr><th>Khách hàng</th><th>Liên hệ</th><th>Số đơn</th><th class="text-end">Tổng mua</th></tr></thead><tbody>
-@foreach(var x in Model.Customers){<tr><td><strong>@x.FullName</strong></td><td>@x.Phone<br/><small>@x.Email</small></td><td>@x.OrderCount</td><td class="text-end"><strong>@string.Format(culture, "{0:N0} ₫", x.TotalSpent)</strong></td></tr>}
-</tbody></table></div></section>

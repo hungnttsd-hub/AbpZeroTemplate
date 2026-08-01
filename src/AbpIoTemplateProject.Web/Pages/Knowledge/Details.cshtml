@@ -1,0 +1,7 @@
+@page "{slug}"
+@model AbpIoTemplateProject.Web.Pages.Knowledge.DetailsModel
+@{
+    Layout = "/Pages/Shared/_IzoneLayout.cshtml";
+    ViewData["Title"] = Model.Article?.MetaTitle ?? Model.Article?.Title;
+}
+<article class="iz-section"><div class="iz-container iz-article"><p class="iz-eyebrow">@Model.Article?.CategoryName · @Model.Article?.PublishedAt?.ToString("dd/MM/yyyy")</p><h1>@Model.Article?.Title</h1><p class="iz-lead">@Model.Article?.Excerpt</p>@if (!string.IsNullOrWhiteSpace(Model.Article?.CoverImageUrl)) { <img src="@Model.Article.CoverImageUrl" alt="@Model.Article.Title" /> }<div class="iz-article-content">@Model.Article?.Content</div><a class="iz-btn iz-btn-light" href="/Knowledge">← Quay lại kho kiến thức</a></div></article>

@@ -1,0 +1,4 @@
+@page
+@model AbpIoTemplateProject.Web.Pages.Teachers.IndexModel
+@{ Layout = "/Pages/Shared/_IzoneLayout.cshtml"; ViewData["Title"] = "Đội ngũ giảng viên"; }
+<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">NGƯỜI ĐỒNG HÀNH</p><h1>Đội ngũ giảng viên</h1><p>Những người thầy cô đồng hành cùng bạn qua từng cột mốc IELTS.</p></div><div class="iz-teacher-grid">@foreach (var teacher in Model.Teachers) { <a class="iz-teacher-card" href="/Teachers/@teacher.Slug"><img src="@(teacher.AvatarUrl ?? Url.Content("~/izone-assets/images/teachers/1.jpg"))" alt="@teacher.FullName" /><div><span>@teacher.Title</span><h2>@teacher.FullName</h2><p>@teacher.Credentials</p><b>Xem hồ sơ →</b></div></a> }</div></div></section>
