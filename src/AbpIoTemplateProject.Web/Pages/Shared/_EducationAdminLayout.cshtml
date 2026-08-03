@@ -31,6 +31,7 @@
         <div class="edu-admin-main"><header class="edu-admin-header"><div><p>Hệ thống quản trị</p><h1>@ViewData["Title"]</h1></div><div class="edu-admin-user"><i class="fas fa-user-circle"></i> @(User.Identity?.Name ?? "Administrator")</div></header><main class="edu-admin-content">@RenderBody()</main></div>
     </div>
     <script src="~/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/culture-number.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

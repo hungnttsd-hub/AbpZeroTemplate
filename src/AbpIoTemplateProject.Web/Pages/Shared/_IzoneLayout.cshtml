@@ -1,3 +1,9 @@
+@{
+    var currentPath = Context.Request.Path.Value?.TrimEnd('/') ?? "/";
+    if (string.IsNullOrWhiteSpace(currentPath)) currentPath = "/";
+    bool IsCurrent(string path) => path == "/" ? currentPath == "/" : currentPath.Equals(path, StringComparison.OrdinalIgnoreCase) || currentPath.StartsWith(path + "/", StringComparison.OrdinalIgnoreCase);
+    string CurrentClass(string path) => IsCurrent(path) ? "is-active" : string.Empty;
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -13,11 +19,12 @@
 </head>
 <body>
     <a class="iz-skip" href="#main">Đến nội dung chính</a>
-    <header class="iz-header"><div class="iz-container iz-nav"><a class="iz-logo" href="/"><img src="~/izone-assets/images/logo.png" alt="IZONE" /></a><button class="iz-menu-toggle" type="button" aria-expanded="false" aria-controls="iz-menu"><span></span><span></span><span></span><b>Menu</b></button><nav id="iz-menu" aria-label="Điều hướng chính"><a href="/">Về IZONE</a><a href="/Courses">Khóa học</a><a href="/Learning-Paths">Lộ trình học</a><a href="/Teachers">Giảng viên</a><a href="/Schedule">Lịch khai giảng</a><a href="/Knowledge">Góc IELTS</a><a href="/Documents">Tài liệu</a><a href="/Placement-Test">Kiểm tra trình độ</a></nav>@if (User.Identity?.IsAuthenticated == true) { <a class="iz-login" href="/MyLearning">Hồ sơ học viên</a> } else { <a class="iz-login" href="/Contact">Đăng ký</a> }</div></header>
+    <header class="iz-header"><div class="iz-container iz-nav"><a class="iz-logo" href="/"><img src="~/izone-assets/images/logo.png" alt="IZONE" /></a><button class="iz-menu-toggle" type="button" aria-expanded="false" aria-controls="iz-menu"><span></span><span></span><span></span><b>Menu</b></button><nav id="iz-menu" aria-label="Điều hướng chính"><a class="@CurrentClass("/")" aria-current="@(IsCurrent("/") ? "page" : null)" href="/">Về IZONE</a><a class="@CurrentClass("/Courses")" aria-current="@(IsCurrent("/Courses") ? "page" : null)" href="/Courses">Khóa học</a><a class="@CurrentClass("/Learning-Paths")" aria-current="@(IsCurrent("/Learning-Paths") ? "page" : null)" href="/Learning-Paths">Lộ trình học</a><a class="@CurrentClass("/Teachers")" aria-current="@(IsCurrent("/Teachers") ? "page" : null)" href="/Teachers">Giảng viên</a><a class="@CurrentClass("/Schedule")" aria-current="@(IsCurrent("/Schedule") ? "page" : null)" href="/Schedule">Lịch khai giảng</a><a class="@CurrentClass("/Knowledge")" aria-current="@(IsCurrent("/Knowledge") ? "page" : null)" href="/Knowledge">Góc IELTS</a><a class="@CurrentClass("/Documents")" aria-current="@(IsCurrent("/Documents") ? "page" : null)" href="/Documents">Tài liệu</a><a class="@CurrentClass("/Placement-Test")" aria-current="@(IsCurrent("/Placement-Test") ? "page" : null)" href="/Placement-Test">Kiểm tra trình độ</a></nav>@if (User.Identity?.IsAuthenticated == true) { <a class="iz-login" href="/MyLearning">Hồ sơ học viên</a> } else { <a class="iz-login" href="/Contact">Đăng ký</a> }</div></header>
     <main id="main">@RenderBody()</main>
     <footer class="iz-footer"><div class="iz-container iz-footer-grid"><div><img src="~/izone-assets/images/logo.png" alt="IZONE" /><p>Trung tâm luyện thi IELTS với lộ trình học phù hợp cho người Việt.</p><a href="mailto:ielts.izone@gmail.com">ielts.izone@gmail.com</a><a href="tel:0969091503">0969 091 503</a></div><div><h2>Đào tạo</h2><a href="/Courses">Khóa học</a><a href="/Learning-Paths">Lộ trình học</a><a href="/Teachers">Giảng viên</a><a href="/Schedule">Lịch khai giảng</a></div><div><h2>Khám phá</h2><a href="/Knowledge">Kho kiến thức</a><a href="/Documents">Tài liệu miễn phí</a><a href="/Achievements">Học viên tiêu biểu</a><a href="/Campuses">Cơ sở đào tạo</a><a href="/Contact">Liên hệ & tư vấn</a></div></div><div class="iz-container iz-copyright">© @DateTime.Now.Year IZONE. All rights reserved.</div></footer>
     <button class="iz-to-top" type="button" aria-label="Lên đầu trang">↑</button>
     <script src="~/js/izone.js" asp-append-version="true"></script>
+    <script src="~/js/culture-number.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
