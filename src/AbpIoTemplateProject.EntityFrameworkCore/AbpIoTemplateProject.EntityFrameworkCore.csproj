@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AbpIoTemplateProject.Domain\AbpIoTemplateProject.Domain.csproj" />
-    <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.PostgreSql" Version="8.3.4" />
     <PackageReference Include="Volo.Abp.PermissionManagement.EntityFrameworkCore" Version="8.3.4" />
     <PackageReference Include="Volo.Abp.SettingManagement.EntityFrameworkCore" Version="8.3.4" />
     <PackageReference Include="Volo.Abp.Identity.EntityFrameworkCore" Version="8.3.4" />
@@ -19,6 +19,11 @@
     <PackageReference Include="Volo.Abp.TenantManagement.EntityFrameworkCore" Version="8.3.4" />
     <PackageReference Include="Volo.Abp.FeatureManagement.EntityFrameworkCore" Version="8.3.4" />
     <PackageReference Include="Volo.Abp.OpenIddict.EntityFrameworkCore" Version="8.3.4" />
+  </ItemGroup>
+
+  <!-- The historical SQL Server migrations are kept for reference only. Production uses PostgreSQL. -->
+  <ItemGroup>
+    <Compile Remove="Migrations\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

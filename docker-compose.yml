@@ -1,15 +1,14 @@
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+  postgres:
+    image: postgres:16-alpine
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-IzoneEducation_ChangeMe123!}"
-    ports:
-      - "1433:1433"
+      POSTGRES_DB: "${POSTGRES_DB:-izone_education}"
+      POSTGRES_USER: "${POSTGRES_USER:-izone_app}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
     volumes:
-      - aquagarden-sql:/var/opt/mssql
+      - izone-postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -19,9 +18,9 @@ services:
       context: .
       target: migrator
     environment:
-      ConnectionStrings__Default: "Server=sqlserver;Database=IzoneEducation;User Id=sa;Password=${MSSQL_SA_PASSWORD:-IzoneEducation_ChangeMe123!};TrustServerCertificate=True"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-izone_education};Username=${POSTGRES_USER:-izone_app};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
     depends_on:
-      sqlserver:
+      postgres:
         condition: service_healthy
     restart: "no"
 
@@ -32,14 +31,18 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       App__SelfUrl: "${APP_SELF_URL:-http://localhost:8080}"
-      ConnectionStrings__Default: "Server=sqlserver;Database=IzoneEducation;User Id=sa;Password=${MSSQL_SA_PASSWORD:-IzoneEducation_ChangeMe123!};TrustServerCertificate=True"
-      StringEncryption__DefaultPassPhrase: "${STRING_ENCRYPTION_PASSPHRASE:-change-this-production-passphrase}"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-izone_education};Username=${POSTGRES_USER:-izone_app};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
+      StringEncryption__DefaultPassPhrase: "${STRING_ENCRYPTION_PASSPHRASE:?Set STRING_ENCRYPTION_PASSPHRASE in .env}"
+      OpenIddict__CertificatePath: "/app/openiddict.pfx"
+      OpenIddict__CertificatePassword: "${OPENIDDICT_CERT_PASSWORD:?Set OPENIDDICT_CERT_PASSWORD in .env}"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./secrets/openiddict.pfx:/app/openiddict.pfx:ro
     depends_on:
       migrator:
         condition: service_completed_successfully
     restart: unless-stopped
 
 volumes:
-  aquagarden-sql:
+  izone-postgres:

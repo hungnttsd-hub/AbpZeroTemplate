@@ -17,7 +17,7 @@ public class AbpIoTemplateProjectDbContextFactory : IDesignTimeDbContextFactory<
         var configuration = BuildConfiguration();
 
         var builder = new DbContextOptionsBuilder<AbpIoTemplateProjectDbContext>()
-            .UseSqlServer(configuration.GetConnectionString("Default"));
+            .UseNpgsql(configuration.GetConnectionString("Default"));
 
         return new AbpIoTemplateProjectDbContext(builder.Options);
     }

@@ -93,7 +93,15 @@ public class AbpIoTemplateProjectWebModule : AbpModule
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "29abfdbb-95cc-4015-b64c-0fe49c4192f4");
+                var certificatePath = configuration["OpenIddict:CertificatePath"] ?? "openiddict.pfx";
+                var certificatePassword = configuration["OpenIddict:CertificatePassword"];
+
+                if (string.IsNullOrWhiteSpace(certificatePassword))
+                {
+                    throw new AbpException("OpenIddict:CertificatePassword must be configured outside Development.");
+                }
+
+                serverBuilder.AddProductionEncryptionAndSigningCertificate(certificatePath, certificatePassword);
             });
         }
     }
