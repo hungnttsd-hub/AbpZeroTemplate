@@ -33,7 +33,10 @@ public class WebHoanTienApplicationModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         context.Services.Configure<ShopeeAffiliateOptions>(configuration.GetSection(ShopeeAffiliateOptions.SectionName));
+        context.Services.Configure<ShopeeOpenPlatformOptions>(configuration.GetSection(ShopeeOpenPlatformOptions.SectionName));
         context.Services.AddHttpClient("ShopeeAffiliate", client => client.Timeout = TimeSpan.FromSeconds(configuration.GetValue("Shopee:TimeoutSeconds", 15)));
+        context.Services.AddHttpClient<IShopeeAmsPermissionChecker, ShopeeAmsPermissionChecker>(client =>
+            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:OpenPlatform:TimeoutSeconds", 15), 1, 120)));
         context.Services.AddHttpClient("AffiliateRedirectResolver", client => client.Timeout = TimeSpan.FromSeconds(8))
             .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
             {

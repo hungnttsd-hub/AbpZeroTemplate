@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -23,10 +24,23 @@ public sealed class UpdateAffiliateSettingsInput
     public bool AllowTotalCommissionFallback { get; set; }
 }
 
+public sealed class ShopeeAmsPermissionCheckDto
+{
+    public bool IsConfigured { get; set; }
+    public bool HasPermission { get; set; }
+    public DateTime CheckedAtUtc { get; set; }
+    public int? HttpStatusCode { get; set; }
+    public string? Error { get; set; }
+    public string? Message { get; set; }
+    public string? RequestId { get; set; }
+    public int ReturnedRecords { get; set; }
+}
+
 public interface IAdminAffiliateSettingsAppService : IApplicationService
 {
     Task<AffiliateConnectionStatusDto> GetAsync();
     Task<AffiliateConnectionStatusDto> UpdateAsync(UpdateAffiliateSettingsInput input);
+    Task<ShopeeAmsPermissionCheckDto> CheckPermissionAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed class AffiliateCommissionRuleDto : FullAuditedEntityDto<Guid>

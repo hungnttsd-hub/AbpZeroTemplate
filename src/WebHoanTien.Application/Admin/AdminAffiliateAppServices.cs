@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ using WebHoanTien.Affiliates;
 using WebHoanTien.Operations;
 using WebHoanTien.Permissions;
 using WebHoanTien.Settings;
+using WebHoanTien.Integrations.Shopee;
 
 namespace WebHoanTien.Admin;
 
@@ -21,8 +23,15 @@ public class AdminAffiliateSettingsAppService : WebHoanTienAppService, IAdminAff
     private readonly IConfiguration _configuration;
     private readonly ISettingProvider _settingProvider;
     private readonly ISettingManager _settingManager;
-    public AdminAffiliateSettingsAppService(IConfiguration configuration, ISettingProvider settingProvider, ISettingManager settingManager)
-    { _configuration = configuration; _settingProvider = settingProvider; _settingManager = settingManager; }
+    private readonly IShopeeAmsPermissionChecker _permissionChecker;
+    public AdminAffiliateSettingsAppService(IConfiguration configuration, ISettingProvider settingProvider,
+        ISettingManager settingManager, IShopeeAmsPermissionChecker permissionChecker)
+    {
+        _configuration = configuration;
+        _settingProvider = settingProvider;
+        _settingManager = settingManager;
+        _permissionChecker = permissionChecker;
+    }
 
     public async Task<AffiliateConnectionStatusDto> GetAsync() => new()
     {
@@ -40,6 +49,22 @@ public class AdminAffiliateSettingsAppService : WebHoanTienAppService, IAdminAff
             WebHoanTienSettings.AllowTotalCommissionFallback,
             input.AllowTotalCommissionFallback.ToString().ToLowerInvariant());
         return await GetAsync();
+    }
+
+    public async Task<ShopeeAmsPermissionCheckDto> CheckPermissionAsync(CancellationToken cancellationToken = default)
+    {
+        var result = await _permissionChecker.CheckPermissionAsync(cancellationToken);
+        return new ShopeeAmsPermissionCheckDto
+        {
+            IsConfigured = result.IsConfigured,
+            HasPermission = result.HasPermission,
+            CheckedAtUtc = result.CheckedAtUtc,
+            HttpStatusCode = result.HttpStatusCode,
+            Error = result.Error,
+            Message = result.Message,
+            RequestId = result.RequestId,
+            ReturnedRecords = result.ReturnedRecords
+        };
     }
 }
 

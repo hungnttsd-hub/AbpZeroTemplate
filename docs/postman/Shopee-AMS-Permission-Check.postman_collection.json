@@ -1,0 +1,138 @@
+{
+  "info": {
+    "_postman_id": "1db4d60d-dff2-4fd2-9dc5-a12a51ca503f",
+    "name": "Shopee AMS Permission Check",
+    "description": "Checks whether a Shopee Open Platform partner app and an authorized shop can call v2.ams.get_conversion_report. The pre-request script generates the current timestamp and HMAC-SHA256 signature; no precomputed sign is required.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Check AMS conversion-report permission",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "exec": [
+              "const partnerId = String(pm.environment.get('partner_id') || '').trim();",
+              "const partnerKey = String(pm.environment.get('partner_key') || '').trim();",
+              "const accessToken = String(pm.environment.get('access_token') || '').trim();",
+              "const shopId = String(pm.environment.get('shop_id') || '').trim();",
+              "const manualTimestamp = String(pm.environment.get('manual_timestamp') || '').trim();",
+              "const manualSign = String(pm.environment.get('manual_sign') || '').trim();",
+              "const apiPath = '/api/v2/ams/get_conversion_report';",
+              "",
+              "const missing = [];",
+              "if (!partnerId) missing.push('partner_id');",
+              "if (!accessToken) missing.push('access_token');",
+              "if (!shopId) missing.push('shop_id');",
+              "if (!partnerKey && !manualTimestamp) missing.push('partner_key or manual_timestamp');",
+              "if (!partnerKey && !manualSign) missing.push('partner_key or manual_sign');",
+              "if (missing.length) {",
+              "  throw new Error('Missing environment variables: ' + missing.join(', '));",
+              "}",
+              "",
+              "const now = Math.floor(Date.now() / 1000);",
+              "let timestamp;",
+              "let sign;",
+              "let signingMode;",
+              "",
+              "if (partnerKey) {",
+              "  const CryptoJS = pm.require('npm:crypto-js@4.2.0');",
+              "  timestamp = now.toString();",
+              "  const baseString = partnerId + apiPath + timestamp + accessToken + shopId;",
+              "  sign = CryptoJS.HmacSHA256(baseString, partnerKey).toString(CryptoJS.enc.Hex);",
+              "  signingMode = 'generated-from-partner-key';",
+              "} else {",
+              "  timestamp = manualTimestamp;",
+              "  sign = manualSign;",
+              "  signingMode = 'supplied-sign-and-timestamp';",
+              "  const ageSeconds = Math.abs(now - Number(timestamp));",
+              "  if (!Number.isFinite(ageSeconds) || ageSeconds >= 300) {",
+              "    throw new Error('manual_timestamp must be a Unix timestamp generated with manual_sign less than 5 minutes ago');",
+              "  }",
+              "}",
+              "",
+              "const configuredDaysBack = Number(pm.environment.get('days_back') || 7);",
+              "const daysBack = Number.isFinite(configuredDaysBack)",
+              "  ? Math.min(Math.max(Math.trunc(configuredDaysBack), 1), 89)",
+              "  : 7;",
+              "const placeOrderTimeEnd = now.toString();",
+              "const placeOrderTimeStart = (now - daysBack * 86400).toString();",
+              "",
+              "pm.variables.set('ams_path', apiPath);",
+              "pm.variables.set('timestamp', timestamp);",
+              "pm.variables.set('sign', sign);",
+              "pm.variables.set('place_order_time_start', placeOrderTimeStart);",
+              "pm.variables.set('place_order_time_end', placeOrderTimeEnd);",
+              "",
+              "console.log('Shopee AMS permission check prepared', {",
+              "  partner_id: partnerId,",
+              "  shop_id: shopId,",
+              "  api_path: apiPath,",
+              "  timestamp: timestamp,",
+              "  signing_mode: signingMode,",
+              "  days_back: daysBack",
+              "});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "exec": [
+              "pm.test('HTTP status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "let result;",
+              "pm.test('Response is valid JSON', function () {",
+              "  result = pm.response.json();",
+              "  pm.expect(result).to.be.an('object');",
+              "});",
+              "",
+              "if (result) {",
+              "  const error = String(result.error || '');",
+              "  const message = String(result.message || '');",
+              "  const requestId = String(result.request_id || '');",
+              "",
+              "  pm.environment.set('last_error', error);",
+              "  pm.environment.set('last_message', message);",
+              "  pm.environment.set('last_request_id', requestId);",
+              "",
+              "  pm.test('Shopee accepted the AMS request', function () {",
+              "    pm.expect(error, 'Shopee error: ' + error + '; message: ' + message + '; request_id: ' + requestId).to.eql('');",
+              "  });",
+              "",
+              "  if (!error) {",
+              "    const count = result.response && Array.isArray(result.response.list)",
+              "      ? result.response.list.length",
+              "      : 0;",
+              "    console.log('AMS endpoint accepted. Returned records:', count);",
+              "  } else {",
+              "    console.warn('AMS request rejected', { error, message, request_id: requestId });",
+              "  }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{shopee_partner_host}}{{ams_path}}?partner_id={{partner_id}}&timestamp={{timestamp}}&access_token={{access_token}}&shop_id={{shop_id}}&sign={{sign}}&page_no=1&page_size=20&place_order_time_start={{place_order_time_start}}&place_order_time_end={{place_order_time_end}}",
+        "description": "A successful response (including an empty list) proves that this partner app can call the AMS conversion-report endpoint for the authorized shop. Authentication/signature errors are inconclusive; permission/access-denied errors indicate that the app is not enabled for AMS."
+      },
+      "response": []
+    }
+  ]
+}

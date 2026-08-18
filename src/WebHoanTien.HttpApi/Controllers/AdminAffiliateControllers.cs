@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
@@ -13,6 +14,9 @@ public class AdminAffiliateSettingsController : WebHoanTienController
     public AdminAffiliateSettingsController(IAdminAffiliateSettingsAppService service) => _service = service;
     [HttpGet] public Task<AffiliateConnectionStatusDto> GetAsync() => _service.GetAsync();
     [HttpPut] public Task<AffiliateConnectionStatusDto> UpdateAsync([FromBody] UpdateAffiliateSettingsInput input) => _service.UpdateAsync(input);
+    [HttpPost("check-permission")]
+    public Task<ShopeeAmsPermissionCheckDto> CheckPermissionAsync(CancellationToken cancellationToken) =>
+        _service.CheckPermissionAsync(cancellationToken);
 }
 
 [Route("api/app/admin/commission-rules")]
