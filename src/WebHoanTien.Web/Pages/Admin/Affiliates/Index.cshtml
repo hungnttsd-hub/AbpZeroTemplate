@@ -1,0 +1,4 @@
+@page
+@model WebHoanTien.Web.Pages.Admin.Affiliates.IndexModel
+@{ ViewData["Title"] = "Quản trị affiliate"; }
+<section class="page-shell"><div class="page-heading"><div><span class="eyebrow">Operations</span><h1>Quản trị affiliate</h1></div><form method="post" asp-page-handler="Sync"><button class="button button-primary">Sync Now</button></form></div><div class="step-grid"><article><b>@(Model.Connection.IsConfigured ? "✓" : "!")</b><h3>Kết nối Shopee</h3><p>Mode: @Model.Connection.Mode<br />Giới hạn tài liệu: @Model.Connection.HourlyRateLimit request/giờ</p></article><article><b>@Model.States.Items.Count</b><h3>Sync state</h3><p>Lần sync đầu chỉ chạy sau khi chọn ngày bắt đầu.</p></article><article><b>70%</b><h3>Rule mặc định</h3><p>Snapshot theo purchaseTime, dùng netCommission.</p></article></div><p class="fine-print"><a href="/hangfire">Mở Hangfire Dashboard</a> · API quản trị nằm dưới <code>/api/app/admin</code>.</p></section>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Tạo link mua sắm Shopee và theo dõi phần hoa hồng được chia sẻ." />
+    <title>@(ViewData["Title"] ?? "webHoanTien.com")</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/customer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/account.css" asp-append-version="true" />
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark">W</span><span>webHoanTien<span class="brand-dot">.com</span></span></a>
+    <nav aria-label="Điều hướng chính">
+        <a href="/#how">Cách hoạt động</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a href="/Orders">Đơn của tôi</a><a href="/Account/Manage">Tài khoản</a>
+        }
+        else
+        {
+            <a class="button button-ghost" href="/Account/Login">Đăng nhập</a>
+        }
+    </nav>
+</header>
+<main>@RenderBody()</main>
+<footer class="site-footer">
+    <div><strong>webHoanTien.com</strong><p>Nền tảng chia sẻ hoa hồng tiếp thị liên kết.</p></div>
+    <div class="footer-links"><a href="/Legal/Terms">Điều khoản</a><a href="/Legal/Privacy">Riêng tư</a><a href="mailto:support@webhoantien.com">Liên hệ</a></div>
+</footer>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

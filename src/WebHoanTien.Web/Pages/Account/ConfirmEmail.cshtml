@@ -1,0 +1,22 @@
+@page
+@model WebHoanTien.Web.Pages.Account.ConfirmEmailModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Xác minh email — webHoanTien.com";
+}
+
+<section class="page-shell narrow-shell">
+    <div class="panel center">
+        @if (!string.IsNullOrWhiteSpace(Model.Error))
+        {
+            <h1>Chưa thể xác minh email</h1>
+            <div class="status-message status-error">@Model.Error</div>
+            <a class="button button-dark" href="/Account/Login">Về trang đăng nhập</a>
+        }
+        else
+        {
+            <h1>Email đã được xác minh</h1>
+            <p>Bạn đang được chuyển về webHoanTien.com.</p>
+        }
+    </div>
+</section>

@@ -1,0 +1,4 @@
+@page
+@model WebHoanTien.Web.Pages.Legal.ConsentModel
+@{ ViewData["Title"] = "Chấp thuận điều khoản"; }
+<section class="page-shell narrow"><form method="post" class="panel"><span class="eyebrow">Bước cuối</span><h1>Trước khi tiếp tục</h1><p>Vui lòng đọc Điều khoản sử dụng và Chính sách riêng tư hiện hành.</p><label class="consent-check"><input asp-for="Accepted" /> Tôi đã đọc và chấp thuận <a href="/Legal/Terms" target="_blank">Điều khoản</a> cùng <a href="/Legal/Privacy" target="_blank">Chính sách riêng tư</a>.</label><input asp-for="ReturnUrl" type="hidden" />@if (Model.Error is not null) { <p class="url-status" data-state="error">@Model.Error</p> }<button class="button button-dark button-wide" type="submit">Chấp thuận và tiếp tục</button></form></section>

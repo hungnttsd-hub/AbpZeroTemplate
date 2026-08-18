@@ -1,0 +1,18 @@
+{
+  "culture": "en",
+  "texts": {
+    "AppName": "webHoanTien.com",
+    "Welcome": "Shop on Shopee and receive part of the commission",
+    "Menu:Home": "Home",
+    "Menu:MyOrders": "My orders",
+    "Menu:Account": "Account",
+    "Menu:AffiliateAdmin": "Affiliate admin",
+    "Permission:Affiliate": "Affiliate",
+    "Permission:Admin": "Affiliate administration",
+    "Permission:Settings": "Connection settings",
+    "Permission:CommissionRules": "Commission rules",
+    "Permission:Orders": "Order management",
+    "Permission:Sync": "Data synchronization",
+    "Permission:ManualMatch": "Manual conversion matching"
+  }
+}

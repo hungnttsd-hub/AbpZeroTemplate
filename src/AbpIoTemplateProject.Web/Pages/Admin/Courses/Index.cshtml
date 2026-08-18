@@ -1,7 +1,0 @@
-@page
-@model AbpIoTemplateProject.Web.Pages.Admin.Courses.IndexModel
-@{
-    Layout = "/Pages/Shared/_EducationAdminLayout.cshtml";
-    ViewData["Title"] = "Khóa học";
-}
-<section class="edu-card"><div class="edu-card-header"><h2>Danh sách khóa học</h2><a class="btn btn-izone" href="/Admin/Courses/Edit">Thêm khóa học</a></div><div class="table-responsive"><table class="table edu-table"><thead><tr><th>Mã</th><th>Tên khóa học</th><th>Đầu vào / đầu ra</th><th>Thời lượng</th><th>Trạng thái</th><th></th></tr></thead><tbody>@foreach (var course in Model.Courses) { <tr><td>@course.Code</td><td><strong>@course.Name</strong>@if (course.IsFeatured) { <span class="edu-badge ms-1">Nổi bật</span> }</td><td>@course.EntryLevel → @course.TargetLevel</td><td>@course.SessionCount buổi · @course.DurationHours giờ</td><td>@course.Status</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/Admin/Courses/Edit?id=@course.Id">Sửa</a><form class="d-inline" method="post" asp-page-handler="Delete" asp-route-id="@course.Id"><button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button></form></td></tr> }</tbody></table></div>@if (!Model.Courses.Any()) { <p class="edu-empty">Chưa có khóa học.</p> }</section>

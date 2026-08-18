@@ -1,0 +1,18 @@
+{
+  "culture": "vi",
+  "texts": {
+    "AppName": "webHoanTien.com",
+    "Welcome": "Mua sắm Shopee, nhận lại một phần hoa hồng",
+    "Menu:Home": "Trang chủ",
+    "Menu:MyOrders": "Đơn của tôi",
+    "Menu:Account": "Tài khoản",
+    "Menu:AffiliateAdmin": "Quản trị hoàn tiền",
+    "Permission:Affiliate": "Tiếp thị liên kết",
+    "Permission:Admin": "Quản trị affiliate",
+    "Permission:Settings": "Cấu hình kết nối",
+    "Permission:CommissionRules": "Quy tắc hoa hồng",
+    "Permission:Orders": "Quản lý đơn hàng",
+    "Permission:Sync": "Đồng bộ dữ liệu",
+    "Permission:ManualMatch": "Ghép conversion thủ công"
+  }
+}

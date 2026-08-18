@@ -1,7 +1,0 @@
-@page
-@model AbpIoTemplateProject.Web.Pages.Admin.Teachers.IndexModel
-@{
-    Layout = "/Pages/Shared/_EducationAdminLayout.cshtml";
-    ViewData["Title"] = "Giảng viên";
-}
-<section class="edu-card"><div class="edu-card-header"><h2>Danh sách giảng viên</h2><a class="btn btn-izone" href="/Admin/Teachers/Edit">Thêm giảng viên</a></div><div class="table-responsive"><table class="table edu-table"><thead><tr><th>Họ tên</th><th>Chức danh</th><th>Chứng chỉ / thành tích</th><th>Trạng thái</th><th></th></tr></thead><tbody>@foreach (var teacher in Model.Teachers) { <tr><td><strong>@teacher.FullName</strong>@if (teacher.IsFeatured) { <span class="edu-badge ms-1">Nổi bật</span> }</td><td>@teacher.Title</td><td>@teacher.Credentials</td><td>@teacher.Status</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/Admin/Teachers/Edit?id=@teacher.Id">Sửa</a><form class="d-inline" method="post" asp-page-handler="Delete" asp-route-id="@teacher.Id"><button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button></form></td></tr> }</tbody></table></div>@if (Model.Teachers.Count == 0) { <p class="edu-empty">Chưa có giảng viên.</p> }</section>

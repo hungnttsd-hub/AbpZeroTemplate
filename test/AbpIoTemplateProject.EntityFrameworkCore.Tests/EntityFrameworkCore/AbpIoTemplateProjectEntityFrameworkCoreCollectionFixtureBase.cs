@@ -1,9 +1,0 @@
-﻿using AbpIoTemplateProject.EntityFrameworkCore;
-using Xunit;
-
-namespace AbpIoTemplateProject.EntityFrameworkCore;
-
-public class AbpIoTemplateProjectEntityFrameworkCoreCollectionFixtureBase : ICollectionFixture<AbpIoTemplateProjectEntityFrameworkCoreFixture>
-{
-
-}

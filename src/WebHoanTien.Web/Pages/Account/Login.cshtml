@@ -1,0 +1,83 @@
+@page
+@using Volo.Abp.Account.Settings
+@using Volo.Abp.Settings
+@model WebHoanTien.Web.Pages.Account.LoginModel
+@inject ISettingProvider SettingProvider
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Đăng nhập — webHoanTien.com";
+}
+
+<section class="auth-shell">
+    <div class="auth-card">
+        <span class="eyebrow">Chào mừng bạn trở lại</span>
+        <h1>Đăng nhập</h1>
+        <p class="auth-intro">Tiếp tục tạo link mua hàng và theo dõi cashback của bạn.</p>
+
+        @if (Model.LinkExternalLogin)
+        {
+            <div class="status-message status-info">Email Google đã tồn tại. Hãy đăng nhập bằng mật khẩu local để xác nhận liên kết.</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.LinkError))
+        {
+            <div class="status-message status-error">@Model.LinkError</div>
+        }
+
+        @if (await SettingProvider.IsTrueAsync(AccountSettingNames.IsSelfRegistrationEnabled))
+        {
+            <p class="auth-switch">Chưa có tài khoản? <a href="@Url.Page("./Register", new { returnUrl = Model.ReturnUrl, returnUrlHash = Model.ReturnUrlHash })">Đăng ký miễn phí</a></p>
+        }
+
+        @if (Model.EnableLocalLogin)
+        {
+            <form method="post" class="form-stack">
+                <input asp-for="LinkExternalLogin" type="hidden" />
+                <div class="field">
+                    <label asp-for="LoginInput.UserNameOrEmailAddress">Email</label>
+                    <input asp-for="LoginInput.UserNameOrEmailAddress" type="email" autocomplete="email" placeholder="ban@example.com" autofocus />
+                    <span asp-validation-for="LoginInput.UserNameOrEmailAddress" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <div class="field-heading">
+                        <label asp-for="LoginInput.Password">Mật khẩu</label>
+                        <a href="@Url.Page("./ForgotPassword", new { returnUrl = Model.ReturnUrl, returnUrlHash = Model.ReturnUrlHash })">Quên mật khẩu?</a>
+                    </div>
+                    <input asp-for="LoginInput.Password" type="password" autocomplete="current-password" />
+                    <span asp-validation-for="LoginInput.Password" class="field-error"></span>
+                </div>
+                <label class="check-row">
+                    <input asp-for="LoginInput.RememberMe" />
+                    <span>Ghi nhớ đăng nhập</span>
+                </label>
+                <button type="submit" name="Action" value="Login" class="button button-primary button-wide">Đăng nhập</button>
+                @if (Model.ShowCancelButton)
+                {
+                    <button type="submit" formnovalidate name="Action" value="Cancel" class="button button-ghost button-wide">Hủy</button>
+                }
+            </form>
+        }
+
+        @if (Model.VisibleExternalProviders.Any())
+        {
+            <div class="auth-divider"><span>hoặc</span></div>
+            <form asp-page="./Login" asp-page-handler="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" asp-route-returnUrlHash="@Model.ReturnUrlHash" method="post" class="external-logins">
+                @foreach (var provider in Model.VisibleExternalProviders)
+                {
+                    <button type="submit" class="button button-ghost button-wide" name="provider" value="@provider.AuthenticationScheme">
+                        Tiếp tục với @provider.DisplayName
+                    </button>
+                }
+            </form>
+        }
+
+        @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
+        {
+            <div class="status-message status-error">Hiện chưa có phương thức đăng nhập khả dụng.</div>
+        }
+    </div>
+    <aside class="auth-aside">
+        <span class="eyebrow">webHoanTien.com</span>
+        <h2>Link của bạn,<br />đơn của bạn,<br />cashback của bạn.</h2>
+        <p>Thông tin đăng nhập chỉ dùng để bảo vệ lịch sử link và đơn hàng của chính bạn.</p>
+    </aside>
+</section>

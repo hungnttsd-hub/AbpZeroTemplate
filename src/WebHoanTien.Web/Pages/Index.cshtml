@@ -1,0 +1,41 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "webHoanTien.com — Mua sắm thông minh hơn";
+}
+<section class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">Hoàn tiền từ hoa hồng affiliate</span>
+        <h1>Mua sắm Shopee,<br /><em>nhận lại một phần hoa hồng</em></h1>
+        <p>Dán link sản phẩm, nhận link mua hàng riêng và theo dõi đơn sau khi Shopee ghi nhận.</p>
+    </div>
+    <form method="post" asp-page-handler="Prepare" class="link-card" id="link-form">
+        <label for="affiliate-url">Link sản phẩm Shopee</label>
+        <div class="link-input-row">
+            <input asp-for="LinkUrl" id="affiliate-url" type="url" inputmode="url" autocomplete="url" placeholder="https://shopee.vn/..." required maxlength="2048" />
+            <button class="button button-primary" type="button" id="validate-button">Kiểm tra link</button>
+        </div>
+        <div id="url-status" class="url-status" role="status">@(Model.Error ?? "Hỗ trợ link Shopee trực tiếp và link rút gọn hợp lệ.")</div>
+        <button class="button button-dark button-wide" type="submit" id="create-button" disabled>Tạo link mua hàng <span>→</span></button>
+    </form>
+</section>
+
+<section class="steps" id="how">
+    <header><span class="eyebrow">Bốn bước rõ ràng</span><h2>Từ đường link đến khoản hoàn</h2></header>
+    <div class="step-grid">
+        <article><b>01</b><h3>Dán link</h3><p>Gửi link sản phẩm Shopee bạn định mua.</p></article>
+        <article><b>02</b><h3>Tạo link riêng</h3><p>Hệ thống gắn mã ẩn danh, không chứa email hay UserId.</p></article>
+        <article><b>03</b><h3>Mua trên Shopee</h3><p>Đi tới Shopee và hoàn tất đơn theo quy trình thông thường.</p></article>
+        <article><b>04</b><h3>Theo dõi đơn</h3><p>Xem trạng thái và phần hoa hồng của bạn sau khi được ghi nhận.</p></article>
+    </div>
+</section>
+
+<section class="notice">
+    <div><span class="notice-icon">i</span></div>
+    <div><h2>Ghi nhận cần thời gian</h2><p>Shopee có thể cần thời gian để ghi nhận và xác thực giao dịch. webHoanTien.com không cam kết thời điểm duyệt hoặc thanh toán khi Shopee chưa xác nhận.</p></div>
+</section>
+<p class="disclaimer">webHoanTien.com là nền tảng tiếp thị liên kết độc lập, không phải sản phẩm chính thức của Shopee.</p>
+
+@section Scripts {
+<script src="~/customer.js" asp-append-version="true"></script>
+}

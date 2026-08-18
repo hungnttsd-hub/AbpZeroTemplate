@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>WebHoanTien</RootNamespace>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Identity.Domain.Shared" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs.Domain.Shared" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.AuditLogging.Domain.Shared" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Domain.Shared" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Domain.Shared" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.SettingManagement.Domain.Shared" Version="8.3.4" />
+    <PackageReference Include="Volo.Abp.OpenIddict.Domain.Shared" Version="8.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\WebHoanTien\*.json" />
+    <Content Remove="Localization\WebHoanTien\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.4" />
+  </ItemGroup>
+
+</Project>

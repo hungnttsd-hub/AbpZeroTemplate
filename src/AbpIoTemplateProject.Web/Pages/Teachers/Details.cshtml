@@ -1,4 +1,0 @@
-@page "/Teachers/{slug}"
-@model AbpIoTemplateProject.Web.Pages.Teachers.DetailsModel
-@{ Layout = "/Pages/Shared/_IzoneLayout.cshtml"; ViewData["Title"] = Model.Teacher!.FullName; }
-<section class="iz-section"><div class="iz-container iz-person-detail"><img src="@(Model.Teacher!.AvatarUrl ?? Url.Content("~/izone-assets/images/teachers/1.jpg"))" alt="@Model.Teacher.FullName" /><div><p class="iz-eyebrow">@Model.Teacher.Title</p><h1>@Model.Teacher.FullName</h1><p class="iz-credentials">@Model.Teacher.Credentials</p><div class="iz-rich-content">@Html.Raw(Model.Teacher.Biography)</div><a class="iz-btn iz-btn-primary" href="/Contact">Đăng ký học cùng giảng viên</a></div></div></section>

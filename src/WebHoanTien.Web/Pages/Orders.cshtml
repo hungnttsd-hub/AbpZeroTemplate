@@ -1,0 +1,20 @@
+@page
+@model OrdersModel
+@{ ViewData["Title"] = "Đơn hàng của tôi"; }
+<section class="page-shell">
+    <div class="page-heading"><div><span class="eyebrow">Cashback</span><h1>Đơn hàng của tôi</h1></div><form method="post" asp-page-handler="Sync"><button class="button button-primary">Kiểm tra đơn mới</button></form></div>
+    @if (TempData["Message"] is string message) { <div class="flash">@message</div> }
+    <div class="filter-bar"><select aria-label="Trạng thái"><option>Tất cả trạng thái</option><option>Đang chờ</option><option>Đã duyệt</option><option>Đã hủy</option></select><span>Shopee có thể cần thời gian để ghi nhận giao dịch.</span></div>
+    <div class="card-list">
+    @if (Model.Orders.Items.Count == 0)
+    { <div class="empty"><span>◎</span><h2>Chưa thấy đơn mới</h2><p>Đơn sẽ xuất hiện sau khi Shopee ghi nhận và gửi dữ liệu về hệ thống.</p></div> }
+    @foreach (var order in Model.Orders.Items)
+    {
+        <details class="order-card">
+            <summary><div><small>ORDER ID</small><h2>@order.ExternalOrderId</h2><p>@order.PurchaseTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p></div><span class="status status-@order.Status.ToString().ToLowerInvariant()">@order.Status</span></summary>
+            <div class="order-numbers"><div><span>Tổng giá trị</span><strong>@order.PurchaseAmount.ToString("N0") ₫</strong></div><div><span>Hoa hồng Shopee thực nhận</span><strong>@order.NetCommission.ToString("N0") ₫</strong></div><div class="highlight"><span>Bạn được nhận</span><strong>@order.PayableUserCommission.ToString("N0") ₫</strong></div></div>
+            <p class="fine-print">Cập nhật lần cuối @order.LastUpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · Bấm để thu gọn/mở rộng.</p>
+        </details>
+    }
+    </div>
+</section>

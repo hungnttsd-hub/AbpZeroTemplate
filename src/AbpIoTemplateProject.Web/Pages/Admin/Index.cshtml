@@ -1,8 +1,0 @@
-@page
-@model AbpIoTemplateProject.Web.Pages.Admin.IndexModel
-@{
-    Layout = "/Pages/Shared/_EducationAdminLayout.cshtml";
-    ViewData["Title"] = "Tổng quan";
-}
-<div class="edu-stat-grid"><article class="edu-stat"><p>Khóa học</p><b>@Model.Dashboard.CourseCount</b></article><article class="edu-stat"><p>Giảng viên</p><b>@Model.Dashboard.TeacherCount</b></article><article class="edu-stat"><p>Lớp đang tuyển</p><b>@Model.Dashboard.OpenClassCount</b></article><article class="edu-stat"><p>Lead mới</p><b>@Model.Dashboard.NewLeadCount</b></article><article class="edu-stat"><p>Lượt kiểm tra</p><b>@Model.Dashboard.PlacementAttemptCount</b></article></div>
-<section class="edu-card"><div class="edu-card-header"><h2>Thao tác nhanh</h2></div><div class="d-flex flex-wrap gap-2"><a class="btn btn-izone" href="/Admin/Courses/Edit">Thêm khóa học</a><a class="btn btn-outline-secondary" href="/Admin/Teachers/Edit">Thêm giảng viên</a><a class="btn btn-outline-secondary" href="/Admin/Leads">Xử lý lead tư vấn</a></div></section>

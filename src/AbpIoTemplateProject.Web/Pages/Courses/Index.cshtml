@@ -1,4 +1,0 @@
-@page
-@model AbpIoTemplateProject.Web.Pages.Courses.IndexModel
-@{ Layout = "/Pages/Shared/_IzoneLayout.cshtml"; ViewData["Title"] = "Các khóa học IELTS"; }
-<section class="iz-section iz-course-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">LỘ TRÌNH HỌC IELTS</p><h1>Các khóa học tại IZONE</h1><p>Chọn khóa học phù hợp với điểm xuất phát và mục tiêu của bạn.</p></div><div class="iz-course-grid">@foreach (var course in Model.Courses) { <a class="iz-course-card" href="/Courses/@course.Slug"><img src="@(course.CoverImageUrl ?? Url.Content("~/izone-assets/images/khoahoc/1.jpg"))" alt="@course.Name" /><div><span>@course.EntryLevel — @course.TargetLevel</span><h2>@course.Name</h2><p>@course.ShortDescription</p><b>@course.SessionCount buổi · @course.DurationHours giờ <i>→</i></b></div></a> }</div></div></section>

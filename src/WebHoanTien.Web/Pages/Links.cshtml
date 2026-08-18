@@ -1,0 +1,13 @@
+@page
+@model LinksModel
+@{ ViewData["Title"] = "Link đã tạo"; }
+<section class="page-shell">
+    <div class="page-heading"><div><span class="eyebrow">Lịch sử</span><h1>Link đã tạo</h1></div><a class="button button-primary" href="/">Tạo link mới</a></div>
+    <div class="card-list">
+    @if (Model.Links.Items.Count == 0) { <div class="empty"><h2>Chưa có link nào</h2><p>Dán link Shopee ở trang chủ để bắt đầu.</p></div> }
+    @foreach (var item in Model.Links.Items)
+    {
+        <article class="order-card"><div><h2>@(item.ProductName ?? item.NormalizedUrl)</h2><p class="muted">Tạo lúc @item.CreationTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @item.ClickCount lượt mở</p></div><a class="button button-ghost" href="/LinkResult?id=@item.Id">Mở link</a></article>
+    }
+    </div>
+</section>

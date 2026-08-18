@@ -1,7 +1,0 @@
-@page
-@model AbpIoTemplateProject.Web.Pages.LearningPaths.IndexModel
-@{
-    Layout = "/Pages/Shared/_IzoneLayout.cshtml";
-    ViewData["Title"] = "Lộ trình học IELTS";
-}
-<section class="iz-section"><div class="iz-container"><div class="iz-heading"><p class="iz-eyebrow">ĐI TỪ ĐÚNG ĐIỂM XUẤT PHÁT</p><h1>Lộ trình học IELTS</h1><p>Mỗi lộ trình được chia thành các chặng rõ ràng, phù hợp với đầu vào và mục tiêu của bạn.</p></div>@foreach (var path in Model.Paths) { <article class="iz-path-card"><div><p class="iz-eyebrow">@path.EntryLevel → @path.TargetLevel</p><h2>@path.Name</h2><p>@path.Description</p><p><strong>@path.DurationMonths tháng</strong> · @path.IntendedAudience</p><a class="iz-btn iz-btn-primary" href="/#dang-ky">Nhận tư vấn lộ trình</a></div><ol>@foreach (var step in path.Steps) { <li><b>@step.DisplayOrder.ToString("00")</b><div><h3>@step.Name</h3><p>@step.EntryLevel → @step.TargetLevel · @step.DurationWeeks tuần</p><span>@step.Description</span></div></li> }</ol></article> }</div></section>
