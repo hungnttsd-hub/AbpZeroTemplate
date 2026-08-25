@@ -20,7 +20,7 @@ public class InitialPasswordModel : PageModel
     [BindProperty, Required, DataType(DataType.Password)]
     public string CurrentPassword { get; set; } = string.Empty;
 
-    [BindProperty, Required, DataType(DataType.Password), MinLength(8)]
+    [BindProperty, Required, DataType(DataType.Password), MinLength(6)]
     public string NewPassword { get; set; } = string.Empty;
 
     [BindProperty, Required, DataType(DataType.Password), Compare(nameof(NewPassword))]

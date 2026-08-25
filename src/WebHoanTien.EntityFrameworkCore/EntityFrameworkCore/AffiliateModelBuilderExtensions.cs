@@ -71,7 +71,11 @@ public static class AffiliateModelBuilderExtensions
             Money(b.Property(x => x.NetCommission));
             Money(b.Property(x => x.UserCommissionSnapshot));
             Money(b.Property(x => x.PayableUserCommission));
+            Money(b.Property(x => x.SettledNetCommission));
+            Money(b.Property(x => x.SettledUserCommission));
+            b.Property(x => x.SettlementReference).HasMaxLength(128);
             b.HasIndex(x => new { x.ConversionId, x.ExternalOrderId }).IsUnique();
+            b.HasIndex(x => new { x.Status, x.SettledAt });
             b.HasOne<AffiliateConversion>().WithMany().HasForeignKey(x => x.ConversionId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -135,6 +139,53 @@ public static class AffiliateModelBuilderExtensions
             b.Property(x => x.PrivacyVersion).HasMaxLength(64).IsRequired();
             b.HasIndex(x => new { x.UserId, x.TermsVersion, x.PrivacyVersion }).IsUnique();
             b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<UserPayoutAccount>(b =>
+        {
+            b.ToTable("UserPayoutAccount", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.BankCode).HasMaxLength(32).IsRequired();
+            b.Property(x => x.AccountNumber).HasMaxLength(30).IsRequired();
+            b.Property(x => x.AccountHolderName).HasMaxLength(150).IsRequired();
+            b.HasIndex(x => x.UserId).IsUnique();
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<WithdrawalRequest>(b =>
+        {
+            b.ToTable("WithdrawalRequest", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.RequestCode).HasMaxLength(32).IsRequired();
+            b.Property(x => x.BankCode).HasMaxLength(32).IsRequired();
+            b.Property(x => x.AccountNumber).HasMaxLength(30).IsRequired();
+            b.Property(x => x.AccountHolderName).HasMaxLength(150).IsRequired();
+            b.Property(x => x.PaymentReference).HasMaxLength(128);
+            b.Property(x => x.AdminNote).HasMaxLength(1000);
+            b.Property(x => x.RejectionReason).HasMaxLength(500);
+            Money(b.Property(x => x.Amount));
+            Money(b.Property(x => x.FeeAmount));
+            Money(b.Property(x => x.NetAmount));
+            b.HasIndex(x => x.RequestCode).IsUnique();
+            b.HasIndex(x => new { x.UserId, x.CreationTime });
+            b.HasIndex(x => new { x.Status, x.CreationTime });
+            b.HasIndex(x => x.UserId).IsUnique()
+                .HasFilter("\"Status\" = 1 AND \"IsDeleted\" = FALSE");
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne<UserPayoutAccount>().WithMany().HasForeignKey(x => x.PayoutAccountId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.ProcessedByUserId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<WithdrawalPaymentProof>(b =>
+        {
+            b.ToTable("WithdrawalPaymentProof", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.FileName).HasMaxLength(255).IsRequired();
+            b.Property(x => x.ContentType).HasMaxLength(100).IsRequired();
+            b.Property(x => x.Sha256).HasMaxLength(64).IsRequired();
+            b.Property(x => x.Content).HasColumnType("bytea").IsRequired();
+            b.HasIndex(x => x.WithdrawalRequestId).IsUnique();
+            b.HasOne<WithdrawalRequest>().WithMany().HasForeignKey(x => x.WithdrawalRequestId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 

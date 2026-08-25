@@ -15,6 +15,7 @@ public class WebHoanTienPermissionDefinitionProvider : PermissionDefinitionProvi
         admin.AddChild(WebHoanTienPermissions.Admin.Orders, L("Permission:Orders"));
         admin.AddChild(WebHoanTienPermissions.Admin.Sync, L("Permission:Sync"));
         admin.AddChild(WebHoanTienPermissions.Admin.ManualMatch, L("Permission:ManualMatch"));
+        admin.AddChild(WebHoanTienPermissions.Admin.Payouts, L("Permission:Payouts"));
     }
 
     private static LocalizableString L(string name) => LocalizableString.Create<WebHoanTienResource>(name);

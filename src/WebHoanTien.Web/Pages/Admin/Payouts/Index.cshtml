@@ -1,0 +1,113 @@
+@page "/Admin/Payouts"
+@using WebHoanTien.Affiliates
+@using WebHoanTien.Web.Pages.Admin.Payouts
+@model WebHoanTien.Web.Pages.Admin.Payouts.IndexModel
+@{
+    ViewData["Title"] = "Thanh toán hoàn tiền";
+}
+
+<section class="admin-payout-shell">
+    <header class="admin-payout-heading">
+        <div><span>CATBACK OPERATIONS</span><h1>Thanh toán hoàn tiền</h1><p>Đối chiếu yêu cầu, chuyển khoản thủ công và lưu chứng từ.</p></div>
+        <a href="/Admin/Affiliates">Quản trị affiliate</a>
+    </header>
+
+    <div class="admin-payout-stats">
+        <article class="pending"><span>Chờ xử lý</span><strong data-summary-pending-count>@Model.Data.Summary.PendingCount</strong><small data-summary-pending-amount>@PayoutPageUi.FormatMoney(Model.Data.Summary.PendingAmount)</small></article>
+        <article class="paid"><span>Đã thanh toán</span><strong data-summary-paid-count>@Model.Data.Summary.PaidCount</strong><small data-summary-paid-amount>@PayoutPageUi.FormatMoney(Model.Data.Summary.PaidAmount)</small></article>
+        <article class="rejected"><span>Đã từ chối</span><strong data-summary-rejected-count>@Model.Data.Summary.RejectedCount</strong><small>Cần lý do rõ ràng</small></article>
+    </div>
+
+    <form method="get" class="admin-payout-filters">
+        <label><span>Tìm kiếm</span><input asp-for="Filter" placeholder="Email, mã yêu cầu, số tài khoản" /></label>
+        <label><span>Trạng thái</span><select asp-for="Status"><option value="">Tất cả</option><option value="Pending">Chờ xử lý</option><option value="Paid">Đã thanh toán</option><option value="Rejected">Từ chối</option><option value="Cancelled">Đã hủy</option></select></label>
+        <label><span>Từ ngày</span><input asp-for="From" type="date" /></label>
+        <label><span>Đến ngày</span><input asp-for="To" type="date" /></label>
+        <button type="submit">Lọc dữ liệu</button>
+        <a href="/Admin/Payouts">Xóa lọc</a>
+    </form>
+
+    <div class="admin-payout-list">
+        @if (Model.Data.Requests.Items.Count == 0)
+        {
+            <div class="admin-payout-empty"><strong>Không có yêu cầu phù hợp</strong><p>Thay đổi bộ lọc hoặc chờ người dùng gửi yêu cầu mới.</p></div>
+        }
+        @foreach (var request in Model.Data.Requests.Items)
+        {
+            <article class="admin-payout-item" data-payout-item="@request.Id" data-amount="@request.Amount" data-status="@request.Status.ToString().ToLowerInvariant()">
+                <header>
+                    <div><span class="admin-payout-code">@request.RequestCode</span><h2>@request.UserEmail</h2><small>Gửi lúc @PayoutPageUi.FormatDate(request.CreationTime)</small></div>
+                    <div class="admin-payout-amount"><strong>@PayoutPageUi.FormatMoney(request.NetAmount)</strong><span class="admin-payout-status @PayoutPageUi.StatusClass(request.Status)" data-payout-status>@PayoutPageUi.StatusLabel(request.Status)</span></div>
+                </header>
+
+                <div class="admin-payout-details">
+                    <dl><div><dt>Ngân hàng</dt><dd>@request.BankName (@request.BankCode)</dd></div><div><dt>Số tài khoản</dt><dd>@request.AccountNumber</dd></div><div><dt>Chủ tài khoản</dt><dd>@request.AccountHolderName</dd></div></dl>
+                    <dl><div><dt>Hoa hồng xác nhận</dt><dd>@PayoutPageUi.FormatMoney(request.UserConfirmedAmount)</dd></div><div><dt>Đã thanh toán</dt><dd>@PayoutPageUi.FormatMoney(request.UserPaidAmount)</dd></div><div><dt>Phí / thực nhận</dt><dd>@PayoutPageUi.FormatMoney(request.FeeAmount) / @PayoutPageUi.FormatMoney(request.NetAmount)</dd></div></dl>
+                </div>
+
+                @if (!request.IsBacked)
+                {
+                    <div class="admin-payout-warning">Cảnh báo: hoa hồng xác nhận hiện không đủ bảo chứng. Không thể đánh dấu đã thanh toán.</div>
+                }
+
+                <div class="admin-payout-result" data-payout-result>
+                    @if (request.Status == WithdrawalRequestStatus.Paid)
+                    {
+                        <p><b>Mã giao dịch:</b> @request.PaymentReference · <b>Chuyển lúc:</b> @(request.ProcessedAt.HasValue ? PayoutPageUi.FormatDate(request.ProcessedAt.Value) : "—")</p>
+                        @if (request.HasProof) { <a href="/api/app/admin/payouts/@request.Id/proof" target="_blank" rel="noopener">Xem chứng từ</a> }
+                    }
+                    else if (request.Status == WithdrawalRequestStatus.Rejected)
+                    {
+                        <p><b>Lý do:</b> @request.RejectionReason</p>
+                    }
+                    else if (request.Status == WithdrawalRequestStatus.Cancelled)
+                    {
+                        <p>Người dùng đã tự hủy yêu cầu này.</p>
+                    }
+                </div>
+
+                @if (request.Status == WithdrawalRequestStatus.Pending)
+                {
+                    <div class="admin-payout-actions" data-payout-actions>
+                        <details class="admin-pay-panel" @(!request.IsBacked ? "data-disabled" : null)>
+                            <summary>Đánh dấu đã thanh toán</summary>
+                            <form method="post" asp-page-handler="Pay" enctype="multipart/form-data" data-admin-pay>
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="requestId" value="@request.Id" />
+                                <label><span>Mã giao dịch *</span><input name="paymentReference" maxlength="128" required /></label>
+                                <label><span>Thời gian chuyển *</span><input name="paidAt" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required /></label>
+                                <label><span>Ảnh chứng từ *</span><input name="proof" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" required /></label>
+                                <label class="wide"><span>Ghi chú</span><textarea name="adminNote" maxlength="1000" rows="2"></textarea></label>
+                                <button type="submit" @(!request.IsBacked ? "disabled" : null)>Xác nhận đã chuyển khoản</button>
+                                <p data-form-status role="status"></p>
+                            </form>
+                        </details>
+                        <details class="admin-reject-panel">
+                            <summary>Từ chối yêu cầu</summary>
+                            <form method="post" asp-page-handler="Reject" data-admin-reject>
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="requestId" value="@request.Id" />
+                                <label class="wide"><span>Lý do từ chối *</span><textarea name="reason" maxlength="500" rows="3" required></textarea></label>
+                                <label class="wide"><span>Ghi chú nội bộ</span><textarea name="adminNote" maxlength="1000" rows="2"></textarea></label>
+                                <button type="submit">Xác nhận từ chối</button>
+                                <p data-form-status role="status"></p>
+                            </form>
+                        </details>
+                    </div>
+                }
+            </article>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-payout-pagination">
+            @if (Model.PageNumber > 1) { <a asp-page="/Admin/Payouts/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")" asp-route-PageNumber="@(Model.PageNumber - 1)">‹ Trước</a> } else { <span></span> }
+            <b>@Model.PageNumber / @Model.TotalPages</b>
+            @if (Model.PageNumber < Model.TotalPages) { <a asp-page="/Admin/Payouts/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-From="@Model.From?.ToString("yyyy-MM-dd")" asp-route-To="@Model.To?.ToString("yyyy-MM-dd")" asp-route-PageNumber="@(Model.PageNumber + 1)">Sau ›</a> } else { <span></span> }
+        </nav>
+    }
+</section>
+
+<div class="admin-payout-toast" data-admin-payout-toast hidden></div>
+<script src="~/admin-payouts.js" asp-append-version="true"></script>

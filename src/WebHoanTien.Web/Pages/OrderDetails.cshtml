@@ -1,0 +1,107 @@
+@page "/Orders/{id:guid}"
+@model OrderDetailsModel
+@{
+    ViewData["Title"] = "Thông tin đơn hàng";
+    ViewData["BodyClass"] = "orders-mobile-shell";
+    var order = Model.Order;
+    var statusClass = CustomerOrderUi.GetStatusClass(order.Status);
+    var firstItem = order.Items.FirstOrDefault();
+}
+<section class="cb-order-detail-page">
+    <header class="cb-detail-hero">
+        <div class="cb-orders-titlebar">
+            <a class="cb-back-button" href="@Model.ReturnUrl" aria-label="Quay lại danh sách đơn hàng">
+                <img src="~/orders-icons/arrow-left.svg" alt="" />
+            </a>
+            <h1>Thông tin đơn hàng</h1>
+            <span class="cb-title-spacer" aria-hidden="true"></span>
+        </div>
+
+        <div class="cb-detail-summary">
+            <div class="cb-detail-status-row">
+                <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
+                <span>@CustomerOrderUi.GetStatusDescription(order.Status)</span>
+            </div>
+            <dl>
+                @if (Model.IsAdminOrderView)
+                {
+                    <div><dt>Người dùng</dt><dd>@(string.IsNullOrWhiteSpace(order.UserEmail) ? "Chưa xác định" : order.UserEmail)</dd></div>
+                }
+                <div><dt>Giá trị đơn hàng</dt><dd>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</dd></div>
+                <div><dt>Ưu đãi</dt><dd>@(string.IsNullOrWhiteSpace(order.ShopType) ? "Ưu đãi Shopee" : order.ShopType)</dd></div>
+                <div class="cb-detail-cashback"><dt>@(order.Status == AffiliateOrderStatus.Settled ? "Bạn nhận được" : "Hoàn tiền dự kiến")</dt><dd>+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</dd></div>
+            </dl>
+            <p class="cb-detail-note"><img src="~/orders-icons/shield-check.svg" alt="" /> @(order.Status == AffiliateOrderStatus.Settled ? "Số tiền đã được chốt theo bảng kê thanh toán thực tế từ Shopee." : "Số tiền này chưa được rút cho đến khi Shopee hoàn tất đối soát thanh toán.")</p>
+        </div>
+    </header>
+
+    <div class="cb-detail-content">
+        <section class="cb-detail-section">
+            <h2>Sản phẩm</h2>
+            <div class="cb-detail-products">
+                @if (order.Items.Count == 0)
+                {
+                    <p class="cb-detail-empty">Thông tin sản phẩm đang được cập nhật.</p>
+                }
+                @foreach (var item in order.Items)
+                {
+                    var productName = string.IsNullOrWhiteSpace(item.ProductName) ? "Sản phẩm Shopee" : item.ProductName;
+                    <article class="cb-detail-product">
+                        <div class="cb-order-product-image">
+                            @if (item == firstItem && !string.IsNullOrWhiteSpace(order.ProductImageUrl))
+                            {
+                                <img src="@order.ProductImageUrl" alt="Ảnh @productName" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
+                                <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
+                            }
+                            else
+                            {
+                                <span><img src="~/orders-icons/store.svg" alt="" /></span>
+                            }
+                        </div>
+                        <div>
+                            <h3>@productName</h3>
+                            <p><img src="~/orders-icons/store.svg" alt="" /> Sản phẩm từ Shopee</p>
+                            <span>Số lượng: @item.Quantity</span>
+                        </div>
+                        <strong>@CustomerOrderUi.FormatMoney(item.PurchaseAmount)</strong>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <section class="cb-detail-section">
+            <h2>Thời gian xử lý</h2>
+            <div class="cb-order-timeline">
+                <div class="is-complete">
+                    <span><img src="~/orders-icons/badge-check.svg" alt="" /></span>
+                    <div><strong>Đã ghi nhận đơn hàng</strong><small>@CustomerOrderUi.FormatDate(order.PurchaseTime)</small></div>
+                </div>
+                @if (order.ClickTime.HasValue)
+                {
+                    <div class="is-complete">
+                        <span><img src="~/orders-icons/clock.svg" alt="" /></span>
+                        <div><strong>Thời gian mở link</strong><small>@CustomerOrderUi.FormatDate(order.ClickTime.Value)</small></div>
+                    </div>
+                }
+                <div>
+                    <span><img src="~/orders-icons/cashback.svg" alt="" /></span>
+                    <div><strong>Shopee đối soát thanh toán</strong><small>@(order.SettledAt.HasValue ? CustomerOrderUi.FormatDate(order.SettledAt.Value) : "Đang chờ bảng kê thanh toán của Shopee.")</small></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cb-confirmation-card">
+            <span><img src="~/orders-icons/shield-check.svg" alt="" /></span>
+            <div>
+                <h2>Hoàn tiền minh bạch</h2>
+                <p>CatBack chỉ ghi nhận số tiền bạn được nhận từ báo cáo thực tế của Shopee. Đơn hủy, hoàn hoặc bị từ chối sẽ không phát sinh hoàn tiền.</p>
+            </div>
+        </section>
+
+        <a class="cb-support-cta" href="mailto:support@webhoantien.com">
+            <span><img src="~/orders-icons/headphones.svg" alt="" /></span>
+            <span><strong>Cần hỗ trợ về đơn này?</strong><small>Gửi thông tin để CatBack kiểm tra giúp bạn.</small></span>
+            <img src="~/orders-icons/chevron-right-white.svg" alt="" />
+        </a>
+    </div>
+</section>

@@ -43,6 +43,9 @@ public class WebHoanTienDbContext :
     public DbSet<AffiliateSyncRun> AffiliateSyncRuns { get; set; } = null!;
     public DbSet<AffiliateRawPayload> AffiliateRawPayloads { get; set; } = null!;
     public DbSet<UserLegalConsent> UserLegalConsents { get; set; } = null!;
+    public DbSet<UserPayoutAccount> UserPayoutAccounts { get; set; } = null!;
+    public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; } = null!;
+    public DbSet<WithdrawalPaymentProof> WithdrawalPaymentProofs { get; set; } = null!;
 
     public WebHoanTienDbContext(DbContextOptions<WebHoanTienDbContext> options)
         : base(options)

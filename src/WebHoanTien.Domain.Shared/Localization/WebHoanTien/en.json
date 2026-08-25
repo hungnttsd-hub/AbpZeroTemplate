@@ -1,7 +1,7 @@
 {
   "culture": "en",
   "texts": {
-    "AppName": "webHoanTien.com",
+    "AppName": "CatBack",
     "Welcome": "Shop on Shopee and receive part of the commission",
     "Menu:Home": "Home",
     "Menu:MyOrders": "My orders",
@@ -13,6 +13,17 @@
     "Permission:CommissionRules": "Commission rules",
     "Permission:Orders": "Order management",
     "Permission:Sync": "Data synchronization",
-    "Permission:ManualMatch": "Manual conversion matching"
+    "Permission:ManualMatch": "Manual conversion matching",
+    "Permission:Payouts": "Payout management",
+    "Menu:Wallet": "Wallet",
+    "Menu:Payouts": "Payouts",
+    "WebHoanTien:Wallet:PayoutAccountRequired": "Please save a payout account before requesting a withdrawal.",
+    "WebHoanTien:Wallet:WithdrawalBelowMinimum": "The minimum withdrawal amount is 10,000 VND.",
+    "WebHoanTien:Wallet:InsufficientBalance": "Your available balance is insufficient for this request.",
+    "WebHoanTien:Wallet:PendingExists": "You already have a pending withdrawal request.",
+    "WebHoanTien:Wallet:InvalidState": "This withdrawal request has already been processed.",
+    "WebHoanTien:Wallet:NotOwned": "You cannot access this withdrawal request.",
+    "WebHoanTien:Wallet:ProofInvalid": "The payment proof image is invalid.",
+    "WebHoanTien:Wallet:NotBacked": "Confirmed commission is currently insufficient to pay this request."
   }
 }

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="900" viewBox="0 0 420 900">
+<style>
+.t{font:14px Inter,Arial,sans-serif;fill:#08254A}.s{font:12px Inter,Arial,sans-serif;fill:#66758F}
+.box{fill:#fff;stroke:#DCE4EE}.navy{fill:#001B3D}.teal{fill:#0B9098}.card{fill:#0B9098}
+</style>
+<rect width="420" height="900" fill="#F7F9FC"/>
+<rect x="0" y="0" width="420" height="260" rx="0" fill="#001B3D"/>
+<text x="36" y="36" fill="#fff" font-family="Inter,Arial" font-size="13">Home page wallet summary blueprint</text>
+<rect x="22" y="270" width="376" height="170" rx="24" fill="url(#g)" stroke="#1AC0B5"/>
+<defs><linearGradient id="g" x1="22" y1="270" x2="398" y2="440" gradientUnits="userSpaceOnUse"><stop stop-color="#005885"/><stop offset="1" stop-color="#0BA79D"/></linearGradient></defs>
+<text x="42" y="318" fill="#fff" font-family="Inter,Arial" font-size="18" font-weight="700">Số dư ví</text>
+<text x="42" y="370" fill="#fff" font-family="Inter,Arial" font-size="34" font-weight="800">1.250.000đ</text>
+<line x1="42" y1="400" x2="250" y2="400" stroke="rgba(255,255,255,0.2)"/>
+<circle cx="72" cy="434" r="6" fill="#1DD0C4"/>
+<text x="88" y="440" fill="#fff" font-family="Inter,Arial" font-size="12">Đã ghi nhận</text>
+<text x="88" y="464" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="700">3.780.000đ</text>
+<circle cx="200" cy="434" r="6" fill="#FFB23F"/>
+<text x="216" y="440" fill="#fff" font-family="Inter,Arial" font-size="12">Sắp ghi nhận</text>
+<text x="216" y="464" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="700">245.000đ</text>
+<text x="318" y="440" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="700">Xem ví</text>
+<text x="42" y="520" class="s">The wallet summary is compact and suitable for the homepage.</text>
+</svg>

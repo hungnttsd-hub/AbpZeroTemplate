@@ -1,0 +1,95 @@
+@page "/Wallet/Withdraw"
+@using WebHoanTien.Web.Pages.Wallet
+@model WebHoanTien.Web.Pages.Wallet.WithdrawModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Rút tiền";
+    ViewData["BodyClass"] = "catback-wallet-page wallet-withdraw-page";
+    var pendingRequest = Model.Preparation.Wallet.PendingWithdrawal;
+}
+
+<section class="wallet-shell wallet-withdraw-shell">
+    <header class="wallet-topbar">
+        <a href="/Wallet" aria-label="Về ví tiền"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg></a>
+        <h1>Rút tiền</h1>
+        <span></span>
+    </header>
+
+    <section class="wallet-balance-hero wallet-withdraw-hero">
+        <div>
+            <span>Số dư khả dụng</span>
+            <strong data-wallet-available>@WalletPageUi.FormatMoney(Model.Preparation.Wallet.AvailableBalance)</strong>
+            <p><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.7 2.7 8 7 10 4.3-2 7-5.3 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> Có thể rút ngay</p>
+        </div>
+        <partial name="_WalletIllustration" />
+    </section>
+
+    <form method="post" asp-page-handler="Create" class="wallet-withdraw-form" data-withdraw-form data-available="@Model.Preparation.Wallet.AvailableBalance.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-fee="@Model.Preparation.FeeAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+        @Html.AntiForgeryToken()
+        <section class="wallet-form-card">
+            <label for="withdraw-amount">Số tiền muốn rút</label>
+            <div class="wallet-amount-input">
+                <input id="withdraw-amount" type="text" inputmode="numeric" autocomplete="off" placeholder="Nhập số tiền" aria-label="Số tiền muốn rút" />
+                <input asp-for="Input.Amount" type="hidden" data-withdraw-value />
+                <span>đ</span>
+            </div>
+            <small>Số dư trong ví: <b data-wallet-available-inline>@WalletPageUi.FormatMoney(Model.Preparation.Wallet.AvailableBalance)</b></small>
+            <div class="wallet-quick-amounts">
+                <button type="button" data-withdraw-amount="100000">100.000đ</button>
+                <button type="button" data-withdraw-amount="200000">200.000đ</button>
+                <button type="button" data-withdraw-amount="500000">500.000đ</button>
+                <button type="button" data-withdraw-all>Toàn bộ</button>
+            </div>
+            <p class="wallet-inline-error" data-withdraw-error role="alert" hidden></p>
+        </section>
+
+        <section class="wallet-form-card wallet-bank-card">
+            <header><h2>Tài khoản nhận tiền</h2><a href="/Account/Profile#payout-account">Thay đổi ›</a></header>
+            @if (Model.Preparation.PayoutAccount is null)
+            {
+                <div class="wallet-bank-missing"><strong>Chưa có tài khoản nhận tiền</strong><p>Lưu thông tin ngân hàng trước khi tạo yêu cầu.</p><a href="/Account/Profile#payout-account">Thêm tài khoản</a></div>
+            }
+            else
+            {
+                var bank = PayoutBankCatalog.Banks.FirstOrDefault(x => x.Code == Model.Preparation.PayoutAccount.BankCode);
+                <div class="wallet-bank-row"><span>@Model.Preparation.PayoutAccount.BankCode</span><div><strong>@(bank?.Name ?? Model.Preparation.PayoutAccount.BankCode)</strong><small>@Model.Preparation.PayoutAccount.AccountHolderName</small><small>@WalletPageUi.MaskAccount(Model.Preparation.PayoutAccount.AccountNumber)</small></div></div>
+            }
+        </section>
+
+        <section class="wallet-processing-strip"><div><b>◇</b><span>Phí rút tiền<strong>@WalletPageUi.FormatMoney(Model.Preparation.FeeAmount)</strong></span></div><div><b>◷</b><span>Thời gian xử lý<strong>@Model.Preparation.ProcessingTimeLabel</strong></span></div></section>
+
+        <section class="wallet-summary-card">
+            <dl><div><dt>Số tiền rút</dt><dd data-withdraw-summary>0đ</dd></div><div><dt>Phí</dt><dd>@WalletPageUi.FormatMoney(Model.Preparation.FeeAmount)</dd></div><div><dt>Tiền thực nhận</dt><dd data-withdraw-net>0đ</dd></div></dl>
+        </section>
+
+        @if (pendingRequest is not null)
+        {
+            <div class="wallet-existing-request" data-pending-withdrawal><strong>Bạn đang có yêu cầu @pendingRequest.RequestCode chờ xử lý.</strong><a href="/Wallet">Xem và hủy yêu cầu</a></div>
+        }
+        <button class="wallet-submit-button" type="submit" @(pendingRequest is not null || Model.Preparation.PayoutAccount is null ? "disabled" : null)>Yêu cầu rút tiền</button>
+        <div class="wallet-submit-status" data-withdraw-status role="status"></div>
+    </form>
+
+    <section class="wallet-note-card"><span>i</span><div><h2>Lưu ý</h2><ul><li>Chỉ rút được số dư đã ghi nhận.</li><li>Hoa hồng sắp ghi nhận chưa thể rút.</li><li>Tiền sẽ về tài khoản sau khi admin xử lý thành công.</li></ul></div></section>
+
+    <section class="wallet-withdrawal-history">
+        <header><h2><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>Lịch sử rút tiền</h2><a href="/Wallet/History?kind=Withdrawal">Xem tất cả ›</a></header>
+        @if (Model.Preparation.RecentWithdrawals.Count == 0)
+        {
+            <p class="wallet-history-empty">Chưa có yêu cầu rút tiền nào.</p>
+        }
+        else
+        {
+            @foreach (var request in Model.Preparation.RecentWithdrawals)
+            {
+                <article data-wallet-request="@request.Id"><div><strong>@request.RequestCode</strong><small>@WalletPageUi.FormatDate(request.CreationTime)</small></div><div><b>@WalletPageUi.FormatMoney(request.Amount)</b><span class="wallet-status @WalletPageUi.WithdrawalStatusClass(request.Status)" data-wallet-status>@WalletPageUi.WithdrawalStatusLabel(request.Status)</span></div></article>
+            }
+        }
+    </section>
+</section>
+
+<div class="wallet-toast" data-wallet-toast role="status" hidden></div>
+
+@section Scripts {
+    <script src="~/wallet.js" asp-append-version="true"></script>
+}

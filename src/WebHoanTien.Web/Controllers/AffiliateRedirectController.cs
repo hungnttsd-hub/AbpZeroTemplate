@@ -30,12 +30,12 @@ public class AffiliateRedirectController : Controller
     public async Task<IActionResult> GoAsync(string trackingToken)
     {
         var tracking = (await _trackings.GetListAsync(x => x.TrackingToken == trackingToken && x.Status == AffiliateTrackingStatus.Active)).FirstOrDefault();
-        if (tracking?.AffiliateUrl is null || !_normalizer.TryNormalize(tracking.AffiliateUrl, out var safeUrl, out _)) return NotFound();
+        if (tracking?.AffiliateUrl is null || !_normalizer.TryNormalize(tracking.AffiliateUrl, out _, out _)) return NotFound();
         var click = new AffiliateClick(_guidGenerator.Create(), tracking.Id, _currentUser.Id, _clock.Now,
             HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString(), Request.Headers.Referer.ToString());
         tracking.RegisterClick(_clock.Now);
         await _clicks.InsertAsync(click);
         await _trackings.UpdateAsync(tracking, autoSave: true);
-        return Redirect(safeUrl);
+        return Redirect(tracking.AffiliateUrl);
     }
 }

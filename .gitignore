@@ -53,6 +53,8 @@ Thumbs.db
 Desktop.ini
 
 # Local secrets and development certificates
+.env
+client_secret_*.json
 **/appsettings.secrets.json
 **/appsettings.*.local.json
 *.pfx

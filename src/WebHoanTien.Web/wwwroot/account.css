@@ -10,14 +10,14 @@
 
 .auth-card,
 .auth-aside {
-    border-radius: 28px;
+    border-radius: var(--surface-radius-lg);
     padding: 42px;
 }
 
 .auth-card {
     background: #fff;
-    border: 1px solid var(--line);
-    box-shadow: 0 24px 70px rgba(20, 37, 31, .08);
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--surface-highlight), var(--surface-shadow);
 }
 
 .auth-card h1 {
@@ -41,7 +41,7 @@
 .field-heading a,
 .check-legal a {
     font-weight: 700;
-    color: #4f7415;
+    color: #b4386d;
 }
 
 .form-stack {
@@ -75,19 +75,20 @@
 .field input,
 .form-stack > input:not([type="hidden"]) {
     width: 100%;
-    border: 1px solid var(--line);
-    border-radius: 13px;
-    background: #fbfcf8;
+    border: 1px solid var(--surface-border);
+    border-radius: var(--surface-radius-sm);
+    background: #fbfdff;
     color: var(--ink);
     padding: 14px 15px;
-    font: 14px inherit;
+    font-family: inherit;
+    font-size: 14px;
     outline: none;
 }
 
 .field input:focus,
 .form-stack > input:focus {
-    border-color: #8cb835;
-    box-shadow: 0 0 0 3px rgba(201, 243, 106, .28);
+    border-color: #df5a90;
+    box-shadow: 0 0 0 4px rgba(225, 82, 141, .12);
 }
 
 .field-error {
@@ -142,7 +143,34 @@
     gap: 10px;
 }
 
+.external-login-button {
+    min-height: 52px;
+}
+
+.google-login-button {
+    border: 1px solid #dadce0;
+    border-radius: var(--surface-radius-sm);
+    background: #fff;
+    color: #202124;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, .18);
+    font-weight: 700;
+}
+
+.google-login-button:hover,
+.google-login-button:focus-visible {
+    border-color: #c6cbd1;
+    background: #f8faff;
+    box-shadow: 0 2px 5px rgba(60, 64, 67, .24);
+}
+
+.google-login-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+}
+
 .auth-aside {
+    border: 1px solid rgba(255, 255, 255, .12);
     background: var(--ink);
     color: #fff;
     display: flex;
@@ -185,20 +213,23 @@
 }
 
 .status-message {
-    border-radius: 13px;
+    border: 1px solid transparent;
+    border-radius: var(--surface-radius-sm);
     padding: 12px 14px;
     font-size: 13px;
     margin: 12px 0;
 }
 
 .status-error {
+    border-color: #f2c4b8;
     background: #ffebe5;
     color: #9b351d;
 }
 
 .status-info {
-    background: #edf9d5;
-    color: #456815;
+    border-color: #efbed2;
+    background: #fff0f6;
+    color: #a23666;
 }
 
 .narrow-shell {

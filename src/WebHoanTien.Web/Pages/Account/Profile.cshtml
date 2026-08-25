@@ -1,0 +1,87 @@
+@page
+@model WebHoanTien.Web.Pages.Account.ProfileModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Tài khoản của tôi";
+}
+
+<section class="profile-shell">
+    <header class="profile-heading">
+        @if (!string.IsNullOrWhiteSpace(Model.Profile.AvatarUrl))
+        {
+            <img class="profile-avatar-image" src="@Model.Profile.AvatarUrl" alt="Ảnh đại diện của @Model.Profile.DisplayName" referrerpolicy="no-referrer" />
+        }
+        else
+        {
+            <span class="profile-avatar-fallback" aria-hidden="true">@Model.Profile.Initials</span>
+        }
+        <div>
+            <h1>@Model.Profile.DisplayName</h1>
+            <p>@Model.Profile.Email</p>
+        </div>
+    </header>
+
+    <div class="profile-grid">
+        <div class="profile-main">
+            <article class="profile-card">
+                <h2>Thông tin đăng nhập</h2>
+                <dl class="profile-details">
+                    <div><dt>Email</dt><dd>@Model.Profile.Email</dd></div>
+                    <div><dt>Đăng nhập Google</dt><dd class="profile-status @(Model.Profile.HasGoogleLogin ? "is-connected" : null)">@(Model.Profile.HasGoogleLogin ? "Đã liên kết" : "Chưa liên kết")</dd></div>
+                    <div><dt>Điều khoản hiện hành</dt><dd class="profile-status @(Model.Profile.HasCurrentLegalConsent ? "is-connected" : null)">@(Model.Profile.HasCurrentLegalConsent ? "Đã chấp thuận" : "Chưa chấp thuận")</dd></div>
+                </dl>
+                <a class="profile-text-link" href="/Account/Manage">Quản lý phương thức đăng nhập</a>
+            </article>
+
+            <article class="profile-card payout-account-card" id="payout-account">
+                <h2>Tài khoản nhận tiền</h2>
+                <p>Thông tin này được dùng để chuyển khoản sau khi hoa hồng đã được Shopee đối soát.</p>
+                @if (!string.IsNullOrWhiteSpace(Model.PayoutStatusMessage))
+                {
+                    <div class="profile-save-status" role="status">@Model.PayoutStatusMessage</div>
+                }
+                <form method="post" asp-page-handler="SavePayout" class="payout-form">
+                    <div asp-validation-summary="ModelOnly" class="profile-form-error"></div>
+                    <div class="profile-field">
+                        <label asp-for="PayoutInput.BankCode">Ngân hàng</label>
+                        <select asp-for="PayoutInput.BankCode">
+                            <option value="">Chọn ngân hàng</option>
+                            @foreach (var bank in Model.Banks)
+                            {
+                                <option value="@bank.Code">@bank.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="PayoutInput.BankCode" class="profile-form-error"></span>
+                    </div>
+                    <div class="profile-field">
+                        <label asp-for="PayoutInput.AccountNumber">Số tài khoản</label>
+                        <input asp-for="PayoutInput.AccountNumber" inputmode="numeric" autocomplete="off" placeholder="Nhập số tài khoản" />
+                        <span asp-validation-for="PayoutInput.AccountNumber" class="profile-form-error"></span>
+                    </div>
+                    <div class="profile-field">
+                        <label asp-for="PayoutInput.AccountHolderName">Tên chủ tài khoản</label>
+                        <input asp-for="PayoutInput.AccountHolderName" autocomplete="name" placeholder="NGUYEN VAN A" />
+                        <span asp-validation-for="PayoutInput.AccountHolderName" class="profile-form-error"></span>
+                    </div>
+                    <button class="button payout-save-button" type="submit">Lưu thông tin nhận tiền</button>
+                </form>
+            </article>
+        </div>
+
+        <aside class="profile-side">
+            <article class="profile-card profile-highlight-card">
+                <span class="profile-card-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 7.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a3 3 0 0 1-3-3v-10a3 3 0 0 1 3-3h10v4" /><path d="M20 11h-4a2 2 0 0 0 0 4h4" /><circle cx="16" cy="13" r=".5" /></svg>
+                </span>
+                <h2>Ví tiền của bạn</h2>
+                <p>Theo dõi số dư đã được Shopee xác nhận, yêu cầu rút tiền và lịch sử thanh toán.</p>
+                <a class="button button-primary" href="/Wallet">Xem ví tiền</a>
+            </article>
+            <article class="profile-card profile-logout-card">
+                <h2>Đăng xuất</h2>
+                <p>Chỉ đăng xuất khi bạn đang dùng thiết bị riêng tư.</p>
+                <a class="button button-ghost profile-logout-button" href="@Url.Page("/Account/Logout", new { returnUrl = "/" })">Đăng xuất</a>
+            </article>
+        </aside>
+    </div>
+</section>

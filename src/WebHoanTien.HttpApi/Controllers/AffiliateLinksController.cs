@@ -18,7 +18,9 @@ public class AffiliateLinksController : WebHoanTienController
     [HttpPost, Authorize]
     public Task<AffiliateTrackingDto> CreateAsync([FromBody] CreateAffiliateLinkInput input) => _service.CreateAsync(input);
     [HttpGet, Authorize]
-    public Task<PagedResultDto<AffiliateTrackingDto>> GetListAsync([FromQuery] PagedAndSortedResultRequestDto input) => _service.GetListAsync(input);
+    public Task<PagedResultDto<AffiliateTrackingDto>> GetListAsync([FromQuery] AffiliateTrackingListInput input) => _service.GetListAsync(input);
     [HttpGet("{id:guid}"), Authorize]
     public Task<AffiliateTrackingDto> GetAsync(Guid id) => _service.GetAsync(id);
+    [HttpPut("visibility"), Authorize]
+    public Task SetHiddenAsync([FromBody] SetAffiliateTrackingHiddenInput input) => _service.SetHiddenAsync(input);
 }

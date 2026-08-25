@@ -14,5 +14,4 @@ public class AffiliateOrdersController : WebHoanTienController
     public AffiliateOrdersController(IAffiliateOrderAppService service) => _service = service;
     [HttpGet] public Task<PagedResultDto<AffiliateOrderDto>> GetListAsync([FromQuery] AffiliateOrderListInput input) => _service.GetListAsync(input);
     [HttpGet("{id:guid}")] public Task<AffiliateOrderDto> GetAsync(Guid id) => _service.GetAsync(id);
-    [HttpPost("sync-requests")] public Task RequestSyncAsync() => _service.RequestSyncAsync();
 }

@@ -31,7 +31,8 @@ public enum AffiliateOrderStatus
     Completed = 3,
     Cancelled = 4,
     Refunded = 5,
-    Rejected = 6
+    Rejected = 6,
+    Settled = 7
 }
 
 public enum AffiliateSyncKind
@@ -39,7 +40,8 @@ public enum AffiliateSyncKind
     Conversion = 1,
     Validation = 2,
     Reconciliation = 3,
-    Retention = 4
+    Retention = 4,
+    Import = 5
 }
 
 public enum AffiliateSyncRunStatus
@@ -60,4 +62,18 @@ public enum LegalConsentMethod
     EmailRegistration = 1,
     GoogleRegistration = 2,
     AccountPrompt = 3
+}
+
+public enum WithdrawalRequestStatus
+{
+    Pending = 1,
+    Paid = 2,
+    Rejected = 3,
+    Cancelled = 4
+}
+
+public enum WalletMovementKind
+{
+    Commission = 1,
+    Withdrawal = 2
 }

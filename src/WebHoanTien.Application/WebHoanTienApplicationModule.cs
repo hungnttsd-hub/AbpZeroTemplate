@@ -15,6 +15,7 @@ using Volo.Abp.SettingManagement;
 using WebHoanTien.Integrations;
 using WebHoanTien.Integrations.Shopee;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Admin;
 
 namespace WebHoanTien;
 
@@ -33,10 +34,8 @@ public class WebHoanTienApplicationModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         context.Services.Configure<ShopeeAffiliateOptions>(configuration.GetSection(ShopeeAffiliateOptions.SectionName));
-        context.Services.Configure<ShopeeOpenPlatformOptions>(configuration.GetSection(ShopeeOpenPlatformOptions.SectionName));
-        context.Services.AddHttpClient("ShopeeAffiliate", client => client.Timeout = TimeSpan.FromSeconds(configuration.GetValue("Shopee:TimeoutSeconds", 15)));
-        context.Services.AddHttpClient<IShopeeAmsPermissionChecker, ShopeeAmsPermissionChecker>(client =>
-            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:OpenPlatform:TimeoutSeconds", 15), 1, 120)));
+        context.Services.AddHttpClient("ShopeeProductData", client =>
+            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:ProductDataTimeoutSeconds", 10), 1, 120)));
         context.Services.AddHttpClient("AffiliateRedirectResolver", client => client.Timeout = TimeSpan.FromSeconds(8))
             .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
             {
@@ -64,10 +63,12 @@ public class WebHoanTienApplicationModule : AbpModule
                     throw new HttpRequestException("Không thể kết nối tới địa chỉ Shopee đã kiểm tra.", lastError);
                 }
             });
+        context.Services.AddTransient<ShopeeAffiliateLinkBuilder>();
+        context.Services.AddTransient<IAdminShopeeReportImportAppService, ShopeeReportImportAppService>();
         if (string.Equals(configuration["Affiliate:ProviderMode"], "Mock", StringComparison.OrdinalIgnoreCase))
             context.Services.AddTransient<IAffiliateProvider, MockShopeeAffiliateProvider>();
         else
-            context.Services.AddTransient<IAffiliateProvider, ShopeeAffiliateProvider>();
+            context.Services.AddTransient<IAffiliateProvider, ShopeeAddLiveTagProductDataProvider>();
 
         Configure<AbpAutoMapperOptions>(options =>
         {

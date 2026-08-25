@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Caching.Distributed;
+using Volo.Abp;
 using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.Web.Pages;
@@ -29,8 +30,25 @@ public class PendingAffiliateModel : PageModel
             await _cache.RemoveAsync("affiliate:pending:" + action.Nonce);
             Response.Cookies.Delete("wht.pending");
             var result = await _links.CreateAsync(new CreateAffiliateLinkInput { Url = action.Url });
-            return RedirectToPage("/LinkResult", new { id = result.Id });
+            TempData["AffiliateCreatedLinkId"] = result.Id.ToString();
+            TempData["AffiliateLinkSuccess"] = result.WasRestored
+                ? "Link đã được đưa trở lại danh sách của bạn."
+                : result.IsExisting
+                    ? "Link này đã có trong danh sách của bạn."
+                    : "Link mua hàng đã được thêm vào danh sách của bạn.";
+            return RedirectToPage("/Index");
         }
-        catch { Response.Cookies.Delete("wht.pending"); return RedirectToPage("/Index"); }
+        catch (UserFriendlyException exception)
+        {
+            Response.Cookies.Delete("wht.pending");
+            TempData["AffiliateLinkError"] = exception.Message;
+            return RedirectToPage("/Index");
+        }
+        catch
+        {
+            Response.Cookies.Delete("wht.pending");
+            TempData["AffiliateLinkError"] = "Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.";
+            return RedirectToPage("/Index");
+        }
     }
 }

@@ -17,4 +17,8 @@
     <ProjectReference Include="..\WebHoanTien.TestBase\WebHoanTien.TestBase.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Affiliates\" />
+  </ItemGroup>
+
 </Project>

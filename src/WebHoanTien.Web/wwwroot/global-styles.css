@@ -1,4 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap");
+
 /* Your Global Styles */
+
+:root {
+    --catback-font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+    --bs-body-font-family: var(--catback-font-family);
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--catback-font-family);
+}
 
 :root .lpx-brand-logo {
     --lpx-logo: url('/images/logo/leptonx/logo-light.png');

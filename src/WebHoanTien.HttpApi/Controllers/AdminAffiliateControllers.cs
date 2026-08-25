@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
 using WebHoanTien.Admin;
@@ -13,10 +14,43 @@ public class AdminAffiliateSettingsController : WebHoanTienController
     private readonly IAdminAffiliateSettingsAppService _service;
     public AdminAffiliateSettingsController(IAdminAffiliateSettingsAppService service) => _service = service;
     [HttpGet] public Task<AffiliateConnectionStatusDto> GetAsync() => _service.GetAsync();
-    [HttpPut] public Task<AffiliateConnectionStatusDto> UpdateAsync([FromBody] UpdateAffiliateSettingsInput input) => _service.UpdateAsync(input);
-    [HttpPost("check-permission")]
-    public Task<ShopeeAmsPermissionCheckDto> CheckPermissionAsync(CancellationToken cancellationToken) =>
-        _service.CheckPermissionAsync(cancellationToken);
+}
+
+[Route("api/app/admin/shopee-reports")]
+public class AdminShopeeReportsController : WebHoanTienController
+{
+    private readonly IAdminShopeeReportImportAppService _service;
+    public AdminShopeeReportsController(IAdminShopeeReportImportAppService service) => _service = service;
+
+    [HttpPost("import")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(5 * 1024 * 1024)]
+    public async Task<ShopeeReportImportResultDto> ImportAsync([FromForm] IFormFile report,
+        CancellationToken cancellationToken)
+    {
+        if (report is null || report.Length == 0) throw new Volo.Abp.UserFriendlyException("Chọn file báo cáo Shopee trước khi import.");
+        await using var stream = report.OpenReadStream();
+        return await _service.ImportAsync(stream, report.FileName, cancellationToken);
+    }
+}
+
+[Route("api/app/admin/shopee-settlements")]
+public class AdminShopeeSettlementsController : WebHoanTienController
+{
+    private readonly IAdminShopeeSettlementImportAppService _service;
+    public AdminShopeeSettlementsController(IAdminShopeeSettlementImportAppService service) => _service = service;
+
+    [HttpPost("import")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(5 * 1024 * 1024)]
+    public async Task<ShopeeSettlementImportResultDto> ImportAsync([FromForm] IFormFile report,
+        CancellationToken cancellationToken)
+    {
+        if (report is null || report.Length == 0)
+            throw new Volo.Abp.UserFriendlyException("Chọn bảng kê Shopee đã thanh toán trước khi import.");
+        await using var stream = report.OpenReadStream();
+        return await _service.ImportAsync(stream, report.FileName, cancellationToken);
+    }
 }
 
 [Route("api/app/admin/commission-rules")]
@@ -25,20 +59,10 @@ public class AdminCommissionRulesController : WebHoanTienController
     private readonly IAdminCommissionRuleAppService _service;
     public AdminCommissionRulesController(IAdminCommissionRuleAppService service) => _service = service;
     [HttpGet] public Task<ListResultDto<AffiliateCommissionRuleDto>> GetListAsync() => _service.GetListAsync();
+    [HttpGet("current")] public Task<AffiliateCommissionRuleDto> GetCurrentAsync() => _service.GetCurrentAsync();
+    [HttpPut("current")] public Task<AffiliateCommissionRuleDto> SetCurrentRateAsync([FromBody] SetCurrentCommissionRateInput input) => _service.SetCurrentRateAsync(input);
     [HttpPost] public Task<AffiliateCommissionRuleDto> CreateAsync([FromBody] CreateCommissionRuleInput input) => _service.CreateAsync(input);
     [HttpPost("{id:guid}/deactivate")] public Task DeactivateAsync(Guid id) => _service.DeactivateAsync(id);
-}
-
-[Route("api/app/admin/affiliate-sync")]
-public class AdminAffiliateSyncController : WebHoanTienController
-{
-    private readonly IAdminAffiliateSyncAppService _service;
-    public AdminAffiliateSyncController(IAdminAffiliateSyncAppService service) => _service = service;
-    [HttpGet("states")] public Task<ListResultDto<AffiliateSyncStateDto>> GetStatesAsync() => _service.GetStatesAsync();
-    [HttpGet("runs")] public Task<PagedResultDto<AffiliateSyncRunDto>> GetRunsAsync([FromQuery] PagedAndSortedResultRequestDto input) => _service.GetRunsAsync(input);
-    [HttpPost("initial-date")] public Task SetInitialDateAsync([FromBody] SetInitialSyncDateInput input) => _service.SetInitialDateAsync(input);
-    [HttpPost("sync-now")] public Task SyncNowAsync() => _service.SyncNowAsync();
-    [HttpPost("reconcile")] public Task ReconcileAsync([FromBody] ReconcileInput input) => _service.ReconcileAsync(input);
 }
 
 [Route("api/app/admin/affiliate-conversions")]

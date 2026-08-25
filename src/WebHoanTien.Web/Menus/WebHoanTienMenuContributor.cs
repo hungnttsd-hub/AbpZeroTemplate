@@ -21,9 +21,14 @@ public class WebHoanTienMenuContributor : IMenuContributor
             WebHoanTienMenus.Home, l["Menu:Home"], "~/", "fas fa-home", 0));
 
         context.Menu.Items.Add(new ApplicationMenuItem(
-            "Customer.Orders", l["Menu:MyOrders"], "~/Orders", "fas fa-receipt", 10));
+            "Customer.Wallet", l["Menu:Wallet"], "~/Wallet", "fas fa-wallet", 10));
         context.Menu.Items.Add(new ApplicationMenuItem(
-            "Customer.Account", l["Menu:Account"], "~/Account/Manage", "fas fa-user", 20));
+            "Customer.Orders", l["Menu:MyOrders"], "~/Orders", "fas fa-receipt", 20));
+        context.Menu.Items.Add(new ApplicationMenuItem(
+            "Customer.Account", l["Menu:Account"], "~/Account/Manage", "fas fa-user", 30));
+        context.Menu.Items.Add(new ApplicationMenuItem(
+            "Affiliate.Payouts", l["Menu:Payouts"], "~/Admin/Payouts", "fas fa-money-check-alt", 45,
+            requiredPermissionName: WebHoanTienPermissions.Admin.Payouts));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Affiliate.Admin", l["Menu:AffiliateAdmin"], "~/Admin/Affiliates", "fas fa-chart-line", 50,
             requiredPermissionName: WebHoanTienPermissions.Admin.Default));

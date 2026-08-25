@@ -26,13 +26,11 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly IEmailSender _emailSender;
+    private readonly AffiliateCommissionRuleManager _commissionRuleManager;
     private bool _confirmationEmailSent;
 
     public string? RegistrationError { get; private set; }
-
-    [BindProperty]
-    [DataType(DataType.Password)]
-    public string? ConfirmPassword { get; set; }
+    public decimal? CurrentUserShareRate { get; private set; }
 
     [BindProperty]
     public bool AcceptedTerms { get; set; }
@@ -45,17 +43,30 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         IRepository<UserLegalConsent, Guid> consents,
         IGuidGenerator guidGenerator,
         IClock clock,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        AffiliateCommissionRuleManager commissionRuleManager)
         : base(accountAppService, schemeProvider, accountOptions, identityDynamicClaimsPrincipalContributorCache)
     {
         _consents = consents;
         _guidGenerator = guidGenerator;
         _clock = clock;
         _emailSender = emailSender;
+        _commissionRuleManager = commissionRuleManager;
+    }
+
+    public override async Task<IActionResult> OnGetAsync()
+    {
+        await LoadCurrentUserShareRateAsync();
+        return await base.OnGetAsync();
     }
 
     public override async Task<IActionResult> OnPostAsync()
     {
+        if (IsExternalLogin)
+        {
+            ModelState.Remove("Input.Password");
+        }
+
         if (Input is not null && !string.IsNullOrWhiteSpace(Input.EmailAddress))
         {
             Input.EmailAddress = Input.EmailAddress.Trim();
@@ -68,19 +79,20 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             ModelState.AddModelError(nameof(AcceptedTerms), "Bạn cần đồng ý với Điều khoản và Chính sách riêng tư.");
         }
 
-        if (!IsExternalLogin && string.IsNullOrWhiteSpace(ConfirmPassword))
-        {
-            ModelState.AddModelError(nameof(ConfirmPassword), "Vui lòng nhập lại mật khẩu.");
-        }
-        else if (!IsExternalLogin && Input?.Password != ConfirmPassword)
-        {
-            ModelState.AddModelError(nameof(ConfirmPassword), "Mật khẩu nhập lại chưa khớp.");
-        }
-
         if (!ModelState.IsValid)
         {
             ExternalProviders = await GetExternalProviders();
             await CheckSelfRegistrationAsync();
+            await LoadCurrentUserShareRateAsync();
+            return Page();
+        }
+
+        if (!IsExternalLogin && Input is not null && await UserManager.FindByEmailAsync(Input.EmailAddress) is not null)
+        {
+            RegistrationError = "Tài khoản với email này đã tồn tại trong hệ thống. Vui lòng đăng nhập.";
+            ExternalProviders = await GetExternalProviders();
+            await CheckSelfRegistrationAsync();
+            await LoadCurrentUserShareRateAsync();
             return Page();
         }
 
@@ -112,7 +124,21 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             RegistrationError = "Không thể tạo tài khoản. Vui lòng kiểm tra lại email và yêu cầu mật khẩu.";
         }
 
+        if (result is PageResult) await LoadCurrentUserShareRateAsync();
+
         return result;
+    }
+
+    private async Task LoadCurrentUserShareRateAsync()
+    {
+        try
+        {
+            CurrentUserShareRate = (await _commissionRuleManager.GetForPurchaseAsync(AffiliatePlatform.Shopee, _clock.Now)).UserShareRate;
+        }
+        catch (Volo.Abp.BusinessException)
+        {
+            CurrentUserShareRate = null;
+        }
     }
 
     protected override async Task RegisterLocalUserAsync()
@@ -150,7 +176,7 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         var safeUrl = HtmlEncoder.Default.Encode(confirmationUrl);
         await _emailSender.SendAsync(
             user.Email!,
-            "Xác minh email webHoanTien.com",
+            "Xác minh email CatBack",
             $"<p>Chào bạn,</p><p>Nhấn vào liên kết dưới đây để xác minh email và tiếp tục:</p><p><a href=\"{safeUrl}\">Xác minh email</a></p><p>Không chia sẻ liên kết này với người khác.</p>",
             isBodyHtml: true);
         _confirmationEmailSent = true;

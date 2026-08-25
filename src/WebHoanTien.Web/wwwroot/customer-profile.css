@@ -1,0 +1,184 @@
+.profile-shell { max-width: 1060px; margin: 42px auto 90px; padding: 0 24px; }
+
+.profile-heading { display: flex; align-items: center; gap: 18px; margin-bottom: 30px; }
+.profile-heading h1 { margin: 3px 0 2px; color: #193f59; font-size: clamp(28px, 4vw, 42px); line-height: 1.1; letter-spacing: -.045em; }
+.profile-heading p { margin: 0; color: #658095; font-size: 15px; }
+.profile-heading .eyebrow { color: #3482ae; }
+
+.profile-avatar-image,
+.profile-avatar-fallback {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+  place-items: center;
+  overflow: hidden;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3aa8dc, #526fc1);
+  box-shadow: 0 8px 20px rgba(38, 113, 161, .2);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.profile-avatar-image { object-fit: cover; }
+.profile-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(270px, .7fr); gap: 22px; align-items: start; }
+.profile-main,
+.profile-side { display: grid; gap: 18px; }
+
+.profile-card {
+  padding: 25px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--surface-radius-lg);
+  background: #fff;
+  box-shadow: var(--surface-highlight), var(--surface-shadow);
+}
+
+.profile-card h2 { margin: 0 0 15px; color: #1c415a; font-size: 18px; line-height: 1.35; }
+.profile-card p { margin: 0 0 18px; color: #678196; font-size: 14px; line-height: 1.6; }
+.profile-details { display: grid; gap: 14px; margin: 0 0 20px; }
+.profile-details div { display: flex; justify-content: space-between; gap: 20px; padding-bottom: 13px; border-bottom: 1px solid #e0edf4; }
+.profile-details div:last-child { padding-bottom: 0; border-bottom: 0; }
+.profile-details dt { color: #6d8799; font-size: 13px; }
+.profile-details dd { margin: 0; color: #234b65; font-size: 13px; font-weight: 700; text-align: right; word-break: break-word; }
+.profile-status { color: #8c9eaa !important; }
+.profile-status.is-connected { color: #287d5b !important; }
+.profile-status.is-connected::before { content: "✓ "; }
+.profile-text-link { color: #287cab; font-size: 13px; font-weight: 700; text-decoration: none; }
+.profile-text-link:hover { text-decoration: underline; }
+
+.payout-account-card > p { margin-top: -7px; }
+.payout-form { display: grid; gap: 15px; }
+.profile-field { display: grid; gap: 7px; }
+.profile-field label { color: #365a71; font-size: 13px; font-weight: 700; }
+.profile-field input,
+.profile-field select {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--surface-radius-sm);
+  background: #fbfdff;
+  color: #1e4058;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.profile-field select {
+  padding-right: 46px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23365f78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  cursor: pointer;
+}
+
+.profile-field select option {
+  background: #fff;
+  color: #1e4058;
+}
+
+.profile-field input:focus,
+.profile-field select:focus { border-color: #62aad1; box-shadow: 0 0 0 4px rgba(76, 166, 216, .13); }
+.profile-field input::placeholder { color: #91a9b8; }
+.profile-form-error { color: #b74458; font-size: 12px; }
+.profile-form-error:empty { display: none; }
+.profile-form-error ul { margin: 0; padding-left: 18px; }
+.profile-save-status { padding: 11px 13px; margin-bottom: 15px; border: 1px solid #bfe4d0; border-radius: var(--surface-radius-sm); background: #e8f8ef; color: #287657; font-size: 13px; font-weight: 700; }
+.payout-save-button { width: 100%; min-height: 48px; margin-top: 2px; background: linear-gradient(100deg, #45a5d9, #5a7fc5); color: #fff; }
+.payout-save-button:hover { box-shadow: 0 8px 17px rgba(48, 119, 177, .22); transform: translateY(-1px); }
+
+.profile-highlight-card { border-color: var(--surface-border-strong); background: linear-gradient(135deg, #e4f6ff, #fff); }
+.profile-card-icon { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 12px; border-radius: 11px; background: #4a9fd2; color: #fff; font-size: 19px; font-weight: 800; }
+.profile-card-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.profile-highlight-card .button { min-height: 43px; padding: 10px 15px; }
+.profile-logout-card { border-color: #d6e6ef; }
+.profile-logout-button { width: 100%; border-color: #bad8e8; color: #285d7d; }
+.profile-logout-button:hover { border-color: #76b4d4; background: #f5fbff; }
+
+@supports (appearance: base-select) {
+  .profile-field select {
+    appearance: base-select;
+    background-image: none;
+  }
+
+  .profile-field select::picker-icon {
+    color: #365f78;
+    transition: transform .2s;
+  }
+
+  .profile-field select:open::picker-icon { transform: rotate(180deg); }
+
+  .profile-field select::picker(select) {
+    margin-top: 7px;
+    padding: 6px;
+    border: 1px solid var(--surface-border-strong);
+    border-radius: var(--surface-radius-md);
+    background: #fff;
+    box-shadow: var(--surface-shadow);
+  }
+
+  .profile-field select option {
+    padding: 11px 12px;
+    border-radius: 11px;
+  }
+
+  .profile-field select option:hover,
+  .profile-field select option:checked { background: #e8f6ff; }
+}
+
+@media (max-width: 760px) {
+  .profile-shell { margin-top: 26px; padding: 0 16px; }
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .profile-heading { align-items: flex-start; gap: 13px; margin-bottom: 22px; }
+  .profile-avatar-image, .profile-avatar-fallback { width: 60px; height: 60px; flex-basis: 60px; font-size: 21px; }
+  .profile-heading h1 { font-size: 27px; }
+  .profile-heading p { font-size: 13px; word-break: break-word; }
+  .profile-card { padding: 20px; border-radius: 20px; box-shadow: var(--surface-highlight), 0 8px 20px rgba(38, 99, 137, .07); }
+  .profile-details div { display: grid; gap: 3px; }
+  .profile-details dd { text-align: left; }
+}
+
+/* CatBack pink profile */
+.profile-heading h1 { color: #422733; }
+.profile-heading p { color: #846c78; }
+.profile-heading .eyebrow { color: #bd3f73; }
+.profile-avatar-image,
+.profile-avatar-fallback {
+  background: linear-gradient(135deg, #eb5a90, #a661d9);
+  box-shadow: 0 8px 20px rgba(176, 62, 127, .2);
+}
+.profile-card { border-color: #efd4df; box-shadow: inset 0 1px 0 #fff, 0 12px 30px rgba(126, 57, 91, .08); }
+.profile-card h2 { color: #432936; }
+.profile-card p { color: #836d78; }
+.profile-details div { border-bottom-color: #f2dfe7; }
+.profile-details dt { color: #8a737f; }
+.profile-details dd { color: #533344; }
+.profile-text-link { color: #bd3f73; }
+.profile-field label { color: #664353; }
+.profile-field input,
+.profile-field select { border-color: #edd0dc; background-color: #fffafd; color: #4a2f3c; }
+.profile-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23a63a69' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+}
+.profile-field input:focus,
+.profile-field select:focus { border-color: #df5a90; box-shadow: 0 0 0 4px rgba(225, 82, 141, .12); }
+.payout-save-button { background: linear-gradient(100deg, #ea548b, #d64ca0, #9b62df); }
+.payout-save-button:hover { box-shadow: 0 8px 17px rgba(181, 61, 130, .22); }
+.profile-highlight-card { border-color: #efbfd2; background: linear-gradient(135deg, #ffe7f0, #fff); }
+.profile-card-icon { background: linear-gradient(135deg, #ec5a90, #a65ed8); }
+.profile-logout-card { border-color: #efd4df; }
+.profile-logout-button { border-color: #eabbd0; color: #a43b68; }
+.profile-logout-button:hover { border-color: #dc6c99; background: #fff5f9; }
+
+@supports (appearance: base-select) {
+  .profile-field select { background-image: none; }
+  .profile-field select::picker-icon { color: #a63a69; }
+  .profile-field select option:hover,
+  .profile-field select option:checked { background: #ffe8f1; }
+}

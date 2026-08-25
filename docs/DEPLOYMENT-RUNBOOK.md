@@ -6,6 +6,17 @@ Không đặt secret trong `appsettings.json`. Production cần PostgreSQL passw
 
 Initial admin được seed từ environment và có extra property `MustChangePassword=true`. Hãy đổi mật khẩu tạm ngay khi bàn giao và không tái sử dụng credential cũ.
 
+## Google OAuth trên IIS
+
+Nút Google chỉ hiển thị khi cả hai biến cấu hình này có giá trị:
+
+```xml
+<environmentVariable name="Authentication__Google__ClientId" value="<Google OAuth Web client ID>" />
+<environmentVariable name="Authentication__Google__ClientSecret" value="<Google OAuth client secret>" />
+```
+
+Thêm hai biến vào `environmentVariables` bên trong thẻ `aspNetCore` của `web.config` trên server, không commit secret vào source control. Trong Google Cloud Console, tạo OAuth client loại **Web application** và đăng ký callback chính xác là `https://<domain-cua-ban>/signin-google`. Sau khi thay đổi biến môi trường, recycle App Pool.
+
 ## Triển khai
 
 1. Tạo database/volume mới `webhoantien`; không mount volume của hệ thống tiền nhiệm.

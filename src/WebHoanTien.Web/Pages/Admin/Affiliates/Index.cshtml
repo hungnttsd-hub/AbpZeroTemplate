@@ -1,4 +1,40 @@
 @page
 @model WebHoanTien.Web.Pages.Admin.Affiliates.IndexModel
 @{ ViewData["Title"] = "Quản trị affiliate"; }
-<section class="page-shell"><div class="page-heading"><div><span class="eyebrow">Operations</span><h1>Quản trị affiliate</h1></div><form method="post" asp-page-handler="Sync"><button class="button button-primary">Sync Now</button></form></div><div class="step-grid"><article><b>@(Model.Connection.IsConfigured ? "✓" : "!")</b><h3>Kết nối Shopee</h3><p>Mode: @Model.Connection.Mode<br />Giới hạn tài liệu: @Model.Connection.HourlyRateLimit request/giờ</p></article><article><b>@Model.States.Items.Count</b><h3>Sync state</h3><p>Lần sync đầu chỉ chạy sau khi chọn ngày bắt đầu.</p></article><article><b>70%</b><h3>Rule mặc định</h3><p>Snapshot theo purchaseTime, dùng netCommission.</p></article></div><p class="fine-print"><a href="/hangfire">Mở Hangfire Dashboard</a> · API quản trị nằm dưới <code>/api/app/admin</code>.</p></section>
+<section class="page-shell">
+    <div class="page-heading"><div><span class="eyebrow">Operations</span><h1>Quản trị affiliate</h1></div></div>
+    @if (TempData["ImportMessage"] is string message) { <div class="flash">@message</div> }
+    @if (TempData["SettlementMessage"] is string settlementMessage) { <div class="flash">@settlementMessage</div> }
+    @if (TempData["CommissionMessage"] is string commissionMessage) { <div class="flash">@commissionMessage</div> }
+    <div class="step-grid">
+        <article><b>@(Model.Connection.IsConfigured ? "✓" : "!")</b><h3>Affiliate ID</h3><p>Link tạo bởi ứng dụng dùng <code>@Model.Connection.Mode</code>.</p></article>
+        <article><b>@Model.CurrentCommissionRule.UserShareRate.ToString("0.##")%</b><h3>Khách nhận</h3><p>Áp dụng cho estimate mới và đơn Shopee theo thời điểm đặt hàng.</p></article>
+        <article><b>CSV</b><h3>Nguồn chi trả</h3><p>Đơn hoàn thành chỉ được rút sau khi có bảng kê Shopee đã thanh toán.</p></article>
+    </div>
+    <form method="post" asp-page-handler="SetCommissionRate" class="panel commission-rate-form">
+        <div>
+            <span class="eyebrow">Tỷ lệ chia hoa hồng</span>
+            <h2>Khách hàng nhận</h2>
+            <p>Estimate tạo từ bây giờ dùng tỷ lệ này. Đơn đã import giữ nguyên số tiền đã chốt.</p>
+        </div>
+        <label asp-for="UserShareRate">Tỷ lệ khách nhận (%)</label>
+        <div class="commission-rate-input"><input asp-for="UserShareRate" type="number" min="0" max="100" step="0.01" inputmode="decimal" /><span>%</span></div>
+        <span asp-validation-for="UserShareRate" class="field-error"></span>
+        <button class="button button-primary" type="submit">Áp dụng tỷ lệ</button>
+    </form>
+    <form method="post" enctype="multipart/form-data" asp-page-handler="Import" class="card-list">
+        <label for="shopee-report">Báo cáo chuyển đổi Shopee (CSV/TXT)</label>
+        <input id="shopee-report" asp-for="Report" type="file" accept=".csv,.txt,text/csv,text/plain" required />
+        <p class="fine-print">Cần có các cột: Mã đơn hàng, Sub ID, Thời gian đặt hàng và Hoa hồng thực nhận. Có thể thêm trạng thái, sản phẩm, số lượng và giá trị đơn.</p>
+        <p class="fine-print">Báo cáo này chỉ cập nhật đơn phát sinh và trạng thái hoàn thành; chưa cộng tiền vào số dư rút được.</p>
+        <button class="button button-primary" type="submit">Import báo cáo chuyển đổi</button>
+    </form>
+    <form method="post" enctype="multipart/form-data" asp-page-handler="ImportSettlement" class="card-list">
+        <label for="shopee-settlement-report">Bảng kê Shopee đã thanh toán (CSV/TXT)</label>
+        <input id="shopee-settlement-report" asp-for="SettlementReport" type="file" accept=".csv,.txt,text/csv,text/plain" required />
+        <p class="fine-print">Cần có cột ID đơn hàng và Số tiền Shopee thực trả sau các khoản cấn trừ. Có thể thêm Mã bảng kê và Ngày thanh toán.</p>
+        <p class="fine-print"><a href="~/templates/shopee-settlement-template.csv" download>Tải file CSV mẫu</a></p>
+        <button class="button button-primary" type="submit">Ghi nhận tiền vào ví</button>
+    </form>
+    <p class="fine-print"><a href="/hangfire">Mở Hangfire Dashboard</a> · API import: <code>POST /api/app/admin/shopee-reports/import</code>.</p>
+</section>

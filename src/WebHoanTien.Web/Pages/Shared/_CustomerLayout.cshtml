@@ -1,36 +1,101 @@
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var userName = User.Identity?.Name?.Trim();
+    var displayedUserName = string.IsNullOrWhiteSpace(userName) ? "Tài khoản" : userName;
+    var emailSeparatorIndex = displayedUserName.IndexOf('@');
+
+    if (emailSeparatorIndex > 0)
+    {
+        displayedUserName = displayedUserName[..emailSeparatorIndex];
+    }
+
+    var userInitial = displayedUserName[..1].ToUpperInvariant();
+    var currentPath = Context.Request.Path.Value ?? string.Empty;
+    var isHomeActive = currentPath == "/" || currentPath.Equals("/Index", StringComparison.OrdinalIgnoreCase);
+    var isOrdersActive = currentPath.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase);
+    var isWalletActive = currentPath.StartsWith("/Wallet", StringComparison.OrdinalIgnoreCase);
+    var isAccountActive = currentPath.StartsWith("/Account/Profile", StringComparison.OrdinalIgnoreCase);
+    var bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
+}
 <!doctype html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Tạo link mua sắm Shopee và theo dõi phần hoa hồng được chia sẻ." />
-    <title>@(ViewData["Title"] ?? "webHoanTien.com")</title>
+    <meta name="description" content="CatBack giúp tạo link mua sắm Shopee và theo dõi phần hoàn tiền được chia sẻ." />
+    <meta name="theme-color" content="#031E45" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="CatBack" />
+    <title>@(ViewData["Title"] ?? "CatBack")</title>
+    <link rel="manifest" href="~/manifest.webmanifest" asp-append-version="true" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16x16.png" asp-append-version="true" />
+    <link rel="shortcut icon" href="~/favicon.ico" asp-append-version="true" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/customer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/customer-dashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/account.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/customer-navigation.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/customer-profile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/customer-theme-green.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/orders-mobile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/link-page-mobile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/wallet.css" asp-append-version="true" />
 </head>
-<body>
+<body class="@bodyClass">
 <header class="site-header">
-    <a class="brand" href="/"><span class="brand-mark">W</span><span>webHoanTien<span class="brand-dot">.com</span></span></a>
-    <nav aria-label="Điều hướng chính">
-        <a href="/#how">Cách hoạt động</a>
-        @if (User.Identity?.IsAuthenticated == true)
+    <a class="brand" href="/" aria-label="Về trang chủ"><span class="brand-mark" aria-hidden="true"><img src="~/catback-mascot-reference.png" alt="" /></span></a>
+    <nav class="site-navigation" aria-label="Điều hướng chính">
+        @if (isAuthenticated)
         {
-            <a href="/Orders">Đơn của tôi</a><a href="/Account/Manage">Tài khoản</a>
+            <a class="site-nav-link @(isWalletActive ? "is-active" : null)" href="/Wallet">Ví tiền</a>
+            <a class="site-nav-link orders-navigation-link @(isOrdersActive ? "is-active" : null)" href="/Orders">Đơn hàng</a>
         }
         else
         {
-            <a class="button button-ghost" href="/Account/Login">Đăng nhập</a>
+            <a class="site-nav-link orders-navigation-link" href="/Account/Login?returnUrl=%2FOrders">Đơn hàng</a>
         }
     </nav>
+    <div class="header-actions">
+        <button class="button button-ghost install-app-button" id="install-app-button" type="button" hidden>Thêm lối tắt</button>
+        @if (isAuthenticated)
+        {
+            <a class="header-avatar @(isAccountActive ? "is-active" : null)" href="/Account/Profile" title="Tài khoản: @displayedUserName" aria-label="Mở thông tin tài khoản của @displayedUserName">@userInitial</a>
+        }
+        else
+        {
+            <a class="button button-ghost login-button" href="/Account/Login">Đăng nhập</a>
+        }
+    </div>
 </header>
+<div class="pwa-install-help" id="pwa-install-help" role="dialog" aria-modal="true" aria-labelledby="pwa-install-title" tabindex="-1" hidden>
+    <div class="pwa-install-card">
+        <button class="pwa-install-close" id="pwa-install-close" type="button" aria-label="Đóng">×</button>
+        <h2 id="pwa-install-title">Thêm CatBack vào màn hình chính</h2>
+        <p id="pwa-install-message"></p>
+    </div>
+</div>
+<script src="~/pwa.js" asp-append-version="true"></script>
 <main>@RenderBody()</main>
+@if (isAuthenticated)
+{
+    <nav class="mobile-bottom-navigation" aria-label="Điều hướng nhanh">
+        <a class="@(isHomeActive ? "is-active" : null)" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z" /></svg><span>Trang chủ</span></a>
+        <a class="@(isWalletActive ? "is-active" : null)" href="/Wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M15 10h6v5h-6a2.5 2.5 0 0 1 0-5Z"/><circle cx="16" cy="12.5" r=".7"/></svg><span>Ví tiền</span></a>
+        <a class="@(isOrdersActive ? "is-active" : null)" href="/Orders"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="2" /><path d="M9 4.8h6M9 10h6M9 14h4" /></svg><span>Đơn hàng</span></a>
+        <a class="@(isAccountActive ? "is-active" : null)" href="/Account/Profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg><span>Tài khoản</span></a>
+    </nav>
+}
 <footer class="site-footer">
-    <div><strong>webHoanTien.com</strong><p>Nền tảng chia sẻ hoa hồng tiếp thị liên kết.</p></div>
+    <div><strong>CatBack</strong><p>Nền tảng chia sẻ hoa hồng tiếp thị liên kết.</p></div>
     <div class="footer-links"><a href="/Legal/Terms">Điều khoản</a><a href="/Legal/Privacy">Riêng tư</a><a href="mailto:support@webhoantien.com">Liên hệ</a></div>
 </footer>
+<script src="~/customer-navigation.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,19 +1,15 @@
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
-using Volo.Abp.SettingManagement;
-using Volo.Abp.Settings;
+using Volo.Abp.Timing;
+using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
-using WebHoanTien.Operations;
 using WebHoanTien.Permissions;
-using WebHoanTien.Settings;
-using WebHoanTien.Integrations.Shopee;
 
 namespace WebHoanTien.Admin;
 
@@ -21,51 +17,19 @@ namespace WebHoanTien.Admin;
 public class AdminAffiliateSettingsAppService : WebHoanTienAppService, IAdminAffiliateSettingsAppService
 {
     private readonly IConfiguration _configuration;
-    private readonly ISettingProvider _settingProvider;
-    private readonly ISettingManager _settingManager;
-    private readonly IShopeeAmsPermissionChecker _permissionChecker;
-    public AdminAffiliateSettingsAppService(IConfiguration configuration, ISettingProvider settingProvider,
-        ISettingManager settingManager, IShopeeAmsPermissionChecker permissionChecker)
+    public AdminAffiliateSettingsAppService(IConfiguration configuration)
     {
         _configuration = configuration;
-        _settingProvider = settingProvider;
-        _settingManager = settingManager;
-        _permissionChecker = permissionChecker;
     }
 
-    public async Task<AffiliateConnectionStatusDto> GetAsync() => new()
+    public Task<AffiliateConnectionStatusDto> GetAsync() => Task.FromResult(new AffiliateConnectionStatusDto
     {
         Platform = AffiliatePlatform.Shopee,
-        Mode = _configuration["Affiliate:ProviderMode"] ?? "Shopee",
-        IsConfigured = !string.IsNullOrWhiteSpace(_configuration["Shopee:AppId"]) && !string.IsNullOrWhiteSpace(_configuration["Shopee:Secret"]),
-        Endpoint = _configuration["Shopee:Endpoint"] ?? "https://open-api.affiliate.shopee.vn/graphql",
-        HourlyRateLimit = 8000,
-        AllowTotalCommissionFallback = await _settingProvider.GetAsync<bool>(WebHoanTienSettings.AllowTotalCommissionFallback)
-    };
-
-    public async Task<AffiliateConnectionStatusDto> UpdateAsync(UpdateAffiliateSettingsInput input)
-    {
-        await _settingManager.SetGlobalAsync(
-            WebHoanTienSettings.AllowTotalCommissionFallback,
-            input.AllowTotalCommissionFallback.ToString().ToLowerInvariant());
-        return await GetAsync();
-    }
-
-    public async Task<ShopeeAmsPermissionCheckDto> CheckPermissionAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await _permissionChecker.CheckPermissionAsync(cancellationToken);
-        return new ShopeeAmsPermissionCheckDto
-        {
-            IsConfigured = result.IsConfigured,
-            HasPermission = result.HasPermission,
-            CheckedAtUtc = result.CheckedAtUtc,
-            HttpStatusCode = result.HttpStatusCode,
-            Error = result.Error,
-            Message = result.Message,
-            RequestId = result.RequestId,
-            ReturnedRecords = result.ReturnedRecords
-        };
-    }
+        Mode = "affiliate_id + sub_id",
+        IsConfigured = !string.IsNullOrWhiteSpace(_configuration["Shopee:AffiliateId"]),
+        Endpoint = _configuration["Shopee:ProductDataEndpoint"] ?? "https://data.addlivetag.com/product-data/product-data.php",
+        HourlyRateLimit = 300
+    });
 }
 
 [Authorize(WebHoanTienPermissions.Admin.CommissionRules)]
@@ -73,11 +37,42 @@ public class AdminCommissionRuleAppService : WebHoanTienAppService, IAdminCommis
 {
     private readonly IRepository<AffiliateCommissionRule, Guid> _repository;
     private readonly AffiliateCommissionRuleManager _manager;
-    public AdminCommissionRuleAppService(IRepository<AffiliateCommissionRule, Guid> repository, AffiliateCommissionRuleManager manager)
-    { _repository = repository; _manager = manager; }
+    private readonly IClock _clock;
+    public AdminCommissionRuleAppService(IRepository<AffiliateCommissionRule, Guid> repository, AffiliateCommissionRuleManager manager, IClock clock)
+    { _repository = repository; _manager = manager; _clock = clock; }
 
     public async Task<ListResultDto<AffiliateCommissionRuleDto>> GetListAsync() => new(
         (await _repository.GetListAsync()).OrderByDescending(x => x.EffectiveFrom).Select(Map).ToList());
+
+    public async Task<AffiliateCommissionRuleDto> GetCurrentAsync() => Map(
+        await _manager.GetForPurchaseAsync(AffiliatePlatform.Shopee, _clock.Now));
+
+    [UnitOfWork]
+    public async Task<AffiliateCommissionRuleDto> SetCurrentRateAsync(SetCurrentCommissionRateInput input)
+    {
+        var now = _clock.Now;
+        var activeRules = await _repository.GetListAsync(x => x.Platform == AffiliatePlatform.Shopee && x.IsActive);
+        var current = activeRules.Where(x => x.AppliesAt(now)).OrderByDescending(x => x.EffectiveFrom).FirstOrDefault()
+            ?? throw new BusinessException(WebHoanTienDomainErrorCodes.CommissionRuleNotFound);
+        if (current.UserShareRate == input.UserShareRate) return Map(current);
+
+        if (current.EffectiveFrom >= now)
+        {
+            current.ChangeUserShareRate(input.UserShareRate);
+            await _repository.UpdateAsync(current, autoSave: true);
+            return Map(current);
+        }
+
+        var nextEffectiveFrom = activeRules.Where(x => x.EffectiveFrom > now)
+            .OrderBy(x => x.EffectiveFrom).Select(x => (DateTime?)x.EffectiveFrom).FirstOrDefault();
+        current.CloseAt(now);
+        await _repository.UpdateAsync(current, autoSave: true);
+
+        var replacement = new AffiliateCommissionRule(GuidGenerator.Create(), AffiliatePlatform.Shopee,
+            input.UserShareRate, now, nextEffectiveFrom);
+        await _repository.InsertAsync(replacement, autoSave: true);
+        return Map(replacement);
+    }
 
     public async Task<AffiliateCommissionRuleDto> CreateAsync(CreateCommissionRuleInput input)
     {
@@ -151,7 +146,7 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
             var dto = MapOrder(order, conversion);
             dto.Items = (await _items.GetListAsync(x => x.OrderId == order.Id))
                 .OrderBy(x => x.ExternalItemId, StringComparer.Ordinal)
-                .Select(x => new AffiliateOrderItemDto
+                .Select(x => new AdminAffiliateOrderItemDto
                 {
                     Id = x.Id, ExternalItemId = x.ExternalItemId, ModelId = x.ModelId, ProductName = x.ProductName,
                     PurchaseAmount = x.PurchaseAmount, Quantity = x.Quantity, UserCommission = x.UserCommissionSnapshot,
@@ -192,7 +187,7 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
         PayableUserCommission = x.PayableUserCommission, LastProviderUpdateAt = x.LastProviderUpdateAt
     };
 
-    private static AffiliateOrderDto MapOrder(AffiliateOrder order, AffiliateConversion conversion) => new()
+    private static AdminAffiliateOrderDto MapOrder(AffiliateOrder order, AffiliateConversion conversion) => new()
     {
         Id = order.Id, CreationTime = order.CreationTime, CreatorId = order.CreatorId,
         LastModificationTime = order.LastModificationTime, LastModifierId = order.LastModifierId,
@@ -201,59 +196,8 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
         PurchaseTime = conversion.PurchaseTime, ShopType = order.ShopType, PurchaseAmount = order.PurchaseAmount,
         NetCommission = order.NetCommission, UserCommission = order.UserCommissionSnapshot,
         PayableUserCommission = order.PayableUserCommission,
+        SettledNetCommission = order.SettledNetCommission, SettledUserCommission = order.SettledUserCommission,
+        SettlementReference = order.SettlementReference, SettledAt = order.SettledAt,
         LastUpdatedAt = order.LastModificationTime ?? order.CreationTime
     };
-}
-
-[Authorize(WebHoanTienPermissions.Admin.Sync)]
-public class AdminAffiliateSyncAppService : WebHoanTienAppService, IAdminAffiliateSyncAppService
-{
-    private readonly IRepository<AffiliateSyncState, Guid> _states;
-    private readonly IRepository<AffiliateSyncRun, Guid> _runs;
-    private readonly IAffiliateSyncCoordinator _coordinator;
-    public AdminAffiliateSyncAppService(IRepository<AffiliateSyncState, Guid> states, IRepository<AffiliateSyncRun, Guid> runs, IAffiliateSyncCoordinator coordinator)
-    { _states = states; _runs = runs; _coordinator = coordinator; }
-
-    public async Task<ListResultDto<AffiliateSyncStateDto>> GetStatesAsync() => new(
-        (await _states.GetListAsync()).Select(x => new AffiliateSyncStateDto
-        {
-            Id = x.Id, CreationTime = x.CreationTime, CreatorId = x.CreatorId, LastModificationTime = x.LastModificationTime,
-            LastModifierId = x.LastModifierId, IsDeleted = x.IsDeleted, DeleterId = x.DeleterId, DeletionTime = x.DeletionTime,
-            Platform = x.Platform, SyncKind = x.SyncKind, Watermark = x.Watermark, InitialStartDate = x.InitialStartDate,
-            LastSucceededAt = x.LastSucceededAt, LastError = x.LastError
-        }).ToList());
-
-    public async Task<PagedResultDto<AffiliateSyncRunDto>> GetRunsAsync(PagedAndSortedResultRequestDto input)
-    {
-        var query = (await _runs.GetQueryableAsync()).OrderByDescending(x => x.StartedAt);
-        var total = await AsyncExecuter.CountAsync(query);
-        var rows = await AsyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
-        return new PagedResultDto<AffiliateSyncRunDto>(total, rows.Select(x => new AffiliateSyncRunDto
-        {
-            Id = x.Id, Platform = x.Platform, SyncKind = x.SyncKind, StartedAt = x.StartedAt, FinishedAt = x.FinishedAt,
-            Status = x.Status, FetchedCount = x.FetchedCount, InsertedCount = x.InsertedCount, UpdatedCount = x.UpdatedCount,
-            UnmatchedCount = x.UnmatchedCount, ErrorCount = x.ErrorCount, ErrorSummary = x.ErrorSummary
-        }).ToList());
-    }
-
-    public async Task SetInitialDateAsync(SetInitialSyncDateInput input)
-    {
-        var now = Clock.Now;
-        if (input.StartDate > now || input.StartDate < now.AddMonths(-3)) throw new UserFriendlyException("Ngày bắt đầu phải nằm trong 3 tháng gần nhất.");
-        var state = (await _states.GetListAsync(x => x.Platform == AffiliatePlatform.Shopee && x.SyncKind == AffiliateSyncKind.Conversion)).FirstOrDefault();
-        var isNew = state is null;
-        state ??= new AffiliateSyncState(GuidGenerator.Create(), AffiliatePlatform.Shopee, AffiliateSyncKind.Conversion);
-        state.SetInitialStartDate(input.StartDate);
-        if (isNew) await _states.InsertAsync(state, autoSave: true);
-        else await _states.UpdateAsync(state, autoSave: true);
-    }
-
-    public Task SyncNowAsync() => _coordinator.EnqueueSyncAsync(AffiliateSyncKind.Conversion);
-
-    public Task ReconcileAsync(ReconcileInput input)
-    {
-        if (input.To <= input.From || input.To - input.From > TimeSpan.FromDays(93))
-            throw new UserFriendlyException("Khoảng reconcile phải hợp lệ và không vượt quá 3 tháng.");
-        return _coordinator.EnqueueSyncAsync(AffiliateSyncKind.Reconciliation, input.From, input.To);
-    }
 }

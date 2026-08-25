@@ -1,0 +1,31 @@
+@page "/Wallet/History"
+@using WebHoanTien.Web.Pages.Wallet
+@model WebHoanTien.Web.Pages.Wallet.HistoryModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Lịch sử ví";
+    ViewData["BodyClass"] = "catback-wallet-page";
+}
+
+<section class="wallet-shell wallet-history-shell">
+    <header class="wallet-topbar"><a href="/Wallet" aria-label="Về ví tiền"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg></a><h1>Lịch sử ví</h1><span></span></header>
+    <nav class="wallet-history-filters" aria-label="Lọc lịch sử ví">
+        <a class="@(Model.Kind is null ? "is-active" : null)" href="/Wallet/History">Tất cả</a>
+        <a class="@(Model.Kind == WalletMovementKind.Commission ? "is-active" : null)" href="/Wallet/History?kind=Commission">Hoàn tiền</a>
+        <a class="@(Model.Kind == WalletMovementKind.Withdrawal ? "is-active" : null)" href="/Wallet/History?kind=Withdrawal">Rút tiền</a>
+    </nav>
+    <section class="wallet-list-card wallet-history-list">
+        <partial name="_MovementList" model="Model.Movements.Items" />
+    </section>
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="wallet-pagination" aria-label="Phân trang lịch sử">
+            @if (Model.CurrentPage > 1) { <a href="?kind=@Model.Kind&page=@(Model.CurrentPage - 1)">‹ Trước</a> } else { <span></span> }
+            <b>@Model.CurrentPage / @Model.TotalPages</b>
+            @if (Model.CurrentPage < Model.TotalPages) { <a href="?kind=@Model.Kind&page=@(Model.CurrentPage + 1)">Sau ›</a> } else { <span></span> }
+        </nav>
+    }
+</section>
+
+<div class="wallet-toast" data-wallet-toast role="status" hidden></div>
+@section Scripts { <script src="~/wallet.js" asp-append-version="true"></script> }

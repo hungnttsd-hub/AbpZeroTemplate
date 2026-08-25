@@ -1,20 +1,104 @@
 @page
 @model OrdersModel
-@{ ViewData["Title"] = "Đơn hàng của tôi"; }
-<section class="page-shell">
-    <div class="page-heading"><div><span class="eyebrow">Cashback</span><h1>Đơn hàng của tôi</h1></div><form method="post" asp-page-handler="Sync"><button class="button button-primary">Kiểm tra đơn mới</button></form></div>
-    @if (TempData["Message"] is string message) { <div class="flash">@message</div> }
-    <div class="filter-bar"><select aria-label="Trạng thái"><option>Tất cả trạng thái</option><option>Đang chờ</option><option>Đã duyệt</option><option>Đã hủy</option></select><span>Shopee có thể cần thời gian để ghi nhận giao dịch.</span></div>
-    <div class="card-list">
-    @if (Model.Orders.Items.Count == 0)
-    { <div class="empty"><span>◎</span><h2>Chưa thấy đơn mới</h2><p>Đơn sẽ xuất hiện sau khi Shopee ghi nhận và gửi dữ liệu về hệ thống.</p></div> }
-    @foreach (var order in Model.Orders.Items)
-    {
-        <details class="order-card">
-            <summary><div><small>ORDER ID</small><h2>@order.ExternalOrderId</h2><p>@order.PurchaseTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p></div><span class="status status-@order.Status.ToString().ToLowerInvariant()">@order.Status</span></summary>
-            <div class="order-numbers"><div><span>Tổng giá trị</span><strong>@order.PurchaseAmount.ToString("N0") ₫</strong></div><div><span>Hoa hồng Shopee thực nhận</span><strong>@order.NetCommission.ToString("N0") ₫</strong></div><div class="highlight"><span>Bạn được nhận</span><strong>@order.PayableUserCommission.ToString("N0") ₫</strong></div></div>
-            <p class="fine-print">Cập nhật lần cuối @order.LastUpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · Bấm để thu gọn/mở rộng.</p>
-        </details>
-    }
+@{
+    ViewData["Title"] = "Đơn hàng";
+    ViewData["BodyClass"] = "orders-mobile-shell";
+}
+<section class="cb-orders-page">
+    <header class="cb-orders-hero">
+        <div class="cb-orders-titlebar">
+            <a class="cb-back-button" href="/" aria-label="Quay về trang chủ">
+                <img src="~/orders-icons/arrow-left.svg" alt="" />
+            </a>
+            <h1>Đơn hàng</h1>
+            <span class="cb-title-spacer" aria-hidden="true"></span>
+        </div>
+
+        <div class="cb-order-metrics" aria-label="Tổng quan đơn hàng">
+            <article>
+                <span class="cb-metric-icon cb-metric-pending"><img src="~/orders-icons/clock.svg" alt="" /></span>
+                <strong>@Model.PendingCount</strong>
+                <span>Chờ xử lý</span>
+            </article>
+            <article>
+                <span class="cb-metric-icon cb-metric-confirmed"><img src="~/orders-icons/badge-check.svg" alt="" /></span>
+                <strong>@Model.ConfirmedCount</strong>
+                <span>Đã xác nhận</span>
+            </article>
+            <article>
+                <span class="cb-metric-icon cb-metric-cashback"><img src="~/orders-icons/cashback.svg" alt="" /></span>
+                <strong>@CustomerOrderUi.FormatMoney(Model.ExpectedCashback)</strong>
+                <span>Hoàn tiền dự kiến</span>
+            </article>
+        </div>
+    </header>
+
+    <div class="cb-orders-content">
+        <nav class="cb-order-filters" aria-label="Lọc đơn hàng">
+            <a class="@Model.FilterClass(null)" href="/Orders">Tất cả</a>
+            <a class="@Model.FilterClass("pending")" href="/Orders?status=pending">Chờ xử lý</a>
+            <a class="@Model.FilterClass("confirmed")" href="/Orders?status=confirmed">Đã xác nhận</a>
+            <a class="@Model.FilterClass("cancelled")" href="/Orders?status=cancelled">Đã hủy</a>
+        </nav>
+
+        @if (Model.Orders.Items.Count == 0)
+        {
+            <div class="cb-orders-empty">
+                <span><img src="~/orders-icons/store.svg" alt="" /></span>
+                <h2>Chưa có đơn hàng</h2>
+                <p>Đơn sẽ xuất hiện sau khi Shopee ghi nhận và hoàn tất đối soát.</p>
+                <a href="/">Tạo link mua hàng</a>
+            </div>
+        }
+        else
+        {
+            <div class="cb-order-list">
+                @foreach (var order in Model.Orders.Items)
+                {
+                    var firstItem = order.Items.FirstOrDefault();
+                    var productName = string.IsNullOrWhiteSpace(firstItem?.ProductName) ? "Sản phẩm Shopee" : firstItem.ProductName;
+                    var statusClass = CustomerOrderUi.GetStatusClass(order.Status);
+                    <article class="cb-order-card @(Model.IsAdminOrderView ? "cb-order-card-admin" : null)">
+                        <div class="cb-order-product-image">
+                            @if (!string.IsNullOrWhiteSpace(order.ProductImageUrl))
+                            {
+                                <img src="@order.ProductImageUrl" alt="Ảnh @productName" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
+                                <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
+                            }
+                            else
+                            {
+                                <span><img src="~/orders-icons/store.svg" alt="" /></span>
+                            }
+                        </div>
+                        <div class="cb-order-product-copy">
+                            <h2>@productName</h2>
+                            <p>Sản phẩm từ Shopee</p>
+                            <time datetime="@order.PurchaseTime.ToString("O")">@CustomerOrderUi.FormatDate(order.PurchaseTime)</time>
+                        </div>
+                        @if (Model.IsAdminOrderView)
+                        {
+                            <div class="cb-order-user">
+                                <span>Người dùng</span>
+                                <strong>@(string.IsNullOrWhiteSpace(order.UserEmail) ? "Chưa xác định" : order.UserEmail)</strong>
+                            </div>
+                        }
+                        <div class="cb-order-card-summary">
+                            <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
+                            <strong>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</strong>
+                            <span class="cb-cashback-value">+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</span>
+                        </div>
+                        <a class="cb-order-detail-link" href="/Orders/@order.Id?returnUrl=@Uri.EscapeDataString(Model.ReturnUrl)">
+                            <span>Xem chi tiết</span><img src="~/orders-icons/chevron-right.svg" alt="" />
+                        </a>
+                    </article>
+                }
+            </div>
+        }
+
+        <a class="cb-support-cta" href="mailto:support@webhoantien.com">
+            <span><img src="~/orders-icons/headphones.svg" alt="" /></span>
+            <span><strong>Cần hỗ trợ?</strong><small>CatBack luôn sẵn sàng giải đáp về đơn hàng.</small></span>
+            <img src="~/orders-icons/chevron-right-white.svg" alt="" />
+        </a>
     </div>
 </section>

@@ -1,0 +1,57 @@
+@using WebHoanTien.Web.Pages.Wallet
+@model IReadOnlyList<WebHoanTien.Affiliates.WalletMovementDto>
+
+@if (Model.Count == 0)
+{
+    <div class="wallet-empty-state">
+        <span aria-hidden="true">◎</span>
+        <strong>Chưa có biến động nào</strong>
+        <p>Hoa hồng và yêu cầu rút tiền sẽ xuất hiện tại đây.</p>
+    </div>
+}
+else
+{
+    <div class="wallet-movement-list">
+        @foreach (var movement in Model)
+        {
+            <article class="wallet-movement" data-wallet-request="@(movement.Kind == WebHoanTien.Affiliates.WalletMovementKind.Withdrawal ? movement.Id : null)">
+                <span class="wallet-movement-icon @(movement.Kind == WebHoanTien.Affiliates.WalletMovementKind.Withdrawal ? "withdrawal" : movement.StatusClass)" aria-hidden="true">
+                    @if (movement.Kind == WebHoanTien.Affiliates.WalletMovementKind.Withdrawal)
+                    {
+                        <svg viewBox="0 0 24 24"><path d="M12 20V5m0 0-5 5m5-5 5 5" /></svg>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24"><path d="M7 8h10l1 12H6L7 8Z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/><path d="M12 11v6m2-4.5c-.4-.8-1-1.2-2-1.2-1.1 0-1.9.6-1.9 1.4 0 .7.6 1.1 1.6 1.3l.8.2c1 .2 1.5.6 1.5 1.4 0 .8-.8 1.4-2 1.4-1 0-1.8-.4-2.2-1.1"/></svg>
+                    }
+                </span>
+                <div class="wallet-movement-copy">
+                    <strong>@movement.Title</strong>
+                    <small>@movement.Description · @WalletPageUi.FormatDate(movement.OccurredAt)</small>
+                    <div class="wallet-movement-mobile-status"><span class="wallet-status @movement.StatusClass" data-wallet-status>@movement.StatusLabel</span></div>
+                </div>
+                <div class="wallet-movement-value">
+                    <strong class="@(movement.Amount < 0 ? "is-negative" : null)">@(movement.Amount > 0 ? "+" : movement.Amount < 0 ? "−" : string.Empty)@WalletPageUi.FormatMoney(Math.Abs(movement.Amount))</strong>
+                    <span class="wallet-status @movement.StatusClass" data-wallet-status>@movement.StatusLabel</span>
+                </div>
+                @if (movement.CanCancel || movement.HasProof)
+                {
+                    <div class="wallet-movement-actions">
+                        @if (movement.HasProof)
+                        {
+                            <a href="/api/app/wallet/withdrawal-requests/@movement.Id/proof" target="_blank" rel="noopener">Xem chứng từ</a>
+                        }
+                        @if (movement.CanCancel)
+                        {
+                            <form method="post" action="/Wallet?handler=Cancel" data-wallet-cancel>
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="requestId" value="@movement.Id" />
+                                <button type="submit">Hủy yêu cầu</button>
+                            </form>
+                        }
+                    </div>
+                }
+            </article>
+        }
+    </div>
+}

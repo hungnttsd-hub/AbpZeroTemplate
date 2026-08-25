@@ -1,7 +1,7 @@
 {
   "culture": "vi",
   "texts": {
-    "AppName": "webHoanTien.com",
+    "AppName": "CatBack",
     "Welcome": "Mua sắm Shopee, nhận lại một phần hoa hồng",
     "Menu:Home": "Trang chủ",
     "Menu:MyOrders": "Đơn của tôi",
@@ -13,6 +13,17 @@
     "Permission:CommissionRules": "Quy tắc hoa hồng",
     "Permission:Orders": "Quản lý đơn hàng",
     "Permission:Sync": "Đồng bộ dữ liệu",
-    "Permission:ManualMatch": "Ghép conversion thủ công"
+    "Permission:ManualMatch": "Ghép conversion thủ công",
+    "Permission:Payouts": "Quản lý thanh toán",
+    "Menu:Wallet": "Ví tiền",
+    "Menu:Payouts": "Thanh toán",
+    "WebHoanTien:Wallet:PayoutAccountRequired": "Vui lòng lưu tài khoản nhận tiền trước khi yêu cầu rút.",
+    "WebHoanTien:Wallet:WithdrawalBelowMinimum": "Số tiền rút tối thiểu là 10.000đ.",
+    "WebHoanTien:Wallet:InsufficientBalance": "Số dư khả dụng không đủ cho yêu cầu này.",
+    "WebHoanTien:Wallet:PendingExists": "Bạn đang có một yêu cầu rút tiền chờ xử lý.",
+    "WebHoanTien:Wallet:InvalidState": "Yêu cầu rút tiền đã được xử lý và không thể thay đổi.",
+    "WebHoanTien:Wallet:NotOwned": "Bạn không có quyền truy cập yêu cầu rút tiền này.",
+    "WebHoanTien:Wallet:ProofInvalid": "Ảnh chứng từ không hợp lệ.",
+    "WebHoanTien:Wallet:NotBacked": "Số hoa hồng đã xác nhận hiện không đủ để thanh toán yêu cầu này."
   }
 }

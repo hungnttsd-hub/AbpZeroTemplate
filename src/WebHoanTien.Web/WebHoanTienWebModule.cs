@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -6,6 +7,10 @@ using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Claims;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -126,6 +131,10 @@ public class WebHoanTienWebModule : AbpModule
         ConfigureAuthentication(context, hostingEnvironment, configuration);
         context.Services.AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("Default")!, name: "postgresql", tags: new[] { "ready" });
+        context.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
+        });
         ConfigureUrls(configuration);
         ConfigureBundles();
         ConfigureAutoMapper();
@@ -142,10 +151,17 @@ public class WebHoanTienWebModule : AbpModule
         {
             options.SignIn.RequireConfirmedEmail = configuration.GetValue("Identity:RequireConfirmedEmail", !environment.IsDevelopment());
             options.User.RequireUniqueEmail = true;
+            options.Password.RequiredLength = 6;
+            options.Password.RequiredUniqueChars = 0;
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
         });
 
         var googleClientId = configuration["Authentication:Google:ClientId"];
         var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
+        var googleCallbackUrl = GetGoogleCallbackUrl(configuration);
         if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
         {
             context.Services.AddAuthentication().AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
@@ -154,6 +170,14 @@ public class WebHoanTienWebModule : AbpModule
                 options.ClientSecret = googleClientSecret;
                 options.CallbackPath = "/signin-google";
                 options.SaveTokens = true;
+                if (googleCallbackUrl is not null)
+                {
+                    options.Events.OnRedirectToAuthorizationEndpoint = redirectContext =>
+                    {
+                        redirectContext.Response.Redirect(ReplaceOAuthRedirectUri(redirectContext.RedirectUri, googleCallbackUrl.AbsoluteUri));
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    };
+                }
                 options.Events.OnCreatingTicket = ticketContext =>
                 {
                     if (ticketContext.User.TryGetProperty("picture", out var picture) && picture.GetString() is { Length: > 0 } avatar)
@@ -165,6 +189,71 @@ public class WebHoanTienWebModule : AbpModule
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
+        });
+    }
+
+    private static Uri? GetGoogleCallbackUrl(IConfiguration configuration)
+    {
+        var configuredUrl = configuration["Authentication:Google:CallbackUrl"];
+        if (string.IsNullOrWhiteSpace(configuredUrl)) return null;
+
+        if (!Uri.TryCreate(configuredUrl, UriKind.Absolute, out var callbackUrl)
+            || !string.Equals(callbackUrl.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(callbackUrl.AbsolutePath, "/signin-google", StringComparison.Ordinal)
+            || !string.IsNullOrEmpty(callbackUrl.Query)
+            || !string.IsNullOrEmpty(callbackUrl.Fragment))
+        {
+            throw new AbpException("Authentication:Google:CallbackUrl must be an HTTPS URL ending in /signin-google.");
+        }
+
+        return callbackUrl;
+    }
+
+    private static string ReplaceOAuthRedirectUri(string authorizationEndpoint, string callbackUrl)
+    {
+        var endpoint = new Uri(authorizationEndpoint);
+        var query = QueryHelpers.ParseQuery(endpoint.Query);
+        var replacementQuery = new QueryBuilder();
+
+        foreach (var parameter in query)
+        {
+            if (string.Equals(parameter.Key, "redirect_uri", StringComparison.OrdinalIgnoreCase))
+            {
+                replacementQuery.Add(parameter.Key, callbackUrl);
+                continue;
+            }
+
+            foreach (var value in parameter.Value)
+            {
+                replacementQuery.Add(parameter.Key, value ?? string.Empty);
+            }
+        }
+
+        var endpointBuilder = new UriBuilder(endpoint)
+        {
+            Query = replacementQuery.ToQueryString().Value?.TrimStart('?')
+        };
+        return endpointBuilder.Uri.AbsoluteUri;
+    }
+
+    private static void UseConfiguredGoogleCallbackUrl(IApplicationBuilder app, IConfiguration configuration)
+    {
+        var callbackUrl = GetGoogleCallbackUrl(configuration);
+        if (callbackUrl is null) return;
+
+        var publicHost = callbackUrl.IsDefaultPort
+            ? new HostString(callbackUrl.Host)
+            : new HostString(callbackUrl.Host, callbackUrl.Port);
+
+        app.Use(async (httpContext, next) =>
+        {
+            if (string.Equals(httpContext.Request.Path.Value, callbackUrl.AbsolutePath, StringComparison.Ordinal))
+            {
+                httpContext.Request.Scheme = callbackUrl.Scheme;
+                httpContext.Request.Host = publicHost;
+            }
+
+            await next();
         });
     }
 
@@ -185,6 +274,7 @@ public class WebHoanTienWebModule : AbpModule
                 bundle =>
                 {
                     bundle.AddFiles("/global-styles.css");
+                    bundle.AddFiles("/admin-payouts.css");
                 }
             );
         });
@@ -234,7 +324,7 @@ public class WebHoanTienWebModule : AbpModule
         services.AddAbpSwaggerGen(
             options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "WebHoanTien API", Version = "v1" });
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "CatBack API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
             }
@@ -251,6 +341,8 @@ public class WebHoanTienWebModule : AbpModule
             app.UseDeveloperExceptionPage();
         }
 
+        app.UseForwardedHeaders();
+        UseConfiguredGoogleCallbackUrl(app, context.ServiceProvider.GetRequiredService<IConfiguration>());
         app.UseAbpRequestLocalization();
 
         if (!env.IsDevelopment())
@@ -274,27 +366,19 @@ public class WebHoanTienWebModule : AbpModule
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
             Authorization = new[] { new AdminHangfireDashboardAuthorizationFilter() },
-            DashboardTitle = "webHoanTien Jobs"
+            DashboardTitle = "CatBack Jobs"
         });
 
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>
         {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "WebHoanTien API");
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "CatBack API");
         });
 
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
 
-        RecurringJob.AddOrUpdate<AffiliateSyncJob>(
-            "affiliate-conversion-hourly",
-            job => job.ExecuteAsync(new AffiliateSyncJobArgs { Platform = AffiliatePlatform.Shopee, Kind = AffiliateSyncKind.Conversion }),
-            Cron.Hourly);
-        RecurringJob.AddOrUpdate<AffiliateSyncJob>(
-            "affiliate-reconciliation-daily",
-            job => job.ExecuteAsync(new AffiliateSyncJobArgs { Platform = AffiliatePlatform.Shopee, Kind = AffiliateSyncKind.Reconciliation }),
-            Cron.Daily(2));
         RecurringJob.AddOrUpdate<AffiliateRetentionJob>(
             "affiliate-retention-daily",
             job => job.ExecuteAsync(new AffiliateRetentionJobArgs()),

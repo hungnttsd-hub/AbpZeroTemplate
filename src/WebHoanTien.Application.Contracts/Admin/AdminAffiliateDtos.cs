@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Validation;
 using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.Admin;
@@ -16,31 +18,11 @@ public sealed class AffiliateConnectionStatusDto
     public bool IsConfigured { get; set; }
     public string Endpoint { get; set; } = string.Empty;
     public int HourlyRateLimit { get; set; }
-    public bool AllowTotalCommissionFallback { get; set; }
-}
-
-public sealed class UpdateAffiliateSettingsInput
-{
-    public bool AllowTotalCommissionFallback { get; set; }
-}
-
-public sealed class ShopeeAmsPermissionCheckDto
-{
-    public bool IsConfigured { get; set; }
-    public bool HasPermission { get; set; }
-    public DateTime CheckedAtUtc { get; set; }
-    public int? HttpStatusCode { get; set; }
-    public string? Error { get; set; }
-    public string? Message { get; set; }
-    public string? RequestId { get; set; }
-    public int ReturnedRecords { get; set; }
 }
 
 public interface IAdminAffiliateSettingsAppService : IApplicationService
 {
     Task<AffiliateConnectionStatusDto> GetAsync();
-    Task<AffiliateConnectionStatusDto> UpdateAsync(UpdateAffiliateSettingsInput input);
-    Task<ShopeeAmsPermissionCheckDto> CheckPermissionAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed class AffiliateCommissionRuleDto : FullAuditedEntityDto<Guid>
@@ -60,56 +42,18 @@ public sealed class CreateCommissionRuleInput
     public DateTime? EffectiveTo { get; set; }
 }
 
+public sealed class SetCurrentCommissionRateInput
+{
+    [Range(0, 100)] public decimal UserShareRate { get; set; } = WebHoanTienConsts.DefaultUserShareRate;
+}
+
 public interface IAdminCommissionRuleAppService : IApplicationService
 {
     Task<ListResultDto<AffiliateCommissionRuleDto>> GetListAsync();
+    Task<AffiliateCommissionRuleDto> GetCurrentAsync();
+    Task<AffiliateCommissionRuleDto> SetCurrentRateAsync(SetCurrentCommissionRateInput input);
     Task<AffiliateCommissionRuleDto> CreateAsync(CreateCommissionRuleInput input);
     Task DeactivateAsync(Guid id);
-}
-
-public sealed class AffiliateSyncStateDto : FullAuditedEntityDto<Guid>
-{
-    public AffiliatePlatform Platform { get; set; }
-    public AffiliateSyncKind SyncKind { get; set; }
-    public DateTime? Watermark { get; set; }
-    public DateTime? InitialStartDate { get; set; }
-    public DateTime? LastSucceededAt { get; set; }
-    public string? LastError { get; set; }
-}
-
-public sealed class AffiliateSyncRunDto : EntityDto<Guid>
-{
-    public AffiliatePlatform Platform { get; set; }
-    public AffiliateSyncKind SyncKind { get; set; }
-    public DateTime StartedAt { get; set; }
-    public DateTime? FinishedAt { get; set; }
-    public AffiliateSyncRunStatus Status { get; set; }
-    public int FetchedCount { get; set; }
-    public int InsertedCount { get; set; }
-    public int UpdatedCount { get; set; }
-    public int UnmatchedCount { get; set; }
-    public int ErrorCount { get; set; }
-    public string? ErrorSummary { get; set; }
-}
-
-public sealed class SetInitialSyncDateInput
-{
-    public DateTime StartDate { get; set; }
-}
-
-public sealed class ReconcileInput
-{
-    public DateTime From { get; set; }
-    public DateTime To { get; set; }
-}
-
-public interface IAdminAffiliateSyncAppService : IApplicationService
-{
-    Task<ListResultDto<AffiliateSyncStateDto>> GetStatesAsync();
-    Task<PagedResultDto<AffiliateSyncRunDto>> GetRunsAsync(PagedAndSortedResultRequestDto input);
-    Task SetInitialDateAsync(SetInitialSyncDateInput input);
-    Task SyncNowAsync();
-    Task ReconcileAsync(ReconcileInput input);
 }
 
 public sealed class ManualMatchInput
@@ -147,7 +91,39 @@ public class AdminAffiliateConversionDto : EntityDto<Guid>
 
 public sealed class AdminAffiliateConversionDetailsDto : AdminAffiliateConversionDto
 {
-    public List<AffiliateOrderDto> Orders { get; set; } = new();
+    public List<AdminAffiliateOrderDto> Orders { get; set; } = new();
+}
+
+public sealed class AdminAffiliateOrderDto : FullAuditedEntityDto<Guid>
+{
+    public Guid ConversionId { get; set; }
+    public string ExternalOrderId { get; set; } = string.Empty;
+    public AffiliateOrderStatus Status { get; set; }
+    public DateTime PurchaseTime { get; set; }
+    public string? ShopType { get; set; }
+    public decimal PurchaseAmount { get; set; }
+    public decimal NetCommission { get; set; }
+    public decimal UserCommission { get; set; }
+    public decimal PayableUserCommission { get; set; }
+    public decimal? SettledNetCommission { get; set; }
+    public decimal? SettledUserCommission { get; set; }
+    public string? SettlementReference { get; set; }
+    public DateTime? SettledAt { get; set; }
+    public DateTime LastUpdatedAt { get; set; }
+    public List<AdminAffiliateOrderItemDto> Items { get; set; } = new();
+}
+
+public sealed class AdminAffiliateOrderItemDto : EntityDto<Guid>
+{
+    public string ExternalItemId { get; set; } = string.Empty;
+    public string ModelId { get; set; } = string.Empty;
+    public string? ProductName { get; set; }
+    public decimal PurchaseAmount { get; set; }
+    public int Quantity { get; set; }
+    public decimal UserCommission { get; set; }
+    public decimal RefundAmount { get; set; }
+    public bool IsFraud { get; set; }
+    public string? ProviderStatus { get; set; }
 }
 
 public interface IAdminAffiliateOrderAppService : IApplicationService
@@ -155,4 +131,39 @@ public interface IAdminAffiliateOrderAppService : IApplicationService
     Task<PagedResultDto<AdminAffiliateConversionDto>> GetListAsync(AdminAffiliateConversionListInput input);
     Task<AdminAffiliateConversionDetailsDto> GetAsync(Guid id);
     Task ManualMatchAsync(Guid conversionId, ManualMatchInput input);
+}
+
+public sealed class ShopeeReportImportResultDto
+{
+    public int ImportedRowCount { get; set; }
+    public int ConversionCount { get; set; }
+    public int InsertedCount { get; set; }
+    public int UpdatedCount { get; set; }
+    public int UnmatchedCount { get; set; }
+    public int ErrorCount { get; set; }
+    public List<string> Errors { get; set; } = new();
+}
+
+public interface IAdminShopeeReportImportAppService : IApplicationService
+{
+    [DisableValidation]
+    Task<ShopeeReportImportResultDto> ImportAsync(Stream reportStream, string reportFileName,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class ShopeeSettlementImportResultDto
+{
+    public int ImportedRowCount { get; set; }
+    public int SettledCount { get; set; }
+    public int AlreadySettledCount { get; set; }
+    public int UnmatchedCount { get; set; }
+    public int ErrorCount { get; set; }
+    public List<string> Errors { get; set; } = new();
+}
+
+public interface IAdminShopeeSettlementImportAppService : IApplicationService
+{
+    [DisableValidation]
+    Task<ShopeeSettlementImportResultDto> ImportAsync(Stream reportStream, string reportFileName,
+        CancellationToken cancellationToken = default);
 }
