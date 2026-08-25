@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -107,13 +108,33 @@ public class WebHoanTienWebModule : AbpModule
             {
                 var certificatePath = configuration["OpenIddict:CertificatePath"] ?? "openiddict.pfx";
                 var certificatePassword = configuration["OpenIddict:CertificatePassword"];
+                var certificateBase64 = configuration["OpenIddict:CertificateBase64"];
 
                 if (string.IsNullOrWhiteSpace(certificatePassword))
                 {
                     throw new AbpException("OpenIddict:CertificatePassword must be configured outside Development.");
                 }
 
-                serverBuilder.AddProductionEncryptionAndSigningCertificate(certificatePath, certificatePassword);
+                if (!string.IsNullOrWhiteSpace(certificateBase64))
+                {
+                    try
+                    {
+                        var certificate = new X509Certificate2(
+                            Convert.FromBase64String(certificateBase64),
+                            certificatePassword,
+                            X509KeyStorageFlags.EphemeralKeySet | X509KeyStorageFlags.Exportable);
+                        serverBuilder.AddEncryptionCertificate(certificate);
+                        serverBuilder.AddSigningCertificate(certificate);
+                    }
+                    catch (Exception exception) when (exception is FormatException or System.Security.Cryptography.CryptographicException)
+                    {
+                        throw new AbpException("OpenIddict:CertificateBase64 không phải PFX Base64 hợp lệ.", exception);
+                    }
+                }
+                else
+                {
+                    serverBuilder.AddProductionEncryptionAndSigningCertificate(certificatePath, certificatePassword);
+                }
             });
         }
     }
