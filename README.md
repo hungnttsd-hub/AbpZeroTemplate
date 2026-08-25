@@ -13,18 +13,18 @@ cd src/WebHoanTien.Web
 npm run create-bundles
 ```
 
-1. Sao chép `.env.example` thành `.env`, thay toàn bộ giá trị `replace-with-*`.
-2. Tạo certificate OpenIddict tại `secrets/openiddict.pfx`; không commit certificate hoặc mật khẩu.
-3. Chạy `docker compose up --build`.
-4. Mở `http://localhost:8080/health/ready`, sau đó mở ứng dụng.
+1. Sao chép `src/WebHoanTien.Web/appsettings.secrets.example.json` thành `appsettings.secrets.json` trong cùng thư mục và điền cấu hình local.
+2. Sao chép `src/WebHoanTien.DbMigrator/appsettings.secrets.example.json` thành `appsettings.secrets.json` trong cùng thư mục.
+3. Tạo certificate OpenIddict khi chạy Production; không commit certificate hoặc `appsettings.secrets.json`.
+4. Chạy DbMigrator rồi chạy Web từ Visual Studio hoặc `dotnet run`.
 
-Ứng dụng tạo link trực tiếp với `affiliate_id` và `sub_id`; không dùng Shopee Open API. AddLiveTag chỉ cung cấp product data/estimate, không dùng để tạo link hoặc tính cashback. Khi chạy local, điền Shopee Affiliate ID vào `src/WebHoanTien.Web/appsettings.Development.json`:
+Docker Compose vẫn dùng `.env` để truyền cấu hình cho PostgreSQL và ghi đè appsettings theo chuẩn biến môi trường của ASP.NET Core.
+
+Ứng dụng tạo link trực tiếp với `affiliate_id` và `sub_id`; không dùng Shopee Open API. AddLiveTag chỉ cung cấp product data/estimate, không dùng để tạo link hoặc tính cashback. Khi chạy local, điền Shopee Affiliate ID vào `src/WebHoanTien.Web/appsettings.secrets.json`:
 
 ```json
 {
-  "Shopee": {
-    "AffiliateId": "AFFILIATE_ID_CUA_BAN"
-  }
+  "Shopee": { "AffiliateId": "AFFILIATE_ID_CUA_BAN" }
 }
 ```
 

@@ -16,12 +16,12 @@ public class WebHoanTienSettingDefinitionProvider : SettingDefinitionProvider
         SetDefault(context, LocalizationSettingNames.DefaultLanguage, "vi");
         SetDefault(context, EmailSettingNames.DefaultFromAddress, _configuration["Smtp:FromAddress"]);
         SetDefault(context, EmailSettingNames.DefaultFromDisplayName, _configuration["Smtp:FromName"] ?? "CatBack");
-        SetDefault(context, IdentitySettingNames.Password.RequiredLength, "6");
-        SetDefault(context, IdentitySettingNames.Password.RequiredUniqueChars, "0");
-        SetDefault(context, IdentitySettingNames.Password.RequireDigit, "false");
-        SetDefault(context, IdentitySettingNames.Password.RequireLowercase, "false");
-        SetDefault(context, IdentitySettingNames.Password.RequireUppercase, "false");
-        SetDefault(context, IdentitySettingNames.Password.RequireNonAlphanumeric, "false");
+        SetDefault(context, IdentitySettingNames.Password.RequiredLength, _configuration["Identity:Password:RequiredLength"] ?? "6");
+        SetDefault(context, IdentitySettingNames.Password.RequiredUniqueChars, _configuration["Identity:Password:RequiredUniqueChars"] ?? "0");
+        SetDefault(context, IdentitySettingNames.Password.RequireDigit, _configuration["Identity:Password:RequireDigit"] ?? "false");
+        SetDefault(context, IdentitySettingNames.Password.RequireLowercase, _configuration["Identity:Password:RequireLowercase"] ?? "false");
+        SetDefault(context, IdentitySettingNames.Password.RequireUppercase, _configuration["Identity:Password:RequireUppercase"] ?? "false");
+        SetDefault(context, IdentitySettingNames.Password.RequireNonAlphanumeric, _configuration["Identity:Password:RequireNonAlphanumeric"] ?? "false");
         SetDefault(context, EmailSettingNames.Smtp.Host, _configuration["Smtp:Host"]);
         SetDefault(context, EmailSettingNames.Smtp.Port, _configuration["Smtp:Port"] ?? "587");
         SetDefault(context, EmailSettingNames.Smtp.UserName, _configuration["Smtp:Username"]);

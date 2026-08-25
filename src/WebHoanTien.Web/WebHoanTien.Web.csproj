@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="appsettings.secrets.json" Condition="Exists('appsettings.secrets.json')">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Update="Pages\**\*.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

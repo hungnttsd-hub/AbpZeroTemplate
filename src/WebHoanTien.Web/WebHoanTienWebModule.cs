@@ -151,12 +151,12 @@ public class WebHoanTienWebModule : AbpModule
         {
             options.SignIn.RequireConfirmedEmail = configuration.GetValue("Identity:RequireConfirmedEmail", !environment.IsDevelopment());
             options.User.RequireUniqueEmail = true;
-            options.Password.RequiredLength = 6;
-            options.Password.RequiredUniqueChars = 0;
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = configuration.GetValue("Identity:Password:RequiredLength", 6);
+            options.Password.RequiredUniqueChars = configuration.GetValue("Identity:Password:RequiredUniqueChars", 0);
+            options.Password.RequireDigit = configuration.GetValue("Identity:Password:RequireDigit", false);
+            options.Password.RequireLowercase = configuration.GetValue("Identity:Password:RequireLowercase", false);
+            options.Password.RequireUppercase = configuration.GetValue("Identity:Password:RequireUppercase", false);
+            options.Password.RequireNonAlphanumeric = configuration.GetValue("Identity:Password:RequireNonAlphanumeric", false);
         });
 
         var googleClientId = configuration["Authentication:Google:ClientId"];
@@ -379,9 +379,11 @@ public class WebHoanTienWebModule : AbpModule
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
 
+        var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+        var retentionCron = configuration["Affiliate:RetentionCron"] ?? "0 3 * * *";
         RecurringJob.AddOrUpdate<AffiliateRetentionJob>(
             "affiliate-retention-daily",
             job => job.ExecuteAsync(new AffiliateRetentionJobArgs()),
-            Cron.Daily(3));
+            retentionCron);
     }
 }

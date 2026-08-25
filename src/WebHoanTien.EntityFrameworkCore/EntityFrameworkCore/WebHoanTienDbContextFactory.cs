@@ -26,7 +26,9 @@ public class WebHoanTienDbContextFactory : IDesignTimeDbContextFactory<WebHoanTi
     {
         var builder = new ConfigurationBuilder()
             .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../WebHoanTien.DbMigrator/"))
-            .AddJsonFile("appsettings.json", optional: false);
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.secrets.json", optional: true)
+            .AddEnvironmentVariables();
 
         return builder.Build();
     }

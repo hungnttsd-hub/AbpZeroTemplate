@@ -2,20 +2,26 @@
 
 ## Secret bắt buộc
 
-Không đặt secret trong `appsettings.json`. Production cần PostgreSQL password, `StringEncryption:DefaultPassPhrase`, OpenIddict certificate/password, initial admin email/password, Shopee AppId/Secret, Google ClientId/Secret và SMTP credential.
+Không đặt secret trong `appsettings.json` hoặc source control. Tạo `appsettings.secrets.json` cạnh `WebHoanTien.Web.dll` từ file `appsettings.secrets.example.json`; Production cần PostgreSQL password, `StringEncryption:DefaultPassPhrase`, OpenIddict certificate/password, initial admin email/password, Shopee Affiliate ID, Google ClientId/Secret và SMTP credential.
 
-Initial admin được seed từ environment và có extra property `MustChangePassword=true`. Hãy đổi mật khẩu tạm ngay khi bàn giao và không tái sử dụng credential cũ.
+Initial admin được seed từ `appsettings.secrets.json` và có extra property `MustChangePassword=true`. Hãy đổi mật khẩu tạm ngay khi bàn giao và không tái sử dụng credential cũ.
 
 ## Google OAuth trên IIS
 
-Nút Google chỉ hiển thị khi cả hai biến cấu hình này có giá trị:
+Nút Google chỉ hiển thị khi cả hai khóa trong `appsettings.secrets.json` có giá trị:
 
-```xml
-<environmentVariable name="Authentication__Google__ClientId" value="<Google OAuth Web client ID>" />
-<environmentVariable name="Authentication__Google__ClientSecret" value="<Google OAuth client secret>" />
+```json
+{
+  "Authentication": {
+    "Google": {
+      "ClientId": "<Google OAuth Web client ID>",
+      "ClientSecret": "<Google OAuth client secret>"
+    }
+  }
+}
 ```
 
-Thêm hai biến vào `environmentVariables` bên trong thẻ `aspNetCore` của `web.config` trên server, không commit secret vào source control. Trong Google Cloud Console, tạo OAuth client loại **Web application** và đăng ký callback chính xác là `https://<domain-cua-ban>/signin-google`. Sau khi thay đổi biến môi trường, recycle App Pool.
+Trong `appsettings.Production.json`, đặt `Authentication:Google:CallbackUrl` đúng domain public. Trong Google Cloud Console, tạo OAuth client loại **Web application** và đăng ký callback chính xác là `https://<domain-cua-ban>/signin-google`. Sau khi thay đổi appsettings, recycle App Pool.
 
 ## Triển khai
 

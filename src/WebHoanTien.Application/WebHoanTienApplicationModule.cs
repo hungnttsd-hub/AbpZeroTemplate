@@ -36,7 +36,9 @@ public class WebHoanTienApplicationModule : AbpModule
         context.Services.Configure<ShopeeAffiliateOptions>(configuration.GetSection(ShopeeAffiliateOptions.SectionName));
         context.Services.AddHttpClient("ShopeeProductData", client =>
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:ProductDataTimeoutSeconds", 10), 1, 120)));
-        context.Services.AddHttpClient("AffiliateRedirectResolver", client => client.Timeout = TimeSpan.FromSeconds(8))
+        var redirectTimeoutSeconds = Math.Clamp(configuration.GetValue("Affiliate:RedirectTimeoutSeconds", 8), 1, 120);
+        context.Services.AddHttpClient("AffiliateRedirectResolver", client =>
+                client.Timeout = TimeSpan.FromSeconds(redirectTimeoutSeconds))
             .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
             {
                 AllowAutoRedirect = false,
