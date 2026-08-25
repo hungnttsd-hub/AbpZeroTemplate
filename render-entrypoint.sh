@@ -5,6 +5,6 @@ echo "Running database migrations..."
 cd /app/migrator
 dotnet WebHoanTien.DbMigrator.dll
 
-echo "Starting CatBack web service..."
+echo "Starting CatsBack web service..."
 cd /app/web
 exec dotnet WebHoanTien.Web.dll

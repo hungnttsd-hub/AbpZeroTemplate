@@ -9,7 +9,8 @@
     && !/crios|fxios|edgios|opios/i.test(window.navigator.userAgent);
   const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isMobile = () => window.matchMedia('(max-width: 820px)').matches;
-  const installedStorageKey = 'catback-shortcut-installed';
+  const installedStorageKey = 'catsback-shortcut-installed';
+  const legacyInstalledStorageKey = 'catback-shortcut-installed';
   let deferredInstallPrompt;
 
   const markShortcutAsInstalled = () => {
@@ -21,12 +22,17 @@
   const clearInstalledShortcutFlag = () => {
     try {
       window.localStorage.removeItem(installedStorageKey);
+      window.localStorage.removeItem(legacyInstalledStorageKey);
     } catch { }
   };
 
   const isShortcutKnownInstalled = () => {
     try {
-      return window.localStorage.getItem(installedStorageKey) === 'true';
+      const isInstalled = window.localStorage.getItem(installedStorageKey) === 'true'
+        || window.localStorage.getItem(legacyInstalledStorageKey) === 'true';
+
+      if (isInstalled) markShortcutAsInstalled();
+      return isInstalled;
     } catch {
       return false;
     }
@@ -76,7 +82,7 @@
     showHelp(isIosSafari
       ? 'Trên Safari:\n1. Bấm nút Chia sẻ ở thanh công cụ.\n2. Kéo xuống chọn “Thêm vào Màn hình chính”.\n3. Bật “Mở dưới dạng ứng dụng web”, rồi bấm “Thêm”.'
       : isIos
-        ? 'Để thêm CatBack trên iPhone, hãy mở trang này bằng Safari. Sau đó bấm Chia sẻ → “Thêm vào Màn hình chính” → bật “Mở dưới dạng ứng dụng web” → “Thêm”.'
+        ? 'Để thêm CatsBack trên iPhone, hãy mở trang này bằng Safari. Sau đó bấm Chia sẻ → “Thêm vào Màn hình chính” → bật “Mở dưới dạng ứng dụng web” → “Thêm”.'
       : 'Nếu hộp cài đặt chưa hiện, trong Chrome bấm ⋮ ở góc trên bên phải rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào Màn hình chính”.');
   };
 

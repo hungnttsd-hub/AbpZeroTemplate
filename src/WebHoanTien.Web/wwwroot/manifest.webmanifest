@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "CatBack - Hoàn tiền mua sắm",
-  "short_name": "CatBack",
+  "name": "CatsBack - Hoàn tiền mua sắm",
+  "short_name": "CatsBack",
   "description": "Tạo link mua sắm Shopee và theo dõi hoa hồng.",
   "start_url": "/",
   "scope": "/",

@@ -1,4 +1,4 @@
-# Catback Wallet Codex Package
+# CatsBack Wallet Codex Package
 
 Gói này dành riêng cho tính năng **Quản lý ví tiền** và **Rút tiền** để Codex triển khai đúng giao diện đã duyệt.
 

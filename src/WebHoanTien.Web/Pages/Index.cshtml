@@ -1,16 +1,16 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "CatBack — Mua sắm Shopee thông minh";
+    ViewData["Title"] = "CatsBack — Mua sắm Shopee thông minh";
     ViewData["BodyClass"] = "catback-link-page";
     var shareRateValueLabel = Model.CurrentUserShareRate?.ToString("0.##");
 }
 <section class="customer-dashboard">
     <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
         <div class="dashboard-hero-copy">
-            <img class="dashboard-hero-mascot" src="~/catback-mascot-reference.png" alt="Mèo may mắn CatBack" />
+            <img class="dashboard-hero-mascot" src="~/catback-mascot-reference.png" alt="Mèo may mắn CatsBack" />
             <div>
-                <h1 id="dashboard-hero-title">Sắm Shopee lời hơn<br />cùng CatBack</h1>
+                <h1 id="dashboard-hero-title">Sắm Shopee lời hơn<br />cùng CatsBack</h1>
                 <span class="dashboard-trust-badge">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 2.7 8 7 10 4.3-2 7-5.3 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
                     Hoàn tiền thật – Rút tiền thật
@@ -37,7 +37,7 @@
 
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <a class="dashboard-wallet-card" href="/Wallet" aria-label="Xem ví tiền CatBack">
+        <a class="dashboard-wallet-card" href="/Wallet" aria-label="Xem ví tiền CatsBack">
             <div>
                 <span>Số dư ví</span>
                 <strong>@Model.Wallet.AvailableBalance.ToString("N0")đ</strong>

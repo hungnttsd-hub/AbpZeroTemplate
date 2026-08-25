@@ -1,6 +1,6 @@
-# Catback SVG Pack
+# CatsBack SVG Pack
 
-Bộ SVG này được tạo để Codex/dev có thể code giao diện Catback sát với thiết kế đã duyệt.
+Bộ SVG này được tạo để Codex/dev có thể code giao diện CatsBack sát với thiết kế đã duyệt.
 
 ## Thành phần chính
 
@@ -56,4 +56,4 @@ Bộ SVG này được tạo để Codex/dev có thể code giao diện Catback 
 ## Lưu ý
 - SVG dùng font fallback: `Inter, Arial, sans-serif`.
 - Text trong SVG chỉ là guideline/reference; production code vẫn nên render text bằng HTML/CSS khi có thể.
-- Promo card là vector placeholder theo tone Catback, chưa phải mascot brand-official cuối cùng.
+- Promo card là vector placeholder theo tone CatsBack, chưa phải mascot brand-official cuối cùng.

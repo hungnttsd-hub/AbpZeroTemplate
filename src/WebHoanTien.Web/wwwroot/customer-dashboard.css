@@ -248,7 +248,7 @@ body {
   .install-app-button:not([hidden]), .install-app-button:not([hidden])::before { animation: none; }
 }
 
-/* CatBack pink dashboard */
+/* CatsBack pink dashboard */
 .dashboard-hero {
   position: relative;
   display: grid;

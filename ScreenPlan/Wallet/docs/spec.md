@@ -1,4 +1,4 @@
-# Catback UI — Master Implementation Spec
+# CatsBack UI — Master Implementation Spec
 
 ## 1. Technology constraints
 
@@ -74,7 +74,7 @@ Do not show:
 - shop id
 - tracking id
 - affiliate id
-- commission received by Catback / seller
+- commission received by CatsBack / seller
 - raw redirect parameters
 
 ## 3.3 Hide generated products

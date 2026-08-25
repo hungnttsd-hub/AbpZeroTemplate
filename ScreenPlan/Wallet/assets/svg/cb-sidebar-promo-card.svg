@@ -13,7 +13,7 @@
 </defs>
 <rect x="0.5" y="0.5" width="219" height="409" rx="18" fill="url(#promo)" stroke="#1A5F85"/>
 <text x="18" y="32" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">SẮM SHOPEE LỜI HƠN</text>
-<text x="18" y="54" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">CÙNG CATBACK</text>
+<text x="18" y="54" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">CÙNG CATSBACK</text>
 <rect x="18" y="76" width="150" height="40" rx="20" fill="#FFFFFF"/>
 <g transform="translate(30,88)">
   <path d="M12 3L18 5.5V11.4C18 15.1 15.45 18.5 12 19.8C8.55 18.5 6 15.1 6 11.4V5.5L12 3Z" stroke="#0B9098" stroke-width="1.8" stroke-linejoin="round"/>

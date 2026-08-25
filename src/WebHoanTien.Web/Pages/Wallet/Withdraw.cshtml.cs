@@ -33,7 +33,7 @@ public class WithdrawModel : PageModel
             return new JsonResult(new
             {
                 success = true,
-                message = "Yêu cầu rút tiền đã được gửi. CatBack sẽ xử lý trong 1–3 ngày làm việc.",
+                message = "Yêu cầu rút tiền đã được gửi. CatsBack sẽ xử lý trong 1–3 ngày làm việc.",
                 request,
                 availableBalance = overview.AvailableBalance
             });

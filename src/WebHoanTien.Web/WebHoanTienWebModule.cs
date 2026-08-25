@@ -345,7 +345,7 @@ public class WebHoanTienWebModule : AbpModule
         services.AddAbpSwaggerGen(
             options =>
             {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "CatBack API", Version = "v1" });
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "CatsBack API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
             }
@@ -387,13 +387,13 @@ public class WebHoanTienWebModule : AbpModule
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
             Authorization = new[] { new AdminHangfireDashboardAuthorizationFilter() },
-            DashboardTitle = "CatBack Jobs"
+            DashboardTitle = "CatsBack Jobs"
         });
 
         app.UseSwagger();
         app.UseAbpSwaggerUI(options =>
         {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "CatBack API");
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "CatsBack API");
         });
 
         app.UseAuditing();
