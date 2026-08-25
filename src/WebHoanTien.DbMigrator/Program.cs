@@ -32,9 +32,21 @@ class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            .AddAppSettingsSecretsJson()
-            .ConfigureAppConfiguration((_, configuration) =>
-                configuration.AddJsonFile("/etc/secrets/appsettings.secrets.json", optional: true, reloadOnChange: false))
+            .ConfigureAppConfiguration((hostContext, configuration) =>
+            {
+                configuration.Sources.Clear();
+                configuration
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile(
+                        $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json",
+                        optional: true,
+                        reloadOnChange: false)
+                    .AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: false)
+                    .AddJsonFile("/etc/secrets/appsettings.secrets.json", optional: true, reloadOnChange: false)
+                    .AddEnvironmentVariables()
+                    .AddCommandLine(args);
+            })
             .ConfigureLogging((context, logging) => logging.ClearProviders())
             .ConfigureServices((hostContext, services) =>
             {

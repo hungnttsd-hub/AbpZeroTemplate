@@ -30,9 +30,9 @@ public class Program
         {
             Log.Information("Starting web host.");
             var builder = WebApplication.CreateBuilder(args);
+            builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: false);
             builder.Configuration.AddJsonFile("/etc/secrets/appsettings.secrets.json", optional: true, reloadOnChange: false);
-            builder.Host.AddAppSettingsSecretsJson()
-                .UseAutofac()
+            builder.Host.UseAutofac()
                 .UseSerilog();
             await builder.AddApplicationAsync<WebHoanTienWebModule>();
             var app = builder.Build();
