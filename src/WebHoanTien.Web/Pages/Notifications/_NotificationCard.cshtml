@@ -1,0 +1,17 @@
+@using WebHoanTien.Web.Pages.Notifications
+@model WebHoanTien.Notifications.CustomerNotificationListItemDto
+@{
+    var tone = NotificationPageUi.Tone(Model.Kind);
+}
+<button class="notification-card @(!Model.IsRead ? "is-unread" : null)" type="button"
+        data-notification-id="@Model.Id" data-notification-kind="@((int)Model.Kind)">
+    <span class="notification-card-icon notification-tone-@tone" aria-hidden="true">
+        <img src="~/notification-icons/@NotificationPageUi.Icon(Model.Kind)" alt="" />
+    </span>
+    <span class="notification-card-copy">
+        <strong>@Model.Title</strong>
+        <span>@Model.Message</span>
+    </span>
+    <time datetime="@Model.CreationTime.ToString("O")">@NotificationPageUi.FormatTime(Model.CreationTime)</time>
+    <span class="notification-unread-dot" aria-label="Chưa đọc"></span>
+</button>

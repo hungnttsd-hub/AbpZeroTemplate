@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="360" viewBox="0 0 420 360">
+<style>.s{font:12px Inter,Arial,sans-serif;fill:#D8E4EF}</style>
+<rect width="420" height="360" fill="#001B3D"/>
+<path d="M240 0c66 8 120 48 180 116v85c-54 20-107 30-173 30-98 0-168-37-247-109V0h240z" fill="#003A6E" opacity=".62"/>
+<text x="24" y="82" fill="#fff" font-family="Inter,Arial" font-size="42" font-weight="800">Thông báo</text>
+<text x="24" y="124" class="s" style="font-size:18px">Cập nhật hoàn tiền, đơn hàng và ví của bạn</text>
+<circle cx="346" cy="60" r="26" fill="none" stroke="#18B8B0" stroke-width="2"/>
+<circle cx="372" cy="34" r="13" fill="#FFC83D"/>
+<text x="372" y="40" text-anchor="middle" fill="#08254A" font-family="Inter,Arial" font-size="16" font-weight="800">3</text>
+<circle cx="398" cy="60" r="26" fill="none" stroke="#1A7FA1" stroke-width="2"/>
+<rect x="16" y="210" width="84" height="44" rx="22" fill="url(#g1)" stroke="#9EDABF"/>
+<defs><linearGradient id="g1" x1="16" y1="210" x2="100" y2="254"><stop stop-color="#18B8B0"/><stop offset="1" stop-color="#0B9098"/></linearGradient></defs>
+<text x="58" y="237" text-anchor="middle" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="700">✓ Tất cả</text>
+<rect x="110" y="210" width="90" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="208" y="210" width="90" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="306" y="210" width="86" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="16" y="264" width="82" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+</svg>

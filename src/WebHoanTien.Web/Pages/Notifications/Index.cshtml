@@ -1,0 +1,83 @@
+@page "/Notifications"
+@using WebHoanTien.Notifications
+@model WebHoanTien.Web.Pages.Notifications.IndexModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Thông báo | CatsBack";
+    ViewData["BodyClass"] = "catback-notifications-page";
+    var categoryValue = Model.Category.HasValue ? ((int)Model.Category.Value).ToString() : string.Empty;
+}
+
+<section class="notification-shell" data-notification-root data-category="@categoryValue"
+         data-unread-only="@Model.UnreadOnly.ToString().ToLowerInvariant()"
+         data-total-count="@Model.Data.TotalCount">
+    <header class="notification-hero">
+        <a class="notification-back-button" href="/" data-notification-back aria-label="Quay lại">
+            <img src="~/notification-icons/arrow-left.svg" alt="" />
+        </a>
+        <div class="notification-hero-copy">
+            <h1>Thông báo</h1>
+            <p>Cập nhật hoàn tiền, đơn hàng và ví của bạn</p>
+        </div>
+        <div class="notification-hero-actions">
+            <span class="notification-hero-button" aria-label="Thông báo chưa đọc">
+                <img src="~/notification-icons/bell.svg" alt="" />
+                <span class="notification-count-badge" data-notification-badge
+                      hidden="@(Model.Data.UnreadCount == 0)">@(Model.Data.UnreadCount > 99 ? "99+" : Model.Data.UnreadCount)</span>
+            </span>
+            <button class="notification-hero-button" type="button" data-open-notification-filter
+                    aria-label="Mở bộ lọc thông báo">
+                <img src="~/notification-icons/filters.svg" alt="" />
+            </button>
+        </div>
+
+        <nav class="notification-chips" aria-label="Lọc nhanh thông báo">
+            <button class="@(Model.Category is null ? "is-active" : null)" type="button" data-notification-category="">✓ Tất cả</button>
+            <button class="@(Model.Category == CustomerNotificationCategory.Cashback ? "is-active" : null)" type="button" data-notification-category="1">Hoàn tiền</button>
+            <button class="@(Model.Category == CustomerNotificationCategory.Order ? "is-active" : null)" type="button" data-notification-category="2">Đơn hàng</button>
+            <button class="@(Model.Category == CustomerNotificationCategory.Wallet ? "is-active" : null)" type="button" data-notification-category="3">Ví tiền</button>
+            <button class="@(Model.Category == CustomerNotificationCategory.Promotion ? "is-active" : null)" type="button" data-notification-category="4">Ưu đãi</button>
+        </nav>
+    </header>
+
+    <div class="notification-content">
+        <div data-notification-list>
+            <partial name="_NotificationList" model="Model.Data.Items" />
+        </div>
+        <div class="notification-empty" data-notification-empty hidden="@(Model.Data.Items.Count > 0)">
+            <span><img src="~/notification-icons/bell.svg" alt="" /></span>
+            <h2>@(Model.UnreadOnly || Model.Category.HasValue ? "Không có thông báo phù hợp" : "Bạn chưa có thông báo")</h2>
+            <p>@(Model.UnreadOnly || Model.Category.HasValue
+                ? "Hãy thử thay đổi bộ lọc để xem các cập nhật khác."
+                : "Các cập nhật về đơn hàng, hoàn tiền và ví sẽ xuất hiện tại đây.")</p>
+        </div>
+        <button class="notification-load-more" type="button" data-notification-load-more
+                hidden="@(Model.Data.Items.Count >= Model.Data.TotalCount)">Xem thêm thông báo</button>
+    </div>
+</section>
+
+<div class="notification-filter-backdrop" data-notification-filter-backdrop hidden></div>
+<section class="notification-filter-sheet" data-notification-filter-sheet role="dialog" aria-modal="true"
+         aria-labelledby="notification-filter-title" hidden>
+    <div class="notification-filter-handle"></div>
+    <header><h2 id="notification-filter-title">Bộ lọc thông báo</h2><button type="button" data-close-notification-filter aria-label="Đóng">×</button></header>
+    <fieldset>
+        <legend>Loại thông báo</legend>
+        <div class="notification-filter-options">
+            <button type="button" data-sheet-category="">Tất cả</button>
+            <button type="button" data-sheet-category="1">Hoàn tiền</button>
+            <button type="button" data-sheet-category="2">Đơn hàng</button>
+            <button type="button" data-sheet-category="3">Ví tiền</button>
+            <button type="button" data-sheet-category="4">Ưu đãi</button>
+        </div>
+    </fieldset>
+    <label class="notification-unread-filter"><span><strong>Chỉ thông báo chưa đọc</strong><small>Ẩn các thông báo bạn đã xem</small></span><input type="checkbox" data-sheet-unread /></label>
+    <button class="notification-filter-apply" type="button" data-apply-notification-filter>Áp dụng bộ lọc</button>
+</section>
+
+<form data-notification-antiforgery hidden>@Html.AntiForgeryToken()</form>
+<div class="notification-toast" data-notification-toast role="status" hidden></div>
+
+@section Scripts {
+    <script src="~/notifications.js" asp-append-version="true"></script>
+}

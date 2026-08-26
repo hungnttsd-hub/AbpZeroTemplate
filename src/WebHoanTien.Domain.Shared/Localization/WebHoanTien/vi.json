@@ -15,8 +15,10 @@
     "Permission:Sync": "Đồng bộ dữ liệu",
     "Permission:ManualMatch": "Ghép conversion thủ công",
     "Permission:Payouts": "Quản lý thanh toán",
+    "Permission:Notifications": "Quản lý thông báo",
     "Menu:Wallet": "Ví tiền",
     "Menu:Payouts": "Thanh toán",
+    "Menu:Notifications": "Thông báo",
     "WebHoanTien:Wallet:PayoutAccountRequired": "Vui lòng lưu tài khoản nhận tiền trước khi yêu cầu rút.",
     "WebHoanTien:Wallet:WithdrawalBelowMinimum": "Số tiền rút tối thiểu là 10.000đ.",
     "WebHoanTien:Wallet:InsufficientBalance": "Số dư khả dụng không đủ cho yêu cầu này.",
@@ -24,6 +26,9 @@
     "WebHoanTien:Wallet:InvalidState": "Yêu cầu rút tiền đã được xử lý và không thể thay đổi.",
     "WebHoanTien:Wallet:NotOwned": "Bạn không có quyền truy cập yêu cầu rút tiền này.",
     "WebHoanTien:Wallet:ProofInvalid": "Ảnh chứng từ không hợp lệ.",
-    "WebHoanTien:Wallet:NotBacked": "Số hoa hồng đã xác nhận hiện không đủ để thanh toán yêu cầu này."
+    "WebHoanTien:Wallet:NotBacked": "Số hoa hồng đã xác nhận hiện không đủ để thanh toán yêu cầu này.",
+    "WebHoanTien:Notification:NotOwned": "Bạn không có quyền truy cập thông báo này.",
+    "WebHoanTien:Notification:TargetNotFound": "Không tìm thấy người nhận thông báo.",
+    "WebHoanTien:Notification:InvalidActionUrl": "Đường dẫn thông báo không hợp lệ."
   }
 }

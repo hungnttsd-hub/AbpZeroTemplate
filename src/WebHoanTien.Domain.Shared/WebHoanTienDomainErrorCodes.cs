@@ -22,4 +22,7 @@ public static class WebHoanTienDomainErrorCodes
     public const string WithdrawalNotOwned = "WebHoanTien:Wallet:NotOwned";
     public const string WithdrawalProofInvalid = "WebHoanTien:Wallet:ProofInvalid";
     public const string WithdrawalNotBacked = "WebHoanTien:Wallet:NotBacked";
+    public const string NotificationNotOwned = "WebHoanTien:Notification:NotOwned";
+    public const string NotificationTargetNotFound = "WebHoanTien:Notification:TargetNotFound";
+    public const string NotificationInvalidActionUrl = "WebHoanTien:Notification:InvalidActionUrl";
 }

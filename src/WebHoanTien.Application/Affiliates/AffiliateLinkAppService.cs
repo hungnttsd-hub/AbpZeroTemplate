@@ -22,14 +22,14 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     private readonly IAffiliateProviderRegistry _providers;
     private readonly ITrackingTokenGenerator _tokenGenerator;
     private readonly ShopeeAffiliateLinkBuilder _linkBuilder;
-    private readonly AffiliateCommissionRuleManager _commissionRuleManager;
+    private readonly AffiliateUserShareRateResolver _shareRateResolver;
     private readonly AffiliateCommissionCalculator _commissionCalculator;
     private readonly IClock _clock;
     private readonly ILogger<AffiliateLinkAppService> _logger;
 
     public AffiliateLinkAppService(IRepository<AffiliateTracking, Guid> repository, ISafeAffiliateUrlResolver resolver,
         IAffiliateUrlNormalizer normalizer, IAffiliateProviderRegistry providers, ITrackingTokenGenerator tokenGenerator,
-        ShopeeAffiliateLinkBuilder linkBuilder, AffiliateCommissionRuleManager commissionRuleManager,
+        ShopeeAffiliateLinkBuilder linkBuilder, AffiliateUserShareRateResolver shareRateResolver,
         AffiliateCommissionCalculator commissionCalculator, IClock clock, ILogger<AffiliateLinkAppService> logger)
     {
         _repository = repository;
@@ -38,7 +38,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         _providers = providers;
         _tokenGenerator = tokenGenerator;
         _linkBuilder = linkBuilder;
-        _commissionRuleManager = commissionRuleManager;
+        _shareRateResolver = shareRateResolver;
         _commissionCalculator = commissionCalculator;
         _clock = clock;
         _logger = logger;
@@ -157,8 +157,9 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
 
         try
         {
-            var rule = await _commissionRuleManager.GetForPurchaseAsync(AffiliatePlatform.Shopee, _clock.Now);
-            return _commissionCalculator.CalculateUserCommission(providerCommission.Value, rule.UserShareRate);
+            var userShareRate = await _shareRateResolver.GetForNextOrderAsync(CurrentUser.GetId(),
+                AffiliatePlatform.Shopee, _clock.Now);
+            return _commissionCalculator.CalculateUserCommission(providerCommission.Value, userShareRate);
         }
         catch (Exception exception)
         {

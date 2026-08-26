@@ -9,6 +9,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.Affiliates;
 
@@ -23,11 +24,13 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
     private readonly IRepository<UserPayoutAccount, Guid> _payoutAccounts;
     private readonly WalletBalanceCalculator _balanceCalculator;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
+    private readonly CustomerNotificationManager _notificationManager;
 
     public CustomerWalletAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<WithdrawalRequest, Guid> withdrawals,
         IRepository<WithdrawalPaymentProof, Guid> proofs, IRepository<UserPayoutAccount, Guid> payoutAccounts,
-        WalletBalanceCalculator balanceCalculator, IUnitOfWorkManager unitOfWorkManager)
+        WalletBalanceCalculator balanceCalculator, IUnitOfWorkManager unitOfWorkManager,
+        CustomerNotificationManager notificationManager)
     {
         _conversions = conversions;
         _orders = orders;
@@ -36,6 +39,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         _payoutAccounts = payoutAccounts;
         _balanceCalculator = balanceCalculator;
         _unitOfWorkManager = unitOfWorkManager;
+        _notificationManager = notificationManager;
     }
 
     public async Task<CustomerWalletOverviewDto> GetOverviewAsync()
@@ -107,6 +111,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
             var request = new WithdrawalRequest(id, userId, requestCode, payoutAccount, amount,
                 WebHoanTienConsts.WithdrawalFeeAmount);
             await _withdrawals.InsertAsync(request, autoSave: true);
+            await _notificationManager.NotifyWithdrawalStatusAsync(request);
             await unitOfWork.CompleteAsync();
             return MapWithdrawal(request, false);
         }
@@ -125,6 +130,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
             var request = await _withdrawals.GetAsync(id);
             request.Cancel(CurrentUser.GetId(), Clock.Now);
             await _withdrawals.UpdateAsync(request, autoSave: true);
+            await _notificationManager.NotifyWithdrawalStatusAsync(request);
             return MapWithdrawal(request, await _proofs.AnyAsync(x => x.WithdrawalRequestId == id));
         }
         catch (Exception exception) when (ContainsDatabaseMarker(exception, "Concurrency"))

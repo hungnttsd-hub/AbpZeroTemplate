@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="130" height="36" viewBox="0 0 130 36" fill="none">
+
+
+<rect x="0.5" y="0.5" width="129" height="35" rx="17.5" fill="#FFF2C9" stroke="#F8DE92"/>
+<circle cx="18" cy="18" r="10" fill="#FFFFFF" opacity="0.95"/>
+<g transform="translate(8,8) scale(0.8)">
+
+
+<circle cx="10" cy="10" r="7" stroke="#9A5A00" stroke-width="1.9"/>
+<path d="M10 6.2V10.1L12.8 11.9" stroke="#9A5A00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+
+</g>
+<text x="34" y="22" fill="#9A5A00" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="600">Chờ xử lý</text>
+
+</svg>

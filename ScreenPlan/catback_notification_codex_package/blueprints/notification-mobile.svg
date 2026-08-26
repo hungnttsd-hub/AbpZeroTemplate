@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="1780" viewBox="0 0 420 1780">
+<style>
+.t{font:14px Inter,Arial,sans-serif;fill:#08254A}
+.s{font:12px Inter,Arial,sans-serif;fill:#66758F}
+.box{fill:#fff;stroke:#DCE4EE}
+</style>
+<rect width="420" height="1780" fill="#F7F9FC"/>
+<rect x="0" y="0" width="420" height="330" fill="#001B3D"/>
+<path d="M255 0c68 12 114 54 165 120v85c-56 24-112 37-183 37-98 0-165-36-237-98V0h255z" fill="#003A6E" opacity=".65"/>
+<text x="24" y="82" fill="#fff" font-family="Inter,Arial" font-size="42" font-weight="800">Thông báo</text>
+<text x="24" y="124" fill="#D8E4EF" font-family="Inter,Arial" font-size="18">Cập nhật hoàn tiền, đơn hàng và ví của bạn</text>
+<circle cx="346" cy="60" r="26" fill="none" stroke="#18B8B0" stroke-width="2"/>
+<circle cx="372" cy="34" r="13" fill="#FFC83D"/>
+<text x="372" y="40" text-anchor="middle" fill="#08254A" font-family="Inter,Arial" font-size="16" font-weight="800">3</text>
+<circle cx="398" cy="60" r="26" fill="none" stroke="#1A7FA1" stroke-width="2"/>
+<rect x="16" y="210" width="84" height="44" rx="22" fill="url(#g1)" stroke="#9EDABF"/>
+<defs><linearGradient id="g1" x1="16" y1="210" x2="100" y2="254"><stop stop-color="#18B8B0"/><stop offset="1" stop-color="#0B9098"/></linearGradient></defs>
+<text x="58" y="237" text-anchor="middle" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="700">✓ Tất cả</text>
+<rect x="110" y="210" width="90" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="208" y="210" width="90" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="306" y="210" width="86" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="16" y="264" width="82" height="44" rx="22" fill="#fff" stroke="#DCE4EE"/>
+
+<text x="24" y="378" fill="#08254A" font-family="Inter,Arial" font-size="22" font-weight="700">Hôm nay</text>
+<text x="260" y="378" fill="#0B9098" font-family="Inter,Arial" font-size="18" font-weight="700">Đánh dấu đã đọc tất cả</text>
+
+<g transform="translate(16,400)">
+  <rect class="box" width="388" height="146" rx="20"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="#E8F8F7"/>
+  <text x="50" y="58" text-anchor="middle" fill="#0B9098" font-size="28">🛡</text>
+  <text x="102" y="52" class="t" style="font-size:18px;font-weight:700">Hoàn tiền đã ghi nhận</text>
+  <text x="102" y="88" class="s" style="font-size:14px">23.000đ từ đơn Shopee của bạn đã được cộng vào ví.</text>
+  <text x="320" y="48" class="s">2 phút trước</text>
+  <circle cx="366" cy="92" r="5" fill="#0B9098"/>
+</g>
+
+<g transform="translate(16,560)">
+  <rect class="box" width="388" height="146" rx="20"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="#00456F"/>
+  <text x="50" y="58" text-anchor="middle" fill="#fff" font-size="28">👛</text>
+  <text x="102" y="52" class="t" style="font-size:18px;font-weight:700">Tiền rút đang xử lý</text>
+  <text x="102" y="88" class="s" style="font-size:14px">Yêu cầu rút 500.000đ đang được xử lý.</text>
+  <text x="334" y="48" class="s">15 phút trước</text>
+  <circle cx="366" cy="92" r="5" fill="#0B9098"/>
+</g>
+
+<g transform="translate(16,720)">
+  <rect class="box" width="388" height="146" rx="20"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="#DCEEFF"/>
+  <text x="50" y="58" text-anchor="middle" fill="#08254A" font-size="28">👜</text>
+  <text x="102" y="52" class="t" style="font-size:18px;font-weight:700">Đơn hàng đã đối soát</text>
+  <text x="102" y="88" class="s" style="font-size:14px">Đơn mua hàng của bạn đã được xác nhận thành công.</text>
+  <text x="334" y="48" class="s">1 giờ trước</text>
+  <circle cx="366" cy="92" r="5" fill="#0B9098"/>
+</g>
+
+<g transform="translate(16,880)">
+  <rect class="box" width="388" height="146" rx="20"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="#12B6B2"/>
+  <text x="50" y="58" text-anchor="middle" fill="#fff" font-size="28">🏅</text>
+  <text x="102" y="52" class="t" style="font-size:18px;font-weight:700">Hoa hồng sắp ghi nhận</text>
+  <text x="102" y="88" class="s" style="font-size:14px">125.000đ đang chờ ghi nhận thêm vào hệ thống.</text>
+  <text x="304" y="48" class="s">Hôm nay, 09:25</text>
+  <circle cx="366" cy="92" r="5" fill="#0B9098"/>
+</g>
+
+<text x="24" y="1086" fill="#08254A" font-family="Inter,Arial" font-size="22" font-weight="700">Trước đó</text>
+
+<g transform="translate(16,1114)">
+  <rect class="box" width="388" height="132" rx="20"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="#FFC83D"/>
+  <text x="50" y="58" text-anchor="middle" fill="#fff" font-size="28">%</text>
+  <text x="102" y="52" class="t" style="font-size:18px;font-weight:700">Ưu đãi mới từ Catback</text>
+  <text x="102" y="88" class="s" style="font-size:14px">Hoàn tiền lên đến 60% cho một số sản phẩm chọn lọc.</text>
+  <text x="336" y="52" class="s">Hôm qua</text>
+</g>
+
+<g transform="translate(16,1262)">
+  <rect class="box" width="388" height="132" rx="20"/>
+  <rect x="18" y="18" width="64" height="64" rx="18" fill="#E8F8F7"/>
+  <text x="50" y="58" text-anchor="middle" fill="#0B9098" font-size="28">🏦</text>
+  <text x="102" y="52" class="t" style="font-size:18px;font-weight:700">Tài khoản ngân hàng đã cập nhật</text>
+  <text x="102" y="88" class="s" style="font-size:14px">Thông tin tài khoản nhận tiền của bạn đã được lưu.</text>
+  <text x="326" y="52" class="s">2 ngày trước</text>
+</g>
+
+<rect x="0" y="1650" width="420" height="130" fill="#fff" stroke="#E8EDF3"/>
+<text x="58" y="1710" text-anchor="middle" fill="#66758F" font-family="Inter,Arial" font-size="16">Trang chủ</text>
+<text x="160" y="1710" text-anchor="middle" fill="#66758F" font-family="Inter,Arial" font-size="16">Mua sắm</text>
+<text x="265" y="1710" text-anchor="middle" fill="#66758F" font-family="Inter,Arial" font-size="16">Đơn hàng</text>
+<text x="365" y="1710" text-anchor="middle" fill="#0B9098" font-family="Inter,Arial" font-size="16" font-weight="700">Tài khoản</text>
+</svg>

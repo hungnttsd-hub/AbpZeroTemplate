@@ -1,3 +1,5 @@
+@using WebHoanTien.Notifications
+@inject ICustomerNotificationAppService CustomerNotifications
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var userName = User.Identity?.Name?.Trim();
@@ -16,6 +18,7 @@
     var isWalletActive = currentPath.StartsWith("/Wallet", StringComparison.OrdinalIgnoreCase);
     var isAccountActive = currentPath.StartsWith("/Account/Profile", StringComparison.OrdinalIgnoreCase);
     var bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
+    var unreadNotificationCount = isAuthenticated ? await CustomerNotifications.GetUnreadCountAsync() : 0;
 }
 <!doctype html>
 <html lang="vi">
@@ -46,6 +49,7 @@
     <link rel="stylesheet" href="~/orders-mobile.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/link-page-mobile.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/wallet.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/notifications.css" asp-append-version="true" />
 </head>
 <body class="@bodyClass">
 <header class="site-header">
@@ -62,6 +66,14 @@
         }
     </nav>
     <div class="header-actions">
+        @if (isAuthenticated)
+        {
+            <a class="header-notification-bell" href="/Notifications" aria-label="Mở thông báo, @unreadNotificationCount chưa đọc">
+                <img src="~/notification-icons/bell.svg" alt="" />
+                <span class="notification-count-badge" data-notification-badge
+                      hidden="@(unreadNotificationCount == 0)">@(unreadNotificationCount > 99 ? "99+" : unreadNotificationCount)</span>
+            </a>
+        }
         <button class="button button-ghost install-app-button" id="install-app-button" type="button" hidden>Thêm lối tắt</button>
         @if (isAuthenticated)
         {

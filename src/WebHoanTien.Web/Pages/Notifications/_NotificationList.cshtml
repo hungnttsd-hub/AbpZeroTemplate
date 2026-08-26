@@ -1,0 +1,46 @@
+@using System.Linq
+@using WebHoanTien.Web.Pages.Notifications
+@model IReadOnlyList<WebHoanTien.Notifications.CustomerNotificationListItemDto>
+@{
+    var today = Model.Where(x => NotificationPageUi.IsToday(x.CreationTime)).ToList();
+    var previous = Model.Where(x => !NotificationPageUi.IsToday(x.CreationTime)).ToList();
+}
+@if (Model.Count > 0)
+{
+    <section class="notification-group" data-notification-group="today" hidden="@(today.Count == 0)">
+        <header class="notification-group-heading">
+            <h2>@(today.Count > 0 ? "Hôm nay" : "Trước đó")</h2>
+            <button type="button" data-mark-all-read>
+                <img src="~/notification-icons/mark-read.svg" alt="" />
+                Đánh dấu đã đọc tất cả
+            </button>
+        </header>
+        <div class="notification-card-list">
+            @foreach (var notification in today)
+            {
+                <partial name="_NotificationCard" model="notification" />
+            }
+        </div>
+    </section>
+    @if (previous.Count > 0)
+    {
+        <section class="notification-group" data-notification-group="previous">
+            <header class="notification-group-heading notification-previous-heading">
+                <h2>Trước đó</h2>
+                @if (today.Count == 0)
+                {
+                    <button type="button" data-mark-all-read>
+                        <img src="~/notification-icons/mark-read.svg" alt="" />
+                        Đánh dấu đã đọc tất cả
+                    </button>
+                }
+            </header>
+            <div class="notification-card-list">
+                @foreach (var notification in previous)
+                {
+                    <partial name="_NotificationCard" model="notification" />
+                }
+            </div>
+        </section>
+    }
+}

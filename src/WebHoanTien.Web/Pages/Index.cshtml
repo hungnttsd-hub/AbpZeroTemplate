@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "CatsBack — Mua sắm Shopee thông minh";
     ViewData["BodyClass"] = "catback-link-page";
-    var shareRateValueLabel = Model.CurrentUserShareRate?.ToString("0.##");
 }
 <section class="customer-dashboard">
     <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
@@ -19,15 +18,8 @@
         </div>
         <div class="dashboard-cashback-note">
             <p>
-                <span class="dashboard-cashback-heading">⚡ Hoàn tiền lên đến
-                    @if (shareRateValueLabel is not null)
-                    {
-                        <strong class="dashboard-highlight-rate">@shareRateValueLabel%</strong>
-                    }
-                    else
-                    {
-                        <strong class="dashboard-highlight-rate is-text">tỷ lệ hiện hành</strong>
-                    }
+                <span class="dashboard-cashback-heading">⚡ Hoàn tiền lên tới
+                    <strong class="dashboard-highlight-rate">80%</strong>
                     <span>hoa hồng</span>
                 </span>
                 <span class="dashboard-cashback-subtitle">Nhận hoàn tiền sau khi Shopee đối soát đơn hàng.</span>

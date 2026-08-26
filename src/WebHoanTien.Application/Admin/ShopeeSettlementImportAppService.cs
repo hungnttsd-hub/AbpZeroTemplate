@@ -10,6 +10,7 @@ using Volo.Abp.Validation;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Integrations.Shopee;
 using WebHoanTien.Permissions;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.Admin;
 
@@ -20,15 +21,17 @@ public class ShopeeSettlementImportAppService : WebHoanTienAppService, IAdminSho
     private readonly IRepository<AffiliateOrder, Guid> _orders;
     private readonly IRepository<AffiliateConversion, Guid> _conversions;
     private readonly AffiliateCommissionCalculator _calculator;
+    private readonly CustomerNotificationManager _notificationManager;
 
     public ShopeeSettlementImportAppService(ShopeeSettlementReportParser parser,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateConversion, Guid> conversions,
-        AffiliateCommissionCalculator calculator)
+        AffiliateCommissionCalculator calculator, CustomerNotificationManager notificationManager)
     {
         _parser = parser;
         _orders = orders;
         _conversions = conversions;
         _calculator = calculator;
+        _notificationManager = notificationManager;
     }
 
     [DisableValidation]
@@ -77,6 +80,8 @@ public class ShopeeSettlementImportAppService : WebHoanTienAppService, IAdminSho
                 order.Settle(row.ActualPaidCommission, userCommission,
                     row.PaymentReference ?? fallbackReference, row.PaidAt ?? Clock.Now);
                 await _orders.UpdateAsync(order, autoSave: true, cancellationToken: cancellationToken);
+                if (conversion.UserId.HasValue)
+                    await _notificationManager.NotifyOrderStatusAsync(conversion.UserId.Value, order);
                 result.SettledCount++;
             }
             catch (Exception exception)

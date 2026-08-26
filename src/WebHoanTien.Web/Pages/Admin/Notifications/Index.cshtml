@@ -1,0 +1,60 @@
+@page "/Admin/Notifications"
+@using WebHoanTien.Notifications
+@model WebHoanTien.Web.Pages.Admin.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Quản lý thông báo";
+}
+
+<section class="admin-notification-shell">
+    <header class="admin-notification-heading">
+        <div><span>CATSBACK OPERATIONS</span><h1>Quản lý thông báo</h1><p>Gửi ưu đãi trực tiếp tới hộp thư CatsBack của khách hàng.</p></div>
+        <a href="/Admin/Affiliates">Quản trị affiliate</a>
+    </header>
+
+    <div class="admin-notification-grid">
+        <form method="post" asp-page-handler="Send" data-admin-notification-form>
+            @Html.AntiForgeryToken()
+            <div class="admin-notification-form-heading"><span>Gửi ngay</span><h2>Thông báo ưu đãi</h2><p>Nội dung được lưu riêng cho từng người nhận tại thời điểm gửi.</p></div>
+            <label><span>Đối tượng nhận</span><select name="audience" data-notification-audience><option value="AllUsers">Toàn bộ người dùng</option><option value="SingleUser">Một người dùng</option></select></label>
+            <label data-target-email hidden><span>Email người nhận</span><input name="targetEmail" type="email" maxlength="256" placeholder="khachhang@gmail.com" /></label>
+            <label><span>Tiêu đề</span><input name="title" maxlength="160" required placeholder="Ưu đãi mới từ CatsBack" /></label>
+            <label><span>Nội dung</span><textarea name="message" maxlength="700" rows="4" required placeholder="Nhập nội dung ngắn gọn mà khách hàng sẽ nhìn thấy."></textarea></label>
+            <label><span>Đường dẫn nội bộ</span><input name="actionUrl" maxlength="500" placeholder="/ hoặc /Wallet" /><small>Không bắt buộc. Chỉ nhận đường dẫn bắt đầu bằng /.</small></label>
+            <button type="submit">Gửi thông báo</button>
+            <p data-admin-notification-status role="status"></p>
+        </form>
+
+        <aside class="admin-notification-note">
+            <span>i</span><div><strong>Lưu ý trước khi gửi</strong><p>Thông báo được gửi ngay và không thể thu hồi trong phiên bản hiện tại. Hãy kiểm tra kỹ nội dung và đường dẫn.</p></div>
+        </aside>
+    </div>
+
+    <section class="admin-campaign-history">
+        <header><div><span>Lịch sử</span><h2>Các thông báo đã gửi</h2></div><strong>@Model.Campaigns.TotalCount chiến dịch</strong></header>
+        <div class="admin-campaign-list" data-admin-campaign-list>
+            @if (Model.Campaigns.Items.Count == 0)
+            {
+                <div class="admin-campaign-empty" data-admin-campaign-empty><strong>Chưa có thông báo ưu đãi</strong><p>Chiến dịch đầu tiên sẽ xuất hiện tại đây sau khi gửi.</p></div>
+            }
+            @foreach (var campaign in Model.Campaigns.Items)
+            {
+                <article data-campaign-id="@campaign.Id">
+                    <span class="admin-campaign-icon">%</span>
+                    <div><h3>@campaign.Title</h3><p>@campaign.Message</p><small>@campaign.PublishedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @(campaign.Audience == NotificationAudience.AllUsers ? "Toàn bộ người dùng" : campaign.TargetEmail)</small></div>
+                    <strong>@campaign.RecipientCount người nhận</strong>
+                </article>
+            }
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="admin-notification-pagination">
+                @if (Model.PageNumber > 1) { <a asp-page="/Admin/Notifications/Index" asp-route-PageNumber="@(Model.PageNumber - 1)">‹ Trước</a> } else { <span></span> }
+                <b>@Model.PageNumber / @Model.TotalPages</b>
+                @if (Model.PageNumber < Model.TotalPages) { <a asp-page="/Admin/Notifications/Index" asp-route-PageNumber="@(Model.PageNumber + 1)">Sau ›</a> } else { <span></span> }
+            </nav>
+        }
+    </section>
+</section>
+
+<div class="admin-notification-toast" data-admin-notification-toast hidden></div>
+<script src="~/admin-notifications.js" asp-append-version="true"></script>

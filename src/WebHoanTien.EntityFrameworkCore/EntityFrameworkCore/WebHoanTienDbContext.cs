@@ -12,6 +12,7 @@ using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.EntityFrameworkCore;
 
@@ -46,6 +47,8 @@ public class WebHoanTienDbContext :
     public DbSet<UserPayoutAccount> UserPayoutAccounts { get; set; } = null!;
     public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; } = null!;
     public DbSet<WithdrawalPaymentProof> WithdrawalPaymentProofs { get; set; } = null!;
+    public DbSet<CustomerNotification> CustomerNotifications { get; set; } = null!;
+    public DbSet<NotificationCampaign> NotificationCampaigns { get; set; } = null!;
 
     public WebHoanTienDbContext(DbContextOptions<WebHoanTienDbContext> options)
         : base(options)
@@ -63,5 +66,6 @@ public class WebHoanTienDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureFeatureManagement();
         builder.ConfigureAffiliate();
+        builder.ConfigureNotifications();
     }
 }

@@ -10,6 +10,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.IdentityExtensions;
 
@@ -19,13 +20,15 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
     private readonly IIdentityUserRepository _users;
     private readonly IRepository<UserLegalConsent, Guid> _consents;
     private readonly IRepository<UserPayoutAccount, Guid> _payoutAccounts;
+    private readonly CustomerNotificationManager _notificationManager;
 
     public CustomerProfileAppService(IIdentityUserRepository users, IRepository<UserLegalConsent, Guid> consents,
-        IRepository<UserPayoutAccount, Guid> payoutAccounts)
+        IRepository<UserPayoutAccount, Guid> payoutAccounts, CustomerNotificationManager notificationManager)
     {
         _users = users;
         _consents = consents;
         _payoutAccounts = payoutAccounts;
+        _notificationManager = notificationManager;
     }
 
     public async Task<CustomerProfileDto> GetAsync()
@@ -64,6 +67,9 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
 
         var userId = CurrentUser.GetId();
         var payoutAccount = await _payoutAccounts.FindAsync(x => x.UserId == userId);
+        var isChanged = payoutAccount is null || payoutAccount.BankCode != bankCode ||
+            payoutAccount.AccountNumber != accountNumber || payoutAccount.AccountHolderName != accountHolderName.ToUpperInvariant();
+        var eventVersion = payoutAccount?.ConcurrencyStamp ?? "created";
         if (payoutAccount is null)
         {
             payoutAccount = new UserPayoutAccount(GuidGenerator.Create(), userId, bankCode, accountNumber, accountHolderName);
@@ -74,6 +80,9 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
             payoutAccount.Update(bankCode, accountNumber, accountHolderName);
             await _payoutAccounts.UpdateAsync(payoutAccount, autoSave: true);
         }
+
+        if (isChanged)
+            await _notificationManager.NotifyPayoutAccountUpdatedAsync(userId, payoutAccount.Id, eventVersion);
 
         return MapPayoutAccount(payoutAccount);
     }

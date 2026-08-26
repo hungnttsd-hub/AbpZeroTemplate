@@ -8,6 +8,7 @@ using Volo.Abp.Guids;
 using Volo.Abp.Timing;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Integrations;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.Operations;
 
@@ -20,21 +21,26 @@ public class AffiliateConversionUpserter : ITransientDependency
     private readonly IRepository<AffiliateOrder, Guid> _orders;
     private readonly IRepository<AffiliateOrderItem, Guid> _items;
     private readonly AffiliateCommissionRuleManager _ruleManager;
+    private readonly AffiliateUserShareRateResolver _shareRateResolver;
     private readonly AffiliateCommissionCalculator _calculator;
+    private readonly CustomerNotificationManager _notificationManager;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
 
     public AffiliateConversionUpserter(IRepository<AffiliateTracking, Guid> trackings,
         IRepository<AffiliateConversion, Guid> conversions, IRepository<AffiliateOrder, Guid> orders,
         IRepository<AffiliateOrderItem, Guid> items, AffiliateCommissionRuleManager ruleManager,
-        AffiliateCommissionCalculator calculator, IGuidGenerator guidGenerator, IClock clock)
+        AffiliateUserShareRateResolver shareRateResolver, AffiliateCommissionCalculator calculator,
+        CustomerNotificationManager notificationManager, IGuidGenerator guidGenerator, IClock clock)
     {
         _trackings = trackings;
         _conversions = conversions;
         _orders = orders;
         _items = items;
         _ruleManager = ruleManager;
+        _shareRateResolver = shareRateResolver;
         _calculator = calculator;
+        _notificationManager = notificationManager;
         _guidGenerator = guidGenerator;
         _clock = clock;
     }
@@ -46,6 +52,7 @@ public class AffiliateConversionUpserter : ITransientDependency
             x.ExternalConversionId == source.ExternalConversionId)).FirstOrDefault();
         var inserted = conversion is null;
         conversion ??= new AffiliateConversion(_guidGenerator.Create(), platform, source.ExternalConversionId, source.PurchaseTime);
+        var wasMatchedToUser = conversion.UserId.HasValue;
 
         var matched = conversion.TrackingId.HasValue;
         if (!matched && !string.IsNullOrWhiteSpace(source.AttributionValue))
@@ -60,8 +67,14 @@ public class AffiliateConversionUpserter : ITransientDependency
         }
 
         var rule = await _ruleManager.GetForPurchaseAsync(platform, source.PurchaseTime);
+        var userShareRate = rule.UserShareRate;
+        if (conversion.UserId.HasValue)
+        {
+            userShareRate = await _shareRateResolver.GetForOrderAsync(conversion.UserId.Value, platform,
+                source.PurchaseTime, conversion.Id, conversion.ExternalConversionId, rule.UserShareRate);
+        }
         conversion.SetClickTime(source.ClickTime);
-        conversion.ApplyCommission(source.GrossCommission, source.NetCommission, source.CommissionSource, rule.UserShareRate);
+        conversion.ApplyCommission(source.GrossCommission, source.NetCommission, source.CommissionSource, userShareRate);
         conversion.ChangeStatus(source.Status, _clock.Now);
         if (inserted) await _conversions.InsertAsync(conversion, autoSave: true);
         else await _conversions.UpdateAsync(conversion, autoSave: true);
@@ -71,14 +84,18 @@ public class AffiliateConversionUpserter : ITransientDependency
             var order = (await _orders.GetListAsync(x => x.ConversionId == conversion.Id &&
                 x.ExternalOrderId == sourceOrder.ExternalOrderId)).FirstOrDefault();
             var isNewOrder = order is null;
+            var previousStatus = order?.Status;
             order ??= new AffiliateOrder(_guidGenerator.Create(), conversion.Id, sourceOrder.ExternalOrderId);
-            var orderUserCommission = _calculator.CalculateUserCommission(sourceOrder.NetCommission, rule.UserShareRate);
+            var orderUserCommission = _calculator.CalculateUserCommission(sourceOrder.NetCommission, userShareRate);
             order.Update(sourceOrder.Status, sourceOrder.ShopType, sourceOrder.PurchaseAmount, sourceOrder.NetCommission,
                 orderUserCommission);
             if (isNewOrder) await _orders.InsertAsync(order, autoSave: true);
             else await _orders.UpdateAsync(order, autoSave: true);
+            if (conversion.UserId.HasValue &&
+                (isNewOrder || previousStatus != order.Status || !wasMatchedToUser))
+                await _notificationManager.NotifyOrderStatusAsync(conversion.UserId.Value, order);
 
-            var allocation = _calculator.Allocate(sourceOrder.NetCommission, rule.UserShareRate,
+            var allocation = _calculator.Allocate(sourceOrder.NetCommission, userShareRate,
                     sourceOrder.Items.Select(item => new CommissionAllocationInput(
                         item.ExternalItemId + ":" + (item.ModelId ?? string.Empty), item.ItemTotalCommission)))
                 .ToDictionary(item => item.Key, StringComparer.Ordinal);

@@ -13,5 +13,6 @@ public static class WebHoanTienPermissions
         public const string Sync = Default + ".Sync";
         public const string ManualMatch = Default + ".ManualMatch";
         public const string Payouts = Default + ".Payouts";
+        public const string Notifications = Default + ".Notifications";
     }
 }

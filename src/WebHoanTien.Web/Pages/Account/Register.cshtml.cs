@@ -26,11 +26,9 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly IEmailSender _emailSender;
-    private readonly AffiliateCommissionRuleManager _commissionRuleManager;
     private bool _confirmationEmailSent;
 
     public string? RegistrationError { get; private set; }
-    public decimal? CurrentUserShareRate { get; private set; }
 
     [BindProperty]
     public bool AcceptedTerms { get; set; }
@@ -43,21 +41,13 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         IRepository<UserLegalConsent, Guid> consents,
         IGuidGenerator guidGenerator,
         IClock clock,
-        IEmailSender emailSender,
-        AffiliateCommissionRuleManager commissionRuleManager)
+        IEmailSender emailSender)
         : base(accountAppService, schemeProvider, accountOptions, identityDynamicClaimsPrincipalContributorCache)
     {
         _consents = consents;
         _guidGenerator = guidGenerator;
         _clock = clock;
         _emailSender = emailSender;
-        _commissionRuleManager = commissionRuleManager;
-    }
-
-    public override async Task<IActionResult> OnGetAsync()
-    {
-        await LoadCurrentUserShareRateAsync();
-        return await base.OnGetAsync();
     }
 
     public override async Task<IActionResult> OnPostAsync()
@@ -83,7 +73,6 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         {
             ExternalProviders = await GetExternalProviders();
             await CheckSelfRegistrationAsync();
-            await LoadCurrentUserShareRateAsync();
             return Page();
         }
 
@@ -92,7 +81,6 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             RegistrationError = "Tài khoản với email này đã tồn tại trong hệ thống. Vui lòng đăng nhập.";
             ExternalProviders = await GetExternalProviders();
             await CheckSelfRegistrationAsync();
-            await LoadCurrentUserShareRateAsync();
             return Page();
         }
 
@@ -124,21 +112,7 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             RegistrationError = "Không thể tạo tài khoản. Vui lòng kiểm tra lại email và yêu cầu mật khẩu.";
         }
 
-        if (result is PageResult) await LoadCurrentUserShareRateAsync();
-
         return result;
-    }
-
-    private async Task LoadCurrentUserShareRateAsync()
-    {
-        try
-        {
-            CurrentUserShareRate = (await _commissionRuleManager.GetForPurchaseAsync(AffiliatePlatform.Shopee, _clock.Now)).UserShareRate;
-        }
-        catch (Volo.Abp.BusinessException)
-        {
-            CurrentUserShareRate = null;
-        }
     }
 
     protected override async Task RegisterLocalUserAsync()

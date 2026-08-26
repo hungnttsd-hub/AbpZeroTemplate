@@ -296,6 +296,7 @@ public class WebHoanTienWebModule : AbpModule
                 {
                     bundle.AddFiles("/global-styles.css");
                     bundle.AddFiles("/admin-payouts.css");
+                    bundle.AddFiles("/admin-notifications.css");
                 }
             );
         });

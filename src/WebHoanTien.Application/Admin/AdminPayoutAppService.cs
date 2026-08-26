@@ -15,6 +15,7 @@ using Volo.Abp.Users;
 using Volo.Abp.Validation;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Permissions;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.Admin;
 
@@ -28,11 +29,12 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
     private readonly WalletBalanceCalculator _balanceCalculator;
     private readonly WithdrawalProofValidator _proofValidator;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
+    private readonly CustomerNotificationManager _notificationManager;
 
     public AdminPayoutAppService(IRepository<WithdrawalRequest, Guid> withdrawals,
         IRepository<WithdrawalPaymentProof, Guid> proofs, IRepository<IdentityUser, Guid> users,
         WalletBalanceCalculator balanceCalculator, WithdrawalProofValidator proofValidator,
-        IUnitOfWorkManager unitOfWorkManager)
+        IUnitOfWorkManager unitOfWorkManager, CustomerNotificationManager notificationManager)
     {
         _withdrawals = withdrawals;
         _proofs = proofs;
@@ -40,6 +42,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
         _balanceCalculator = balanceCalculator;
         _proofValidator = proofValidator;
         _unitOfWorkManager = unitOfWorkManager;
+        _notificationManager = notificationManager;
     }
 
     public async Task<AdminPayoutPageDto> GetListAsync(AdminPayoutListInput input)
@@ -128,6 +131,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
             await _proofs.InsertAsync(new WithdrawalPaymentProof(GuidGenerator.Create(), request.Id, proof.FileName,
                 proof.ContentType, proof.Sha256, proof.Content), autoSave: true, cancellationToken: cancellationToken);
             await _withdrawals.UpdateAsync(request, autoSave: true, cancellationToken: cancellationToken);
+            await _notificationManager.NotifyWithdrawalStatusAsync(request);
             var user = await _users.FindAsync(request.UserId, cancellationToken: cancellationToken);
             var result = await MapAsync(request, user?.Email ?? user?.UserName ?? "Không xác định", true);
             await unitOfWork.CompleteAsync(cancellationToken);
@@ -150,6 +154,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
             var request = await _withdrawals.GetAsync(id);
             request.Reject(CurrentUser.GetId(), input.Reason, Clock.Now, input.AdminNote);
             await _withdrawals.UpdateAsync(request, autoSave: true);
+            await _notificationManager.NotifyWithdrawalStatusAsync(request);
             var user = await _users.FindAsync(request.UserId);
             return await MapAsync(request, user?.Email ?? user?.UserName ?? "Không xác định",
                 await _proofs.AnyAsync(x => x.WithdrawalRequestId == id));

@@ -11,7 +11,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Users;
-using Volo.Abp.Timing;
 using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.Web.Pages;
@@ -24,8 +23,6 @@ public class IndexModel : PageModel
     private readonly ICurrentUser _currentUser;
     private readonly ITimeLimitedDataProtector _protector;
     private readonly IDistributedCache _cache;
-    private readonly AffiliateCommissionRuleManager _commissionRuleManager;
-    private readonly IClock _clock;
 
     [BindProperty] public string LinkUrl { get; set; } = string.Empty;
     [BindProperty(SupportsGet = true)] public bool ShowHidden { get; set; }
@@ -34,14 +31,11 @@ public class IndexModel : PageModel
     public Guid? CreatedLinkId { get; set; }
     public PagedResultDto<AffiliateTrackingDto> RecentLinks { get; private set; } = new();
     public CustomerWalletOverviewDto Wallet { get; private set; } = new();
-    public decimal? CurrentUserShareRate { get; private set; }
 
     public IndexModel(IAffiliateLinkAppService links, ICustomerWalletAppService wallet, ICurrentUser currentUser,
-        IDataProtectionProvider dataProtection, IDistributedCache cache,
-        AffiliateCommissionRuleManager commissionRuleManager, IClock clock)
+        IDataProtectionProvider dataProtection, IDistributedCache cache)
     {
         _links = links; _wallet = wallet; _currentUser = currentUser; _cache = cache;
-        _commissionRuleManager = commissionRuleManager; _clock = clock;
         _protector = dataProtection.CreateProtector("WebHoanTien.PendingAffiliate.v1").ToTimeLimitedDataProtector();
     }
 
@@ -162,16 +156,6 @@ public class IndexModel : PageModel
 
     private async Task LoadDashboardAsync()
     {
-        try
-        {
-            CurrentUserShareRate = (await _commissionRuleManager
-                .GetForPurchaseAsync(AffiliatePlatform.Shopee, _clock.Now)).UserShareRate;
-        }
-        catch (BusinessException)
-        {
-            CurrentUserShareRate = null;
-        }
-
         if (!_currentUser.IsAuthenticated) return;
 
         RecentLinks = await _links.GetListAsync(new AffiliateTrackingListInput

@@ -27,6 +27,9 @@ public class WebHoanTienMenuContributor : IMenuContributor
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Customer.Account", l["Menu:Account"], "~/Account/Manage", "fas fa-user", 30));
         context.Menu.Items.Add(new ApplicationMenuItem(
+            "Affiliate.Notifications", l["Menu:Notifications"], "~/Admin/Notifications", "fas fa-bell", 44,
+            requiredPermissionName: WebHoanTienPermissions.Admin.Notifications));
+        context.Menu.Items.Add(new ApplicationMenuItem(
             "Affiliate.Payouts", l["Menu:Payouts"], "~/Admin/Payouts", "fas fa-money-check-alt", 45,
             requiredPermissionName: WebHoanTienPermissions.Admin.Payouts));
         context.Menu.Items.Add(new ApplicationMenuItem(
