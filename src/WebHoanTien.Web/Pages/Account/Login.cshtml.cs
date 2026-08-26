@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -32,6 +33,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
     public string? GoogleLoginErrorMessage => GoogleLoginError switch
     {
         "callback" => "Phiên đăng nhập Google không còn hợp lệ. Hãy mở CatsBack trong Chrome và thử lại.",
+        "link" => "Không thể liên kết tài khoản Google lúc này. Vui lòng thử lại.",
         _ => null
     };
 
@@ -103,8 +105,39 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
             });
         }
 
-        // Never auto-link solely because Google returned the same email. The user must
-        // prove ownership of the existing local account with its password first.
+        var isVerifiedGoogleEmail = string.Equals(loginInfo.LoginProvider, GoogleDefaults.AuthenticationScheme, StringComparison.Ordinal)
+            && string.Equals(loginInfo.Principal.FindFirst("google_email_verified")?.Value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+        if (isVerifiedGoogleEmail)
+        {
+            var existingOwner = await UserManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
+            if (existingOwner is not null && existingOwner.Id != localUser.Id)
+            {
+                throw new UserFriendlyException("Tài khoản Google này đã được liên kết với một tài khoản khác.");
+            }
+
+            if (existingOwner is null)
+            {
+                var addLoginResult = await UserManager.AddLoginAsync(localUser, loginInfo);
+                if (!addLoginResult.Succeeded)
+                {
+                    Logger.LogWarning("Automatic Google login link failed for user {UserId}: {Errors}", localUser.Id,
+                        string.Join(", ", addLoginResult.Errors.Select(x => x.Code)));
+                    return RedirectToPage("./Login", new { GoogleLoginError = "link" });
+                }
+            }
+
+            var avatar = loginInfo.Principal.FindFirst("google_avatar")?.Value;
+            if (!string.IsNullOrWhiteSpace(avatar))
+            {
+                localUser.SetProperty("GoogleAvatarUrl", avatar);
+                await UserManager.UpdateAsync(localUser);
+            }
+
+            await IdentityDynamicClaimsPrincipalContributorCache.ClearAsync(localUser.Id, localUser.TenantId);
+            await SignInManager.SignInAsync(localUser, isPersistent: true);
+            return await RedirectSafelyAsync(returnUrl, returnUrlHash);
+        }
+
         return RedirectToPage("./Login", new
         {
             ReturnUrl = returnUrl,

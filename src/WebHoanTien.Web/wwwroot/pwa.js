@@ -17,6 +17,10 @@
     || window.navigator.userAgentData?.mobile === true;
   let deferredInstallPrompt;
 
+  document.querySelectorAll('[data-google-login-button]').forEach((button) => {
+    button.formTarget = isStandalone() ? '_self' : '_blank';
+  });
+
   if ('serviceWorker' in window.navigator && window.isSecureContext) {
     window.navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => undefined);
   }

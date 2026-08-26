@@ -236,6 +236,11 @@ public class WebHoanTienWebModule : AbpModule
                 {
                     if (ticketContext.User.TryGetProperty("picture", out var picture) && picture.GetString() is { Length: > 0 } avatar)
                         ticketContext.Identity?.AddClaim(new Claim("google_avatar", avatar));
+                    if ((ticketContext.User.TryGetProperty("verified_email", out var verifiedEmail)
+                         || ticketContext.User.TryGetProperty("email_verified", out verifiedEmail))
+                        && (verifiedEmail.ValueKind == System.Text.Json.JsonValueKind.True
+                            || string.Equals(verifiedEmail.ToString(), bool.TrueString, StringComparison.OrdinalIgnoreCase)))
+                        ticketContext.Identity?.AddClaim(new Claim("google_email_verified", bool.TrueString));
                     return System.Threading.Tasks.Task.CompletedTask;
                 };
             });
