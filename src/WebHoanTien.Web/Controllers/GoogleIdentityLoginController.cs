@@ -114,6 +114,18 @@ public class GoogleIdentityLoginController : AbpController
             }
         }
 
+        if (!user.EmailConfirmed && string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+        {
+            user.SetEmailConfirmed(true);
+            var confirmEmailResult = await _userManager.UpdateAsync(user);
+            if (!confirmEmailResult.Succeeded)
+            {
+                _logger.LogWarning("GIS email confirmation failed for user {UserId}: {Errors}", user.Id,
+                    string.Join(", ", confirmEmailResult.Errors.Select(error => error.Code)));
+                return BadRequest(new { message = "Không thể xác nhận email Google lúc này." });
+            }
+        }
+
         if (await _userManager.IsLockedOutAsync(user))
         {
             return Unauthorized(new { message = "Tài khoản đang tạm khóa." });

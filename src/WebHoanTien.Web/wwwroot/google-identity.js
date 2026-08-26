@@ -88,6 +88,7 @@
       use_fedcm_for_button: true,
       auto_select: false
     });
+    const availableWidth = Math.floor(root.getBoundingClientRect().width);
     window.google.accounts.id.renderButton(button, {
       type: 'standard',
       theme: 'outline',
@@ -95,7 +96,7 @@
       text: 'continue_with',
       shape: 'rectangular',
       logo_alignment: 'left',
-      width: Math.min(400, Math.max(240, Math.round(root.getBoundingClientRect().width)))
+      width: Math.min(400, Math.max(200, availableWidth))
     });
   };
 
