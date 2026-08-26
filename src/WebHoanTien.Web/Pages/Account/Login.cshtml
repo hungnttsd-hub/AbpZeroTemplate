@@ -3,9 +3,13 @@
 @using Volo.Abp.Settings
 @model WebHoanTien.Web.Pages.Account.LoginModel
 @inject ISettingProvider SettingProvider
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     Layout = "/Pages/Shared/_CustomerLayout.cshtml";
     ViewData["Title"] = "Đăng nhập — CatsBack";
+    var googleClientId = Configuration["Authentication:Google:ClientId"];
+    var hasGoogleProvider = Model.VisibleExternalProviders.Any(provider => provider.AuthenticationScheme == "Google");
+    var otherProviders = Model.VisibleExternalProviders.Where(provider => provider.AuthenticationScheme != "Google").ToList();
 }
 
 <section class="auth-shell">
@@ -61,27 +65,33 @@
             </form>
         }
 
-        @if (Model.VisibleExternalProviders.Any())
+        @if ((hasGoogleProvider && !string.IsNullOrWhiteSpace(googleClientId)) || otherProviders.Any())
         {
             <div class="auth-divider"><span>hoặc</span></div>
-            <form asp-page="./Login" asp-page-handler="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" asp-route-returnUrlHash="@Model.ReturnUrlHash" method="post" class="external-logins">
-                @foreach (var provider in Model.VisibleExternalProviders)
-                {
-                    var isGoogle = provider.AuthenticationScheme == "Google";
-                    <button type="submit" data-google-login-button="@(isGoogle ? "true" : null)" class="button button-wide external-login-button @(isGoogle ? "google-login-button" : "button-ghost")" name="provider" value="@provider.AuthenticationScheme">
-                        @if (isGoogle)
-                        {
-                            <svg class="google-login-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path fill="#4285f4" d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.5h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z" />
-                                <path fill="#34a853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.2-2.5c-.9.6-2 .9-3.5.9-2.7 0-5-1.8-5.8-4.3H2.9v2.6A10 10 0 0 0 12 22Z" />
-                                <path fill="#fbbc05" d="M6.2 13.7a6 6 0 0 1 0-3.7V7.4H2.9a10 10 0 0 0 0 9l3.3-2.7Z" />
-                                <path fill="#ea4335" d="M12 6c1.6 0 3 .6 4.1 1.6l3-3A10 10 0 0 0 2.9 7.4l3.3 2.6C7 7.8 9.3 6 12 6Z" />
-                            </svg>
-                        }
-                        <span>@(isGoogle ? "Tiếp tục với Google" : $"Tiếp tục với {provider.DisplayName}")</span>
-                    </button>
-                }
-            </form>
+            @if (hasGoogleProvider && !string.IsNullOrWhiteSpace(googleClientId))
+            {
+                <div class="google-identity-login"
+                     data-google-identity
+                     data-client-id="@googleClientId"
+                     data-return-url="@Model.ReturnUrl">
+                    <form action="/account/google/identity/login" method="post" data-google-identity-form>
+                        @Html.AntiForgeryToken()
+                    </form>
+                    <div class="google-identity-button" data-google-identity-button></div>
+                    <p class="google-identity-status" data-google-identity-status role="status" hidden></p>
+                </div>
+            }
+            @if (otherProviders.Any())
+            {
+                <form asp-page="./Login" asp-page-handler="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" asp-route-returnUrlHash="@Model.ReturnUrlHash" method="post" class="external-logins">
+                    @foreach (var provider in otherProviders)
+                    {
+                        <button type="submit" class="button button-wide external-login-button button-ghost" name="provider" value="@provider.AuthenticationScheme">
+                            <span>Tiếp tục với @provider.DisplayName</span>
+                        </button>
+                    }
+                </form>
+            }
         }
 
         @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
@@ -95,3 +105,7 @@
         <p>Thông tin đăng nhập chỉ dùng để bảo vệ lịch sử link và đơn hàng của chính bạn.</p>
     </aside>
 </section>
+
+@section Scripts {
+    <script src="~/google-identity.js" asp-append-version="true" defer></script>
+}
