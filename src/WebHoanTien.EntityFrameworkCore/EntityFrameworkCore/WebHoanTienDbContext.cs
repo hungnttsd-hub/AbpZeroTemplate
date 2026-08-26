@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -22,8 +23,10 @@ namespace WebHoanTien.EntityFrameworkCore;
 public class WebHoanTienDbContext :
     AbpDbContext<WebHoanTienDbContext>,
     IIdentityDbContext,
-    ISettingManagementDbContext
+    ISettingManagementDbContext,
+    IDataProtectionKeyContext
 {
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<IdentityUser> Users { get; set; } = null!;
     public DbSet<IdentityRole> Roles { get; set; } = null!;
     public DbSet<IdentityClaimType> ClaimTypes { get; set; } = null!;

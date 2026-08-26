@@ -3,6 +3,7 @@ using System.IO;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -148,6 +149,10 @@ public class WebHoanTienWebModule : AbpModule
         context.Services.AddHangfire(config => config.UsePostgreSqlStorage(
             options => options.UseNpgsqlConnection(connectionString),
             new PostgreSqlStorageOptions { SchemaName = WebHoanTienConsts.HangfireDbSchema }));
+
+        context.Services.AddDataProtection()
+            .SetApplicationName(configuration["DataProtection:ApplicationName"] ?? "CatsBack")
+            .PersistKeysToDbContext<WebHoanTienDbContext>();
 
         ConfigureAuthentication(context, hostingEnvironment, configuration);
         context.Services.AddHealthChecks()
