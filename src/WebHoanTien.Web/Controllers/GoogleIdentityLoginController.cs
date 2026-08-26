@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -31,7 +35,9 @@ public class GoogleIdentityLoginController : AbpController
     private readonly IRepository<UserLegalConsent, Guid> _consents;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _clientId;
+    private readonly string _clientSecret;
     private readonly ILogger<GoogleIdentityLoginController> _logger;
 
     public GoogleIdentityLoginController(
@@ -41,6 +47,7 @@ public class GoogleIdentityLoginController : AbpController
         IRepository<UserLegalConsent, Guid> consents,
         IGuidGenerator guidGenerator,
         IClock clock,
+        IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<GoogleIdentityLoginController> logger)
     {
@@ -50,19 +57,43 @@ public class GoogleIdentityLoginController : AbpController
         _consents = consents;
         _guidGenerator = guidGenerator;
         _clock = clock;
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
         _clientId = configuration["Authentication:Google:ClientId"]
             ?? throw new AbpException("Authentication:Google:ClientId chưa được cấu hình.");
+        _clientSecret = configuration["Authentication:Google:ClientSecret"]
+            ?? throw new AbpException("Authentication:Google:ClientSecret chưa được cấu hình.");
     }
 
     [HttpPost("login")]
     [ValidateAntiForgeryToken]
     [UnitOfWork]
     public async Task<IActionResult> LoginAsync(
-        [FromForm] string credential,
+        [FromForm] string? credential = null,
+        [FromForm] string? code = null,
+        [FromForm] string? redirectUri = null,
         [FromForm] bool acceptedTerms = false,
         [FromForm] string? returnUrl = null)
     {
+        if (string.IsNullOrWhiteSpace(credential) && !string.IsNullOrWhiteSpace(code))
+        {
+            if (!string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "Yêu cầu đăng nhập Google không hợp lệ." });
+            }
+
+            if (!TryValidateRedirectOrigin(redirectUri, out var safeRedirectUri))
+            {
+                return BadRequest(new { message = "Nguồn đăng nhập Google không hợp lệ." });
+            }
+
+            credential = await ExchangeAuthorizationCodeAsync(code, safeRedirectUri);
+            if (string.IsNullOrWhiteSpace(credential))
+            {
+                return Unauthorized(new { message = "Không thể xác minh mã đăng nhập Google." });
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(credential) || credential.Length > 8192)
         {
             return BadRequest(new { message = "Phản hồi đăng nhập Google không hợp lệ." });
@@ -173,5 +204,74 @@ public class GoogleIdentityLoginController : AbpController
     private string GetSafeReturnUrl(string? returnUrl)
     {
         return !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
+    }
+
+    private bool TryValidateRedirectOrigin(string? redirectUri, out string safeRedirectUri)
+    {
+        safeRedirectUri = string.Empty;
+        if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var uri)
+            || (!uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+                && !uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+            || !string.IsNullOrEmpty(uri.AbsolutePath.Trim('/'))
+            || !string.IsNullOrEmpty(uri.Query)
+            || !string.IsNullOrEmpty(uri.Fragment)
+            || !uri.Authority.Equals(Request.Host.Value, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        safeRedirectUri = uri.GetLeftPart(UriPartial.Authority);
+        return true;
+    }
+
+    private async Task<string?> ExchangeAuthorizationCodeAsync(string code, string redirectUri)
+    {
+        if (code.Length > 4096)
+        {
+            return null;
+        }
+
+        using var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["client_id"] = _clientId,
+            ["client_secret"] = _clientSecret,
+            ["code"] = code,
+            ["grant_type"] = "authorization_code",
+            ["redirect_uri"] = redirectUri
+        });
+        using var response = await _httpClientFactory.CreateClient().PostAsync(
+            "https://oauth2.googleapis.com/token",
+            requestContent,
+            HttpContext.RequestAborted);
+        var responseBody = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted);
+        GoogleTokenResponse? tokenResponse;
+        try
+        {
+            tokenResponse = JsonSerializer.Deserialize<GoogleTokenResponse>(responseBody);
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogWarning(exception, "Google token endpoint returned an invalid response");
+            return null;
+        }
+
+        if (!response.IsSuccessStatusCode || string.IsNullOrWhiteSpace(tokenResponse?.IdToken))
+        {
+            _logger.LogWarning("Google authorization code exchange failed with status {StatusCode} and error {Error}",
+                (int)response.StatusCode,
+                tokenResponse?.Error ?? "unknown");
+            return null;
+        }
+
+        return tokenResponse.IdToken;
+    }
+
+    private sealed class GoogleTokenResponse
+    {
+        [JsonPropertyName("id_token")]
+        public string? IdToken { get; init; }
+
+        [JsonPropertyName("error")]
+        public string? Error { get; init; }
     }
 }

@@ -8,11 +8,14 @@
   const form = root.querySelector('[data-google-identity-form]');
   const button = root.querySelector('[data-google-identity-button]');
   const status = root.querySelector('[data-google-identity-status]');
+  let codeClient;
   let submitting = false;
 
   if (!clientId || !form || !button || !status) {
     return;
   }
+
+  button.disabled = true;
 
   const showStatus = (message, state = 'error') => {
     status.hidden = false;
@@ -25,17 +28,22 @@
     return contentType.includes('application/json') ? response.json() : {};
   };
 
-  const handleCredential = async (googleResponse) => {
-    if (submitting || !googleResponse?.credential) {
+  const handleCode = async (googleResponse) => {
+    if (submitting || !googleResponse?.code) {
+      if (googleResponse?.error) {
+        showStatus(googleResponse.error_description || 'Google không thể hoàn tất đăng nhập.');
+      }
       return;
     }
 
     submitting = true;
+    button.disabled = true;
     button.classList.add('is-loading');
     showStatus('Đang xác minh tài khoản Google…', 'loading');
 
     const body = new FormData(form);
-    body.set('credential', googleResponse.credential);
+    body.set('code', googleResponse.code);
+    body.set('redirectUri', window.location.origin);
     body.set('acceptedTerms', 'true');
     body.set('returnUrl', root.dataset.returnUrl || '/');
 
@@ -59,34 +67,33 @@
     } catch (error) {
       showStatus(error instanceof Error ? error.message : 'Không thể đăng nhập bằng Google lúc này.');
       submitting = false;
+      button.disabled = false;
       button.classList.remove('is-loading');
     }
   };
 
   const initializeGoogleIdentity = () => {
-    if (!window.google?.accounts?.id) {
+    if (!window.google?.accounts?.oauth2) {
       showStatus('Không thể tải dịch vụ đăng nhập Google. Vui lòng kiểm tra kết nối và thử lại.');
       return;
     }
 
-    window.google.accounts.id.disableAutoSelect();
-    window.google.accounts.id.initialize({
+    codeClient = window.google.accounts.oauth2.initCodeClient({
       client_id: clientId,
-      callback: handleCredential,
+      scope: 'openid email profile',
       ux_mode: 'popup',
-      use_fedcm_for_button: false,
-      auto_select: false
+      select_account: true,
+      callback: handleCode,
+      error_callback: (error) => {
+        if (error?.type !== 'popup_closed') {
+          showStatus('Không thể mở cửa sổ đăng nhập Google. Vui lòng thử lại.');
+        }
+      }
     });
-    const availableWidth = Math.floor(root.getBoundingClientRect().width) - 4;
-    window.google.accounts.id.renderButton(button, {
-      type: 'standard',
-      theme: 'outline',
-      size: 'medium',
-      text: 'continue_with',
-      shape: 'rectangular',
-      logo_alignment: 'left',
-      locale: 'vi',
-      width: Math.min(400, Math.max(200, availableWidth))
+    button.disabled = false;
+    button.addEventListener('click', () => {
+      status.hidden = true;
+      codeClient.requestCode();
     });
   };
 

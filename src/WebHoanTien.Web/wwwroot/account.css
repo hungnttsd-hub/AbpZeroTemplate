@@ -155,30 +155,46 @@
     display: none;
 }
 
-.google-identity-button {
+.google-oauth-button {
+    appearance: none;
     display: flex;
     width: 100%;
     min-width: 0;
-    min-height: 44px;
+    min-height: 50px;
     align-items: center;
     justify-content: center;
+    gap: 11px;
     box-sizing: border-box;
-    padding: 0 2px;
-    overflow: visible;
+    border: 1px solid #c9d4df;
+    border-radius: var(--surface-radius-sm);
+    padding: 12px 18px;
+    background: #fff;
+    color: #202124;
+    box-shadow: 0 1px 3px rgba(15, 47, 73, .12);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
-.google-identity-button > div {
-    display: block !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
+.google-oauth-button svg {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 21px;
 }
 
-.google-identity-button iframe {
-    display: block !important;
-    max-width: 100% !important;
+.google-oauth-button:hover,
+.google-oauth-button:focus-visible {
+    border-color: #7e9caf;
+    background: #f8fbff;
+    box-shadow: 0 0 0 3px rgba(6, 142, 148, .12), 0 2px 6px rgba(15, 47, 73, .14);
+    outline: none;
 }
 
-.google-identity-button.is-loading {
+.google-oauth-button:disabled,
+.google-oauth-button.is-loading {
     pointer-events: none;
     opacity: .65;
 }

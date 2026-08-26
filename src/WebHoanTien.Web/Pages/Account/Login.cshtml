@@ -77,7 +77,15 @@
                     <form action="/account/google/identity/login" method="post" data-google-identity-form>
                         @Html.AntiForgeryToken()
                     </form>
-                    <div class="google-identity-button" data-google-identity-button></div>
+                    <button type="button" class="google-oauth-button" data-google-identity-button>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="#4285f4" d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.5h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z" />
+                            <path fill="#34a853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.2-2.5c-.9.6-2 .9-3.5.9-2.7 0-5-1.8-5.8-4.3H2.9v2.6A10 10 0 0 0 12 22Z" />
+                            <path fill="#fbbc05" d="M6.2 13.7a6 6 0 0 1 0-3.7V7.4H2.9a10 10 0 0 0 0 9l3.3-2.7Z" />
+                            <path fill="#ea4335" d="M12 6c1.6 0 3 .6 4.1 1.6l3-3A10 10 0 0 0 2.9 7.4l3.3 2.6C7 7.8 9.3 6 12 6Z" />
+                        </svg>
+                        <span>Tiếp tục với Google</span>
+                    </button>
                     <p class="google-identity-status" data-google-identity-status role="status" hidden></p>
                     <p class="google-identity-legal">Bằng việc tiếp tục với Google, bạn đồng ý với <a href="/Legal/Terms" target="_blank">Điều khoản</a> và <a href="/Legal/Privacy" target="_blank">Chính sách riêng tư</a>.</p>
                 </div>
