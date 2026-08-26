@@ -30,6 +30,8 @@ public static class NotificationPageUi
         return local.ToString("dd/MM/yyyy");
     }
 
+    public static string FormatDateTime(DateTime value) => ToVietnamTime(value).ToString("dd/MM/yyyy HH:mm");
+
     public static string Icon(CustomerNotificationKind kind) => kind switch
     {
         CustomerNotificationKind.CashbackRecorded => "cashback.svg",

@@ -3,8 +3,8 @@
 @{
     var tone = NotificationPageUi.Tone(Model.Kind);
 }
-<button class="notification-card @(!Model.IsRead ? "is-unread" : null)" type="button"
-        data-notification-id="@Model.Id" data-notification-kind="@((int)Model.Kind)">
+<a class="notification-card @(!Model.IsRead ? "is-unread" : null)" href="/Notifications/@Model.Id"
+   data-notification-id="@Model.Id" data-notification-kind="@((int)Model.Kind)">
     <span class="notification-card-icon notification-tone-@tone" aria-hidden="true">
         <img src="~/notification-icons/@NotificationPageUi.Icon(Model.Kind)" alt="" />
     </span>
@@ -13,5 +13,8 @@
         <span>@Model.Message</span>
     </span>
     <time datetime="@Model.CreationTime.ToString("O")">@NotificationPageUi.FormatTime(Model.CreationTime)</time>
+    <span class="notification-card-chevron" aria-hidden="true">
+        <img src="~/notification-icons/chevron-right.svg" alt="" />
+    </span>
     <span class="notification-unread-dot" aria-label="Chưa đọc"></span>
-</button>
+</a>

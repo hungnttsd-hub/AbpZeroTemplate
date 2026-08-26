@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="40" viewBox="0 0 420 40" fill="none">
+
+
+<rect x="0.5" y="0.5" width="419" height="39" rx="10" fill="#FFFFFF" stroke="#DCE4EE"/>
+<g transform="translate(14,10)">
+  <circle cx="9" cy="9" r="5.5" stroke="#8B97AA" stroke-width="2"/>
+  <path d="M13.5 13.5L17 17" stroke="#8B97AA" stroke-width="2" stroke-linecap="round"/>
+</g>
+<text x="46" y="25" fill="#8B97AA" font-family="Inter, Arial, sans-serif" font-size="14">Tìm sản phẩm hoặc cửa hàng...</text>
+
+</svg>

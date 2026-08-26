@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<style>
+.title{font:700 18px Inter,Arial,sans-serif;fill:#08254A}
+.text{font:14px Inter,Arial,sans-serif;fill:#66758F}
+.note{font:13px Inter,Arial,sans-serif;fill:#0B9098}
+</style>
+<rect width="900" height="620" fill="#F7F9FC"/>
+<rect x="0" y="0" width="900" height="620" fill="#001B3D" opacity=".58"/>
+<rect x="210" y="118" width="480" height="340" rx="28" fill="#FFFFFF" stroke="#E6ECF3"/>
+<circle cx="450" cy="204" r="44" fill="#FCE8E6"/>
+<path d="M450 174 476 220H424L450 174Z" fill="#FF4B47"/>
+<path d="M450 190v16" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+<circle cx="450" cy="215" r="2.8" fill="#fff"/>
+<path d="M636 152l16 16M652 152l-16 16" stroke="#66758F" stroke-width="2.8" stroke-linecap="round"/>
+<text x="450" y="286" text-anchor="middle" font-family="Inter,Arial" font-size="28" font-weight="800" fill="#08254A">Xóa thông báo?</text>
+<text x="450" y="324" text-anchor="middle" font-family="Inter,Arial" font-size="16" fill="#66758F">Bạn có chắc chắn muốn xóa thông báo này?</text>
+<text x="450" y="350" text-anchor="middle" font-family="Inter,Arial" font-size="16" fill="#66758F">Hành động này không thể hoàn tác.</text>
+
+<rect x="252" y="386" width="178" height="56" rx="28" fill="#FFFFFF" stroke="#08254A" stroke-width="1.6"/>
+<text x="341" y="421" text-anchor="middle" font-family="Inter,Arial" font-size="20" font-weight="700" fill="#08254A">Hủy</text>
+
+<rect x="470" y="386" width="178" height="56" rx="28" fill="#FF4B47"/>
+<text x="559" y="421" text-anchor="middle" font-family="Inter,Arial" font-size="20" font-weight="700" fill="#FFFFFF">Xóa</text>
+
+<line x1="694" y1="204" x2="840" y2="204" stroke="#44BFD0" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="650" y1="286" x2="840" y2="286" stroke="#44BFD0" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="650" y1="337" x2="840" y2="337" stroke="#44BFD0" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="431" y1="414" x2="840" y2="414" stroke="#44BFD0" stroke-width="1.5" stroke-dasharray="6 6"/>
+<line x1="648" y1="414" x2="840" y2="414" stroke="#44BFD0" stroke-width="1.5" stroke-dasharray="6 6"/>
+
+<text x="846" y="208" class="note">1. Header icon</text>
+<text x="846" y="289" class="note">2. Tiêu đề chính</text>
+<text x="846" y="340" class="note">3. Mô tả / cảnh báo</text>
+<text x="846" y="403" class="note">4. Nút phụ / Nút chính</text>
+</svg>

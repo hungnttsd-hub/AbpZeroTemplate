@@ -65,9 +65,9 @@
     }
 
     function createCard(item) {
-        const card = document.createElement('button');
-        card.type = 'button';
+        const card = document.createElement('a');
         card.className = `notification-card${item.isRead ? '' : ' is-unread'}`;
+        card.href = `/Notifications/${item.id}`;
         card.dataset.notificationId = item.id;
         card.dataset.notificationKind = item.kind;
 
@@ -90,10 +90,17 @@
         const time = document.createElement('time');
         time.dateTime = item.creationTime;
         time.textContent = formatTime(item.creationTime);
+        const chevron = document.createElement('span');
+        chevron.className = 'notification-card-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        const chevronImage = document.createElement('img');
+        chevronImage.src = '/notification-icons/chevron-right.svg';
+        chevronImage.alt = '';
+        chevron.appendChild(chevronImage);
         const dot = document.createElement('span');
         dot.className = 'notification-unread-dot';
         dot.setAttribute('aria-label', 'Chưa đọc');
-        card.append(icon, copy, time, dot);
+        card.append(icon, copy, time, chevron, dot);
         return card;
     }
 
@@ -248,15 +255,16 @@
 
         const card = event.target.closest('[data-notification-id]');
         if (card) {
-            card.disabled = true;
+            event.preventDefault();
+            if (card.dataset.opening === 'true') return;
+            card.dataset.opening = 'true';
             try {
                 const data = await postHandler('Read', { notificationId: card.dataset.notificationId });
                 card.classList.remove('is-unread');
                 updateBadges(data.unreadCount);
-                if (data.actionUrl) window.location.assign(data.actionUrl);
-                else if (unreadOnly) await reloadList();
+                window.location.assign(card.href);
             } catch (error) {
-                card.disabled = false;
+                delete card.dataset.opening;
                 showToast(error.message);
             }
         }

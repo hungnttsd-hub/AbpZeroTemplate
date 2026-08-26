@@ -49,11 +49,28 @@ public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNo
     }
 
     [UnitOfWork]
+    public async Task<CustomerNotificationDetailDto> GetAsync(Guid id)
+    {
+        var notification = await GetOwnedAsync(id);
+        if (notification.MarkAsRead(Clock.Now))
+            await _notifications.UpdateAsync(notification, autoSave: true);
+        return new CustomerNotificationDetailDto
+        {
+            Id = notification.Id,
+            Category = notification.Category,
+            Kind = notification.Kind,
+            Title = notification.Title,
+            Message = notification.Message,
+            ActionUrl = notification.ActionUrl,
+            CreationTime = notification.CreationTime,
+            IsRead = notification.IsRead
+        };
+    }
+
+    [UnitOfWork]
     public async Task<ReadNotificationResultDto> MarkAsReadAsync(Guid id)
     {
-        var notification = await _notifications.GetAsync(id);
-        if (notification.UserId != CurrentUser.GetId())
-            throw new BusinessException(WebHoanTienDomainErrorCodes.NotificationNotOwned);
+        var notification = await GetOwnedAsync(id);
         if (notification.MarkAsRead(Clock.Now))
             await _notifications.UpdateAsync(notification, autoSave: true);
         return new ReadNotificationResultDto
@@ -73,6 +90,21 @@ public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNo
         foreach (var notification in unread) notification.MarkAsRead(now);
         await _notifications.UpdateManyAsync(unread, autoSave: true);
         return 0;
+    }
+
+    [UnitOfWork]
+    public async Task DeleteAsync(Guid id)
+    {
+        var notification = await GetOwnedAsync(id);
+        await _notifications.DeleteAsync(notification, autoSave: true);
+    }
+
+    private async Task<CustomerNotification> GetOwnedAsync(Guid id)
+    {
+        var notification = await _notifications.GetAsync(id);
+        if (notification.UserId != CurrentUser.GetId())
+            throw new BusinessException(WebHoanTienDomainErrorCodes.NotificationNotOwned);
+        return notification;
     }
 
     private static CustomerNotificationListItemDto Map(CustomerNotification notification) => new()

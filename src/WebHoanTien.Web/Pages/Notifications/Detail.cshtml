@@ -1,0 +1,58 @@
+@page "/Notifications/{id:guid}"
+@using WebHoanTien.Web.Pages.Notifications
+@model WebHoanTien.Web.Pages.Notifications.DetailModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = $"{Model.Notification.Title} | CatsBack";
+    ViewData["BodyClass"] = "catback-notification-detail-page";
+    var tone = NotificationPageUi.Tone(Model.Notification.Kind);
+}
+
+<section class="notification-detail-shell" data-notification-detail>
+    <header class="notification-detail-toolbar">
+        <a href="/Notifications" data-notification-detail-back aria-label="Quay lại danh sách thông báo">
+            <img src="~/notification-icons/arrow-left.svg" alt="" />
+        </a>
+        <h1>Chi tiết thông báo</h1>
+        <button type="button" data-delete-notification data-notification-id="@Model.Notification.Id"
+                aria-label="Xóa thông báo">
+            <img src="~/notification-icons/delete.svg" alt="" />
+        </button>
+    </header>
+
+    <article class="notification-detail-card">
+        <header class="notification-detail-heading">
+            <span class="notification-card-icon notification-tone-@tone" aria-hidden="true">
+                <img src="~/notification-icons/@NotificationPageUi.Icon(Model.Notification.Kind)" alt="" />
+            </span>
+            <div>
+                <h2>@Model.Notification.Title</h2>
+                <p>@NotificationPageUi.FormatTime(Model.Notification.CreationTime)<span>•</span>@NotificationPageUi.FormatDateTime(Model.Notification.CreationTime)</p>
+            </div>
+        </header>
+
+        <div class="notification-detail-message">@Model.Notification.Message</div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Notification.ActionUrl))
+        {
+            <section class="notification-related-card">
+                <span>Liên quan đến</span>
+                <a href="@Model.Notification.ActionUrl">
+                    <span class="notification-related-icon notification-tone-@tone" aria-hidden="true">
+                        <img src="~/notification-icons/@NotificationPageUi.Icon(Model.Notification.Kind)" alt="" />
+                    </span>
+                    <span><strong>@Model.RelatedTitle</strong><small>@Model.ActionLabel</small></span>
+                    <img src="~/notification-icons/chevron-right.svg" alt="" />
+                </a>
+            </section>
+            <a class="notification-detail-action" href="@Model.Notification.ActionUrl">@Model.ActionLabel</a>
+        }
+    </article>
+</section>
+
+<form data-notification-detail-antiforgery hidden>@Html.AntiForgeryToken()</form>
+<div class="notification-toast" data-notification-detail-toast role="status" hidden></div>
+
+@section Scripts {
+    <script src="~/notification-detail.js" asp-append-version="true"></script>
+}

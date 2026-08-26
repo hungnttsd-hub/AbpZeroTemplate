@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="52" viewBox="0 0 320 52" fill="none">
+
+
+<defs>
+  <linearGradient id="g1" x1="0" y1="0" x2="320" y2="52" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#001B3D"/>
+    <stop offset="1" stop-color="#0B5C86"/>
+  </linearGradient>
+</defs>
+<rect x="0.5" y="0.5" width="319" height="51" rx="16" fill="url(#g1)" stroke="#0A6A84"/>
+<g transform="translate(20,14)">
+  <path d="M5 12C5 8.13 8.13 5 12 5C15.87 5 19 8.13 19 12" stroke="#FFFFFF" stroke-width="2"/>
+  <rect x="4" y="11" width="3.8" height="6.5" rx="1.9" stroke="#FFFFFF" stroke-width="2"/>
+  <rect x="16.2" y="11" width="3.8" height="6.5" rx="1.9" stroke="#FFFFFF" stroke-width="2"/>
+  <path d="M8 18.2C8.8 19.1 10.1 19.7 11.6 19.7H13.2" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+</g>
+<text x="58" y="31" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600">Cần hỗ trợ?</text>
+<path d="M286 19L294 26L286 33" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+</svg>

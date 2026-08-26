@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="116" viewBox="0 0 340 116" fill="none">
+
+
+<rect x="0.5" y="0.5" width="339" height="115" rx="16" fill="#FFFFFF" stroke="#DCE4EE"/>
+<g transform="translate(20,36)">
+
+
+<circle cx="22" cy="22" r="22" fill="#FFF2C9"/>
+
+
+
+<circle cx="10" cy="10" r="7" stroke="#9A5A00" stroke-width="1.9"/>
+<path d="M10 6.2V10.1L12.8 11.9" stroke="#9A5A00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+
+
+
+</g>
+<text x="82" y="48" fill="#8B97AA" font-family="Inter, Arial, sans-serif" font-size="14">Đơn chờ xử lý</text>
+<text x="82" y="82" fill="#08254A" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">2 đơn</text>
+
+</svg>

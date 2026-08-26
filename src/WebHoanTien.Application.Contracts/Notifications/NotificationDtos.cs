@@ -36,10 +36,23 @@ public sealed class ReadNotificationResultDto
     public int UnreadCount { get; set; }
 }
 
+public sealed class CustomerNotificationDetailDto : EntityDto<Guid>
+{
+    public CustomerNotificationCategory Category { get; set; }
+    public CustomerNotificationKind Kind { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? ActionUrl { get; set; }
+    public DateTime CreationTime { get; set; }
+    public bool IsRead { get; set; }
+}
+
 public interface ICustomerNotificationAppService : IApplicationService
 {
     Task<CustomerNotificationPageDto> GetListAsync(GetCustomerNotificationsInput input);
     Task<int> GetUnreadCountAsync();
+    Task<CustomerNotificationDetailDto> GetAsync(Guid id);
     Task<ReadNotificationResultDto> MarkAsReadAsync(Guid id);
     Task<int> MarkAllAsReadAsync();
+    Task DeleteAsync(Guid id);
 }
