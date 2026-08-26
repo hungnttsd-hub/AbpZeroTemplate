@@ -54,7 +54,19 @@
         if (!form) return;
         event.preventDefault();
         const isPay = form.hasAttribute("data-admin-pay");
-        if (!window.confirm(isPay ? "Xác nhận đã chuyển đủ tiền cho người dùng?" : "Xác nhận từ chối yêu cầu này?")) return;
+        const confirmed = await window.CatsBackModal.confirm(isPay ? {
+            variant: "info",
+            title: "Xác nhận đã thanh toán?",
+            message: "Hãy chắc chắn bạn đã chuyển đủ tiền và thông tin giao dịch, chứng từ đều chính xác.",
+            cancelText: "Kiểm tra lại",
+            confirmText: "Xác nhận"
+        } : {
+            title: "Từ chối yêu cầu rút tiền?",
+            message: "Người dùng sẽ nhận được lý do từ chối và số tiền được hoàn lại vào số dư khả dụng.",
+            cancelText: "Hủy",
+            confirmText: "Từ chối"
+        });
+        if (!confirmed) return;
         const button = form.querySelector("button[type=submit]");
         const status = form.querySelector("[data-form-status]");
         const original = button.textContent;

@@ -295,9 +295,14 @@ public class WebHoanTienWebModule : AbpModule
                 bundle =>
                 {
                     bundle.AddFiles("/global-styles.css");
+                    bundle.AddFiles("/catback-modal.css");
                     bundle.AddFiles("/admin-payouts.css");
                     bundle.AddFiles("/admin-notifications.css");
                 }
+            );
+            options.ScriptBundles.Configure(
+                LeptonXLiteThemeBundles.Scripts.Global,
+                bundle => bundle.AddFiles("/catback-modal.js")
             );
         });
     }

@@ -32,7 +32,13 @@
         if (!cancelForm) return;
         event.preventDefault();
         const button = cancelForm.querySelector("button[type=submit]");
-        if (!window.confirm("Bạn muốn hủy yêu cầu rút tiền này?")) return;
+        const confirmed = await window.CatsBackModal.confirm({
+            title: "Hủy yêu cầu rút tiền?",
+            message: "Yêu cầu đang chờ sẽ được hủy và số tiền được hoàn lại vào số dư khả dụng.",
+            cancelText: "Giữ yêu cầu",
+            confirmText: "Hủy yêu cầu"
+        });
+        if (!confirmed) return;
         button.disabled = true;
         try {
             const payload = await readResponse(await fetch(cancelForm.action, {

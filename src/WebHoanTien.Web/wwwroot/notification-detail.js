@@ -27,7 +27,13 @@
     });
 
     deleteButton?.addEventListener('click', async () => {
-        if (!window.confirm('Bạn có chắc muốn xóa thông báo này?')) return;
+        const confirmed = await window.CatsBackModal.confirm({
+            title: 'Xóa thông báo?',
+            message: 'Bạn có chắc chắn muốn xóa thông báo này?\nHành động này không thể hoàn tác.',
+            cancelText: 'Hủy',
+            confirmText: 'Xóa'
+        });
+        if (!confirmed) return;
         deleteButton.disabled = true;
         try {
             const response = await fetch(`${window.location.pathname}?handler=Delete`, {
@@ -41,6 +47,11 @@
             });
             const data = await response.json();
             if (!response.ok || data.success === false) throw new Error(data.error || 'Không thể xóa thông báo.');
+            await window.CatsBackModal.success({
+                title: 'Đã xóa thành công!',
+                message: 'Thông báo đã được xóa khỏi hệ thống.',
+                confirmText: 'Đóng'
+            });
             window.location.replace(data.redirectUrl || '/Notifications');
         } catch (error) {
             deleteButton.disabled = false;

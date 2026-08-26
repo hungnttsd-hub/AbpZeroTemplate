@@ -59,7 +59,6 @@ textarea { font-family: var(--catback-font-family); }
 .header-avatar.is-active { box-shadow: 0 8px 20px rgba(0, 0, 0, .26); }
 .login-button { border-color: rgba(252, 252, 253, .5); background: rgba(252, 252, 253, .1); color: var(--catback-white); }
 .login-button:hover { background: rgba(252, 252, 253, .18); }
-.header-actions .install-app-button:not([hidden]) { border-color: rgba(46, 185, 190, .75); background: rgba(46, 185, 190, .15); color: var(--catback-white); box-shadow: 0 7px 18px rgba(0, 0, 0, .18); animation: shortcut-teal-pulse 2.4s ease-in-out infinite; }
 .mobile-bottom-navigation { border-top-color: #dce7e9; background: rgba(255, 255, 255, .98); box-shadow: 0 -8px 24px rgba(3, 30, 69, .1); }
 .mobile-bottom-navigation a { color: var(--catback-muted); }
 .mobile-bottom-navigation a.is-active { color: var(--catback-teal); }
@@ -77,11 +76,25 @@ textarea { font-family: var(--catback-font-family); }
 .dashboard-cashback-note { position: relative; z-index: 2; display: grid; min-height: 150px; place-items: center; padding: clamp(20px, 3vw, 34px); overflow: hidden; border: 1px solid rgba(250, 224, 120, .72); border-radius: 24px; background: linear-gradient(125deg, rgba(5, 54, 100, .96), rgba(6, 142, 148, .9) 62%, rgba(46, 185, 190, .88)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 34px rgba(46, 185, 190, .16), 0 20px 42px rgba(0, 0, 0, .28), 0 0 24px rgba(46, 185, 190, .2); color: var(--catback-white); text-align: center; animation: cashback-note-float 4s ease-in-out infinite; }
 .dashboard-cashback-note::before { position: absolute; width: 190px; height: 190px; top: -105px; right: -40px; border-radius: 50%; background: radial-gradient(circle, rgba(250, 224, 120, .42), rgba(248, 183, 34, .08) 46%, transparent 70%); content: ""; animation: cashback-note-orbit 5s ease-in-out infinite alternate; }
 .dashboard-cashback-note::after { position: absolute; width: 42%; height: 180%; top: -42%; left: -55%; transform: rotate(18deg); background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent); content: ""; animation: cashback-note-shimmer 4.8s ease-in-out infinite; }
-.dashboard-cashback-note p { position: relative; z-index: 2; margin: 0; }
+.dashboard-cashback-note p { position: relative; z-index: 2; width: 100%; margin: 0; }
 .dashboard-cashback-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px; font-size: clamp(15px, 1.7vw, 20px); font-weight: 800; line-height: 1.35; }
 .dashboard-highlight-rate { display: inline-flex; min-width: 92px; justify-content: center; padding: 5px 14px 6px; border-radius: 999px; background: linear-gradient(110deg, var(--catback-gold-light), var(--catback-gold), #ffd95d); color: var(--catback-navy); box-shadow: 0 0 0 1px rgba(255, 255, 255, .38), 0 9px 22px rgba(248, 183, 34, .38); font-size: clamp(24px, 3.2vw, 38px); font-weight: 900; line-height: 1; letter-spacing: -.04em; animation: cashback-rate-glow 2.2s ease-in-out infinite; }
 .dashboard-highlight-rate.is-text { font-size: clamp(15px, 1.8vw, 20px); letter-spacing: 0; }
 .dashboard-cashback-subtitle { display: block; margin-top: 12px; color: #dff7f6; font-size: clamp(11px, 1.2vw, 14px); font-weight: 600; line-height: 1.5; }
+.dashboard-cashback-note .dashboard-install-button:not([hidden]) { position: relative; z-index: 2; width: min(100%, 440px); min-height: 58px; display: inline-flex; align-items: center; justify-content: center; margin: 20px auto 0; padding: 13px 26px; overflow: hidden; border: 1px solid rgba(255, 255, 255, .72); border-radius: 999px; background: linear-gradient(110deg, var(--catback-gold), var(--catback-gold-light), var(--catback-gold)); background-size: 200% 100%; color: var(--catback-navy); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .72), 0 12px 26px rgba(248, 183, 34, .34); font-family: inherit; font-size: clamp(17px, 2vw, 22px); font-weight: 900; line-height: 1.2; cursor: pointer; animation: dashboard-install-pulse 2.6s ease-in-out infinite; }
+.dashboard-cashback-note .dashboard-install-button:not([hidden])::before { position: absolute; inset: 0; content: ""; background: linear-gradient(105deg, transparent 28%, rgba(255, 255, 255, .72) 50%, transparent 72%); transform: translateX(-130%); animation: dashboard-install-shimmer 3s ease-in-out infinite; }
+.dashboard-cashback-note .dashboard-install-button:not([hidden]):hover { background-position: 100% 0; transform: translateY(-2px); }
+.dashboard-cashback-note .dashboard-install-button:not([hidden]):focus-visible { outline: 3px solid rgba(252, 252, 253, .92); outline-offset: 3px; }
+
+@keyframes dashboard-install-pulse {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .72), 0 12px 26px rgba(248, 183, 34, .34); transform: translateY(0); }
+  50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 16px 34px rgba(248, 183, 34, .52); transform: translateY(-2px); }
+}
+
+@keyframes dashboard-install-shimmer {
+  0%, 30% { transform: translateX(-130%); }
+  68%, 100% { transform: translateX(130%); }
+}
 
 @keyframes cashback-rate-glow {
   0%, 100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(255, 255, 255, .38), 0 9px 22px rgba(248, 183, 34, .32); }
@@ -328,31 +341,6 @@ textarea { font-family: var(--catback-font-family); }
   body:has(.customer-dashboard) .site-header .brand,
   body:has(.customer-dashboard) .site-header .site-navigation { display: none; }
   body:has(.customer-dashboard) .site-header .header-actions { margin: 0; pointer-events: auto; }
-  body:has(.customer-dashboard) .header-actions .install-app-button:not([hidden]) {
-    display: grid;
-    width: 38px;
-    height: 38px;
-    min-height: 38px;
-    flex: 0 0 38px;
-    place-items: center;
-    padding: 0;
-    border-radius: 50%;
-    font-size: 0;
-    line-height: 1;
-  }
-  body:has(.customer-dashboard) .header-actions .install-app-button:not([hidden])::after {
-    position: absolute;
-    z-index: 2;
-    top: 50%;
-    left: 50%;
-    width: 14px;
-    height: 14px;
-    content: "";
-    background:
-      linear-gradient(currentColor, currentColor) center / 14px 2px no-repeat,
-      linear-gradient(currentColor, currentColor) center / 2px 14px no-repeat;
-    transform: translate(-50%, -50%);
-  }
   body:has(.customer-dashboard) .login-button {
     width: 38px;
     min-height: 38px;
@@ -377,6 +365,7 @@ textarea { font-family: var(--catback-font-family); }
   .dashboard-cashback-heading { font-size: 14px; }
   .dashboard-highlight-rate { min-width: 82px; font-size: 27px; }
   .dashboard-cashback-subtitle { margin-top: 8px; font-size: 10px; }
+  .dashboard-cashback-note .dashboard-install-button:not([hidden]) { width: min(100%, 310px); min-height: 50px; margin-top: 14px; padding: 11px 22px; font-size: 16px; }
   .dashboard-create-card,
   .affiliate-link-card,
   .cashback-summary,
@@ -417,7 +406,8 @@ textarea { font-family: var(--catback-font-family); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .header-actions .install-app-button:not([hidden]) { animation: none; }
+  .dashboard-cashback-note .dashboard-install-button:not([hidden]),
+  .dashboard-cashback-note .dashboard-install-button:not([hidden])::before,
   .dashboard-highlight-rate,
   .dashboard-cashback-note,
   .dashboard-cashback-note::before,
