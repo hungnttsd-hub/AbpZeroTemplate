@@ -3,6 +3,7 @@ using System.IO;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
@@ -11,12 +12,14 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WebHoanTien.EntityFrameworkCore;
 using WebHoanTien.Localization;
 using WebHoanTien.Web.Menus;
@@ -173,6 +176,16 @@ public class WebHoanTienWebModule : AbpModule
     private void ConfigureAuthentication(ServiceConfigurationContext context, IWebHostEnvironment environment, IConfiguration configuration)
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        var cookieExpireDays = Math.Clamp(configuration.GetValue("Authentication:Cookie:ExpireDays", 30), 1, 365);
+        context.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
+        {
+            options.ExpireTimeSpan = TimeSpan.FromDays(cookieExpireDays);
+            options.SlidingExpiration = configuration.GetValue("Authentication:Cookie:SlidingExpiration", true);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        });
         context.Services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
         {
             options.SignIn.RequireConfirmedEmail = configuration.GetValue("Identity:RequireConfirmedEmail", !environment.IsDevelopment());
@@ -196,6 +209,10 @@ public class WebHoanTienWebModule : AbpModule
                 options.ClientSecret = googleClientSecret;
                 options.CallbackPath = "/signin-google";
                 options.SaveTokens = true;
+                options.CorrelationCookie.HttpOnly = true;
+                options.CorrelationCookie.IsEssential = true;
+                options.CorrelationCookie.SameSite = SameSiteMode.None;
+                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
                 if (googleCallbackUrl is not null)
                 {
                     options.Events.OnRedirectToAuthorizationEndpoint = redirectContext =>
@@ -204,6 +221,17 @@ public class WebHoanTienWebModule : AbpModule
                         return System.Threading.Tasks.Task.CompletedTask;
                     };
                 }
+                options.Events.OnRemoteFailure = failureContext =>
+                {
+                    var logger = failureContext.HttpContext.RequestServices
+                        .GetRequiredService<Microsoft.Extensions.Logging.ILogger<WebHoanTienWebModule>>();
+                    logger.LogWarning(failureContext.Failure,
+                        "Google authentication callback failed. Path: {Path}",
+                        failureContext.Request.Path);
+                    failureContext.HandleResponse();
+                    failureContext.Response.Redirect("/Account/Login?GoogleLoginError=callback");
+                    return System.Threading.Tasks.Task.CompletedTask;
+                };
                 options.Events.OnCreatingTicket = ticketContext =>
                 {
                     if (ticketContext.User.TryGetProperty("picture", out var picture) && picture.GetString() is { Length: > 0 } avatar)

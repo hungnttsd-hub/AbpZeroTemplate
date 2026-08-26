@@ -52,7 +52,7 @@
                 @foreach (var provider in Model.VisibleExternalProviders)
                 {
                     var isGoogle = provider.AuthenticationScheme == "Google";
-                    <button type="submit" class="button button-wide external-login-button @(isGoogle ? "google-login-button" : "button-ghost")" name="provider" value="@provider.AuthenticationScheme">
+                    <button type="submit" formtarget="@(isGoogle ? "_blank" : null)" class="button button-wide external-login-button @(isGoogle ? "google-login-button" : "button-ghost")" name="provider" value="@provider.AuthenticationScheme">
                         @if (isGoogle)
                         {
                             <svg class="google-login-icon" viewBox="0 0 24 24" aria-hidden="true">

@@ -48,25 +48,8 @@
     window.alert(`${title}\n\n${message}`);
   };
 
-  const isPwaInstalled = async () => {
+  const refreshInstallButton = () => {
     if (isStandalone()) {
-      return true;
-    }
-
-    if (typeof window.navigator.getInstalledRelatedApps !== 'function') {
-      return false;
-    }
-
-    try {
-      const relatedApps = await window.navigator.getInstalledRelatedApps();
-      return relatedApps.some((app) => app.platform === 'webapp');
-    } catch {
-      return false;
-    }
-  };
-
-  const refreshInstallButton = async () => {
-    if (await isPwaInstalled()) {
       hideInstallButton();
       return;
     }

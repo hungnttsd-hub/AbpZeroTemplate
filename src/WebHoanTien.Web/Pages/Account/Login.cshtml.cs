@@ -24,7 +24,16 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
     [BindProperty(SupportsGet = true)]
     public bool LinkExternalLogin { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public string? GoogleLoginError { get; set; }
+
     public string? LinkError { get; private set; }
+
+    public string? GoogleLoginErrorMessage => GoogleLoginError switch
+    {
+        "callback" => "Phiên đăng nhập Google không còn hợp lệ. Hãy mở CatsBack trong Chrome và thử lại.",
+        _ => null
+    };
 
     public LoginModel(
         IAuthenticationSchemeProvider schemeProvider,
@@ -57,7 +66,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         var signInResult = await SignInManager.ExternalLoginSignInAsync(
             loginInfo.LoginProvider,
             loginInfo.ProviderKey,
-            isPersistent: false,
+            isPersistent: true,
             bypassTwoFactor: true);
 
         if (signInResult.IsLockedOut)
