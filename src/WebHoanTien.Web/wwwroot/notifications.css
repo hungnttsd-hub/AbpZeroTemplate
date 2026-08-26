@@ -915,7 +915,7 @@ button.notification-hero-button:hover {
     }
 
     .notification-hero {
-        min-height: 330px;
+        min-height: 228px;
         padding: 48px 20px 22px;
         border-radius: 0 0 30px 30px;
     }
@@ -943,14 +943,20 @@ button.notification-hero-button:hover {
     }
 
     .notification-chips {
-        gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: clamp(3px, 1.5vw, 8px);
         margin-top: 72px;
     }
 
     .notification-chips button {
-        min-height: 42px;
-        padding: 9px 15px;
-        font-size: 13px;
+        min-width: 0;
+        min-height: 40px;
+        padding: 8px 2px;
+        overflow: hidden;
+        font-size: clamp(10px, 3.15vw, 13px);
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .notification-content {
@@ -1037,6 +1043,15 @@ button.notification-hero-button:hover {
     .notification-hero-button {
         width: 44px;
         height: 44px;
+    }
+
+    .notification-chips {
+        gap: 3px;
+    }
+
+    .notification-chips button {
+        min-height: 38px;
+        font-size: clamp(9px, 2.9vw, 11px);
     }
 
     .notification-card-copy strong {

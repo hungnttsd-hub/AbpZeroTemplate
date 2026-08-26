@@ -19,11 +19,6 @@
             <h1>Thông báo</h1>
         </div>
         <div class="notification-hero-actions">
-            <span class="notification-hero-button" aria-label="Thông báo chưa đọc">
-                <img src="~/notification-icons/bell.svg" alt="" />
-                <span class="notification-count-badge" data-notification-badge
-                      hidden="@(Model.Data.UnreadCount == 0)">@(Model.Data.UnreadCount > 99 ? "99+" : Model.Data.UnreadCount)</span>
-            </span>
             <button class="notification-hero-button" type="button" data-open-notification-filter
                     aria-label="Mở bộ lọc thông báo">
                 <img src="~/notification-icons/filters.svg" alt="" />

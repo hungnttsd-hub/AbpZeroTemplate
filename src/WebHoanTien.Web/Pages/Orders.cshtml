@@ -59,21 +59,24 @@
                     var productName = string.IsNullOrWhiteSpace(firstItem?.ProductName) ? "Sản phẩm Shopee" : firstItem.ProductName;
                     var statusClass = CustomerOrderUi.GetStatusClass(order.Status);
                     <article class="cb-order-card @(Model.IsAdminOrderView ? "cb-order-card-admin" : null)">
-                        <div class="cb-order-product-image">
-                            @if (!string.IsNullOrWhiteSpace(order.ProductImageUrl))
-                            {
-                                <img src="@order.ProductImageUrl" alt="Ảnh @productName" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
-                                <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
-                            }
-                            else
-                            {
-                                <span><img src="~/orders-icons/store.svg" alt="" /></span>
-                            }
-                        </div>
-                        <div class="cb-order-product-copy">
-                            <h2>@productName</h2>
-                            <p>Sản phẩm từ Shopee</p>
-                            <time datetime="@order.PurchaseTime.ToString("O")">@CustomerOrderUi.FormatDate(order.PurchaseTime)</time>
+                        <div class="cb-order-card-top">
+                            <div class="cb-order-product-image">
+                                @if (!string.IsNullOrWhiteSpace(order.ProductImageUrl))
+                                {
+                                    <img src="@order.ProductImageUrl" alt="Ảnh @productName" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
+                                    <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
+                                }
+                                else
+                                {
+                                    <span><img src="~/orders-icons/store.svg" alt="" /></span>
+                                }
+                            </div>
+                            <div class="cb-order-product-copy">
+                                <h2>@productName</h2>
+                                <p><img src="~/orders-icons/store.svg" alt="" />Sản phẩm từ Shopee</p>
+                                <time datetime="@order.PurchaseTime.ToString("O")"><img src="~/orders-icons/clock.svg" alt="" />@CustomerOrderUi.FormatDate(order.PurchaseTime)</time>
+                                <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
+                            </div>
                         </div>
                         @if (Model.IsAdminOrderView)
                         {
@@ -82,11 +85,25 @@
                                 <strong>@(string.IsNullOrWhiteSpace(order.UserEmail) ? "Chưa xác định" : order.UserEmail)</strong>
                             </div>
                         }
-                        <div class="cb-order-card-summary">
-                            <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
-                            <strong>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</strong>
-                            <span class="cb-cashback-value">+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</span>
-                        </div>
+                        <dl class="cb-order-values">
+                            <div>
+                                <dt>Số tiền đơn hàng</dt>
+                                <dd>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</dd>
+                            </div>
+                            <div>
+                                <dt>@(CustomerOrderUi.IsConfirmed(order.Status) ? "Bạn nhận được" : "Hoàn tiền dự kiến")</dt>
+                                <dd class="cb-cashback-value">+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</dd>
+                            </div>
+                            <div>
+                                <dt>Mã đơn hàng</dt>
+                                <dd class="cb-order-code">
+                                    <span>@order.ExternalOrderId</span>
+                                    <button type="button" data-copy-order-code="@order.ExternalOrderId" aria-label="Sao chép mã đơn hàng @order.ExternalOrderId">
+                                        <img src="~/orders-icons/copy.svg" alt="" />
+                                    </button>
+                                </dd>
+                            </div>
+                        </dl>
                         <a class="cb-order-detail-link" href="/Orders/@order.Id?returnUrl=@Uri.EscapeDataString(Model.ReturnUrl)">
                             <span>Xem chi tiết</span><img src="~/orders-icons/chevron-right.svg" alt="" />
                         </a>
@@ -102,3 +119,7 @@
         </a>
     </div>
 </section>
+
+@section Scripts {
+    <script src="~/orders.js" asp-append-version="true"></script>
+}
