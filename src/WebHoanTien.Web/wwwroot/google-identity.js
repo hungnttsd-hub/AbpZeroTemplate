@@ -77,14 +77,15 @@
       use_fedcm_for_button: false,
       auto_select: false
     });
-    const availableWidth = Math.floor(root.getBoundingClientRect().width);
+    const availableWidth = Math.floor(root.getBoundingClientRect().width) - 4;
     window.google.accounts.id.renderButton(button, {
       type: 'standard',
       theme: 'outline',
-      size: 'large',
+      size: 'medium',
       text: 'continue_with',
       shape: 'rectangular',
       logo_alignment: 'left',
+      locale: 'vi',
       width: Math.min(400, Math.max(200, availableWidth))
     });
   };

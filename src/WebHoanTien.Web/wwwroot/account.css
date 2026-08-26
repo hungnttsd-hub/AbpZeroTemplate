@@ -156,24 +156,25 @@
 }
 
 .google-identity-button {
-    display: grid;
+    display: flex;
     width: 100%;
     min-width: 0;
     min-height: 44px;
-    place-items: center;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0 2px;
     overflow: visible;
 }
 
 .google-identity-button > div {
-    display: flex !important;
-    justify-content: center;
-    width: 100% !important;
+    display: block !important;
     min-width: 0 !important;
+    max-width: 100% !important;
 }
 
 .google-identity-button iframe {
     display: block !important;
-    width: 100% !important;
     max-width: 100% !important;
 }
 
