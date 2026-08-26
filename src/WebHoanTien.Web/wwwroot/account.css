@@ -173,6 +173,7 @@
 
 .google-identity-button iframe {
     display: block !important;
+    width: 100% !important;
     max-width: 100% !important;
 }
 
@@ -191,6 +192,20 @@
 
 .google-identity-status[data-state="loading"] {
     color: var(--muted);
+}
+
+.google-identity-legal {
+    max-width: 400px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.google-identity-legal a {
+    color: var(--teal, #068e94);
+    font-weight: 700;
 }
 
 .external-login-button {

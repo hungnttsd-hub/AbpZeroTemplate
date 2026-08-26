@@ -8,7 +8,6 @@
   const form = root.querySelector('[data-google-identity-form]');
   const button = root.querySelector('[data-google-identity-button]');
   const status = root.querySelector('[data-google-identity-status]');
-  const requiresTerms = root.dataset.requiresTerms === 'true';
   let submitting = false;
 
   if (!clientId || !form || !button || !status) {
@@ -31,19 +30,13 @@
       return;
     }
 
-    const acceptedTerms = document.getElementById('AcceptedTerms')?.checked === true;
-    if (requiresTerms && !acceptedTerms) {
-      showStatus('Bạn cần đồng ý với Điều khoản và Chính sách riêng tư trước khi tiếp tục bằng Google.');
-      return;
-    }
-
     submitting = true;
     button.classList.add('is-loading');
     showStatus('Đang xác minh tài khoản Google…', 'loading');
 
     const body = new FormData(form);
     body.set('credential', googleResponse.credential);
-    body.set('acceptedTerms', acceptedTerms ? 'true' : 'false');
+    body.set('acceptedTerms', 'true');
     body.set('returnUrl', root.dataset.returnUrl || '/');
 
     try {
@@ -57,11 +50,6 @@
         }
       });
       const payload = await readPayload(response);
-
-      if (response.status === 409 && payload.code === 'registration_required' && payload.redirectUrl) {
-        window.location.assign(payload.redirectUrl);
-        return;
-      }
 
       if (!response.ok) {
         throw new Error(payload.message || 'Không thể đăng nhập bằng Google lúc này.');
@@ -81,11 +69,12 @@
       return;
     }
 
+    window.google.accounts.id.disableAutoSelect();
     window.google.accounts.id.initialize({
       client_id: clientId,
       callback: handleCredential,
       ux_mode: 'popup',
-      use_fedcm_for_button: true,
+      use_fedcm_for_button: false,
       auto_select: false
     });
     const availableWidth = Math.floor(root.getBoundingClientRect().width);

@@ -90,16 +90,7 @@ public class GoogleIdentityLoginController : AbpController
         var email = payload.Email.Trim();
         var user = await _userManager.FindByLoginAsync(GoogleDefaults.AuthenticationScheme, payload.Subject)
             ?? await _userManager.FindByEmailAsync(email);
-
-        if (user is null && !acceptedTerms)
-        {
-            return StatusCode(409, new
-            {
-                code = "registration_required",
-                message = "Hãy đồng ý Điều khoản và Chính sách riêng tư để hoàn tất đăng ký.",
-                redirectUrl = Url.Page("/Account/Register", values: new { returnUrl = GetSafeReturnUrl(returnUrl) })
-            });
-        }
+        var isNewUser = user is null;
 
         if (user is null)
         {
@@ -160,7 +151,7 @@ public class GoogleIdentityLoginController : AbpController
             await _userManager.UpdateAsync(user);
         }
 
-        if (acceptedTerms && !await _consents.AnyAsync(consent => consent.UserId == user.Id
+        if ((isNewUser || acceptedTerms) && !await _consents.AnyAsync(consent => consent.UserId == user.Id
                 && consent.TermsVersion == WebHoanTienConsts.TermsVersion
                 && consent.PrivacyVersion == WebHoanTienConsts.PrivacyVersion))
         {
