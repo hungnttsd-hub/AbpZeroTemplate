@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "CatsBack Shopee Affiliate Sync",
+  "version": "0.4.0",
+  "description": "Hourly Shopee Affiliate conversion export using the current Chrome session, then hand off CSV to CatsBack.",
+  "permissions": [
+    "alarms",
+    "tabs",
+    "storage",
+    "notifications",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://affiliate.shopee.vn/*",
+    "http://127.0.0.1:32145/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://affiliate.shopee.vn/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "CatsBack Shopee Sync",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "icon.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "128": "icon.png"
+  }
+}

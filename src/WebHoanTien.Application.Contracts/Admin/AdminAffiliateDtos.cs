@@ -151,6 +151,13 @@ public interface IAdminShopeeReportImportAppService : IApplicationService
         CancellationToken cancellationToken = default);
 }
 
+public interface IShopeeAutomationImportAppService : IApplicationService
+{
+    [DisableValidation]
+    Task<ShopeeReportImportResultDto> ImportAsync(Stream reportStream, string reportFileName,
+        CancellationToken cancellationToken = default);
+}
+
 public sealed class ShopeeSettlementImportResultDto
 {
     public int ImportedRowCount { get; set; }

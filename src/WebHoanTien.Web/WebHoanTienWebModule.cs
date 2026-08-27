@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Threading.RateLimiting;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -158,6 +161,7 @@ public class WebHoanTienWebModule : AbpModule
             .PersistKeysToDbContext<WebHoanTienDbContext>();
 
         ConfigureAuthentication(context, hostingEnvironment, configuration);
+        ConfigureShopeeAutomation(context.Services, configuration);
         context.Services.AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("Default")!, name: "postgresql", tags: new[] { "ready" });
         context.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -248,6 +252,30 @@ public class WebHoanTienWebModule : AbpModule
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
+        });
+    }
+
+    private static void ConfigureShopeeAutomation(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<ShopeeAutomationOptions>(
+            configuration.GetSection(ShopeeAutomationOptions.SectionName));
+        services.AddTransient<ShopeeAutomationTokenService>();
+        services.AddAuthentication()
+            .AddScheme<AuthenticationSchemeOptions, ShopeeAutomationAuthenticationHandler>(
+                ShopeeAutomationAuthenticationDefaults.AuthenticationScheme, _ => { });
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy(ShopeeAutomationAuthenticationDefaults.TokenRateLimitPolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
         });
     }
 
@@ -418,6 +446,7 @@ public class WebHoanTienWebModule : AbpModule
         app.UseCorrelationId();
         app.UseStaticFiles();
         app.UseRouting();
+        app.UseRateLimiter();
         app.UseHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
         app.UseHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
         app.UseAuthentication();
