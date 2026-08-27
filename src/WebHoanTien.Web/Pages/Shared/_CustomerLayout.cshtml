@@ -16,7 +16,7 @@
     var isHomeActive = currentPath == "/" || currentPath.Equals("/Index", StringComparison.OrdinalIgnoreCase);
     var isOrdersActive = currentPath.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase);
     var isWalletActive = currentPath.StartsWith("/Wallet", StringComparison.OrdinalIgnoreCase);
-    var isAccountActive = currentPath.StartsWith("/Account/Profile", StringComparison.OrdinalIgnoreCase);
+    var isAccountActive = currentPath.StartsWith("/Account", StringComparison.OrdinalIgnoreCase);
     var bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
     var unreadNotificationCount = isAuthenticated ? await CustomerNotifications.GetUnreadCountAsync() : 0;
 }

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Volo.Abp;
+using Volo.Abp.Identity;
+using Volo.Abp.Users;
 using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.Web.Pages.Account;
@@ -12,9 +14,12 @@ namespace WebHoanTien.Web.Pages.Account;
 public class ProfileModel : PageModel
 {
     private readonly ICustomerProfileAppService _customerProfileAppService;
+    private readonly IdentityUserManager _userManager;
+    private readonly ICurrentUser _currentUser;
 
     public CustomerProfileDto Profile { get; private set; } = new();
     public IReadOnlyList<PayoutBank> Banks => PayoutBankCatalog.Banks;
+    public bool CanChangePassword { get; private set; }
 
     [BindProperty]
     public UpdatePayoutAccountInput PayoutInput { get; set; } = new();
@@ -22,9 +27,20 @@ public class ProfileModel : PageModel
     [TempData]
     public string? PayoutStatusMessage { get; set; }
 
-    public ProfileModel(ICustomerProfileAppService customerProfileAppService)
+    [TempData]
+    public string? PasswordStatusMessage { get; set; }
+
+    [TempData]
+    public string? PasswordUnavailableMessage { get; set; }
+
+    public ProfileModel(
+        ICustomerProfileAppService customerProfileAppService,
+        IdentityUserManager userManager,
+        ICurrentUser currentUser)
     {
         _customerProfileAppService = customerProfileAppService;
+        _userManager = userManager;
+        _currentUser = currentUser;
     }
 
     public async Task OnGetAsync()
@@ -57,6 +73,10 @@ public class ProfileModel : PageModel
     private async Task LoadAsync(bool populatePayoutInput)
     {
         Profile = await _customerProfileAppService.GetAsync();
+
+        var user = await _userManager.GetByIdAsync(_currentUser.GetId());
+        CanChangePassword = await _userManager.HasPasswordAsync(user);
+
         if (!populatePayoutInput) return;
 
         if (Profile.PayoutAccount is not null)

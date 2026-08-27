@@ -30,6 +30,19 @@
                     <div><dt>Đăng nhập Google</dt><dd class="profile-status @(Model.Profile.HasGoogleLogin ? "is-connected" : null)">@(Model.Profile.HasGoogleLogin ? "Đã liên kết" : "Chưa liên kết")</dd></div>
                     <div><dt>Điều khoản hiện hành</dt><dd class="profile-status @(Model.Profile.HasCurrentLegalConsent ? "is-connected" : null)">@(Model.Profile.HasCurrentLegalConsent ? "Đã chấp thuận" : "Chưa chấp thuận")</dd></div>
                 </dl>
+                @if (!string.IsNullOrWhiteSpace(Model.PasswordStatusMessage))
+                {
+                    <div class="profile-save-status" role="status">@Model.PasswordStatusMessage</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.PasswordUnavailableMessage))
+                {
+                    <div class="status-message status-info" role="status">@Model.PasswordUnavailableMessage</div>
+                }
+                @if (Model.CanChangePassword)
+                {
+                    <a class="profile-text-link" href="/Account/ChangePassword">Đổi mật khẩu</a>
+                    <span aria-hidden="true"> · </span>
+                }
                 <a class="profile-text-link" href="/Account/Manage">Quản lý phương thức đăng nhập</a>
             </article>
 
