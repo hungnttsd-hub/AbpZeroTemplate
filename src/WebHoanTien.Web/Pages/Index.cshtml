@@ -67,7 +67,6 @@
                 <header class="dashboard-section-heading">
                     <h2 id="your-links-heading">Link của bạn</h2>
                 </header>
-                <p class="dashboard-link-status" data-link-visibility-status role="status" hidden></p>
 
                 @if (User.Identity?.IsAuthenticated != true)
                 {
@@ -91,7 +90,6 @@
                     @foreach (var item in Model.RecentLinks.Items)
                     {
                         var isNew = item.Id == Model.CreatedLinkId;
-                        var actionSheetId = $"link-actions-{item.Id:N}";
                         <article class="affiliate-link-card @(isNew ? "is-new" : string.Empty) @(item.IsHidden ? "is-hidden" : string.Empty)" id="@(isNew ? "latest-link" : string.Empty)" data-link-id="@item.Id">
                             <div class="affiliate-product-image">
                                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
@@ -119,54 +117,31 @@
                                     <p class="affiliate-estimate unavailable">Chưa có ước tính hoa hồng</p>
                                 }
                             </div>
-                            <button class="affiliate-more-button" type="button" data-link-actions-open="@actionSheetId" aria-label="Mở thao tác cho @(item.ProductName ?? "sản phẩm Shopee")">
-                                <img src="~/catback/icons/more-vertical.svg" alt="" />
-                            </button>
-                            <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
-                            <footer class="affiliate-link-desktop-footer">
-                                <span>Shopee · @item.ClickCount lượt bấm</span>
-                                <div class="affiliate-link-footer-actions">
+                            <div class="affiliate-link-actions">
+                                <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
+                                <div class="affiliate-link-secondary-actions">
                                     @if (!string.IsNullOrWhiteSpace(item.AffiliateUrl))
                                     {
-                                        <button class="affiliate-copy-button" type="button" data-copy-url="@item.AffiliateUrl">Sao chép link</button>
+                                        <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="@item.AffiliateUrl" aria-label="Sao chép link" title="Sao chép link">
+                                            <img src="~/catback/icons/copy-link.svg" alt="" />
+                                            <span class="sr-only" data-copy-label>Sao chép link</span>
+                                        </button>
                                     }
                                     <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true"
-                                          data-link-visibility-form data-link-id="@item.Id" data-action-sheet-id="@actionSheetId">
+                                          data-link-visibility-form data-link-id="@item.Id">
                                         <input type="hidden" name="linkId" value="@item.Id" />
                                         <input type="hidden" name="visibilityAction" value="@(item.IsHidden ? "show" : "hide")" />
                                         <input type="hidden" name="showHidden" value="@Model.ShowHidden" />
-                                        <button class="affiliate-hide-desktop-button" type="submit">
-                                            <img src="~/catback/icons/eye-off.svg" alt="" />
-                                            <span data-visibility-label>@(item.IsHidden ? "Bỏ ẩn" : "Ẩn link")</span>
+                                        <button class="affiliate-icon-action affiliate-hide-desktop-button" type="submit"
+                                                aria-label="@(item.IsHidden ? "Bỏ ẩn link" : "Ẩn link khỏi danh sách")"
+                                                title="@(item.IsHidden ? "Bỏ ẩn link" : "Ẩn link khỏi danh sách")">
+                                            <img data-visibility-icon src="@(item.IsHidden ? "/catback/icons/eye-off.svg" : "/catback/icons/trash.svg")" alt="" />
+                                            <span class="sr-only" data-visibility-label>@(item.IsHidden ? "Bỏ ẩn link" : "Ẩn link khỏi danh sách")</span>
                                         </button>
                                     </form>
                                 </div>
-                            </footer>
-                        </article>
-
-                        <div class="affiliate-action-sheet" id="@actionSheetId" hidden aria-hidden="true">
-                            <button class="affiliate-action-backdrop" type="button" data-link-actions-close aria-label="Đóng bảng thao tác"></button>
-                            <div class="affiliate-action-panel" role="dialog" aria-modal="true" aria-label="Thao tác với link">
-                                @if (!string.IsNullOrWhiteSpace(item.AffiliateUrl))
-                                {
-                                    <button class="affiliate-action-row" type="button" data-copy-url="@item.AffiliateUrl" data-link-actions-close-after-copy>
-                                        <img src="~/catback/icons/copy-link.svg" alt="" /><span>Sao chép link</span><img src="~/catback/icons/copy-link.svg" alt="" />
-                                    </button>
-                                }
-                                <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true"
-                                      data-link-visibility-form data-link-id="@item.Id" data-action-sheet-id="@actionSheetId">
-                                    <input type="hidden" name="linkId" value="@item.Id" />
-                                    <input type="hidden" name="visibilityAction" value="@(item.IsHidden ? "show" : "hide")" />
-                                    <input type="hidden" name="showHidden" value="@Model.ShowHidden" />
-                                    <button class="affiliate-action-row affiliate-action-hide" type="submit">
-                                        <img src="~/catback/icons/eye-off.svg" alt="" />
-                                        <span data-visibility-label>@(item.IsHidden ? "Bỏ ẩn khỏi danh sách" : "Ẩn khỏi danh sách")</span>
-                                        <img src="~/catback/icons/eye-off.svg" alt="" />
-                                    </button>
-                                </form>
-                                <button class="affiliate-action-cancel" type="button" data-link-actions-close>Hủy</button>
                             </div>
-                        </div>
+                        </article>
                     }
                     </div>
                 }
@@ -194,47 +169,26 @@
                                 <p class="affiliate-store">Sản phẩm từ Shopee</p>
                                 <p class="affiliate-estimate unavailable" data-estimated-commission>Chưa có ước tính hoa hồng</p>
                             </div>
-                            <button class="affiliate-more-button" type="button" data-link-actions-open="" aria-label="Mở thao tác cho sản phẩm Shopee">
-                                <img src="~/catback/icons/more-vertical.svg" alt="" />
-                            </button>
-                            <a class="affiliate-buy-button" href="#" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
-                            <footer class="affiliate-link-desktop-footer">
-                                <span data-click-count>Shopee · 0 lượt bấm</span>
-                                <div class="affiliate-link-footer-actions">
-                                    <button class="affiliate-copy-button" type="button" data-copy-url="">Sao chép link</button>
+                            <div class="affiliate-link-actions">
+                                <a class="affiliate-buy-button" href="#" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
+                                <div class="affiliate-link-secondary-actions">
+                                    <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="" aria-label="Sao chép link" title="Sao chép link">
+                                        <img src="~/catback/icons/copy-link.svg" alt="" />
+                                        <span class="sr-only" data-copy-label>Sao chép link</span>
+                                    </button>
                                     <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true"
-                                          data-link-visibility-form data-link-id="" data-action-sheet-id="">
+                                          data-link-visibility-form data-link-id="">
                                         <input type="hidden" name="linkId" value="" />
                                         <input type="hidden" name="visibilityAction" value="hide" />
                                         <input type="hidden" name="showHidden" value="false" />
-                                        <button class="affiliate-hide-desktop-button" type="submit">
-                                            <img src="~/catback/icons/eye-off.svg" alt="" />
-                                            <span data-visibility-label>Ẩn link</span>
+                                        <button class="affiliate-icon-action affiliate-hide-desktop-button" type="submit" aria-label="Ẩn link khỏi danh sách" title="Ẩn link khỏi danh sách">
+                                            <img data-visibility-icon src="~/catback/icons/trash.svg" alt="" />
+                                            <span class="sr-only" data-visibility-label>Ẩn link khỏi danh sách</span>
                                         </button>
                                     </form>
                                 </div>
-                            </footer>
-                        </article>
-                        <div class="affiliate-action-sheet" hidden aria-hidden="true">
-                            <button class="affiliate-action-backdrop" type="button" data-link-actions-close aria-label="Đóng bảng thao tác"></button>
-                            <div class="affiliate-action-panel" role="dialog" aria-modal="true" aria-label="Thao tác với link">
-                                <button class="affiliate-action-row" type="button" data-copy-url="" data-link-actions-close-after-copy>
-                                    <img src="~/catback/icons/copy-link.svg" alt="" /><span>Sao chép link</span><img src="~/catback/icons/copy-link.svg" alt="" />
-                                </button>
-                                <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true"
-                                      data-link-visibility-form data-link-id="" data-action-sheet-id="">
-                                    <input type="hidden" name="linkId" value="" />
-                                    <input type="hidden" name="visibilityAction" value="hide" />
-                                    <input type="hidden" name="showHidden" value="false" />
-                                    <button class="affiliate-action-row affiliate-action-hide" type="submit">
-                                        <img src="~/catback/icons/eye-off.svg" alt="" />
-                                        <span data-visibility-label>Ẩn khỏi danh sách</span>
-                                        <img src="~/catback/icons/eye-off.svg" alt="" />
-                                    </button>
-                                </form>
-                                <button class="affiliate-action-cancel" type="button" data-link-actions-close>Hủy</button>
                             </div>
-                        </div>
+                        </article>
                     </template>
                 }
             </section>

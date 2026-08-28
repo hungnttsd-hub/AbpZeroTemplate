@@ -4,7 +4,6 @@
   const linkInput = document.getElementById('affiliate-url');
   const clearButton = document.getElementById('affiliate-url-clear');
   const urlStatus = document.getElementById('url-status');
-  const visibilityStatus = document.querySelector('[data-link-visibility-status]');
   const dashboardLinks = document.querySelector('.dashboard-links');
   const createButtonContent = createButton?.innerHTML;
 
@@ -25,11 +24,17 @@
     urlStatus.dataset.state = state;
   };
 
-  const showVisibilityStatus = (message, state = 'success') => {
-    if (!visibilityStatus) return;
-    visibilityStatus.textContent = message;
-    visibilityStatus.dataset.state = state;
-    visibilityStatus.hidden = false;
+  const showVisibilityError = (message) => {
+    if (window.CatsBackModal?.info) {
+      void window.CatsBackModal.info({
+        title: 'Không thể ẩn link',
+        message,
+        confirmText: 'Đã hiểu'
+      });
+      return;
+    }
+
+    window.alert(message);
   };
 
   const findLinkCard = (linkId) => Array.from(document.querySelectorAll('.affiliate-link-card'))
@@ -64,13 +69,16 @@
     findVisibilityForms(linkId).forEach((visibilityForm) => {
       const actionInput = visibilityForm.querySelector('input[name="visibilityAction"]');
       const actionLabel = visibilityForm.querySelector('[data-visibility-label]');
+      const actionButton = visibilityForm.querySelector('button[type="submit"]');
+      const actionIcon = visibilityForm.querySelector('[data-visibility-icon]');
       if (actionInput) actionInput.value = isHidden ? 'show' : 'hide';
       if (actionLabel) {
-        const isDesktop = actionLabel.closest('.affiliate-hide-desktop-button');
-        actionLabel.textContent = isHidden
-          ? (isDesktop ? 'Bỏ ẩn' : 'Bỏ ẩn khỏi danh sách')
-          : (isDesktop ? 'Ẩn link' : 'Ẩn khỏi danh sách');
+        actionLabel.textContent = isHidden ? 'Bỏ ẩn link' : 'Ẩn link khỏi danh sách';
       }
+      const actionDescription = isHidden ? 'Bỏ ẩn link' : 'Ẩn link khỏi danh sách';
+      actionButton?.setAttribute('aria-label', actionDescription);
+      actionButton?.setAttribute('title', actionDescription);
+      if (actionIcon) actionIcon.src = isHidden ? '/catback/icons/eye-off.svg' : '/catback/icons/trash.svg';
     });
   };
 
@@ -131,15 +139,6 @@
       if (window.matchMedia('(min-width: 768px)').matches) buyButton.target = '_blank';
       else buyButton.removeAttribute('target');
     }
-
-    const moreButton = card.querySelector('[data-link-actions-open]');
-    if (moreButton) {
-      moreButton.dataset.linkActionsOpen = actionSheetId;
-      moreButton.setAttribute('aria-label', `Mở thao tác cho ${productName}`);
-    }
-
-    const clickCount = card.querySelector('[data-click-count]') || card.querySelector('.affiliate-link-desktop-footer > span');
-    if (clickCount) clickCount.textContent = `Shopee · ${link.clickCount || 0} lượt bấm`;
 
     if (sheet) {
       sheet.id = actionSheetId;
@@ -227,19 +226,22 @@
       if (!response.ok) throw new Error(result.error || 'Visibility update failed');
 
       closeActionSheet(sheet);
-      showVisibilityStatus(result.message);
       if (result.isHidden) {
         card?.classList.add('is-removing');
-        window.setTimeout(() => {
+        let removalFallback;
+        const finishRemoval = () => {
+          window.clearTimeout(removalFallback);
           card?.remove();
           sheet?.remove();
           renderEmptyLinkState();
-        }, 210);
+        };
+        card?.addEventListener('animationend', finishRemoval, { once: true });
+        removalFallback = window.setTimeout(finishRemoval, 500);
       } else {
         updateCardVisibility(card, linkId, result.isHidden ?? requestedHidden);
       }
     } catch (error) {
-      showVisibilityStatus(error.message || 'Không thể cập nhật link lúc này. Vui lòng thử lại.', 'error');
+      showVisibilityError(error.message || 'Không thể cập nhật link lúc này. Vui lòng thử lại.');
     } finally {
       if (submitButton) submitButton.disabled = false;
     }
@@ -322,17 +324,24 @@
 
     const copyButton = target.closest('[data-copy-url]');
     if (!copyButton || !copyButton.dataset.copyUrl) return;
-    const label = copyButton.querySelector('span') || copyButton;
+    const label = copyButton.querySelector('[data-copy-label]') || copyButton.querySelector('span') || copyButton;
     const originalText = label.textContent;
     try {
       await navigator.clipboard.writeText(copyButton.dataset.copyUrl);
       label.textContent = 'Đã sao chép link';
+      copyButton.classList.add('is-copied');
+      copyButton.setAttribute('aria-label', 'Đã sao chép link');
       if (copyButton.hasAttribute('data-link-actions-close-after-copy')) {
         window.setTimeout(() => closeActionSheet(copyButton.closest('.affiliate-action-sheet')), 450);
       }
-      window.setTimeout(() => { label.textContent = originalText; }, 1800);
+      window.setTimeout(() => {
+        label.textContent = originalText;
+        copyButton.classList.remove('is-copied');
+        copyButton.setAttribute('aria-label', originalText);
+      }, 1800);
     } catch {
       label.textContent = 'Không thể sao chép';
+      copyButton.setAttribute('aria-label', 'Không thể sao chép');
     }
   });
 
