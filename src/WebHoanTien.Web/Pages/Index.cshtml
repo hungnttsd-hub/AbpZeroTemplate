@@ -1,15 +1,15 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "CatsBack — Mua sắm Shopee thông minh";
+    ViewData["Title"] = "CatBack — Mua sắm Shopee thông minh";
     ViewData["BodyClass"] = "catback-link-page";
 }
 <section class="customer-dashboard">
     <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
         <div class="dashboard-hero-copy">
-            <img class="dashboard-hero-mascot" src="~/catback-mascot-reference.png" alt="Mèo may mắn CatsBack" />
+            <img class="dashboard-hero-mascot" src="~/catback-mascot-reference.png" alt="Mèo may mắn CatBack" />
             <div>
-                <h1 id="dashboard-hero-title">Sắm Shopee lời hơn<br />cùng CatsBack</h1>
+                <h1 id="dashboard-hero-title">Sắm Shopee lời hơn<br />cùng CatBack</h1>
                 <span class="dashboard-trust-badge">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 2.7 8 7 10 4.3-2 7-5.3 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
                     Hoàn tiền thật – Rút tiền thật
@@ -30,7 +30,7 @@
 
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <a class="dashboard-wallet-card" href="/Wallet" aria-label="Xem ví tiền CatsBack">
+        <a class="dashboard-wallet-card" href="/Wallet" aria-label="Xem ví tiền CatBack">
             <div>
                 <span>Số dư ví</span>
                 <strong>@Model.Wallet.AvailableBalance.ToString("N0")đ</strong>
@@ -247,7 +247,7 @@
                     <li><span>1</span><p>Bấm <strong>Mua ngay</strong> để sang sàn rồi đặt hàng.</p></li>
                     <li><span>2</span><p><strong>Mỗi đơn một lần bấm.</strong> Mua thêm đơn nữa thì quay lại đây bấm Mua ngay lần nữa, không bấm lại thì đơn sau không được tính.</p></li>
                     <li><span>3</span><p>Đặt hàng <strong>trong vòng 7 ngày</strong> kể từ lúc bấm Mua ngay.</p></li>
-                    <li><span>4</span><p><strong>Tuyệt đối đừng xem video hay livestream của sản phẩm đó</strong> trên sàn. Xem livestream sẽ kích hoạt hoa hồng cho bên livestream: CatsBack không nhận được gì, nên cũng không có gì để chia lại cho bạn.</p></li>
+                    <li><span>4</span><p><strong>Tuyệt đối đừng xem video hay livestream của sản phẩm đó</strong> trên sàn. Xem livestream sẽ kích hoạt hoa hồng cho bên livestream: CatBack không nhận được gì, nên cũng không có gì để chia lại cho bạn.</p></li>
                     <li><span>5</span><p>Sau khi bấm Mua ngay và truy cập sản phẩm trên sàn, <strong>đừng vội mua hàng ngay lập tức</strong>. Hãy kéo xuống đọc thông tin về sản phẩm vài giây rồi hãy chốt đơn nhé.</p></li>
                 </ol>
             </section>

@@ -55,7 +55,7 @@ public class ChangePasswordModel : PageModel
         }
 
         TempData["PasswordUnavailableMessage"] =
-            "Tài khoản này chưa có mật khẩu đăng nhập trên CatsBack. Hãy quản lý phương thức đăng nhập của bạn.";
+            "Tài khoản này chưa có mật khẩu đăng nhập trên CatBack. Hãy quản lý phương thức đăng nhập của bạn.";
         return RedirectToPage("/Account/Profile");
     }
 
@@ -70,7 +70,7 @@ public class ChangePasswordModel : PageModel
         if (!await _userManager.HasPasswordAsync(user))
         {
             TempData["PasswordUnavailableMessage"] =
-                "Tài khoản này chưa có mật khẩu đăng nhập trên CatsBack. Hãy quản lý phương thức đăng nhập của bạn.";
+                "Tài khoản này chưa có mật khẩu đăng nhập trên CatBack. Hãy quản lý phương thức đăng nhập của bạn.";
             return RedirectToPage("/Account/Profile");
         }
 

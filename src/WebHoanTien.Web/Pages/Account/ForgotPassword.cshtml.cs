@@ -26,7 +26,7 @@ public class ForgotPasswordModel : PageModel
     private const string DigitChars = "23456789";
     private const string SymbolChars = "!@$?_#-";
     private const string GenericStatusMessage =
-        "Nếu email khớp với email đăng nhập hoặc email liên hệ của tài khoản đăng ký trực tiếp trên CatsBack, mật khẩu mới sẽ được gửi tới email bạn vừa nhập. Vui lòng kiểm tra cả Hộp thư đến và Spam.";
+        "Nếu email khớp với email đăng nhập hoặc email liên hệ của tài khoản đăng ký trực tiếp trên CatBack, mật khẩu mới sẽ được gửi tới email bạn vừa nhập. Vui lòng kiểm tra cả Hộp thư đến và Spam.";
 
     private readonly IdentityUserManager _userManager;
     private readonly IConfiguration _configuration;
@@ -158,7 +158,7 @@ public class ForgotPasswordModel : PageModel
         using var message = new MailMessage
         {
             From = new MailAddress(smtp.FromAddress, smtp.FromName),
-            Subject = "[CatsBack] Mật khẩu đăng nhập mới",
+            Subject = "[CatBack] Mật khẩu đăng nhập mới",
             SubjectEncoding = Encoding.UTF8,
             BodyEncoding = Encoding.UTF8,
             IsBodyHtml = false,
@@ -166,16 +166,16 @@ public class ForgotPasswordModel : PageModel
             {
                 "Xin chào,",
                 string.Empty,
-                "CatsBack đã nhận được yêu cầu quên mật khẩu cho tài khoản của bạn.",
+                "CatBack đã nhận được yêu cầu quên mật khẩu cho tài khoản của bạn.",
                 string.Empty,
                 "Mật khẩu đăng nhập mới:",
                 temporaryPassword,
                 string.Empty,
                 "Hãy đăng nhập bằng mật khẩu này và đổi mật khẩu ngay tại Tài khoản > Đổi mật khẩu.",
                 string.Empty,
-                "Nếu bạn không yêu cầu thao tác này, vui lòng đăng nhập và đổi mật khẩu hoặc liên hệ quản trị viên CatsBack.",
+                "Nếu bạn không yêu cầu thao tác này, vui lòng đăng nhập và đổi mật khẩu hoặc liên hệ quản trị viên CatBack.",
                 string.Empty,
-                "CatsBack"
+                "CatBack"
             })
         };
         message.To.Add(new MailAddress(recipient));
@@ -225,7 +225,7 @@ public class ForgotPasswordModel : PageModel
             userName,
             password,
             fromAddress,
-            string.IsNullOrWhiteSpace(fromName) ? "CatsBack" : fromName,
+            string.IsNullOrWhiteSpace(fromName) ? "CatBack" : fromName,
             enableSsl);
     }
 

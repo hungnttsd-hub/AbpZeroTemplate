@@ -150,7 +150,7 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         var safeUrl = HtmlEncoder.Default.Encode(confirmationUrl);
         await _emailSender.SendAsync(
             user.Email!,
-            "Xác minh email CatsBack",
+            "Xác minh email CatBack",
             $"<p>Chào bạn,</p><p>Nhấn vào liên kết dưới đây để xác minh email và tiếp tục:</p><p><a href=\"{safeUrl}\">Xác minh email</a></p><p>Không chia sẻ liên kết này với người khác.</p>",
             isBodyHtml: true);
         _confirmationEmailSent = true;

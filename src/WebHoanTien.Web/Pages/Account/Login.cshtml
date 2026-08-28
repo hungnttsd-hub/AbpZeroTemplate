@@ -6,7 +6,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     Layout = "/Pages/Shared/_CustomerLayout.cshtml";
-    ViewData["Title"] = "Đăng nhập — CatsBack";
+    ViewData["Title"] = "Đăng nhập — CatBack";
     var googleClientId = Configuration["Authentication:Google:ClientId"];
     var hasGoogleProvider = Model.VisibleExternalProviders.Any(provider => provider.AuthenticationScheme == "Google");
     var otherProviders = Model.VisibleExternalProviders.Where(provider => provider.AuthenticationScheme != "Google").ToList();
@@ -109,7 +109,7 @@
         }
     </div>
     <aside class="auth-aside">
-        <span class="eyebrow">CatsBack</span>
+        <span class="eyebrow">CatBack</span>
         <h2>Link của bạn,<br />đơn của bạn,<br />cashback của bạn.</h2>
         <p>Thông tin đăng nhập chỉ dùng để bảo vệ lịch sử link và đơn hàng của chính bạn.</p>
     </aside>

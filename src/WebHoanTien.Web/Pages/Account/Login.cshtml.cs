@@ -32,7 +32,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
 
     public string? GoogleLoginErrorMessage => GoogleLoginError switch
     {
-        "callback" => "Phiên đăng nhập Google không còn hợp lệ. Hãy mở CatsBack trong Chrome và thử lại.",
+        "callback" => "Phiên đăng nhập Google không còn hợp lệ. Hãy mở CatBack trong Chrome và thử lại.",
         "link" => "Không thể liên kết tài khoản Google lúc này. Vui lòng thử lại.",
         _ => null
     };

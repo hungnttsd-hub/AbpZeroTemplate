@@ -262,7 +262,7 @@ body.pwa-install-open { overflow: hidden; }
   .install-app-button:not([hidden]), .install-app-button:not([hidden])::before { animation: none; }
 }
 
-/* CatsBack pink dashboard */
+/* CatBack pink dashboard */
 .dashboard-hero {
   position: relative;
   display: grid;

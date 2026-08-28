@@ -62,7 +62,7 @@ public class DetailModel : PageModel
     {
         CustomerNotificationCategory.Order => "Đơn hàng Shopee của bạn",
         CustomerNotificationCategory.Cashback => "Hoàn tiền đơn Shopee",
-        CustomerNotificationCategory.Wallet => "Ví tiền CatsBack",
+        CustomerNotificationCategory.Wallet => "Ví tiền CatBack",
         CustomerNotificationCategory.Promotion => "Ưu đãi dành cho bạn",
         _ => "Nội dung liên quan"
     };

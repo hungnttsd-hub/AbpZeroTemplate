@@ -59,7 +59,7 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
         var accountNumber = input.AccountNumber.Trim();
         var accountHolderName = input.AccountHolderName.Trim();
         if (!PayoutBankCatalog.IsSupported(bankCode))
-            throw new UserFriendlyException("Ngân hàng đã chọn chưa được CatsBack hỗ trợ.");
+            throw new UserFriendlyException("Ngân hàng đã chọn chưa được CatBack hỗ trợ.");
         if (!Regex.IsMatch(accountNumber, @"^\d{6,30}$"))
             throw new UserFriendlyException("Số tài khoản phải gồm từ 6 đến 30 chữ số.");
         if (accountHolderName.Length is < 2 or > 150)

@@ -3,7 +3,7 @@
 @model WebHoanTien.Web.Pages.Notifications.DetailModel
 @{
     Layout = "/Pages/Shared/_CustomerLayout.cshtml";
-    ViewData["Title"] = $"{Model.Notification.Title} | CatsBack";
+    ViewData["Title"] = $"{Model.Notification.Title} | CatBack";
     ViewData["BodyClass"] = "catback-notification-detail-page";
     var tone = NotificationPageUi.Tone(Model.Notification.Kind);
 }

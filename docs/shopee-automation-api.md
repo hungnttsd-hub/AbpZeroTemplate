@@ -54,10 +54,10 @@ report=<file CSV hoặc TXT>
 Ví dụ PowerShell:
 
 ```powershell
-$baseUrl = "https://catsback.onrender.com"
+$baseUrl = "https://catback.id.vn"
 $credential = @{
-  client_id = $env:CATSBACK_CLIENT_ID
-  client_secret = $env:CATSBACK_CLIENT_SECRET
+  client_id = $env:CATBACK_CLIENT_ID
+  client_secret = $env:CATBACK_CLIENT_SECRET
 } | ConvertTo-Json
 
 $token = Invoke-RestMethod -Method Post `

@@ -15,7 +15,7 @@ public class WebHoanTienSettingDefinitionProvider : SettingDefinitionProvider
     {
         SetDefault(context, LocalizationSettingNames.DefaultLanguage, "vi");
         SetDefault(context, EmailSettingNames.DefaultFromAddress, _configuration["Smtp:FromAddress"]);
-        SetDefault(context, EmailSettingNames.DefaultFromDisplayName, _configuration["Smtp:FromName"] ?? "CatsBack");
+        SetDefault(context, EmailSettingNames.DefaultFromDisplayName, _configuration["Smtp:FromName"] ?? "CatBack");
         SetDefault(context, IdentitySettingNames.Password.RequiredLength, _configuration["Identity:Password:RequiredLength"] ?? "6");
         SetDefault(context, IdentitySettingNames.Password.RequiredUniqueChars, _configuration["Identity:Password:RequiredUniqueChars"] ?? "0");
         SetDefault(context, IdentitySettingNames.Password.RequireDigit, _configuration["Identity:Password:RequireDigit"] ?? "false");

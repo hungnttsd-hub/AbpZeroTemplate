@@ -3,7 +3,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     Layout = "/Pages/Shared/_CustomerLayout.cshtml";
-    ViewData["Title"] = "Đăng ký — CatsBack";
+    ViewData["Title"] = "Đăng ký — CatBack";
     var googleClientId = Configuration["Authentication:Google:ClientId"];
     var hasGoogleProvider = Model.VisibleExternalProviders.Any(provider => provider.AuthenticationScheme == "Google");
     var otherProviders = Model.VisibleExternalProviders.Where(provider => provider.AuthenticationScheme != "Google").ToList();

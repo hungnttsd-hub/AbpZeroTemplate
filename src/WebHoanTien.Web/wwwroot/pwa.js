@@ -36,7 +36,7 @@
     installButton.textContent = 'Cài đặt ngay';
     installButton.setAttribute(
       'aria-label',
-      isIos ? 'Xem hướng dẫn thêm CatsBack vào màn hình chính iPhone' : 'Cài đặt CatsBack vào màn hình chính'
+      isIos ? 'Xem hướng dẫn thêm CatBack vào màn hình chính iPhone' : 'Cài đặt CatBack vào màn hình chính'
     );
   };
 
@@ -124,7 +124,7 @@
     window.requestAnimationFrame(() => help.confirmButton.focus());
   };
 
-  const showHelp = (message, title = 'Cài đặt CatsBack') => {
+  const showHelp = (message, title = 'Cài đặt CatBack') => {
     if (window.CatsBackModal && window.CatsBackModal.info) {
       window.CatsBackModal.info({
         title,
@@ -154,7 +154,7 @@
   const showInAppBrowserHelp = () => {
     if (isIos) {
       showInstallGuide({
-        title: 'Mở CatsBack bằng Safari',
+        title: 'Mở CatBack bằng Safari',
         intro: 'Zalo, Facebook và Messenger không thể thêm lối tắt trực tiếp trên iPhone.',
         steps: [
           'Mở menu của trình duyệt hiện tại và chọn “Mở bằng Safari”.',
@@ -162,12 +162,12 @@
           'Chọn “Thêm vào Màn hình chính”.',
           'Bật “Mở dưới dạng ứng dụng web” nếu iPhone hiển thị tùy chọn này, sau đó bấm “Thêm”.'
         ],
-        note: 'Sau khi thêm, hãy trở về Màn hình chính và tìm biểu tượng CatsBack. Safari không tự mở ứng dụng sau khi hoàn tất.'
+        note: 'Sau khi thêm, hãy trở về Màn hình chính và tìm biểu tượng CatBack. Safari không tự mở ứng dụng sau khi hoàn tất.'
       });
       return;
     }
 
-    showHelp('Zalo/Facebook không hỗ trợ cài ứng dụng trực tiếp.\n\n1. Bấm menu ⋮ của trình duyệt hiện tại.\n2. Chọn “Mở bằng trình duyệt” hoặc “Mở bằng Chrome”.\n3. Trong Chrome, quay lại bấm “Cài đặt ngay”.', 'Mở CatsBack bằng Chrome');
+    showHelp('Zalo/Facebook không hỗ trợ cài ứng dụng trực tiếp.\n\n1. Bấm menu ⋮ của trình duyệt hiện tại.\n2. Chọn “Mở bằng trình duyệt” hoặc “Mở bằng Chrome”.\n3. Trong Chrome, quay lại bấm “Cài đặt ngay”.', 'Mở CatBack bằng Chrome');
   };
 
   const showManualInstallHelp = () => {
@@ -178,28 +178,28 @@
 
     if (isIosSafari) {
       showInstallGuide({
-        title: 'Thêm CatsBack vào iPhone',
+        title: 'Thêm CatBack vào iPhone',
         intro: 'iPhone không mở hộp cài đặt tự động. Bạn thực hiện lần lượt các bước sau:',
         steps: [
           'Bấm nút Chia sẻ trong Safari (hình vuông có mũi tên hướng lên).',
           'Kéo xuống và chọn “Thêm vào Màn hình chính”.',
           'Bật “Mở dưới dạng ứng dụng web” nếu iPhone hiển thị tùy chọn này.',
-          'Kiểm tra tên CatsBack rồi bấm “Thêm” để hoàn tất.'
+          'Kiểm tra tên CatBack rồi bấm “Thêm” để hoàn tất.'
         ],
-        note: 'Sau khi thêm, hãy trở về Màn hình chính và tìm biểu tượng CatsBack. Safari không tự mở ứng dụng hoặc tự ẩn nút này.'
+        note: 'Sau khi thêm, hãy trở về Màn hình chính và tìm biểu tượng CatBack. Safari không tự mở ứng dụng hoặc tự ẩn nút này.'
       });
       return;
     }
 
     if (isIosChrome) {
       showInstallGuide({
-        title: 'Cài CatsBack bằng Safari',
+        title: 'Cài CatBack bằng Safari',
         intro: 'Để tránh lỗi thêm lối tắt trên Chrome iPhone, hãy thực hiện bằng Safari.',
         steps: [
-          'Sao chép địa chỉ CatsBack và mở địa chỉ đó trong Safari.',
+          'Sao chép địa chỉ CatBack và mở địa chỉ đó trong Safari.',
           'Bấm Chia sẻ rồi chọn “Thêm vào Màn hình chính”.',
           'Bật “Mở dưới dạng ứng dụng web” nếu iPhone hiển thị tùy chọn này.',
-          'Bấm “Thêm”, sau đó trở về Màn hình chính để mở CatsBack.'
+          'Bấm “Thêm”, sau đó trở về Màn hình chính để mở CatBack.'
         ],
         note: 'Việc thêm ứng dụng web do iPhone xử lý; website không thể tự bấm nút Thêm thay người dùng.'
       });
@@ -208,13 +208,13 @@
 
     if (isIos) {
       showInstallGuide({
-        title: 'Thêm CatsBack vào iPhone',
+        title: 'Thêm CatBack vào iPhone',
         intro: 'Trình duyệt hiện tại không cung cấp hộp cài đặt tự động.',
         steps: [
           'Mở trang này bằng Safari.',
           'Bấm nút Chia sẻ (hình vuông có mũi tên hướng lên).',
           'Chọn “Thêm vào Màn hình chính” và bật “Mở dưới dạng ứng dụng web” nếu có.',
-          'Bấm “Thêm”, sau đó trở về Màn hình chính để mở CatsBack.'
+          'Bấm “Thêm”, sau đó trở về Màn hình chính để mở CatBack.'
         ],
         note: 'Đây là cách cài ứng dụng web do iPhone hỗ trợ.'
       });
