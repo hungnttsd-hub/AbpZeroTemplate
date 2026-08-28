@@ -93,7 +93,11 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         }
 
         var externalEmail = GetExternalEmail(loginInfo);
-        var localUser = externalEmail is null ? null : await UserManager.FindByEmailAsync(externalEmail);
+
+        // IdentityUser.Email is an editable contact address for local accounts.
+        // Google may only auto-link when its verified email matches the immutable
+        // login email stored in UserName.
+        var localUser = externalEmail is null ? null : await UserManager.FindByNameAsync(externalEmail);
         if (localUser is null)
         {
             return RedirectToPage("./Register", new
@@ -163,9 +167,9 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
                         await UserManager.FindByEmailAsync(LoginInput.UserNameOrEmailAddress);
             var externalEmail = GetExternalEmail(pendingLogin);
             if (localUser is null || externalEmail is null ||
-                !string.Equals(localUser.Email, externalEmail, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(localUser.UserName, externalEmail, StringComparison.OrdinalIgnoreCase))
             {
-                return await LinkErrorPageAsync("Hãy đăng nhập đúng tài khoản local có cùng email với Google.");
+                return await LinkErrorPageAsync("Hãy đăng nhập đúng tài khoản local có email đăng nhập trùng với Google.");
             }
 
             var existingOwner = await UserManager.FindByLoginAsync(pendingLogin.LoginProvider, pendingLogin.ProviderKey);

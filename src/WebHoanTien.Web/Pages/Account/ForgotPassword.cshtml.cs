@@ -26,14 +26,14 @@ public class ForgotPasswordModel : PageModel
     private const string DigitChars = "23456789";
     private const string SymbolChars = "!@$?_#-";
     private const string GenericStatusMessage =
-        "Nếu email thuộc tài khoản đăng ký trực tiếp trên CatsBack, mật khẩu mới sẽ được gửi tới email đó. Vui lòng kiểm tra cả Hộp thư đến và Spam.";
+        "Nếu email khớp với email đăng nhập hoặc email liên hệ của tài khoản đăng ký trực tiếp trên CatsBack, mật khẩu mới sẽ được gửi tới email bạn vừa nhập. Vui lòng kiểm tra cả Hộp thư đến và Spam.";
 
     private readonly IdentityUserManager _userManager;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForgotPasswordModel> _logger;
 
     [BindProperty]
-    [Required(ErrorMessage = "Vui lòng nhập email đăng ký.")]
+    [Required(ErrorMessage = "Vui lòng nhập email nhận mật khẩu.")]
     [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 
@@ -60,25 +60,36 @@ public class ForgotPasswordModel : PageModel
             return Page();
         }
 
-        var loginName = Email.Trim();
+        var recipient = Email.Trim();
+
+        // UserName is the login email. IdentityUser.Email is the editable contact email.
+        // Both can be used to request a password reset, but they must resolve to one user.
+        var userByLoginEmail = await _userManager.FindByNameAsync(recipient);
+        var userByContactEmail = await _userManager.FindByEmailAsync(recipient);
+
+        if (userByLoginEmail is not null &&
+            userByContactEmail is not null &&
+            userByLoginEmail.Id != userByContactEmail.Id)
+        {
+            _logger.LogWarning(
+                "Forgot-password request is ambiguous because recipient email matches different users.");
+            StatusMessage = GenericStatusMessage;
+            return Page();
+        }
+
+        var user = userByLoginEmail ?? userByContactEmail;
 
         // Do not reveal whether an account exists or whether it is Google-only.
-        var user = await _userManager.FindByNameAsync(loginName)
-                   ?? await _userManager.FindByEmailAsync(loginName);
-
         if (user is null || !await _userManager.HasPasswordAsync(user))
         {
             StatusMessage = GenericStatusMessage;
             return Page();
         }
 
-        // The app uses the local account UserName as the login email.
-        // Follow the business requirement by sending the new password to UserName.
-        var recipient = user.UserName?.Trim();
-        if (string.IsNullOrWhiteSpace(recipient) || !IsValidEmail(recipient))
+        if (!IsValidEmail(recipient))
         {
             _logger.LogWarning(
-                "Forgot-password request cannot send mail because UserName is not a valid email for user {UserId}.",
+                "Forgot-password request cannot send mail because recipient is not a valid email for user {UserId}.",
                 user.Id);
             StatusMessage = GenericStatusMessage;
             return Page();

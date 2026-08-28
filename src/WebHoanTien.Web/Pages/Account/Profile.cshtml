@@ -17,7 +17,7 @@
         }
         <div>
             <h1>@Model.Profile.DisplayName</h1>
-            <p>@Model.Profile.Email</p>
+            <p>@Model.LoginEmail</p>
         </div>
     </header>
 
@@ -26,10 +26,37 @@
             <article class="profile-card">
                 <h2>Thông tin đăng nhập</h2>
                 <dl class="profile-details">
-                    <div><dt>Email</dt><dd>@Model.Profile.Email</dd></div>
+                    <div><dt>Email đăng nhập</dt><dd>@Model.LoginEmail</dd></div>
                     <div><dt>Đăng nhập Google</dt><dd class="profile-status @(Model.Profile.HasGoogleLogin ? "is-connected" : null)">@(Model.Profile.HasGoogleLogin ? "Đã liên kết" : "Chưa liên kết")</dd></div>
                     <div><dt>Điều khoản hiện hành</dt><dd class="profile-status @(Model.Profile.HasCurrentLegalConsent ? "is-connected" : null)">@(Model.Profile.HasCurrentLegalConsent ? "Đã chấp thuận" : "Chưa chấp thuận")</dd></div>
                 </dl>
+
+                @if (Model.CanEditContactEmail)
+                {
+                    <div class="profile-contact-email">
+                        <h3>Email liên hệ</h3>
+                        <p>Email này có thể dùng để nhận mật khẩu mới khi bạn quên mật khẩu. Mặc định là email đăng nhập và có thể thay đổi.</p>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.ContactEmailStatusMessage))
+                        {
+                            <div class="profile-save-status" role="status">@Model.ContactEmailStatusMessage</div>
+                        }
+
+                        <form method="post" asp-page-handler="SaveContactEmail" class="payout-form">
+                            <div class="profile-field">
+                                <label asp-for="ContactEmail">Email liên hệ</label>
+                                <input asp-for="ContactEmail" type="email" autocomplete="email" placeholder="Nhập email liên hệ" />
+                                <span asp-validation-for="ContactEmail" class="profile-form-error"></span>
+                            </div>
+                            <button class="button payout-save-button" type="submit">Lưu email liên hệ</button>
+                        </form>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.ContactEmailUnavailableMessage))
+                {
+                    <div class="status-message status-info" role="status">@Model.ContactEmailUnavailableMessage</div>
+                }
                 @if (!string.IsNullOrWhiteSpace(Model.PasswordStatusMessage))
                 {
                     <div class="profile-save-status" role="status">@Model.PasswordStatusMessage</div>
