@@ -28,7 +28,7 @@ public sealed record GuideVideoDefinition(
 public static class GuideVideoCatalog
 {
     private const string InstallAndroidVideoId = "WfM1OAOIjoY";
-    private const string InstallIosDemoVideoId = "i1hrkRoIGvo";
+    private const string InstallIosVideoId = "3nglnbhIKa0";
     private const string RegisterVideoId = "23cF8fGyC3I";
     private const string CreateLinkVideoId = "5RcV8wuFvH4";
 
@@ -46,7 +46,7 @@ public static class GuideVideoCatalog
             "Thiết bị",
             "Android",
             "iPhone",
-            new GuideVideoSources(InstallAndroidVideoId, InstallIosDemoVideoId, InstallIosDemoVideoId),
+            new GuideVideoSources(InstallAndroidVideoId, InstallIosVideoId, InstallIosVideoId),
             [
                 "Mở CatBack bằng trình duyệt trên thiết bị của bạn.",
                 "Mở menu chia sẻ hoặc menu trình duyệt.",
