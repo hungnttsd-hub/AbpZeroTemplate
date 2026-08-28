@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="156" viewBox="0 0 390 156">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#063B68"/><stop offset="1" stop-color="#08739A"/></linearGradient></defs>
+<rect width="390" height="156" fill="url(#g)"/>
+<circle cx="38" cy="50" r="22" fill="#fff"/><path d="M44 50H31M31 50l6-6M31 50l6 6" fill="none" stroke="#0B2747" stroke-width="2.2" stroke-linecap="round"/>
+<text x="195" y="50" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24" font-weight="700" fill="#fff">Hướng dẫn</text>
+<text x="182" y="76" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10.8" fill="#fff">Video và lưu ý để tạo link hoàn tiền đúng cách</text>
+<circle cx="344" cy="50" r="28" fill="#E2F7F5" stroke="#fff" stroke-width="3"/>
+<path d="M331 38l4-12 9 10m13 2-4-12-9 10" fill="#fff" stroke="#0BA5A4" stroke-width="2.5"/>
+<circle cx="337" cy="49" r="2.5" fill="#0B2747"/><circle cx="351" cy="49" r="2.5" fill="#0B2747"/>
+<path d="M339 57q5 4 10 0" fill="none" stroke="#0B2747" stroke-width="2" stroke-linecap="round"/>
+</svg>

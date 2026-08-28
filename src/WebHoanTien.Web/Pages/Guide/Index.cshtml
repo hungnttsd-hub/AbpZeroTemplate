@@ -1,0 +1,171 @@
+@page "/huong-dan"
+@model WebHoanTien.Web.Pages.Guide.IndexModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = "Hướng dẫn — CatBack";
+    ViewData["BodyClass"] = "catback-guide-page";
+}
+
+<div class="guide-page" data-guide-root>
+    <header class="guide-hero">
+        <a class="guide-back-button" href="/" aria-label="Quay lại trang chủ">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
+        </a>
+        <div class="guide-hero-copy">
+            <h1>Hướng dẫn</h1>
+            <p>Video và lưu ý để tạo link hoàn tiền đúng cách</p>
+        </div>
+        <img class="guide-hero-mascot" src="~/catback-mascot-reference.png" alt="" />
+        <span class="guide-hero-spark guide-hero-spark--one" aria-hidden="true">✦</span>
+        <span class="guide-hero-spark guide-hero-spark--two" aria-hidden="true">✦</span>
+    </header>
+
+    <div class="guide-content">
+        <section class="guide-device-card" aria-live="polite">
+            <span class="guide-device-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2" /><path d="M10 5h4M10.5 18.5h3" /></svg>
+            </span>
+            <div class="guide-device-copy">
+                <span class="guide-device-chip">Tự động theo thiết bị</span>
+                <p><span data-platform-text
+                         data-android="Đang hiển thị hướng dẫn cho"
+                         data-ios="Đang hiển thị hướng dẫn cho"
+                         data-unknown="Hướng dẫn cài đặt cho">Hướng dẫn cài đặt cho</span>
+                    <strong data-platform-text
+                            data-android="Android"
+                            data-ios="iPhone"
+                            data-unknown="thiết bị của bạn">thiết bị của bạn</strong></p>
+            </div>
+            <span class="guide-platform-badge" data-platform-badge aria-hidden="true">•</span>
+        </section>
+
+        <section class="guide-video-section" aria-labelledby="guide-video-heading">
+            <h2 id="guide-video-heading">Video hướng dẫn</h2>
+            <div class="guide-video-list">
+                @foreach (var video in Model.Videos)
+                {
+                    <a id="@video.AnchorId"
+                       class="guide-video-card"
+                       href="/huong-dan/video/@video.Slug"
+                       aria-label="Xem video @video.Title">
+                        <span class="guide-video-thumbnail guide-video-thumbnail--@video.Illustration" aria-hidden="true">
+                            @if (video.Illustration == "install")
+                            {
+                                <span class="guide-thumb-phone"><i></i><i></i><i></i><i></i></span>
+                                <span class="guide-thumb-plus">+</span>
+                            }
+                            else if (video.Illustration == "link")
+                            {
+                                <span class="guide-thumb-link"><i></i><i></i></span>
+                                <span class="guide-thumb-shop">S</span>
+                            }
+                            else
+                            {
+                                <span class="guide-thumb-profile"><i></i><b></b><em></em></span>
+                                <span class="guide-thumb-check">✓</span>
+                            }
+                            <span class="guide-thumb-play"><svg viewBox="0 0 20 20"><path d="m7 5 8 5-8 5Z" /></svg></span>
+                        </span>
+                        <span class="guide-video-copy">
+                            <strong>@video.Title</strong>
+                            @if (video.Slug == "cai-dat")
+                            {
+                                <span data-platform-text
+                                      data-android="@video.AndroidSubtitle"
+                                      data-ios="@video.IosSubtitle"
+                                      data-unknown="@video.Subtitle">@video.Subtitle</span>
+                            }
+                            else
+                            {
+                                <span>@video.Subtitle</span>
+                            }
+                            <small><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>@video.Duration</small>
+                        </span>
+                        <svg class="guide-card-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
+                    </a>
+                }
+            </div>
+        </section>
+
+        <section class="guide-quick-section" aria-labelledby="guide-quick-heading">
+            <h2 id="guide-quick-heading">Hướng dẫn nhanh</h2>
+            <div class="guide-accordion" data-guide-accordion>
+                <article class="guide-accordion-item">
+                    <h3>
+                        <button type="button" aria-expanded="false" aria-controls="guide-paste-panel" id="guide-paste-button">
+                            <span class="guide-accordion-icon" aria-hidden="true">↗</span>
+                            <span>Cách dán link Shopee</span>
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 7 6 6 6-6" /></svg>
+                        </button>
+                    </h3>
+                    <div class="guide-accordion-panel" id="guide-paste-panel" role="region" aria-labelledby="guide-paste-button" hidden>
+                        <div>
+                            <ol class="guide-simple-steps">
+                                <li>Mở đúng sản phẩm trên Shopee rồi chọn Chia sẻ hoặc Sao chép liên kết.</li>
+                                <li>Quay lại CatBack và dán link vào ô tạo link hoàn tiền.</li>
+                                <li>Bấm Tạo link hoàn tiền, sau đó dùng nút Mua ngay của link vừa tạo.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="guide-accordion-item">
+                    <h3>
+                        <button type="button" aria-expanded="false" aria-controls="guide-order-panel" id="guide-order-button">
+                            <span class="guide-accordion-icon" aria-hidden="true">?</span>
+                            <span>Khi nào đơn hàng được ghi nhận?</span>
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 7 6 6 6-6" /></svg>
+                        </button>
+                    </h3>
+                    <div class="guide-accordion-panel" id="guide-order-panel" role="region" aria-labelledby="guide-order-button" hidden>
+                        <div>
+                            <p>Đơn hàng chỉ xuất hiện sau khi Shopee ghi nhận và đưa vào báo cáo đối soát. Thời gian hiển thị có thể không diễn ra ngay sau khi đặt hàng.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="guide-accordion-item" id="luu-y-hoa-hong">
+                    <h3>
+                        <button type="button" aria-expanded="true" aria-controls="guide-commission-panel" id="guide-commission-button">
+                            <span class="guide-accordion-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 7.8 7.5 9.5 4.4-1.7 7.5-4.9 7.5-9.5V6Z" /></svg>
+                            </span>
+                            <span>Để chắc chắn được tính hoa hồng</span>
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 7 6 6 6-6" /></svg>
+                        </button>
+                    </h3>
+                    <div class="guide-accordion-panel" id="guide-commission-panel" role="region" aria-labelledby="guide-commission-button">
+                        <div>
+                            <ol class="guide-commission-rules">
+                                <li><span>1</span><p><strong>Bấm Mua ngay</strong> để sang sàn rồi đặt hàng.</p></li>
+                                <li><span>2</span><p><strong>Mỗi đơn một lần bấm.</strong> Mua thêm đơn nữa thì quay lại đây bấm Mua ngay lần nữa, không bấm lại thì đơn sau không được tính.</p></li>
+                                <li><span>3</span><p>Đặt hàng <strong>trong vòng 7 ngày</strong> kể từ lúc bấm Mua ngay.</p></li>
+                                <li><span>4</span><p><strong>Tuyệt đối đừng xem video hay livestream</strong> của sản phẩm đó trên sàn. Xem livestream sẽ kích hoạt hoa hồng cho bên livestream: CatBack không nhận được gì, nên cũng không có gì để chia lại cho bạn.</p></li>
+                                <li><span>5</span><p>Sau khi bấm Mua ngay và truy cập sản phẩm trên sàn, <strong>đừng vội mua hàng ngay lập tức.</strong> Hãy kéo xuống đọc thông tin về sản phẩm vài giây rồi hãy chốt đơn nhé.</p></li>
+                            </ol>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="guide-accordion-item">
+                    <h3>
+                        <button type="button" aria-expanded="false" aria-controls="guide-commission-missing-panel" id="guide-commission-missing-button">
+                            <span class="guide-accordion-icon" aria-hidden="true">!</span>
+                            <span>Vì sao chưa thấy hoa hồng?</span>
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 7 6 6 6-6" /></svg>
+                        </button>
+                    </h3>
+                    <div class="guide-accordion-panel" id="guide-commission-missing-panel" role="region" aria-labelledby="guide-commission-missing-button" hidden>
+                        <div>
+                            <p>Hoa hồng có thể đang chờ Shopee ghi nhận hoặc đối soát. Đơn bị hủy, hoàn, từ chối hoặc không được Shopee ghi nhận sẽ không phát sinh tiền hoàn.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/guide.js" asp-append-version="true" defer></script>
+}

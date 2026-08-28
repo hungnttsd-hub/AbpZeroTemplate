@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" fill="none">
+  <defs>
+    <linearGradient id="gradHeader" x1="0" y1="0" x2="390" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#063B68"/>
+      <stop offset="1" stop-color="#07527E"/>
+    </linearGradient>
+    <linearGradient id="gradTeal" x1="16" y1="0" x2="374" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0BA5A4"/>
+      <stop offset="1" stop-color="#12B8B2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#063B68" flood-opacity="0.06"/>
+    </filter>
+    <style>
+      .t{font-family:Inter, Arial, sans-serif; fill:#0B2747}
+      .muted{fill:#5B6C82}
+      .ter{fill:#8C9AAD}
+      .teal{fill:#0BA5A4}
+      .white{fill:#fff}
+      .h1{font-size:18px;font-weight:700}
+      .h2{font-size:16px;font-weight:700}
+      .h3{font-size:14px;font-weight:700}
+      .b{font-size:13px;font-weight:400}
+      .s{font-size:12px;font-weight:400}
+      .sm{font-size:11px;font-weight:600}
+    </style>
+  </defs>
+  
+    <rect width="390" height="844" fill="#F5F9FC"/>
+    
+    <rect width="390" height="132" rx="0" fill="url(#gradHeader)"/>
+    <rect x="0" y="106" width="390" height="26" rx="18" fill="url(#gradHeader)"/>
+    <circle cx="32" cy="32" r="19" fill="#fff"/>
+    <path d="M39 32H25" stroke="#063B68" stroke-width="2" stroke-linecap="round"/>
+    <path d="M31 26L25 32L31 38" stroke="#063B68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="195" y="38" text-anchor="middle" class="t h1 white">Chi tiết hướng dẫn</text>
+    
+    <circle cx="342" cy="33" r="20" fill="#ffffff22" stroke="#fff" stroke-opacity="0.4"/>
+    <path d="M334 39 C338 31,346 31,350 39" stroke="#fff" stroke-width="2" fill="none"/>
+    <circle cx="339" cy="30" r="3" fill="#fff"/><circle cx="347" cy="30" r="3" fill="#fff"/>
+    <path d="M352 18 h9 a5 5 0 0 1 5 5 v9 a5 5 0 0 1 -5 5 h-9" stroke="#FFC438" stroke-width="2" fill="none"/>
+    <text x="359" y="31" text-anchor="middle" class="t sm white" fill="#FFC438">$</text>
+    
+    <rect x="16" y="144" width="358" height="254" rx="18" fill="#fff" stroke="#DDE7EE" filter="url(#shadow)"/>
+    
+    <rect x="22" y="152" width="346" height="136" rx="16" fill="#EAF8F8"/>
+    <rect x="102" y="174" width="186" height="92" rx="12" stroke="#0BA5A4" stroke-width="4" fill="#EFF8F7"/><circle cx="288" cy="220.0" r="22" fill="url(#gradTeal)"/><path d="M276 220.0 l9 9 l16-18" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="195.0" cy="220.0" r="22" fill="#163B5A" fill-opacity="0.85"/>
+    <path d="M189.0 210.0 L207.0 220.0 L189.0 230.0 Z" fill="#fff"/>
+    <rect x="36" y="270" width="274" height="3" rx="2" fill="#fff" fill-opacity="0.85"/>
+    <circle cx="112" cy="271.5" r="5" fill="#0BA5A4"/>
+    <text x="40" y="276" class="t sm white">00:00</text>
+    <text x="306" y="276" class="t sm white">01:20</text>
+    <rect x="338" y="264" width="14" height="14" rx="2" stroke="#fff" stroke-width="2" fill="none"/>
+    
+    <text x="32" y="318" class="t h2">Đăng ký tài khoản</text>
+    <text x="32" y="338" class="t b muted">Tạo tài khoản CatBack trong vài bước</text>
+    <rect x="32" y="350" width="60" height="22" rx="11" fill="#F5F9FC" stroke="#DDE7EE"/>
+    <text x="49" y="365" class="t sm muted">01:10</text>
+    <rect x="98" y="350" width="86" height="22" rx="11" fill="#F5F9FC" stroke="#DDE7EE"/>
+    <text x="115" y="365" class="t sm muted">Tài khoản</text>
+    <rect x="16" y="414" width="358" height="198" rx="18" fill="#fff" stroke="#DDE7EE" filter="url(#shadow)"/>
+    <text x="32" y="440" class="t h3">Các bước chính</text>
+    <circle cx="40" cy="462" r="10" fill="#E7F7F6"/><text x="37" y="466" class="t sm teal">1</text><text x="60" y="468" class="t s">Chọn Đăng ký trên màn hình tài khoản hoặc trang chào mừng.</text><circle cx="40" cy="492" r="10" fill="#E7F7F6"/><text x="37" y="496" class="t sm teal">2</text><text x="60" y="498" class="t s">Nhập số điện thoại hoặc thông tin cần thiết để tạo tài khoản.</text><circle cx="40" cy="522" r="10" fill="#E7F7F6"/><text x="37" y="526" class="t sm teal">3</text><text x="60" y="528" class="t s">Xác thực và hoàn tất hồ sơ cơ bản theo hướng dẫn.</text><circle cx="40" cy="552" r="10" fill="#E7F7F6"/><text x="37" y="556" class="t sm teal">4</text><text x="60" y="558" class="t s">Đăng nhập để bắt đầu tạo link và nhận hoàn tiền.</text>
+    <text x="16" y="640" class="t h2">Video liên quan</text>
+    <rect x="16" y="652" width="358" height="108" rx="18" fill="#fff" stroke="#DDE7EE" filter="url(#shadow)"/>
+    <rect x="26" y="664" width="110" height="38" rx="10" fill="#EAF8F8"/>
+    <circle cx="81" cy="683" r="10" fill="#163B5A" fill-opacity="0.85"/><path d="M78 677 L86 683 L78 689 Z" fill="#fff"/>
+    <text x="146" y="680" class="t h3">Cài đặt ứng dụng / thêm lối tắt</text>
+    <rect x="146" y="687" width="52" height="18" rx="9" fill="#F5F9FC" stroke="#DDE7EE"/>
+    <text x="162" y="700" class="t sm muted">01:20</text>
+    <path d="M354 683 l6 6 l-6 6" stroke="#5B6C82" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="26" y1="714" x2="364" y2="714" stroke="#DDE7EE"/>
+    <rect x="26" y="722" width="110" height="26" rx="10" fill="#EAF8F8"/>
+    <circle cx="81" cy="735" r="10" fill="#163B5A" fill-opacity="0.85"/><path d="M78 729 L86 735 L78 741 Z" fill="#fff"/>
+    <text x="146" y="739" class="t h3">Tạo link hoàn tiền</text>
+    <rect x="146" y="746" width="52" height="18" rx="9" fill="#F5F9FC" stroke="#DDE7EE"/>
+    <text x="162" y="759" class="t sm muted">00:45</text>
+    <path d="M354 735 l6 6 l-6 6" stroke="#5B6C82" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="16" y="776" width="358" height="52" rx="20" fill="url(#gradTeal)"/>
+    <text x="195" y="810" text-anchor="middle" class="t h3 white">Bắt đầu ngay</text>
+    
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="358" height="420" viewBox="0 0 358 420">
+<rect x=".5" y=".5" width="357" height="419" rx="16" fill="#fff" stroke="#DDE7EE"/>
+<circle cx="26" cy="29" r="14" fill="#E2F7F5"/>
+<path d="M26 19l8 4v6c0 6-3 10-8 13-5-3-8-7-8-13v-6z" fill="none" stroke="#0BA5A4" stroke-width="1.8"/>
+<text x="52" y="35" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14.2" font-weight="700" fill="#078D92">Để chắc chắn được tính hoa hồng</text>
+<path d="M328 33l6-6 6 6" fill="none" stroke="#078D92" stroke-width="2" stroke-linecap="round"/>
+<g font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12.2" fill="#0B2747">
+<circle cx="34" cy="72" r="11" fill="#E2F7F5"/><text x="34" y="76" text-anchor="middle" fill="#078D92" font-weight="700">1</text><text x="56" y="76">Bấm <tspan font-weight="700">Mua ngay</tspan> để sang sàn rồi đặt hàng.</text>
+<circle cx="34" cy="119" r="11" fill="#E2F7F5"/><text x="34" y="123" text-anchor="middle" fill="#078D92" font-weight="700">2</text><text x="56" y="113"><tspan font-weight="700">Mỗi đơn một lần bấm.</tspan> Mua thêm đơn nữa thì quay</text><text x="56" y="131">lại bấm Mua ngay lần nữa; không bấm lại thì đơn sau</text><text x="56" y="149">không được tính.</text>
+<circle cx="34" cy="187" r="11" fill="#E2F7F5"/><text x="34" y="191" text-anchor="middle" fill="#078D92" font-weight="700">3</text><text x="56" y="191">Đặt hàng <tspan font-weight="700">trong vòng 7 ngày</tspan> kể từ lúc bấm Mua ngay.</text>
+<circle cx="34" cy="232" r="11" fill="#E2F7F5"/><text x="34" y="236" text-anchor="middle" fill="#078D92" font-weight="700">4</text><text x="56" y="226"><tspan font-weight="700">Tuyệt đối đừng xem video hay livestream</tspan> của sản</text><text x="56" y="244">phẩm đó trên sàn. Livestream có thể kích hoạt hoa</text><text x="56" y="262">hồng cho bên livestream; CatBack không nhận được</text><text x="56" y="280">hoa hồng để chia lại cho bạn.</text>
+<circle cx="34" cy="329" r="11" fill="#E2F7F5"/><text x="34" y="333" text-anchor="middle" fill="#078D92" font-weight="700">5</text><text x="56" y="323">Sau khi bấm Mua ngay và sang sàn, <tspan font-weight="700">đừng vội mua</tspan></text><text x="56" y="341"><tspan font-weight="700">ngay lập tức.</tspan> Hãy kéo xuống đọc thông tin sản phẩm</text><text x="56" y="359">vài giây rồi hãy chốt đơn.</text>
+</g>
+</svg>

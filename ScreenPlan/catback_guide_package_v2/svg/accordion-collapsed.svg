@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="358" height="58" viewBox="0 0 358 58">
+<rect x=".5" y=".5" width="357" height="57" rx="16" fill="#fff" stroke="#DDE7EE"/>
+<circle cx="26" cy="29" r="14" fill="#E2F7F5"/><text x="26" y="34" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="700" fill="#0BA5A4">?</text>
+<text x="52" y="35" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14.2" font-weight="600" fill="#0B2747">Khi nào đơn hàng được ghi nhận?</text>
+<path d="M328 25l6 6 6-6" fill="none" stroke="#5B6C82" stroke-width="2" stroke-linecap="round"/>
+</svg>

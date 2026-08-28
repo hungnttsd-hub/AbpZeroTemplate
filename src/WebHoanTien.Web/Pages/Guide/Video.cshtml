@@ -1,0 +1,151 @@
+@page "/huong-dan/video/{slug}"
+@model WebHoanTien.Web.Pages.Guide.VideoModel
+@{
+    Layout = "/Pages/Shared/_CustomerLayout.cshtml";
+    ViewData["Title"] = $"{Model.Video.Title} — CatBack";
+    ViewData["BodyClass"] = "catback-guide-video-page";
+    var video = Model.Video;
+}
+
+<div class="guide-video-page" data-guide-root>
+    <header class="guide-detail-hero">
+        <a class="guide-back-button" href="@Model.BackUrl" aria-label="Quay lại trang hướng dẫn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
+        </a>
+        <h1>Chi tiết hướng dẫn</h1>
+        <img class="guide-hero-mascot" src="~/catback-mascot-reference.png" alt="" />
+        <span class="guide-hero-spark guide-hero-spark--one" aria-hidden="true">✦</span>
+    </header>
+
+    <div class="guide-detail-content">
+        <section class="guide-player-card">
+            <button class="guide-player-preview guide-player-preview--@video.Illustration"
+                    type="button"
+                    data-guide-player
+                    data-video-android="@video.Sources.Android"
+                    data-video-ios="@video.Sources.Ios"
+                    data-video-unknown="@video.Sources.Fallback"
+                    data-video-title="@video.Title"
+                    aria-label="Phát video @video.Title">
+                <span class="guide-player-art" aria-hidden="true">
+                    @if (video.Illustration == "install")
+                    {
+                        <span class="guide-art-phone"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                        <span class="guide-art-plus">+</span>
+                    }
+                    else if (video.Illustration == "link")
+                    {
+                        <span class="guide-art-browser"><i></i><i></i><i></i></span>
+                        <span class="guide-art-link">↗</span>
+                        <span class="guide-art-arrow">→</span>
+                        <span class="guide-art-shop">S</span>
+                    }
+                    else
+                    {
+                        <span class="guide-art-card"><i></i><b></b><em></em><small></small></span>
+                        <span class="guide-art-check">✓</span>
+                    }
+                </span>
+                <span class="guide-player-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 6 9 6-9 6Z" /></svg></span>
+                <span class="guide-player-controls" aria-hidden="true">
+                    <svg viewBox="0 0 20 20"><path d="m7 4 9 6-9 6Z" /></svg>
+                    <span>00:00</span>
+                    <i><b></b></i>
+                    <span>@video.Duration</span>
+                    <svg viewBox="0 0 20 20"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5" /></svg>
+                </span>
+            </button>
+
+            <div class="guide-video-summary">
+                <h2>@video.Title</h2>
+                @if (video.Slug == "cai-dat")
+                {
+                    <p data-platform-text
+                       data-android="@video.AndroidSubtitle"
+                       data-ios="@video.IosSubtitle"
+                       data-unknown="@video.Subtitle">@video.Subtitle</p>
+                }
+                else
+                {
+                    <p>@video.Subtitle</p>
+                }
+                <div class="guide-meta-list">
+                    <span><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>@video.Duration</span>
+                    @if (video.Slug == "cai-dat")
+                    {
+                        <span data-platform-text
+                              data-android="@video.AndroidMetaLabel"
+                              data-ios="@video.IosMetaLabel"
+                              data-unknown="@video.MetaLabel">@video.MetaLabel</span>
+                    }
+                    else
+                    {
+                        <span>@video.MetaLabel</span>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <section class="guide-steps-card" aria-labelledby="guide-steps-title">
+            <h2 id="guide-steps-title">Các bước chính</h2>
+            <ol>
+                @for (var index = 0; index < video.Steps.Count; index++)
+                {
+                    var androidStep = video.AndroidSteps.Count > index ? video.AndroidSteps[index] : video.Steps[index];
+                    var iosStep = video.IosSteps.Count > index ? video.IosSteps[index] : video.Steps[index];
+                    <li>
+                        <span>@(index + 1)</span>
+                        @if (video.Slug == "cai-dat")
+                        {
+                            <p data-platform-text
+                               data-android="@androidStep"
+                               data-ios="@iosStep"
+                               data-unknown="@video.Steps[index]">@video.Steps[index]</p>
+                        }
+                        else
+                        {
+                            <p>@video.Steps[index]</p>
+                        }
+                    </li>
+                }
+            </ol>
+        </section>
+
+        <section class="guide-related-section" aria-labelledby="guide-related-title">
+            <h2 id="guide-related-title">Video liên quan</h2>
+            <div class="guide-related-list">
+                @foreach (var related in Model.RelatedVideos)
+                {
+                    <a href="/huong-dan/video/@related.Slug" aria-label="Xem video @related.Title">
+                        <span class="guide-related-thumbnail guide-video-thumbnail--@related.Illustration" aria-hidden="true">
+                            @if (related.Illustration == "install")
+                            {
+                                <span class="guide-thumb-phone"><i></i><i></i><i></i><i></i></span>
+                                <span class="guide-thumb-plus">+</span>
+                            }
+                            else if (related.Illustration == "link")
+                            {
+                                <span class="guide-thumb-link"><i></i><i></i></span>
+                                <span class="guide-thumb-shop">S</span>
+                            }
+                            else
+                            {
+                                <span class="guide-thumb-profile"><i></i><b></b><em></em></span>
+                                <span class="guide-thumb-check">✓</span>
+                            }
+                            <span class="guide-thumb-play"><svg viewBox="0 0 20 20"><path d="m7 5 8 5-8 5Z" /></svg></span>
+                        </span>
+                        <span class="guide-related-copy"><strong>@related.Title</strong><small><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></svg>@related.Duration</small></span>
+                        <svg class="guide-card-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 6 6-6 6" /></svg>
+                    </a>
+                }
+            </div>
+        </section>
+
+        <a class="guide-detail-cta" href="@Model.CtaUrl">@video.CtaText <span aria-hidden="true">→</span></a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/guide.js" asp-append-version="true" defer></script>
+}

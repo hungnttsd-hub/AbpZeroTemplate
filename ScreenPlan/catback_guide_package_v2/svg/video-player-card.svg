@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="220" viewBox="0 0 390 220" fill="none">
+  <defs>
+    <linearGradient id="gradHeader" x1="0" y1="0" x2="390" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#063B68"/>
+      <stop offset="1" stop-color="#07527E"/>
+    </linearGradient>
+    <linearGradient id="gradTeal" x1="16" y1="0" x2="374" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0BA5A4"/>
+      <stop offset="1" stop-color="#12B8B2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#063B68" flood-opacity="0.06"/>
+    </filter>
+    <style>
+      .t{font-family:Inter, Arial, sans-serif; fill:#0B2747}
+      .muted{fill:#5B6C82}
+      .ter{fill:#8C9AAD}
+      .teal{fill:#0BA5A4}
+      .white{fill:#fff}
+      .h1{font-size:18px;font-weight:700}
+      .h2{font-size:16px;font-weight:700}
+      .h3{font-size:14px;font-weight:700}
+      .b{font-size:13px;font-weight:400}
+      .s{font-size:12px;font-weight:400}
+      .sm{font-size:11px;font-weight:600}
+    </style>
+  </defs>
+  <rect width="390" height="220" fill="#F5F9FC"/><rect x="16" y="16" width="358" height="188" rx="18" fill="#fff" stroke="#DDE7EE"/>
+    <rect x="22" y="24" width="346" height="136" rx="16" fill="#EAF8F8"/>
+    <rect x="38" y="44" width="290" height="102" rx="18" stroke="#0BA5A4" stroke-width="5" fill="#DDF4F2"/><rect x="172" y="76" width="36" height="36" rx="12" fill="#fff" stroke="#DDE7EE"/><path d="M190 85 v18 M181 94 h18" stroke="#0BA5A4" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="195.0" cy="92.0" r="22" fill="#163B5A" fill-opacity="0.85"/>
+    <path d="M189.0 82.0 L207.0 92.0 L189.0 102.0 Z" fill="#fff"/>
+    <rect x="36" y="142" width="274" height="3" rx="2" fill="#fff" fill-opacity="0.85"/>
+    <circle cx="112" cy="143.5" r="5" fill="#0BA5A4"/>
+    <text x="40" y="148" class="t sm white">00:00</text>
+    <text x="306" y="148" class="t sm white">01:20</text>
+    <rect x="338" y="136" width="14" height="14" rx="2" stroke="#fff" stroke-width="2" fill="none"/>
+    
+</svg>
