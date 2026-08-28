@@ -4,6 +4,7 @@
   const isIos = /iphone|ipad|ipod/i.test(userAgent)
     || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
   const isAndroid = /android/i.test(userAgent);
+  const isIosChrome = isIos && /crios/i.test(userAgent);
   const isIosSafari = isIos
     && /safari/i.test(userAgent)
     && !/crios|fxios|edgios|opios/i.test(userAgent);
@@ -14,8 +15,9 @@
   const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
   const isMobile = () => window.matchMedia('(max-width: 820px)').matches
-    || window.navigator.userAgentData?.mobile === true;
+    || (window.navigator.userAgentData && window.navigator.userAgentData.mobile === true);
   let deferredInstallPrompt;
+  let installHelp;
 
   if ('serviceWorker' in window.navigator && window.isSecureContext) {
     window.navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => undefined);
@@ -32,11 +34,98 @@
     installButton.hidden = false;
     installButton.disabled = false;
     installButton.textContent = 'Cài đặt ngay';
-    installButton.setAttribute('aria-label', 'Cài đặt CatsBack vào màn hình chính');
+    installButton.setAttribute(
+      'aria-label',
+      isIos ? 'Xem hướng dẫn thêm CatsBack vào màn hình chính iPhone' : 'Cài đặt CatsBack vào màn hình chính'
+    );
+  };
+
+  const ensureInstallHelp = () => {
+    if (installHelp) return installHelp;
+
+    const root = document.createElement('div');
+    root.className = 'pwa-install-help';
+    root.hidden = true;
+    root.setAttribute('aria-hidden', 'true');
+
+    const card = document.createElement('section');
+    card.className = 'pwa-install-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'pwa-install-title');
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'pwa-install-close';
+    closeButton.type = 'button';
+    closeButton.setAttribute('aria-label', 'Đóng hướng dẫn cài đặt');
+    closeButton.textContent = '×';
+
+    const icon = document.createElement('span');
+    icon.className = 'pwa-install-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '↑';
+
+    const title = document.createElement('h2');
+    title.id = 'pwa-install-title';
+
+    const intro = document.createElement('p');
+    intro.className = 'pwa-install-intro';
+
+    const steps = document.createElement('ol');
+    steps.className = 'pwa-install-steps';
+
+    const note = document.createElement('p');
+    note.className = 'pwa-install-note';
+
+    const confirmButton = document.createElement('button');
+    confirmButton.className = 'pwa-install-confirm';
+    confirmButton.type = 'button';
+    confirmButton.textContent = 'Đã hiểu';
+
+    card.append(closeButton, icon, title, intro, steps, note, confirmButton);
+    root.appendChild(card);
+    document.body.appendChild(root);
+
+    const close = () => {
+      root.hidden = true;
+      root.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('pwa-install-open');
+      installButton.focus();
+    };
+
+    closeButton.addEventListener('click', close);
+    confirmButton.addEventListener('click', close);
+    root.addEventListener('click', (event) => {
+      if (event.target === root) close();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (!root.hidden && event.key === 'Escape') close();
+    });
+
+    installHelp = { root, title, intro, steps, note, confirmButton };
+    return installHelp;
+  };
+
+  const showInstallGuide = ({ title, intro, steps, note }) => {
+    const help = ensureInstallHelp();
+    help.title.textContent = title;
+    help.intro.textContent = intro;
+    while (help.steps.firstChild) help.steps.removeChild(help.steps.firstChild);
+    steps.forEach((step) => {
+      const item = document.createElement('li');
+      item.textContent = step;
+      help.steps.appendChild(item);
+    });
+    help.note.textContent = note || '';
+    help.note.hidden = !note;
+    help.root.hidden = false;
+    help.root.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('pwa-install-open');
+    window.requestAnimationFrame(() => help.confirmButton.focus());
   };
 
   const showHelp = (message, title = 'Cài đặt CatsBack') => {
-    if (window.CatsBackModal?.info) {
+    if (window.CatsBackModal && window.CatsBackModal.info) {
       window.CatsBackModal.info({
         title,
         message,
@@ -64,7 +153,17 @@
 
   const showInAppBrowserHelp = () => {
     if (isIos) {
-      showHelp('Zalo/Facebook không hỗ trợ cài ứng dụng trực tiếp.\n\n1. Mở menu của trình duyệt hiện tại và chọn “Mở bằng Safari”.\n2. Trong Safari, bấm nút Chia sẻ.\n3. Chọn “Thêm vào Màn hình chính”, sau đó bấm “Thêm”.', 'Mở CatsBack bằng Safari');
+      showInstallGuide({
+        title: 'Mở CatsBack bằng Safari',
+        intro: 'Zalo, Facebook và Messenger không thể thêm lối tắt trực tiếp trên iPhone.',
+        steps: [
+          'Mở menu của trình duyệt hiện tại và chọn “Mở bằng Safari”.',
+          'Trong Safari, bấm nút Chia sẻ (hình vuông có mũi tên hướng lên).',
+          'Chọn “Thêm vào Màn hình chính”.',
+          'Bật “Mở dưới dạng ứng dụng web” nếu iPhone hiển thị tùy chọn này, sau đó bấm “Thêm”.'
+        ],
+        note: 'Sau khi thêm, hãy trở về Màn hình chính và tìm biểu tượng CatsBack. Safari không tự mở ứng dụng sau khi hoàn tất.'
+      });
       return;
     }
 
@@ -78,12 +177,47 @@
     }
 
     if (isIosSafari) {
-      showHelp('1. Bấm nút Chia sẻ trên thanh công cụ Safari.\n2. Kéo xuống và chọn “Thêm vào Màn hình chính”.\n3. Bấm “Thêm” để hoàn tất.');
+      showInstallGuide({
+        title: 'Thêm CatsBack vào iPhone',
+        intro: 'iPhone không mở hộp cài đặt tự động. Bạn thực hiện lần lượt các bước sau:',
+        steps: [
+          'Bấm nút Chia sẻ trong Safari (hình vuông có mũi tên hướng lên).',
+          'Kéo xuống và chọn “Thêm vào Màn hình chính”.',
+          'Bật “Mở dưới dạng ứng dụng web” nếu iPhone hiển thị tùy chọn này.',
+          'Kiểm tra tên CatsBack rồi bấm “Thêm” để hoàn tất.'
+        ],
+        note: 'Sau khi thêm, hãy trở về Màn hình chính và tìm biểu tượng CatsBack. Safari không tự mở ứng dụng hoặc tự ẩn nút này.'
+      });
+      return;
+    }
+
+    if (isIosChrome) {
+      showInstallGuide({
+        title: 'Cài CatsBack bằng Safari',
+        intro: 'Để tránh lỗi thêm lối tắt trên Chrome iPhone, hãy thực hiện bằng Safari.',
+        steps: [
+          'Sao chép địa chỉ CatsBack và mở địa chỉ đó trong Safari.',
+          'Bấm Chia sẻ rồi chọn “Thêm vào Màn hình chính”.',
+          'Bật “Mở dưới dạng ứng dụng web” nếu iPhone hiển thị tùy chọn này.',
+          'Bấm “Thêm”, sau đó trở về Màn hình chính để mở CatsBack.'
+        ],
+        note: 'Việc thêm ứng dụng web do iPhone xử lý; website không thể tự bấm nút Thêm thay người dùng.'
+      });
       return;
     }
 
     if (isIos) {
-      showHelp('iPhone chỉ hỗ trợ thêm CatsBack từ Safari.\n\nHãy mở trang này bằng Safari, bấm Chia sẻ → “Thêm vào Màn hình chính” → “Thêm”.', 'Mở CatsBack bằng Safari');
+      showInstallGuide({
+        title: 'Thêm CatsBack vào iPhone',
+        intro: 'Trình duyệt hiện tại không cung cấp hộp cài đặt tự động.',
+        steps: [
+          'Mở trang này bằng Safari.',
+          'Bấm nút Chia sẻ (hình vuông có mũi tên hướng lên).',
+          'Chọn “Thêm vào Màn hình chính” và bật “Mở dưới dạng ứng dụng web” nếu có.',
+          'Bấm “Thêm”, sau đó trở về Màn hình chính để mở CatsBack.'
+        ],
+        note: 'Đây là cách cài ứng dụng web do iPhone hỗ trợ.'
+      });
       return;
     }
 
