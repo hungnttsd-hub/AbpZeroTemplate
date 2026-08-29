@@ -37,7 +37,6 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
     public string TrackingToken { get; set; } = string.Empty;
     public string OriginalUrl { get; set; } = string.Empty;
     public string NormalizedUrl { get; set; } = string.Empty;
-    public string? AffiliateUrl { get; set; }
     public string? ProductId { get; set; }
     public string? ShopId { get; set; }
     public string? ProductName { get; set; }

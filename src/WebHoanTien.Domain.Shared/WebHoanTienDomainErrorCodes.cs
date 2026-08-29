@@ -11,6 +11,8 @@ public static class WebHoanTienDomainErrorCodes
     public const string SyncStartDateRequired = "WebHoanTien:Sync:StartDateRequired";
     public const string SyncRequestCooldown = "WebHoanTien:Sync:Cooldown";
     public const string TrackingNotOwned = "WebHoanTien:Tracking:NotOwned";
+    public const string AffiliateUserNotFound = "WebHoanTien:Affiliate:UserNotFound";
+    public const string AffiliateIdOverrideConflict = "WebHoanTien:Affiliate:IdOverrideConflict";
     public const string InvalidShopeeReport = "WebHoanTien:ShopeeReport:Invalid";
     public const string InvalidShopeeSettlementReport = "WebHoanTien:ShopeeSettlementReport:Invalid";
     public const string AffiliateOrderSettlementInvalidState = "WebHoanTien:AffiliateOrder:SettlementInvalidState";

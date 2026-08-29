@@ -1,6 +1,9 @@
 @page
 @model LinkResultModel
-@{ ViewData["Title"] = "Link mua hàng đã sẵn sàng"; }
+@{
+    ViewData["Title"] = "Link mua hàng đã sẵn sàng";
+    var stableRedirectUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}{Model.Tracking.RedirectUrl}";
+}
 <section class="page-shell narrow">
     <div class="panel result-panel">
         <span class="success-mark">✓</span><span class="eyebrow">Link đã sẵn sàng</span>
@@ -8,7 +11,7 @@
         @if (Model.Tracking.EstimatedCommission.HasValue)
         { <p class="estimate">Hoa hồng ước tính: <strong>@Model.Tracking.EstimatedCommission.Value.ToString("N0") ₫</strong></p> }
         else { <p class="muted">Ước tính chưa có; việc này không ảnh hưởng đến link mua hàng.</p> }
-        <div class="copy-row"><input id="result-url" readonly value="@Model.Tracking.AffiliateUrl" /><button class="button button-ghost" type="button" onclick="navigator.clipboard.writeText(document.getElementById('result-url').value)">Sao chép</button></div>
+        <div class="copy-row"><input id="result-url" readonly value="@stableRedirectUrl" /><button class="button button-ghost" type="button" onclick="navigator.clipboard.writeText(document.getElementById('result-url').value)">Sao chép</button></div>
         <a class="button button-dark button-wide" href="@Model.Tracking.RedirectUrl" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua trên Shopee →</a>
         <p class="fine-print">Hãy hoàn tất đơn trong cùng phiên sau khi mở link. Shopee quyết định việc ghi nhận và xác thực hoa hồng.</p>
     </div>

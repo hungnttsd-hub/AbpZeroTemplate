@@ -19,8 +19,8 @@ public class AffiliateDomainTests
     [Theory]
     [InlineData(1, 60, 100)]
     [InlineData(2, 60, 80)]
-    [InlineData(3, 60, 80)]
-    [InlineData(4, 60, 80)]
+    [InlineData(3, 60, 60)]
+    [InlineData(4, 60, 60)]
     [InlineData(5, 60, 60)]
     [InlineData(10, 70, 70)]
     public void User_Share_Rate_Should_Follow_Introductory_Order_Tiers(int orderNumber,

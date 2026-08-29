@@ -120,9 +120,9 @@
                             <div class="affiliate-link-actions">
                                 <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
                                 <div class="affiliate-link-secondary-actions">
-                                    @if (!string.IsNullOrWhiteSpace(item.AffiliateUrl))
+                                    @if (!string.IsNullOrWhiteSpace(item.RedirectUrl))
                                     {
-                                        <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="@item.AffiliateUrl" aria-label="Sao chép link" title="Sao chép link">
+                                        <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="@item.RedirectUrl" aria-label="Sao chép link" title="Sao chép link">
                                             <img src="~/catback/icons/copy-link.svg" alt="" />
                                             <span class="sr-only" data-copy-label>Sao chép link</span>
                                         </button>

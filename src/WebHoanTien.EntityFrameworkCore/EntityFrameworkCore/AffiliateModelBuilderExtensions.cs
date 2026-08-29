@@ -38,9 +38,13 @@ public static class AffiliateModelBuilderExtensions
             b.Property(x => x.IpAddress).HasMaxLength(64);
             b.Property(x => x.UserAgent).HasMaxLength(1000);
             b.Property(x => x.Referer).HasMaxLength(WebHoanTienConsts.UrlMaxLength);
+            b.Property(x => x.AffiliateIdSnapshot).HasMaxLength(WebHoanTienConsts.AffiliateIdMaxLength);
             b.HasIndex(x => new { x.TrackingId, x.ClickedAt });
+            b.HasIndex(x => x.UserAffiliateIdOverrideId);
             b.HasOne<AffiliateTracking>().WithMany().HasForeignKey(x => x.TrackingId).OnDelete(DeleteBehavior.Cascade);
             b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+            b.HasOne<UserAffiliateIdOverride>().WithMany().HasForeignKey(x => x.UserAffiliateIdOverrideId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         builder.Entity<AffiliateConversion>(b =>
@@ -102,6 +106,19 @@ public static class AffiliateModelBuilderExtensions
             b.ConfigureByConvention();
             Rate(b.Property(x => x.UserShareRate));
             b.HasIndex(x => new { x.Platform, x.EffectiveFrom });
+        });
+
+        builder.Entity<UserAffiliateIdOverride>(b =>
+        {
+            b.ToTable("UserAffiliateIdOverride", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.AffiliateId).HasMaxLength(WebHoanTienConsts.AffiliateIdMaxLength).IsRequired();
+            b.Property(x => x.AdminNote).HasMaxLength(WebHoanTienConsts.AffiliateOverrideNoteMaxLength);
+            b.HasIndex(x => new { x.UserId, x.Platform }).IsUnique()
+                .HasFilter("\"IsDeleted\" = FALSE");
+            b.HasIndex(x => x.AffiliateId);
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<AffiliateSyncState>(b =>

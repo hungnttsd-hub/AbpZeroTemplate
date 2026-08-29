@@ -1,27 +1,15 @@
 using System;
-using Microsoft.Extensions.Options;
-using Volo.Abp;
+using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.Integrations.Shopee;
 
 public class ShopeeAffiliateLinkBuilder
 {
     private const string AffiliateRedirectEndpoint = "https://s.shopee.vn/an_redir";
-    private readonly ShopeeAffiliateOptions _options;
 
-    public ShopeeAffiliateLinkBuilder(IOptions<ShopeeAffiliateOptions> options)
+    public string Build(string originUrl, string trackingToken, string affiliateId)
     {
-        _options = options.Value;
-    }
-
-    public string Build(string originUrl, string trackingToken)
-    {
-        if (string.IsNullOrWhiteSpace(_options.AffiliateId))
-        {
-            throw new UserFriendlyException(
-                "Chưa cấu hình Shopee Affiliate ID. Liên hệ quản trị viên để thiết lập SHOPEE_AFFILIATE_ID trước khi tạo link.",
-                code: WebHoanTienDomainErrorCodes.ProviderNotConfigured);
-        }
+        var normalizedAffiliateId = AffiliateIdRules.Normalize(affiliateId);
 
         var origin = new Uri(originUrl, UriKind.Absolute);
         var canonicalOrigin = new UriBuilder(origin)
@@ -31,7 +19,7 @@ public class ShopeeAffiliateLinkBuilder
         }.Uri.AbsoluteUri.TrimEnd('/');
 
         return $"{AffiliateRedirectEndpoint}?origin_link={Uri.EscapeDataString(canonicalOrigin)}" +
-               $"&affiliate_id={Uri.EscapeDataString(_options.AffiliateId.Trim())}" +
+               $"&affiliate_id={Uri.EscapeDataString(normalizedAffiliateId)}" +
                $"&sub_id={Uri.EscapeDataString(trackingToken)}";
     }
 }

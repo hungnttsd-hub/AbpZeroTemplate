@@ -364,6 +364,7 @@ public class WebHoanTienWebModule : AbpModule
                     bundle.AddFiles("/catback-modal.css");
                     bundle.AddFiles("/admin-payouts.css");
                     bundle.AddFiles("/admin-notifications.css");
+                    bundle.AddFiles("/admin-affiliate-overrides.css");
                 }
             );
             options.ScriptBundles.Configure(

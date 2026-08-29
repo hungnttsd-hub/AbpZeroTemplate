@@ -74,3 +74,27 @@ public class AdminAffiliateOrdersController : WebHoanTienController
     [HttpGet("{conversionId:guid}")] public Task<AdminAffiliateConversionDetailsDto> GetAsync(Guid conversionId) => _service.GetAsync(conversionId);
     [HttpPost("{conversionId:guid}/manual-match")] public Task ManualMatchAsync(Guid conversionId, [FromBody] ManualMatchInput input) => _service.ManualMatchAsync(conversionId, input);
 }
+
+[Route("api/app/admin/user-affiliate-ids")]
+public class AdminUserAffiliateIdsController : WebHoanTienController
+{
+    private readonly IAdminUserAffiliateIdAppService _service;
+
+    public AdminUserAffiliateIdsController(IAdminUserAffiliateIdAppService service) => _service = service;
+
+    [HttpGet]
+    public Task<PagedResultDto<AdminUserAffiliateIdDto>> GetListAsync(
+        [FromQuery] AdminUserAffiliateIdListInput input) => _service.GetListAsync(input);
+
+    [HttpGet("users")]
+    public Task<ListResultDto<AdminAffiliateUserOptionDto>> GetUserOptionsAsync() =>
+        _service.GetUserOptionsAsync();
+
+    [HttpPut]
+    public Task<AdminUserAffiliateIdDto> SetAsync([FromBody] SetUserAffiliateIdInput input) =>
+        _service.SetAsync(input);
+
+    [HttpDelete("{userId:guid}")]
+    public Task RemoveAsync(Guid userId, [FromQuery] WebHoanTien.Affiliates.AffiliatePlatform platform =
+        WebHoanTien.Affiliates.AffiliatePlatform.Shopee) => _service.RemoveAsync(userId, platform);
+}

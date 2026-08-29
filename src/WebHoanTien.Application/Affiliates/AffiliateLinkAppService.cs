@@ -21,6 +21,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     private readonly IAffiliateUrlNormalizer _normalizer;
     private readonly IAffiliateProviderRegistry _providers;
     private readonly ITrackingTokenGenerator _tokenGenerator;
+    private readonly IAffiliateIdResolver _affiliateIdResolver;
     private readonly ShopeeAffiliateLinkBuilder _linkBuilder;
     private readonly AffiliateUserShareRateResolver _shareRateResolver;
     private readonly AffiliateCommissionCalculator _commissionCalculator;
@@ -29,7 +30,8 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
 
     public AffiliateLinkAppService(IRepository<AffiliateTracking, Guid> repository, ISafeAffiliateUrlResolver resolver,
         IAffiliateUrlNormalizer normalizer, IAffiliateProviderRegistry providers, ITrackingTokenGenerator tokenGenerator,
-        ShopeeAffiliateLinkBuilder linkBuilder, AffiliateUserShareRateResolver shareRateResolver,
+        IAffiliateIdResolver affiliateIdResolver, ShopeeAffiliateLinkBuilder linkBuilder,
+        AffiliateUserShareRateResolver shareRateResolver,
         AffiliateCommissionCalculator commissionCalculator, IClock clock, ILogger<AffiliateLinkAppService> logger)
     {
         _repository = repository;
@@ -37,6 +39,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         _normalizer = normalizer;
         _providers = providers;
         _tokenGenerator = tokenGenerator;
+        _affiliateIdResolver = affiliateIdResolver;
         _linkBuilder = linkBuilder;
         _shareRateResolver = shareRateResolver;
         _commissionCalculator = commissionCalculator;
@@ -62,6 +65,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     public async Task<AffiliateTrackingDto> CreateAsync(CreateAffiliateLinkInput input)
     {
         var userId = CurrentUser.GetId();
+        var resolvedAffiliateId = await _affiliateIdResolver.ResolveAsync(userId, AffiliatePlatform.Shopee);
         var originalUrl = input.Url.Trim();
         var (normalized, itemId) = await _resolver.ResolveAsync(input.Url);
         var candidates = await _repository.GetListAsync(x => x.UserId == userId && x.Platform == AffiliatePlatform.Shopee &&
@@ -79,9 +83,16 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
                 tracking.Show();
                 trackingChanged = true;
             }
+            var affiliateUrl = _linkBuilder.Build(normalized, tracking.TrackingToken,
+                resolvedAffiliateId.AffiliateId);
             if (!string.Equals(tracking.NormalizedUrl, normalized, StringComparison.Ordinal))
             {
-                tracking.SetResolvedUrl(normalized, _linkBuilder.Build(normalized, tracking.TrackingToken));
+                tracking.SetResolvedUrl(normalized, affiliateUrl);
+                trackingChanged = true;
+            }
+            else if (!string.Equals(tracking.AffiliateUrl, affiliateUrl, StringComparison.Ordinal))
+            {
+                tracking.SetAffiliateLink(affiliateUrl);
                 trackingChanged = true;
             }
         }
@@ -89,7 +100,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         {
             var token = _tokenGenerator.Create();
             tracking = new AffiliateTracking(GuidGenerator.Create(), userId, AffiliatePlatform.Shopee, token, originalUrl, normalized);
-            tracking.SetAffiliateLink(_linkBuilder.Build(normalized, token));
+            tracking.SetAffiliateLink(_linkBuilder.Build(normalized, token, resolvedAffiliateId.AffiliateId));
         }
 
         var provider = _providers.Get(AffiliatePlatform.Shopee);
@@ -173,7 +184,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         Id = x.Id, IsExisting = isExisting, WasRestored = wasRestored, CreationTime = x.CreationTime, CreatorId = x.CreatorId, LastModificationTime = x.LastModificationTime,
         LastModifierId = x.LastModifierId, IsDeleted = x.IsDeleted, DeleterId = x.DeleterId, DeletionTime = x.DeletionTime,
         Platform = x.Platform, TrackingToken = x.TrackingToken, OriginalUrl = x.OriginalUrl, NormalizedUrl = x.NormalizedUrl,
-        AffiliateUrl = x.AffiliateUrl, ProductId = x.ProductId, ShopId = x.ShopId, ProductName = x.ProductName,
+        ProductId = x.ProductId, ShopId = x.ShopId, ProductName = x.ProductName,
         ImageUrl = x.ImageUrl, EstimatedCommission = x.EstimatedCommission, ClickCount = x.ClickCount,
         LastClickedAt = x.LastClickedAt, IsHidden = x.IsHidden, HiddenAt = x.HiddenAt,
         Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken

@@ -148,8 +148,8 @@
 
     [card, sheet].filter(Boolean).forEach((root) => {
       root.querySelectorAll('[data-copy-url]').forEach((button) => {
-        button.dataset.copyUrl = link.affiliateUrl || '';
-        button.hidden = !link.affiliateUrl;
+        button.dataset.copyUrl = link.redirectUrl || '';
+        button.hidden = !link.redirectUrl;
       });
       root.querySelectorAll('[data-link-visibility-form]').forEach((form) => {
         form.dataset.linkId = linkId;
@@ -327,7 +327,8 @@
     const label = copyButton.querySelector('[data-copy-label]') || copyButton.querySelector('span') || copyButton;
     const originalText = label.textContent;
     try {
-      await navigator.clipboard.writeText(copyButton.dataset.copyUrl);
+      const stableUrl = new URL(copyButton.dataset.copyUrl, window.location.origin).href;
+      await navigator.clipboard.writeText(stableUrl);
       label.textContent = 'Đã sao chép link';
       copyButton.classList.add('is-copied');
       copyButton.setAttribute('aria-label', 'Đã sao chép link');

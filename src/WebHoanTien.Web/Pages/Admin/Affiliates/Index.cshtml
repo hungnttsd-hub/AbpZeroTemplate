@@ -22,6 +22,68 @@
         <span asp-validation-for="UserShareRate" class="field-error"></span>
         <button class="button button-primary" type="submit">Áp dụng tỷ lệ</button>
     </form>
+    <section class="panel affiliate-override-panel" aria-labelledby="affiliate-override-heading">
+        <div class="affiliate-override-heading">
+            <div>
+                <span class="eyebrow">Định tuyến theo tài khoản</span>
+                <h2 id="affiliate-override-heading">Affiliate ID riêng theo tài khoản</h2>
+                <p>User không có cấu hình riêng sẽ tự dùng Affiliate ID Shopee mặc định trong appsettings.</p>
+            </div>
+            <form method="get" class="affiliate-override-search">
+                <label class="sr-only" for="affiliate-override-filter">Tìm theo email hoặc Affiliate ID</label>
+                <input id="affiliate-override-filter" name="AffiliateOverrideFilter" value="@Model.AffiliateOverrideFilter"
+                       placeholder="Tìm email hoặc Affiliate ID" maxlength="256" />
+                <button class="button button-ghost" type="submit">Tìm</button>
+            </form>
+        </div>
+
+        <form method="post" asp-page-handler="SetAffiliateOverride" class="affiliate-override-form"
+              id="affiliate-override-form" data-affiliate-override-form>
+            <label>Email tài khoản
+                <select name="userEmail" required>
+                    <option value="">Chọn tài khoản...</option>
+                    @foreach (var user in Model.AffiliateUsers.Items)
+                    {
+                        <option value="@user.Email">@user.Email</option>
+                    }
+                </select>
+            </label>
+            <label>Shopee Affiliate ID
+                <input name="affiliateId" required maxlength="128" pattern="[A-Za-z0-9_-]+"
+                       placeholder="an_123456789" />
+            </label>
+            <label class="affiliate-override-note">Ghi chú nội bộ
+                <input name="adminNote" maxlength="500" placeholder="Lý do áp dụng cấu hình riêng (không bắt buộc)" />
+            </label>
+            <button class="button button-primary" type="submit">Lưu cấu hình riêng</button>
+            <button class="button button-ghost" type="reset">Nhập mới</button>
+        </form>
+        <form method="post" asp-page-handler="RemoveAffiliateOverride" id="affiliate-override-remove-form" hidden></form>
+        <p class="affiliate-override-status" data-affiliate-override-status role="status" aria-live="polite"></p>
+
+        <div class="affiliate-override-list" data-affiliate-override-list>
+            @foreach (var item in Model.AffiliateIdOverrides.Items)
+            {
+                <article class="affiliate-override-row" data-user-id="@item.UserId">
+                    <div class="affiliate-override-user">
+                        <strong data-user-email>@item.UserEmail</strong>
+                        <span>Shopee · cập nhật @((item.LastModificationTime ?? item.CreationTime).ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</span>
+                    </div>
+                    <code data-affiliate-id>@item.AffiliateId</code>
+                    <p data-admin-note>@(string.IsNullOrWhiteSpace(item.AdminNote) ? "Không có ghi chú" : item.AdminNote)</p>
+                    <div class="affiliate-override-actions">
+                        <button class="button button-ghost" type="button" data-affiliate-override-edit>Sửa</button>
+                        <button class="button button-danger" type="button" data-affiliate-override-remove>Về ID mặc định</button>
+                    </div>
+                </article>
+            }
+            <p class="affiliate-override-empty" data-affiliate-override-empty
+               hidden="@(Model.AffiliateIdOverrides.Items.Count > 0 ? "hidden" : null)">
+                Chưa có tài khoản nào dùng Affiliate ID riêng.
+            </p>
+        </div>
+        <p class="fine-print affiliate-override-warning">Bạn cần import báo cáo từ tất cả tài khoản Shopee Affiliate đang được sử dụng. Hệ thống vẫn ghép user bằng tracking token trong Sub ID.</p>
+    </section>
     <form method="post" enctype="multipart/form-data" asp-page-handler="Import" class="card-list">
         <label for="shopee-report">Báo cáo chuyển đổi Shopee (CSV/TXT)</label>
         <input id="shopee-report" asp-for="Report" type="file" accept=".csv,.txt,text/csv,text/plain" required />
@@ -38,3 +100,7 @@
     </form>
     <p class="fine-print"><a href="/hangfire">Mở Hangfire Dashboard</a> · API import: <code>POST /api/app/admin/shopee-reports/import</code>.</p>
 </section>
+
+@section Scripts {
+    <script src="~/admin-affiliate-overrides.js" asp-append-version="true"></script>
+}

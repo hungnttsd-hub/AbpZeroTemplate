@@ -87,7 +87,6 @@ public class IndexModel : PageModel
                             estimatedCommissionLabel = result.EstimatedCommission.HasValue
                                 ? result.EstimatedCommission.Value.ToString("N0") + "₫"
                                 : null,
-                            affiliateUrl = result.AffiliateUrl,
                             redirectUrl = result.RedirectUrl,
                             clickCount = result.ClickCount,
                             isExisting = result.IsExisting,

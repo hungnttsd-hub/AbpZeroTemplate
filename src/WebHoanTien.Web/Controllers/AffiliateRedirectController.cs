@@ -8,6 +8,7 @@ using Volo.Abp.Guids;
 using Volo.Abp.Timing;
 using Volo.Abp.Users;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Integrations.Shopee;
 
 namespace WebHoanTien.Web.Controllers;
 
@@ -17,25 +18,53 @@ public class AffiliateRedirectController : Controller
     private readonly IRepository<AffiliateTracking, Guid> _trackings;
     private readonly IRepository<AffiliateClick, Guid> _clicks;
     private readonly IAffiliateUrlNormalizer _normalizer;
+    private readonly IAffiliateIdResolver _affiliateIdResolver;
+    private readonly ShopeeAffiliateLinkBuilder _linkBuilder;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly ICurrentUser _currentUser;
 
     public AffiliateRedirectController(IRepository<AffiliateTracking, Guid> trackings, IRepository<AffiliateClick, Guid> clicks,
-        IAffiliateUrlNormalizer normalizer, IGuidGenerator guidGenerator, IClock clock, ICurrentUser currentUser)
-    { _trackings = trackings; _clicks = clicks; _normalizer = normalizer; _guidGenerator = guidGenerator; _clock = clock; _currentUser = currentUser; }
+        IAffiliateUrlNormalizer normalizer, IAffiliateIdResolver affiliateIdResolver,
+        ShopeeAffiliateLinkBuilder linkBuilder, IGuidGenerator guidGenerator, IClock clock, ICurrentUser currentUser)
+    {
+        _trackings = trackings;
+        _clicks = clicks;
+        _normalizer = normalizer;
+        _affiliateIdResolver = affiliateIdResolver;
+        _linkBuilder = linkBuilder;
+        _guidGenerator = guidGenerator;
+        _clock = clock;
+        _currentUser = currentUser;
+    }
 
     [HttpGet("/go/{trackingToken}")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> GoAsync(string trackingToken)
     {
         var tracking = (await _trackings.GetListAsync(x => x.TrackingToken == trackingToken && x.Status == AffiliateTrackingStatus.Active)).FirstOrDefault();
-        if (tracking?.AffiliateUrl is null || !_normalizer.TryNormalize(tracking.AffiliateUrl, out _, out _)) return NotFound();
+        if (tracking is null || tracking.Platform != AffiliatePlatform.Shopee ||
+            !_normalizer.TryNormalize(tracking.NormalizedUrl, out var normalizedUrl, out _))
+            return NotFound();
+
+        ResolvedAffiliateId resolvedAffiliateId;
+        try
+        {
+            resolvedAffiliateId = await _affiliateIdResolver.ResolveAsync(tracking.UserId, tracking.Platform);
+        }
+        catch (Volo.Abp.UserFriendlyException exception)
+        {
+            return StatusCode(503, exception.Message);
+        }
+
+        var affiliateUrl = _linkBuilder.Build(normalizedUrl, tracking.TrackingToken,
+            resolvedAffiliateId.AffiliateId);
         var click = new AffiliateClick(_guidGenerator.Create(), tracking.Id, _currentUser.Id, _clock.Now,
-            HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString(), Request.Headers.Referer.ToString());
+            HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString(),
+            Request.Headers.Referer.ToString(), resolvedAffiliateId.AffiliateId, resolvedAffiliateId.OverrideId);
         tracking.RegisterClick(_clock.Now);
         await _clicks.InsertAsync(click);
         await _trackings.UpdateAsync(tracking, autoSave: true);
-        return Redirect(tracking.AffiliateUrl);
+        return Redirect(affiliateUrl);
     }
 }

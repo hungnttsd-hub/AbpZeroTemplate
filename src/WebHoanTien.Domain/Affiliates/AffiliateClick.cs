@@ -11,10 +11,14 @@ public class AffiliateClick : CreationAuditedEntity<Guid>
     public string? IpAddress { get; private set; }
     public string? UserAgent { get; private set; }
     public string? Referer { get; private set; }
+    public string? AffiliateIdSnapshot { get; private set; }
+    public Guid? UserAffiliateIdOverrideId { get; private set; }
 
     protected AffiliateClick() { }
 
-    public AffiliateClick(Guid id, Guid trackingId, Guid? userId, DateTime clickedAt, string? ipAddress, string? userAgent, string? referer)
+    public AffiliateClick(Guid id, Guid trackingId, Guid? userId, DateTime clickedAt, string? ipAddress,
+        string? userAgent, string? referer, string? affiliateIdSnapshot = null,
+        Guid? userAffiliateIdOverrideId = null)
         : base(id)
     {
         TrackingId = trackingId;
@@ -23,6 +27,10 @@ public class AffiliateClick : CreationAuditedEntity<Guid>
         IpAddress = ipAddress;
         UserAgent = userAgent;
         Referer = referer;
+        AffiliateIdSnapshot = string.IsNullOrWhiteSpace(affiliateIdSnapshot)
+            ? null
+            : AffiliateIdRules.Normalize(affiliateIdSnapshot);
+        UserAffiliateIdOverrideId = userAffiliateIdOverrideId;
     }
 
     public void PurgePersonalData()
