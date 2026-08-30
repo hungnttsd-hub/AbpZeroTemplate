@@ -17,6 +17,7 @@ using Volo.Abp.Guids;
 using Volo.Abp.Identity;
 using Volo.Abp.Timing;
 using WebHoanTien.Affiliates;
+using WebHoanTien.IdentityExtensions;
 
 namespace WebHoanTien.Web.Pages.Account;
 
@@ -26,6 +27,7 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly IEmailSender _emailSender;
+    private readonly AdminNewUserRegistrationNotifier _adminRegistrationNotifier;
     private bool _confirmationEmailSent;
 
     public string? RegistrationError { get; private set; }
@@ -41,13 +43,15 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         IRepository<UserLegalConsent, Guid> consents,
         IGuidGenerator guidGenerator,
         IClock clock,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        AdminNewUserRegistrationNotifier adminRegistrationNotifier)
         : base(accountAppService, schemeProvider, accountOptions, identityDynamicClaimsPrincipalContributorCache)
     {
         _consents = consents;
         _guidGenerator = guidGenerator;
         _clock = clock;
         _emailSender = emailSender;
+        _adminRegistrationNotifier = adminRegistrationNotifier;
     }
 
     public override async Task<IActionResult> OnPostAsync()
@@ -76,7 +80,10 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             return Page();
         }
 
-        if (!IsExternalLogin && Input is not null && await UserManager.FindByEmailAsync(Input.EmailAddress) is not null)
+        var existingUser = Input is null
+            ? null
+            : await UserManager.FindByEmailAsync(Input.EmailAddress);
+        if (!IsExternalLogin && existingUser is not null)
         {
             RegistrationError = "Tài khoản với email này đã tồn tại trong hệ thống. Vui lòng đăng nhập.";
             ExternalProviders = await GetExternalProviders();
@@ -99,6 +106,13 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
                     WebHoanTienConsts.PrivacyVersion,
                     IsExternalLogin ? LegalConsentMethod.GoogleRegistration : LegalConsentMethod.EmailRegistration,
                     _clock.Now), autoSave: true);
+            }
+
+            if (user is not null && existingUser is null && IsExternalLogin)
+            {
+                await _adminRegistrationNotifier.NotifyAdminsAsync(
+                    user,
+                    UserSelfRegistrationMethod.ExternalProvider);
             }
         }
 

@@ -5,7 +5,8 @@ public enum CustomerNotificationCategory
     Cashback = 1,
     Order = 2,
     Wallet = 3,
-    Promotion = 4
+    Promotion = 4,
+    Administration = 5
 }
 
 public enum CustomerNotificationKind
@@ -21,7 +22,8 @@ public enum CustomerNotificationKind
     WithdrawalRejected = 22,
     WithdrawalCancelled = 23,
     PayoutAccountUpdated = 24,
-    Promotion = 30
+    Promotion = 30,
+    NewUserRegistered = 40
 }
 
 public enum NotificationAudience

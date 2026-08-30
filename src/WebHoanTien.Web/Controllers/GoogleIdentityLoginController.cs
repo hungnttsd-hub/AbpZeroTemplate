@@ -21,6 +21,7 @@ using Volo.Abp.Identity;
 using Volo.Abp.Timing;
 using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
+using WebHoanTien.IdentityExtensions;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
 
 namespace WebHoanTien.Web.Controllers;
@@ -36,6 +37,7 @@ public class GoogleIdentityLoginController : AbpController
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly AdminNewUserRegistrationNotifier _adminRegistrationNotifier;
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly ILogger<GoogleIdentityLoginController> _logger;
@@ -48,6 +50,7 @@ public class GoogleIdentityLoginController : AbpController
         IGuidGenerator guidGenerator,
         IClock clock,
         IHttpClientFactory httpClientFactory,
+        AdminNewUserRegistrationNotifier adminRegistrationNotifier,
         IConfiguration configuration,
         ILogger<GoogleIdentityLoginController> logger)
     {
@@ -58,6 +61,7 @@ public class GoogleIdentityLoginController : AbpController
         _guidGenerator = guidGenerator;
         _clock = clock;
         _httpClientFactory = httpClientFactory;
+        _adminRegistrationNotifier = adminRegistrationNotifier;
         _logger = logger;
         _clientId = configuration["Authentication:Google:ClientId"]
             ?? throw new AbpException("Authentication:Google:ClientId chưa được cấu hình.");
@@ -193,6 +197,11 @@ public class GoogleIdentityLoginController : AbpController
                 WebHoanTienConsts.PrivacyVersion,
                 LegalConsentMethod.GoogleRegistration,
                 _clock.Now));
+        }
+
+        if (isNewUser)
+        {
+            await _adminRegistrationNotifier.NotifyAdminsAsync(user, UserSelfRegistrationMethod.Google);
         }
 
         await _dynamicClaimsCache.ClearAsync(user.Id, user.TenantId);

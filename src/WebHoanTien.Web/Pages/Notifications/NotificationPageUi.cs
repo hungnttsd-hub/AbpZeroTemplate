@@ -42,6 +42,7 @@ public static class NotificationPageUi
         CustomerNotificationKind.WithdrawalRejected or CustomerNotificationKind.WithdrawalCancelled => "status-negative.svg",
         CustomerNotificationKind.PayoutAccountUpdated => "bank.svg",
         CustomerNotificationKind.Promotion => "promotion.svg",
+        CustomerNotificationKind.NewUserRegistered => "bell.svg",
         _ => "wallet.svg"
     };
 
@@ -54,6 +55,7 @@ public static class NotificationPageUi
             CustomerNotificationKind.OrderRejected or CustomerNotificationKind.WithdrawalRejected or
             CustomerNotificationKind.WithdrawalCancelled => "negative",
         CustomerNotificationKind.Promotion => "promotion",
+        CustomerNotificationKind.NewUserRegistered => "order",
         CustomerNotificationKind.PayoutAccountUpdated => "bank",
         CustomerNotificationKind.WithdrawalPaid => "cashback",
         _ => "wallet"

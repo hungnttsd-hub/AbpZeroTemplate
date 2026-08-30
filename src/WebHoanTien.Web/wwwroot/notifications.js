@@ -19,11 +19,13 @@
     const iconByKind = {
         1: 'pending.svg', 2: 'cashback.svg', 10: 'order.svg', 11: 'status-negative.svg',
         12: 'status-negative.svg', 13: 'status-negative.svg', 20: 'wallet.svg', 21: 'wallet.svg',
-        22: 'status-negative.svg', 23: 'status-negative.svg', 24: 'bank.svg', 30: 'promotion.svg'
+        22: 'status-negative.svg', 23: 'status-negative.svg', 24: 'bank.svg', 30: 'promotion.svg',
+        40: 'bell.svg'
     };
     const toneByKind = {
         1: 'pending', 2: 'cashback', 10: 'order', 11: 'negative', 12: 'negative', 13: 'negative',
-        20: 'wallet', 21: 'cashback', 22: 'negative', 23: 'negative', 24: 'bank', 30: 'promotion'
+        20: 'wallet', 21: 'cashback', 22: 'negative', 23: 'negative', 24: 'bank', 30: 'promotion',
+        40: 'order'
     };
 
     function showToast(message) {

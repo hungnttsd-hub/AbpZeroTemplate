@@ -6,6 +6,7 @@
     ViewData["Title"] = "Thông báo | CatBack";
     ViewData["BodyClass"] = "catback-notifications-page";
     var categoryValue = Model.Category.HasValue ? ((int)Model.Category.Value).ToString() : string.Empty;
+    var isAdmin = User.IsInRole("admin");
 }
 
 <section class="notification-shell" data-notification-root data-category="@categoryValue"
@@ -31,6 +32,10 @@
             <button class="@(Model.Category == CustomerNotificationCategory.Order ? "is-active" : null)" type="button" data-notification-category="2">Đơn hàng</button>
             <button class="@(Model.Category == CustomerNotificationCategory.Wallet ? "is-active" : null)" type="button" data-notification-category="3">Ví tiền</button>
             <button class="@(Model.Category == CustomerNotificationCategory.Promotion ? "is-active" : null)" type="button" data-notification-category="4">Ưu đãi</button>
+            @if (isAdmin)
+            {
+                <button class="@(Model.Category == CustomerNotificationCategory.Administration ? "is-active" : null)" type="button" data-notification-category="5">Quản trị</button>
+            }
         </nav>
     </header>
 
@@ -63,6 +68,10 @@
             <button type="button" data-sheet-category="2">Đơn hàng</button>
             <button type="button" data-sheet-category="3">Ví tiền</button>
             <button type="button" data-sheet-category="4">Ưu đãi</button>
+            @if (isAdmin)
+            {
+                <button type="button" data-sheet-category="5">Quản trị</button>
+            }
         </div>
     </fieldset>
     <label class="notification-unread-filter"><span><strong>Chỉ thông báo chưa đọc</strong><small>Ẩn các thông báo bạn đã xem</small></span><input type="checkbox" data-sheet-unread /></label>

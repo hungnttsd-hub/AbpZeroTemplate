@@ -54,6 +54,7 @@ public class DetailModel : PageModel
     {
         if (actionUrl?.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase) == true) return "Xem đơn hàng";
         if (actionUrl?.StartsWith("/Wallet", StringComparison.OrdinalIgnoreCase) == true) return "Xem ví tiền";
+        if (actionUrl?.StartsWith("/Identity/Users", StringComparison.OrdinalIgnoreCase) == true) return "Xem người dùng";
         if (actionUrl?.StartsWith("/Account", StringComparison.OrdinalIgnoreCase) == true) return "Xem tài khoản";
         return "Xem chi tiết";
     }
@@ -64,6 +65,7 @@ public class DetailModel : PageModel
         CustomerNotificationCategory.Cashback => "Hoàn tiền đơn Shopee",
         CustomerNotificationCategory.Wallet => "Ví tiền CatBack",
         CustomerNotificationCategory.Promotion => "Ưu đãi dành cho bạn",
+        CustomerNotificationCategory.Administration => "Quản trị người dùng CatBack",
         _ => "Nội dung liên quan"
     };
 }

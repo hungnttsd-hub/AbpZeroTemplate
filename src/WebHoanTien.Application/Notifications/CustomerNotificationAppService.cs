@@ -14,6 +14,7 @@ namespace WebHoanTien.Notifications;
 [RemoteService(IsEnabled = false)]
 public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNotificationAppService
 {
+    private const string AdminRoleName = "admin";
     private readonly IRepository<CustomerNotification, Guid> _notifications;
 
     public CustomerNotificationAppService(IRepository<CustomerNotification, Guid> notifications)
@@ -26,7 +27,7 @@ public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNo
         var userId = CurrentUser.GetId();
         var maxResultCount = Math.Clamp(input.MaxResultCount <= 0 ? 20 : input.MaxResultCount, 1, 50);
         var skipCount = Math.Max(0, input.SkipCount);
-        var query = (await _notifications.GetQueryableAsync()).Where(x => x.UserId == userId);
+        var query = RestrictToCurrentUser(await _notifications.GetQueryableAsync(), userId);
         if (input.Category.HasValue) query = query.Where(x => x.Category == input.Category.Value);
         if (input.UnreadOnly) query = query.Where(x => !x.IsRead);
 
@@ -44,7 +45,8 @@ public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNo
     public async Task<int> GetUnreadCountAsync()
     {
         var userId = CurrentUser.GetId();
-        var query = (await _notifications.GetQueryableAsync()).Where(x => x.UserId == userId && !x.IsRead);
+        var query = RestrictToCurrentUser(await _notifications.GetQueryableAsync(), userId)
+            .Where(x => !x.IsRead);
         return await AsyncExecuter.CountAsync(query);
     }
 
@@ -84,7 +86,9 @@ public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNo
     public async Task<int> MarkAllAsReadAsync()
     {
         var userId = CurrentUser.GetId();
-        var unread = await _notifications.GetListAsync(x => x.UserId == userId && !x.IsRead);
+        var query = RestrictToCurrentUser(await _notifications.GetQueryableAsync(), userId)
+            .Where(x => !x.IsRead);
+        var unread = await AsyncExecuter.ToListAsync(query);
         if (unread.Count == 0) return 0;
         var now = Clock.Now;
         foreach (var notification in unread) notification.MarkAsRead(now);
@@ -102,9 +106,23 @@ public class CustomerNotificationAppService : WebHoanTienAppService, ICustomerNo
     private async Task<CustomerNotification> GetOwnedAsync(Guid id)
     {
         var notification = await _notifications.GetAsync(id);
-        if (notification.UserId != CurrentUser.GetId())
+        if (notification.UserId != CurrentUser.GetId() ||
+            (notification.Category == CustomerNotificationCategory.Administration &&
+             !CurrentUser.IsInRole(AdminRoleName)))
             throw new BusinessException(WebHoanTienDomainErrorCodes.NotificationNotOwned);
         return notification;
+    }
+
+    private IQueryable<CustomerNotification> RestrictToCurrentUser(
+        IQueryable<CustomerNotification> query,
+        Guid userId)
+    {
+        query = query.Where(x => x.UserId == userId);
+        if (!CurrentUser.IsInRole(AdminRoleName))
+        {
+            query = query.Where(x => x.Category != CustomerNotificationCategory.Administration);
+        }
+        return query;
     }
 
     private static CustomerNotificationListItemDto Map(CustomerNotification notification) => new()
