@@ -1,0 +1,47 @@
+@page
+@model WebHoanTien.Web.Pages.Admin.Settings.IndexModel
+@{
+    ViewData["Title"] = "Cấu hình email";
+}
+
+<section class="page-shell narrow">
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">Quản trị hệ thống</span>
+            <h1>Cấu hình email</h1>
+        </div>
+        <a class="button button-ghost" href="/Admin/Affiliates">Quản trị affiliate</a>
+    </div>
+
+    @if (TempData["EmailSettingsMessage"] is string message)
+    {
+        <div class="flash" role="status">@message</div>
+    }
+
+    <form method="post" class="panel form-stack">
+        <span class="eyebrow">SMTP</span>
+        <h2>Mật khẩu máy chủ gửi mail</h2>
+        <p class="muted">
+            Trạng thái:
+            <strong>@(Model.IsPasswordConfigured ? "Đã cấu hình" : "Chưa cấu hình")</strong>.
+            Giá trị hiện tại không được hiển thị lại để bảo vệ mật khẩu.
+        </p>
+
+        <div asp-validation-summary="ModelOnly" class="field-error"></div>
+        <label asp-for="SmtpPassword" class="form-label">
+            Abp.Mailing.Smtp.Password
+        </label>
+        <input asp-for="SmtpPassword"
+               class="form-control"
+               type="password"
+               autocomplete="new-password"
+               placeholder="Nhập mật khẩu SMTP hoặc app password"
+               aria-describedby="smtp-password-help" />
+        <span asp-validation-for="SmtpPassword" class="field-error"></span>
+        <p id="smtp-password-help" class="fine-print">
+            Lưu mật khẩu mới sẽ thay thế giá trị hiện tại. Các background job email đang chờ retry sẽ dùng cấu hình mới.
+        </p>
+
+        <button class="button button-primary" type="submit">Lưu mật khẩu SMTP</button>
+    </form>
+</section>

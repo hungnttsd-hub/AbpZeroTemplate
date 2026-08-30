@@ -110,8 +110,8 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
 
             if (user is not null && existingUser is null && IsExternalLogin)
             {
-                await _adminRegistrationNotifier.NotifyAdminsAsync(
-                    user,
+                await _adminRegistrationNotifier.EnqueueAsync(
+                    user.Id,
                     UserSelfRegistrationMethod.ExternalProvider);
             }
         }

@@ -2,7 +2,10 @@
 @model WebHoanTien.Web.Pages.Admin.Affiliates.IndexModel
 @{ ViewData["Title"] = "Quản trị affiliate"; }
 <section class="page-shell">
-    <div class="page-heading"><div><span class="eyebrow">Operations</span><h1>Quản trị affiliate</h1></div></div>
+    <div class="page-heading">
+        <div><span class="eyebrow">Operations</span><h1>Quản trị affiliate</h1></div>
+        <a class="button button-ghost" href="/Admin/Settings">Cấu hình email</a>
+    </div>
     @if (TempData["ImportMessage"] is string message) { <div class="flash">@message</div> }
     @if (TempData["SettlementMessage"] is string settlementMessage) { <div class="flash">@settlementMessage</div> }
     @if (TempData["CommissionMessage"] is string commissionMessage) { <div class="flash">@commissionMessage</div> }

@@ -19,6 +19,7 @@
     "Menu:Wallet": "Ví tiền",
     "Menu:Payouts": "Thanh toán",
     "Menu:Notifications": "Thông báo",
+    "Menu:EmailSettings": "Cấu hình email",
     "WebHoanTien:Wallet:PayoutAccountRequired": "Vui lòng lưu tài khoản nhận tiền trước khi yêu cầu rút.",
     "WebHoanTien:Wallet:WithdrawalBelowMinimum": "Số tiền rút tối thiểu là 10.000đ.",
     "WebHoanTien:Wallet:InsufficientBalance": "Số dư khả dụng không đủ cho yêu cầu này.",

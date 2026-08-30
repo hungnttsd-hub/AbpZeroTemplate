@@ -19,6 +19,7 @@
     "Menu:Wallet": "Wallet",
     "Menu:Payouts": "Payouts",
     "Menu:Notifications": "Notifications",
+    "Menu:EmailSettings": "Email settings",
     "WebHoanTien:Wallet:PayoutAccountRequired": "Please save a payout account before requesting a withdrawal.",
     "WebHoanTien:Wallet:WithdrawalBelowMinimum": "The minimum withdrawal amount is 10,000 VND.",
     "WebHoanTien:Wallet:InsufficientBalance": "Your available balance is insufficient for this request.",

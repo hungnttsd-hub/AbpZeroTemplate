@@ -201,7 +201,7 @@ public class GoogleIdentityLoginController : AbpController
 
         if (isNewUser)
         {
-            await _adminRegistrationNotifier.NotifyAdminsAsync(user, UserSelfRegistrationMethod.Google);
+            await _adminRegistrationNotifier.EnqueueAsync(user.Id, UserSelfRegistrationMethod.Google);
         }
 
         await _dynamicClaimsCache.ClearAsync(user.Id, user.TenantId);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Emailing;
 using Volo.Abp.Identity;
@@ -29,6 +30,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
     private readonly IdentityUserManager _userManager;
     private readonly IdentityRoleManager _roleManager;
     private readonly CustomerNotificationManager _notificationManager;
+    private readonly IBackgroundJobManager _backgroundJobManager;
     private readonly IEmailSender _emailSender;
     private readonly IClock _clock;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
@@ -38,6 +40,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         IdentityUserManager userManager,
         IdentityRoleManager roleManager,
         CustomerNotificationManager notificationManager,
+        IBackgroundJobManager backgroundJobManager,
         IEmailSender emailSender,
         IClock clock,
         IUnitOfWorkManager unitOfWorkManager,
@@ -46,14 +49,32 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         _userManager = userManager;
         _roleManager = roleManager;
         _notificationManager = notificationManager;
+        _backgroundJobManager = backgroundJobManager;
         _emailSender = emailSender;
         _clock = clock;
         _unitOfWorkManager = unitOfWorkManager;
         _logger = logger;
     }
 
+    public async Task EnqueueAsync(Guid userId, UserSelfRegistrationMethod registrationMethod)
+    {
+        var args = new AdminNewUserRegistrationJobArgs
+        {
+            UserId = userId,
+            RegistrationMethod = registrationMethod
+        };
+        var currentUnitOfWork = _unitOfWorkManager.Current;
+        if (currentUnitOfWork is null)
+        {
+            await EnqueueJobAsync(args);
+            return;
+        }
+
+        currentUnitOfWork.OnCompleted(() => EnqueueJobAsync(args));
+    }
+
     [UnitOfWork]
-    public virtual async Task NotifyAdminsAsync(
+    public virtual async Task ProcessAsync(
         IdentityUser newUser,
         UserSelfRegistrationMethod registrationMethod)
     {
@@ -113,6 +134,21 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         }
 
         currentUnitOfWork.OnCompleted(() => QueueEmailsAsync(recipients, emailDetails));
+    }
+
+    private async Task EnqueueJobAsync(AdminNewUserRegistrationJobArgs args)
+    {
+        try
+        {
+            await _backgroundJobManager.EnqueueAsync(args);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Không thể xếp background job thông báo đăng ký của user {UserId}.",
+                args.UserId);
+        }
     }
 
     private async Task QueueEmailsAsync(
@@ -183,4 +219,45 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         string UserName,
         string MethodLabel,
         DateTime RegisteredAt);
+}
+
+[Serializable]
+public sealed class AdminNewUserRegistrationJobArgs
+{
+    public Guid UserId { get; set; }
+    public UserSelfRegistrationMethod RegistrationMethod { get; set; }
+}
+
+public class AdminNewUserRegistrationJob :
+    IAsyncBackgroundJob<AdminNewUserRegistrationJobArgs>,
+    ITransientDependency
+{
+    private readonly IdentityUserManager _userManager;
+    private readonly AdminNewUserRegistrationNotifier _notifier;
+    private readonly ILogger<AdminNewUserRegistrationJob> _logger;
+
+    public AdminNewUserRegistrationJob(
+        IdentityUserManager userManager,
+        AdminNewUserRegistrationNotifier notifier,
+        ILogger<AdminNewUserRegistrationJob> logger)
+    {
+        _userManager = userManager;
+        _notifier = notifier;
+        _logger = logger;
+    }
+
+    [UnitOfWork]
+    public virtual async Task ExecuteAsync(AdminNewUserRegistrationJobArgs args)
+    {
+        var user = await _userManager.FindByIdAsync(args.UserId.ToString());
+        if (user is null)
+        {
+            _logger.LogWarning(
+                "Bỏ qua background job thông báo đăng ký vì không tìm thấy user {UserId}.",
+                args.UserId);
+            return;
+        }
+
+        await _notifier.ProcessAsync(user, args.RegistrationMethod);
+    }
 }

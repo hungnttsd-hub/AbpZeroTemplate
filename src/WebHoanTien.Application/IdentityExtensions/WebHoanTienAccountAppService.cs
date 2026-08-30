@@ -31,8 +31,9 @@ public class WebHoanTienAccountAppService : AccountAppService
     public override async Task<IdentityUserDto> RegisterAsync(RegisterDto input)
     {
         var registeredUser = await base.RegisterAsync(input);
-        var user = await UserManager.GetByIdAsync(registeredUser.Id);
-        await _adminRegistrationNotifier.NotifyAdminsAsync(user, UserSelfRegistrationMethod.Email);
+        await _adminRegistrationNotifier.EnqueueAsync(
+            registeredUser.Id,
+            UserSelfRegistrationMethod.Email);
         return registeredUser;
     }
 }
