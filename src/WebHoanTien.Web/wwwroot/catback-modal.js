@@ -160,6 +160,18 @@
                 dismissible: true
             });
         },
+        warning(options) {
+            return show({
+                variant: 'warning',
+                title: options?.title || 'Không thể hoàn tất',
+                message: options?.message || '',
+                confirmText: options?.confirmText || 'Đóng',
+                showCancel: false,
+                showClose: options?.showClose !== false,
+                closeOnBackdrop: true,
+                dismissible: true
+            });
+        },
         info(options) {
             return show({
                 variant: 'info',

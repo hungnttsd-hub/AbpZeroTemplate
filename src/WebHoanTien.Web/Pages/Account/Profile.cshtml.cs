@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Volo.Abp;
 using Volo.Abp.Identity;
+using Volo.Abp.Uow;
 using Volo.Abp.Users;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Notifications;
 
 namespace WebHoanTien.Web.Pages.Account;
 
@@ -17,8 +19,10 @@ namespace WebHoanTien.Web.Pages.Account;
 public class ProfileModel : PageModel
 {
     private readonly ICustomerProfileAppService _customerProfileAppService;
+    private readonly ICustomerNotificationAppService _customerNotificationAppService;
     private readonly IdentityUserManager _userManager;
     private readonly ICurrentUser _currentUser;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     public CustomerProfileDto Profile { get; private set; } = new();
     public IReadOnlyList<PayoutBank> Banks => PayoutBankCatalog.Banks;
@@ -27,7 +31,7 @@ public class ProfileModel : PageModel
     public string LoginEmail { get; private set; } = string.Empty;
 
     [BindProperty]
-    public string ContactEmail { get; set; } = string.Empty;
+    public string? ContactEmail { get; set; }
 
     [BindProperty]
     public UpdatePayoutAccountInput PayoutInput { get; set; } = new();
@@ -49,12 +53,16 @@ public class ProfileModel : PageModel
 
     public ProfileModel(
         ICustomerProfileAppService customerProfileAppService,
+        ICustomerNotificationAppService customerNotificationAppService,
         IdentityUserManager userManager,
-        ICurrentUser currentUser)
+        ICurrentUser currentUser,
+        IUnitOfWorkManager unitOfWorkManager)
     {
         _customerProfileAppService = customerProfileAppService;
+        _customerNotificationAppService = customerNotificationAppService;
         _userManager = userManager;
         _currentUser = currentUser;
+        _unitOfWorkManager = unitOfWorkManager;
     }
 
     public async Task OnGetAsync()
@@ -73,8 +81,15 @@ public class ProfileModel : PageModel
 
         if (!hasLocalPassword || hasGoogleLogin)
         {
-            ContactEmailUnavailableMessage =
+            const string message =
                 "Email liên hệ chỉ áp dụng cho tài khoản đăng ký trực tiếp bằng email và mật khẩu, chưa liên kết Google.";
+            if (IsAjaxRequest())
+            {
+                ModelState.AddModelError(nameof(ContactEmail), message);
+                return AjaxValidationError(message);
+            }
+
+            ContactEmailUnavailableMessage = message;
             return RedirectToPage();
         }
 
@@ -92,6 +107,11 @@ public class ProfileModel : PageModel
 
         if (!ModelState.IsValid)
         {
+            if (IsAjaxRequest())
+            {
+                return AjaxValidationError("Không thể lưu email liên hệ. Vui lòng kiểm tra lại thông tin.");
+            }
+
             await LoadAsync(populatePayoutInput: true, populateContactEmail: false);
             return Page();
         }
@@ -112,6 +132,11 @@ public class ProfileModel : PageModel
 
         if (!ModelState.IsValid)
         {
+            if (IsAjaxRequest())
+            {
+                return AjaxValidationError("Không thể lưu email liên hệ. Vui lòng kiểm tra lại thông tin.");
+            }
+
             await LoadAsync(populatePayoutInput: true, populateContactEmail: false);
             return Page();
         }
@@ -122,7 +147,22 @@ public class ProfileModel : PageModel
             // editable contact address, so changing it must not revoke the existing
             // login-email confirmation state.
             var wasEmailConfirmed = user.EmailConfirmed;
-            await _userManager.SetEmailAsync(user, contactEmail);
+            var setEmailResult = await _userManager.SetEmailAsync(user, contactEmail);
+            if (!setEmailResult.Succeeded)
+            {
+                foreach (var error in setEmailResult.Errors)
+                {
+                    ModelState.AddModelError(nameof(ContactEmail), error.Description);
+                }
+
+                if (IsAjaxRequest())
+                {
+                    return AjaxValidationError("Không thể lưu email liên hệ lúc này.");
+                }
+
+                await LoadAsync(populatePayoutInput: true, populateContactEmail: false);
+                return Page();
+            }
 
             if (user.EmailConfirmed != wasEmailConfirmed)
             {
@@ -133,33 +173,81 @@ public class ProfileModel : PageModel
                     ModelState.AddModelError(
                         nameof(ContactEmail),
                         string.Join(" ", updateResult.Errors.Select(x => x.Description)));
+                    if (IsAjaxRequest())
+                    {
+                        return AjaxValidationError("Không thể lưu email liên hệ lúc này.");
+                    }
+
                     await LoadAsync(populatePayoutInput: true, populateContactEmail: false);
                     return Page();
                 }
             }
         }
 
-        ContactEmailStatusMessage = "Đã lưu email liên hệ.";
+        const string successMessage = "Đã lưu email liên hệ.";
+        if (IsAjaxRequest())
+        {
+            return new JsonResult(new
+            {
+                success = true,
+                title = "Lưu email thành công",
+                message = successMessage,
+                contactEmail
+            });
+        }
+
+        ContactEmailStatusMessage = successMessage;
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostSavePayoutAsync()
     {
+        RemoveModelStatePrefix(nameof(ContactEmail));
+
         if (!ModelState.IsValid)
         {
+            if (IsAjaxRequest())
+            {
+                return AjaxValidationError("Không thể lưu tài khoản nhận tiền. Vui lòng kiểm tra lại thông tin.");
+            }
+
             await LoadAsync(populatePayoutInput: false, populateContactEmail: true);
             return Page();
         }
 
         try
         {
-            await _customerProfileAppService.UpdatePayoutAccountAsync(PayoutInput);
-            PayoutStatusMessage = "Đã lưu thông tin tài khoản nhận tiền.";
+            var payoutAccount = await _customerProfileAppService.UpdatePayoutAccountAsync(PayoutInput);
+            const string successMessage = "Đã lưu thông tin tài khoản nhận tiền.";
+            if (IsAjaxRequest())
+            {
+                if (_unitOfWorkManager.Current is { } unitOfWork)
+                {
+                    await unitOfWork.SaveChangesAsync();
+                }
+
+                var unreadNotificationCount = await _customerNotificationAppService.GetUnreadCountAsync();
+                return new JsonResult(new
+                {
+                    success = true,
+                    title = "Lưu thông tin thành công",
+                    message = successMessage,
+                    payoutAccount,
+                    unreadNotificationCount
+                });
+            }
+
+            PayoutStatusMessage = successMessage;
             return RedirectToPage();
         }
         catch (UserFriendlyException exception)
         {
             ModelState.AddModelError(string.Empty, exception.Message);
+            if (IsAjaxRequest())
+            {
+                return AjaxValidationError("Không thể lưu tài khoản nhận tiền lúc này.");
+            }
+
             await LoadAsync(populatePayoutInput: false, populateContactEmail: true);
             return Page();
         }
@@ -211,5 +299,33 @@ public class ProfileModel : PageModel
         {
             ModelState.Remove(key);
         }
+    }
+
+    private bool IsAjaxRequest() => string.Equals(
+        Request.Headers["X-Requested-With"],
+        "XMLHttpRequest",
+        StringComparison.OrdinalIgnoreCase);
+
+    private IActionResult AjaxValidationError(string fallbackMessage)
+    {
+        var errors = ModelState
+            .Where(entry => entry.Value?.Errors.Count > 0)
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value!.Errors
+                    .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                        ? fallbackMessage
+                        : error.ErrorMessage)
+                    .ToArray());
+        var message = errors.Values.SelectMany(messages => messages).FirstOrDefault() ?? fallbackMessage;
+        return new JsonResult(new
+        {
+            success = false,
+            error = message,
+            errors
+        })
+        {
+            StatusCode = 400
+        };
     }
 }

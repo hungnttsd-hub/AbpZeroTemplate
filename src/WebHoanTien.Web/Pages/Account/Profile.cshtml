@@ -42,7 +42,9 @@
                             <div class="profile-save-status" role="status">@Model.ContactEmailStatusMessage</div>
                         }
 
-                        <form method="post" asp-page-handler="SaveContactEmail" class="payout-form">
+                        <form method="post" asp-page-handler="SaveContactEmail" class="payout-form"
+                              data-profile-ajax-form data-profile-form="contact-email"
+                              data-loading-text="Đang lưu email...">
                             <div class="profile-field">
                                 <label asp-for="ContactEmail">Email liên hệ</label>
                                 <input asp-for="ContactEmail" type="email" autocomplete="email" placeholder="Nhập email liên hệ" />
@@ -80,7 +82,9 @@
                 {
                     <div class="profile-save-status" role="status">@Model.PayoutStatusMessage</div>
                 }
-                <form method="post" asp-page-handler="SavePayout" class="payout-form">
+                <form method="post" asp-page-handler="SavePayout" class="payout-form"
+                      data-profile-ajax-form data-profile-form="payout-account"
+                      data-loading-text="Đang lưu thông tin...">
                     <div asp-validation-summary="ModelOnly" class="profile-form-error"></div>
                     <div class="profile-field">
                         <label asp-for="PayoutInput.BankCode">Ngân hàng</label>
@@ -125,3 +129,7 @@
         </aside>
     </div>
 </section>
+
+@section Scripts {
+    <script src="~/customer-profile.js" asp-append-version="true"></script>
+}

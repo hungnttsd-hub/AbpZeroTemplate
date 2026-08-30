@@ -82,6 +82,8 @@
 
 .profile-field input:focus,
 .profile-field select:focus { border-color: #62aad1; box-shadow: 0 0 0 4px rgba(76, 166, 216, .13); }
+.profile-field input[aria-invalid="true"],
+.profile-field select[aria-invalid="true"] { border-color: #b74458; box-shadow: 0 0 0 4px rgba(183, 68, 88, .1); }
 .profile-field input::placeholder { color: #91a9b8; }
 .profile-form-error { color: #b74458; font-size: 12px; }
 .profile-form-error:empty { display: none; }
@@ -89,6 +91,7 @@
 .profile-save-status { padding: 11px 13px; margin-bottom: 15px; border: 1px solid #bfe4d0; border-radius: var(--surface-radius-sm); background: #e8f8ef; color: #287657; font-size: 13px; font-weight: 700; }
 .payout-save-button { width: 100%; min-height: 48px; margin-top: 2px; background: linear-gradient(100deg, #45a5d9, #5a7fc5); color: #fff; }
 .payout-save-button:hover { box-shadow: 0 8px 17px rgba(48, 119, 177, .22); transform: translateY(-1px); }
+.payout-save-button:disabled { cursor: wait; opacity: .7; box-shadow: none; transform: none; }
 
 .profile-highlight-card { border-color: var(--surface-border-strong); background: linear-gradient(135deg, #e4f6ff, #fff); }
 .profile-card-icon { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 12px; border-radius: 11px; background: #4a9fd2; color: #fff; font-size: 19px; font-weight: 800; }
