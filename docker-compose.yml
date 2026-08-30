@@ -38,6 +38,7 @@ services:
       OpenIddict__CertificatePath: "/app/openiddict.pfx"
       OpenIddict__CertificatePassword: "${OPENIDDICT_CERT_PASSWORD:?Set OPENIDDICT_CERT_PASSWORD in .env}"
       InitialAdmin__Email: "${INITIAL_ADMIN_EMAIL:?Set INITIAL_ADMIN_EMAIL in .env}"
+      AdminEmail: "${ADMIN_EMAIL:-}"
       Shopee__AffiliateId: "${SHOPEE_AFFILIATE_ID:?Set SHOPEE_AFFILIATE_ID in .env}"
       Shopee__ProductDataEndpoint: "${SHOPEE_PRODUCT_DATA_ENDPOINT:-https://data.addlivetag.com/product-data/product-data.php}"
       Authentication__Google__ClientId: "${GOOGLE_CLIENT_ID:-}"

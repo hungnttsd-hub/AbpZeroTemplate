@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
@@ -35,6 +37,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
     private readonly IClock _clock;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ILogger<AdminNewUserRegistrationNotifier> _logger;
+    private readonly string? _adminEmail;
 
     public AdminNewUserRegistrationNotifier(
         IdentityUserManager userManager,
@@ -44,6 +47,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         IEmailSender emailSender,
         IClock clock,
         IUnitOfWorkManager unitOfWorkManager,
+        IConfiguration configuration,
         ILogger<AdminNewUserRegistrationNotifier> logger)
     {
         _userManager = userManager;
@@ -54,6 +58,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         _clock = clock;
         _unitOfWorkManager = unitOfWorkManager;
         _logger = logger;
+        _adminEmail = configuration["AdminEmail"]?.Trim();
     }
 
     public async Task EnqueueAsync(Guid userId, UserSelfRegistrationMethod registrationMethod)
@@ -78,18 +83,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         IdentityUser newUser,
         UserSelfRegistrationMethod registrationMethod)
     {
-        if (string.IsNullOrWhiteSpace(newUser.Email) ||
-            !await _roleManager.RoleExistsAsync(AdminRoleName))
-        {
-            return;
-        }
-
-        var administrators = (await _userManager.GetUsersInRoleAsync(AdminRoleName))
-            .Where(user => user.IsActive && user.Id != newUser.Id)
-            .GroupBy(user => user.Id)
-            .Select(group => group.First())
-            .ToList();
-        if (administrators.Count == 0)
+        if (string.IsNullOrWhiteSpace(newUser.Email))
         {
             return;
         }
@@ -102,10 +96,11 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
             newUser.UserName ?? string.Empty,
             methodLabel,
             registeredAt);
-        var emailRecipients = new List<string>();
+
+        var administrators = await GetActiveAdministratorsAsync(newUser.Id);
         foreach (var administrator in administrators)
         {
-            var created = await _notificationManager.CreateOnceAsync(
+            await _notificationManager.CreateOnceAsync(
                 administrator.Id,
                 CustomerNotificationCategory.Administration,
                 CustomerNotificationKind.NewUserRegistered,
@@ -113,27 +108,56 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
                 $"{newUser.Email} vừa đăng ký tài khoản CatBack qua {methodLabel}.",
                 "/Identity/Users",
                 $"registration:{newUser.Id:N}");
-
-            if (created && !string.IsNullOrWhiteSpace(administrator.Email))
-            {
-                emailRecipients.Add(administrator.Email.Trim());
-            }
         }
 
-        if (emailRecipients.Count == 0)
+        if (!TryGetAdminEmail(out var adminEmail))
         {
             return;
         }
 
-        var recipients = emailRecipients.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var currentUnitOfWork = _unitOfWorkManager.Current;
         if (currentUnitOfWork is null)
         {
-            await QueueEmailsAsync(recipients, emailDetails);
+            await QueueEmailAsync(adminEmail, emailDetails);
             return;
         }
 
-        currentUnitOfWork.OnCompleted(() => QueueEmailsAsync(recipients, emailDetails));
+        currentUnitOfWork.OnCompleted(() => QueueEmailAsync(adminEmail, emailDetails));
+    }
+
+    private async Task<List<IdentityUser>> GetActiveAdministratorsAsync(Guid newUserId)
+    {
+        if (!await _roleManager.RoleExistsAsync(AdminRoleName))
+        {
+            return new List<IdentityUser>();
+        }
+
+        return (await _userManager.GetUsersInRoleAsync(AdminRoleName))
+            .Where(user => user.IsActive && user.Id != newUserId)
+            .GroupBy(user => user.Id)
+            .Select(group => group.First())
+            .ToList();
+    }
+
+    private bool TryGetAdminEmail(out string adminEmail)
+    {
+        adminEmail = string.Empty;
+        if (string.IsNullOrWhiteSpace(_adminEmail))
+        {
+            _logger.LogWarning(
+                "Bỏ qua email thông báo đăng ký mới vì cấu hình AdminEmail đang trống.");
+            return false;
+        }
+
+        if (!MailAddress.TryCreate(_adminEmail, out var address))
+        {
+            _logger.LogError(
+                "Bỏ qua email thông báo đăng ký mới vì cấu hình AdminEmail không hợp lệ.");
+            return false;
+        }
+
+        adminEmail = address.Address;
+        return true;
     }
 
     private async Task EnqueueJobAsync(AdminNewUserRegistrationJobArgs args)
@@ -151,29 +175,25 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         }
     }
 
-    private async Task QueueEmailsAsync(
-        IEnumerable<string> recipients,
+    private async Task QueueEmailAsync(
+        string recipient,
         RegistrationEmailDetails details)
     {
         var body = BuildEmailBody(details);
-        foreach (var recipient in recipients)
+        try
         {
-            try
-            {
-                await _emailSender.QueueAsync(
-                    recipient,
-                    "CatBack - Có người dùng mới đăng ký",
-                    body,
-                    isBodyHtml: true);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(
-                    exception,
-                    "Không thể xếp email thông báo đăng ký của user {UserId} cho admin {AdminEmail}.",
-                    details.UserId,
-                    recipient);
-            }
+            await _emailSender.QueueAsync(
+                recipient,
+                "CatBack - Có người dùng mới đăng ký",
+                body,
+                isBodyHtml: true);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Không thể xếp email thông báo đăng ký của user {UserId} cho AdminEmail.",
+                details.UserId);
         }
     }
 

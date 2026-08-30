@@ -9,7 +9,15 @@ namespace WebHoanTien.Settings;
 public class WebHoanTienSettingDefinitionProvider : SettingDefinitionProvider
 {
     private readonly IConfiguration _configuration;
-    public WebHoanTienSettingDefinitionProvider(IConfiguration configuration) => _configuration = configuration;
+    private readonly ISettingEncryptionService _settingEncryptionService;
+
+    public WebHoanTienSettingDefinitionProvider(
+        IConfiguration configuration,
+        ISettingEncryptionService settingEncryptionService)
+    {
+        _configuration = configuration;
+        _settingEncryptionService = settingEncryptionService;
+    }
 
     public override void Define(ISettingDefinitionContext context)
     {
@@ -25,13 +33,23 @@ public class WebHoanTienSettingDefinitionProvider : SettingDefinitionProvider
         SetDefault(context, EmailSettingNames.Smtp.Host, _configuration["Smtp:Host"]);
         SetDefault(context, EmailSettingNames.Smtp.Port, _configuration["Smtp:Port"] ?? "587");
         SetDefault(context, EmailSettingNames.Smtp.UserName, _configuration["Smtp:Username"]);
-        SetDefault(context, EmailSettingNames.Smtp.Password, _configuration["Smtp:Password"]);
+        SetEncryptedDefault(context, EmailSettingNames.Smtp.Password, _configuration["Smtp:Password"]);
+        SetDefault(context, EmailSettingNames.Smtp.Domain, _configuration["Smtp:Domain"]);
         SetDefault(context, EmailSettingNames.Smtp.EnableSsl, _configuration["Smtp:EnableSsl"] ?? "true");
-        SetDefault(context, EmailSettingNames.Smtp.UseDefaultCredentials, "false");
+        SetDefault(context, EmailSettingNames.Smtp.UseDefaultCredentials,
+            _configuration["Smtp:UseDefaultCredentials"] ?? "false");
     }
 
     private static void SetDefault(ISettingDefinitionContext context, string name, string? value)
     {
         if (!string.IsNullOrWhiteSpace(value) && context.GetOrNull(name) is { } definition) definition.DefaultValue = value;
+    }
+
+    private void SetEncryptedDefault(ISettingDefinitionContext context, string name, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value) && context.GetOrNull(name) is { } definition)
+        {
+            definition.DefaultValue = _settingEncryptionService.Encrypt(definition, value);
+        }
     }
 }
