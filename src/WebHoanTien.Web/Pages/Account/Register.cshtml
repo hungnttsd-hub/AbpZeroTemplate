@@ -58,7 +58,7 @@
                      data-google-identity
                      data-client-id="@googleClientId"
                      data-return-url="@Model.ReturnUrl">
-                    <form action="/account/google/identity/login" method="post" data-google-identity-form>
+                    <form action="/account/google/identity/login" method="post" data-google-identity-form data-turbo="false">
                         @Html.AntiForgeryToken()
                     </form>
                     <button type="button" class="google-oauth-button" data-google-identity-button>
@@ -76,7 +76,7 @@
             }
             @if (otherProviders.Any())
             {
-                <form asp-page="./Login" asp-page-handler="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" asp-route-returnUrlHash="@Model.ReturnUrlHash" method="post" class="external-logins">
+                <form asp-page="./Login" asp-page-handler="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" asp-route-returnUrlHash="@Model.ReturnUrlHash" method="post" class="external-logins" data-turbo="false">
                     @foreach (var provider in otherProviders)
                     {
                         <button type="submit" class="button button-wide external-login-button button-ghost" name="provider" value="@provider.AuthenticationScheme">

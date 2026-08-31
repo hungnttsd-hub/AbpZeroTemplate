@@ -37,7 +37,8 @@ public class ForgotPasswordModel : PageModel
     [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 
-    public string? StatusMessage { get; private set; }
+    [TempData]
+    public string? StatusMessage { get; set; }
 
     public ForgotPasswordModel(
         IdentityUserManager userManager,
@@ -73,8 +74,7 @@ public class ForgotPasswordModel : PageModel
         {
             _logger.LogWarning(
                 "Forgot-password request is ambiguous because recipient email matches different users.");
-            StatusMessage = GenericStatusMessage;
-            return Page();
+            return RedirectWithGenericStatus();
         }
 
         var user = userByLoginEmail ?? userByContactEmail;
@@ -82,8 +82,7 @@ public class ForgotPasswordModel : PageModel
         // Do not reveal whether an account exists or whether it is Google-only.
         if (user is null || !await _userManager.HasPasswordAsync(user))
         {
-            StatusMessage = GenericStatusMessage;
-            return Page();
+            return RedirectWithGenericStatus();
         }
 
         if (!IsValidEmail(recipient))
@@ -91,8 +90,7 @@ public class ForgotPasswordModel : PageModel
             _logger.LogWarning(
                 "Forgot-password request cannot send mail because recipient is not a valid email for user {UserId}.",
                 user.Id);
-            StatusMessage = GenericStatusMessage;
-            return Page();
+            return RedirectWithGenericStatus();
         }
 
         try
@@ -119,8 +117,13 @@ public class ForgotPasswordModel : PageModel
             _logger.LogError(exception, "Forgot-password processing failed.");
         }
 
+        return RedirectWithGenericStatus();
+    }
+
+    private IActionResult RedirectWithGenericStatus()
+    {
         StatusMessage = GenericStatusMessage;
-        return Page();
+        return RedirectToPage();
     }
 
     private async Task<string> GenerateValidTemporaryPasswordAsync(IdentityUser user)

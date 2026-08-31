@@ -470,7 +470,7 @@ body.has-link-action-sheet { overflow: hidden; }
 
   .catback-link-page .affiliate-link-card:last-child { border-bottom: 0; }
   .catback-link-page .affiliate-link-card:hover { transform: none; box-shadow: none; }
-  .catback-link-page .affiliate-link-card.is-new { border-color: #d9e5e9; box-shadow: inset 3px 0 #10a7a5; }
+  .catback-link-page .affiliate-link-card.is-new { border-color: #d9e5e9; box-shadow: none; }
   .catback-link-page .affiliate-product-image { grid-area: product-image; width: 62px; height: 62px; align-self: start; border-color: #c8dce2; border-radius: 11px; background: #f4f8fa; box-shadow: 0 2px 7px rgba(8, 37, 74, .07); }
   .catback-link-page .affiliate-product-image > span { display: grid; place-items: center; }
   .catback-link-page .affiliate-product-image > span img { width: 30px; height: 30px; }

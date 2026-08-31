@@ -1,0 +1,23 @@
+.turbo-progress-bar {
+  height: 3px;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  box-shadow: 0 1px 6px rgb(34 197 94 / 45%);
+}
+
+html[aria-busy="true"] {
+  cursor: progress;
+}
+
+html[aria-busy="true"] #main-content {
+  opacity: 0.985;
+}
+
+#main-content:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #main-content {
+    transition: opacity 120ms ease;
+  }
+}

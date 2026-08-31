@@ -1,5 +1,4 @@
-(function () {
-    "use strict";
+window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
     const money = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
     const toast = document.querySelector("[data-admin-payout-toast]");
 
@@ -109,5 +108,5 @@
             status.textContent = error.message;
             notify(error.message, true);
         }
-    });
-})();
+    }, { signal });
+});

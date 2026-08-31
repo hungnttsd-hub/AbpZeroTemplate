@@ -1,5 +1,7 @@
 (() => {
-  const installButton = document.getElementById('install-app-button');
+  if (window.__catBackPwaInitialized) return;
+  window.__catBackPwaInitialized = true;
+
   const userAgent = window.navigator.userAgent || '';
   const isIos = /iphone|ipad|ipod/i.test(userAgent)
     || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
@@ -18,19 +20,21 @@
     || (window.navigator.userAgentData && window.navigator.userAgentData.mobile === true);
   let deferredInstallPrompt;
   let installHelp;
+  let installButton;
+  let buttonController;
 
   if ('serviceWorker' in window.navigator && window.isSecureContext) {
     window.navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => undefined);
   }
 
-  if (!installButton) return;
-
   const hideInstallButton = () => {
+    if (!installButton) return;
     installButton.hidden = true;
     installButton.disabled = false;
   };
 
   const showInstallButton = () => {
+    if (!installButton) return;
     installButton.hidden = false;
     installButton.disabled = false;
     installButton.textContent = 'Cài đặt ngay';
@@ -41,7 +45,8 @@
   };
 
   const ensureInstallHelp = () => {
-    if (installHelp) return installHelp;
+    if (installHelp?.root?.isConnected) return installHelp;
+    installHelp = undefined;
 
     const root = document.createElement('div');
     root.className = 'pwa-install-help';
@@ -90,7 +95,7 @@
       root.hidden = true;
       root.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('pwa-install-open');
-      installButton.focus();
+      installButton?.focus();
     };
 
     closeButton.addEventListener('click', close);
@@ -98,11 +103,8 @@
     root.addEventListener('click', (event) => {
       if (event.target === root) close();
     });
-    document.addEventListener('keydown', (event) => {
-      if (!root.hidden && event.key === 'Escape') close();
-    });
 
-    installHelp = { root, title, intro, steps, note, confirmButton };
+    installHelp = { root, title, intro, steps, note, confirmButton, close };
     return installHelp;
   };
 
@@ -257,7 +259,7 @@
     standaloneMediaQuery.addEventListener('change', refreshInstallButton);
   }
 
-  installButton.addEventListener('click', async () => {
+  const handleInstallClick = async () => {
     if (isStandalone()) {
       hideInstallButton();
       return;
@@ -289,7 +291,31 @@
       showInstallButton();
       showManualInstallHelp();
     }
-  });
+  };
 
-  refreshInstallButton();
+  const bindInstallButton = () => {
+    buttonController?.abort();
+    buttonController = undefined;
+    installButton = document.getElementById('install-app-button');
+    if (!installButton) return;
+
+    buttonController = new AbortController();
+    installButton.addEventListener('click', handleInstallClick, { signal: buttonController.signal });
+    refreshInstallButton();
+  };
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && installHelp?.root?.isConnected && !installHelp.root.hidden) {
+      installHelp.close();
+    }
+  });
+  document.addEventListener('turbo:before-render', () => {
+    buttonController?.abort();
+    buttonController = undefined;
+    installButton = undefined;
+    installHelp = undefined;
+  });
+  document.addEventListener('turbo:load', bindInstallButton);
+
+  bindInstallButton();
 })();

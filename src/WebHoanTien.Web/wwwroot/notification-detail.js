@@ -1,4 +1,4 @@
-(function () {
+window.CatBackSpa.mount('notification-detail', ({ signal, back }) => {
     const root = document.querySelector('[data-notification-detail]');
     if (!root) return;
 
@@ -15,16 +15,9 @@
     }
 
     backButton?.addEventListener('click', (event) => {
-        if (!document.referrer) return;
-        try {
-            const referrer = new URL(document.referrer);
-            if (referrer.origin !== window.location.origin || !referrer.pathname.startsWith('/Notifications')) return;
-            event.preventDefault();
-            window.history.back();
-        } catch {
-            // Keep the notification-list fallback from the anchor.
-        }
-    });
+        event.preventDefault();
+        back('/Notifications', '/Notifications');
+    }, { signal });
 
     deleteButton?.addEventListener('click', async () => {
         const confirmed = await window.CatsBackModal.confirm({
@@ -52,10 +45,10 @@
                 message: 'Thông báo đã được xóa khỏi hệ thống.',
                 confirmText: 'Đóng'
             });
-            window.location.replace(data.redirectUrl || '/Notifications');
+            back(data.redirectUrl || '/Notifications', '/Notifications');
         } catch (error) {
             deleteButton.disabled = false;
             showToast(error.message);
         }
-    });
-})();
+    }, { signal });
+});

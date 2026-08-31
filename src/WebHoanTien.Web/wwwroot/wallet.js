@@ -1,6 +1,4 @@
-(function () {
-    "use strict";
-
+window.CatBackSpa.mount('wallet', ({ signal }) => {
     const money = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
     const formatMoney = value => `${money.format(Math.max(0, Number(value) || 0))}đ`;
 
@@ -60,7 +58,7 @@
             showToast(error.message, true);
             button.disabled = false;
         }
-    });
+    }, { signal });
 
     const withdrawForm = document.querySelector("[data-withdraw-form]");
     if (!withdrawForm) return;
@@ -99,10 +97,10 @@
     }
 
     withdrawForm.querySelectorAll("[data-withdraw-amount]").forEach(button => {
-        button.addEventListener("click", () => { setAmount(Math.min(available, Number(button.dataset.withdrawAmount))); input.focus(); });
+        button.addEventListener("click", () => { setAmount(Math.min(available, Number(button.dataset.withdrawAmount))); input.focus(); }, { signal });
     });
-    withdrawForm.querySelector("[data-withdraw-all]")?.addEventListener("click", () => { setAmount(available); input.focus(); });
-    input?.addEventListener("input", () => setAmount(currentAmount()));
+    withdrawForm.querySelector("[data-withdraw-all]")?.addEventListener("click", () => { setAmount(available); input.focus(); }, { signal });
+    input?.addEventListener("input", () => setAmount(currentAmount()), { signal });
 
     withdrawForm.addEventListener("submit", async event => {
         event.preventDefault();
@@ -154,7 +152,7 @@
             errorBox.hidden = false;
             showToast(error.message, true);
         }
-    });
+    }, { signal });
 
     renderAmount();
-})();
+});

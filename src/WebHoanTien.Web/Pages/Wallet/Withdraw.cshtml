@@ -24,7 +24,7 @@
         <partial name="_WalletIllustration" />
     </section>
 
-    <form method="post" asp-page-handler="Create" class="wallet-withdraw-form" data-withdraw-form data-available="@Model.Preparation.Wallet.AvailableBalance.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-fee="@Model.Preparation.FeeAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+    <form method="post" asp-page-handler="Create" class="wallet-withdraw-form" data-withdraw-form data-turbo="false" data-available="@Model.Preparation.Wallet.AvailableBalance.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-fee="@Model.Preparation.FeeAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)">
         @Html.AntiForgeryToken()
         <section class="wallet-form-card">
             <label for="withdraw-amount">Số tiền muốn rút</label>

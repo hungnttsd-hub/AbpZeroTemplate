@@ -1,4 +1,4 @@
-(() => {
+window.CatBackSpa.mount('guide', ({ signal }) => {
   const root = document.querySelector('[data-guide-root]');
   if (!root) return;
 
@@ -52,7 +52,7 @@
 
         if (isOpen) closePanel(button, panel);
         else openPanel(button, panel);
-      });
+      }, { signal });
     });
   }
 
@@ -90,6 +90,6 @@
       iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       player.appendChild(iframe);
       playerButton.replaceWith(player);
-    }, { once: true });
+    }, { once: true, signal });
   });
-})();
+});

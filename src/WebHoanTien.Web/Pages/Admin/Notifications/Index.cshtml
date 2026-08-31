@@ -12,7 +12,7 @@
     </header>
 
     <div class="admin-notification-grid">
-        <form method="post" asp-page-handler="Send" data-admin-notification-form>
+        <form method="post" asp-page-handler="Send" data-admin-notification-form data-turbo="false">
             @Html.AntiForgeryToken()
             <div class="admin-notification-form-heading"><span>Gửi ngay</span><h2>Thông báo ưu đãi</h2><p>Nội dung được lưu riêng cho từng người nhận tại thời điểm gửi.</p></div>
             <label><span>Đối tượng nhận</span><select name="audience" data-notification-audience><option value="AllUsers">Toàn bộ người dùng</option><option value="SingleUser">Một người dùng</option></select></label>

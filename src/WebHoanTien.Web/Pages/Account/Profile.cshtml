@@ -43,7 +43,7 @@
                         }
 
                         <form method="post" asp-page-handler="SaveContactEmail" class="payout-form"
-                              data-profile-ajax-form data-profile-form="contact-email"
+                              data-profile-ajax-form data-profile-form="contact-email" data-turbo="false"
                               data-loading-text="Đang lưu email...">
                             <div class="profile-field">
                                 <label asp-for="ContactEmail">Email liên hệ</label>
@@ -83,7 +83,7 @@
                     <div class="profile-save-status" role="status">@Model.PayoutStatusMessage</div>
                 }
                 <form method="post" asp-page-handler="SavePayout" class="payout-form"
-                      data-profile-ajax-form data-profile-form="payout-account"
+                      data-profile-ajax-form data-profile-form="payout-account" data-turbo="false"
                       data-loading-text="Đang lưu thông tin...">
                     <div asp-validation-summary="ModelOnly" class="profile-form-error"></div>
                     <div class="profile-field">
@@ -124,7 +124,7 @@
             <article class="profile-card profile-logout-card">
                 <h2>Đăng xuất</h2>
                 <p>Chỉ đăng xuất khi bạn đang dùng thiết bị riêng tư.</p>
-                <a class="button button-ghost profile-logout-button" href="@Url.Page("/Account/Logout", new { returnUrl = "/" })">Đăng xuất</a>
+                <a class="button button-ghost profile-logout-button" href="@Url.Page("/Account/Logout", new { returnUrl = "/" })" data-turbo="false">Đăng xuất</a>
             </article>
         </aside>
     </div>

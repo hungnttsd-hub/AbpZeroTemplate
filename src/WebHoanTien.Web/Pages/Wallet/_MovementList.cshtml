@@ -43,7 +43,7 @@ else
                         }
                         @if (movement.CanCancel)
                         {
-                            <form method="post" action="/Wallet?handler=Cancel" data-wallet-cancel>
+                            <form method="post" action="/Wallet?handler=Cancel" data-wallet-cancel data-turbo="false">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="requestId" value="@movement.Id" />
                                 <button type="submit">Hủy yêu cầu</button>

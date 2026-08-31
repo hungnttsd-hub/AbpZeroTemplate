@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    if (window.CatsBackModal) return;
+
     let elements;
     let activeRequest;
     let previousFocus;
@@ -12,7 +14,8 @@
     }
 
     function ensureElements() {
-        if (elements) return elements;
+        if (elements?.root?.isConnected) return elements;
+        elements = undefined;
 
         const root = createElement('div', 'cb-modal-root');
         root.hidden = true;
@@ -63,7 +66,6 @@
             if (activeRequest?.closeOnBackdrop) finish(false);
         });
         dialog.addEventListener('keydown', trapFocus);
-        document.addEventListener('keydown', onDocumentKeyDown);
         return elements;
     }
 
@@ -133,6 +135,13 @@
             window.requestAnimationFrame(() => elements.confirm.focus());
         });
     }
+
+    document.addEventListener('keydown', onDocumentKeyDown);
+    document.addEventListener('turbo:before-render', () => {
+        if (activeRequest) finish(false);
+        elements = undefined;
+        previousFocus = undefined;
+    });
 
     window.CatsBackModal = {
         confirm(options) {

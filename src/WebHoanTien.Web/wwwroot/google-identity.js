@@ -1,4 +1,4 @@
-(() => {
+window.CatBackSpa.mount('google-identity', ({ signal }) => {
   const root = document.querySelector('[data-google-identity]');
   if (!root) {
     return;
@@ -29,6 +29,7 @@
   };
 
   const handleCode = async (googleResponse) => {
+    if (signal.aborted) return;
     if (submitting || !googleResponse?.code) {
       if (googleResponse?.error) {
         showStatus(googleResponse.error_description || 'Google không thể hoàn tất đăng nhập.');
@@ -73,6 +74,7 @@
   };
 
   const initializeGoogleIdentity = () => {
+    if (signal.aborted) return;
     if (!window.google?.accounts?.oauth2) {
       showStatus('Không thể tải dịch vụ đăng nhập Google. Vui lòng kiểm tra kết nối và thử lại.');
       return;
@@ -94,14 +96,25 @@
     button.addEventListener('click', () => {
       status.hidden = true;
       codeClient.requestCode();
-    });
+    }, { signal });
   };
 
-  const script = document.createElement('script');
-  script.src = 'https://accounts.google.com/gsi/client';
-  script.async = true;
-  script.defer = true;
-  script.onload = initializeGoogleIdentity;
-  script.onerror = () => showStatus('Không thể tải dịch vụ đăng nhập Google. Vui lòng thử lại sau.');
-  document.head.appendChild(script);
-})();
+  if (window.google?.accounts?.oauth2) {
+    initializeGoogleIdentity();
+    return;
+  }
+
+  let script = document.querySelector('script[data-catback-google-identity]');
+  if (!script) {
+    script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.dataset.catbackGoogleIdentity = '';
+    document.head.appendChild(script);
+  }
+  script.addEventListener('load', initializeGoogleIdentity, { once: true, signal });
+  script.addEventListener('error', () => {
+    if (!signal.aborted) showStatus('Không thể tải dịch vụ đăng nhập Google. Vui lòng thử lại sau.');
+  }, { once: true, signal });
+});

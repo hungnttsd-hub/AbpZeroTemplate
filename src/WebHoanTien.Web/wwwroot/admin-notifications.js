@@ -1,4 +1,4 @@
-(function () {
+window.CatBackSpa.mount('admin-notifications', ({ signal }) => {
     const form = document.querySelector('[data-admin-notification-form]');
     if (!form) return;
     const audience = form.querySelector('[data-notification-audience]');
@@ -35,7 +35,7 @@
         return article;
     }
 
-    audience.addEventListener('change', syncAudience);
+    audience.addEventListener('change', syncAudience, { signal });
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const submit = form.querySelector('button[type="submit"]');
@@ -58,6 +58,6 @@
         } finally {
             submit.disabled = false;
         }
-    });
+    }, { signal });
     syncAudience();
-})();
+});
