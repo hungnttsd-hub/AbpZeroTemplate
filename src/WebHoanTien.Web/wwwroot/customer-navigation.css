@@ -48,11 +48,11 @@
   font-size: 14px;
   font-weight: 800;
   text-decoration: none;
-  transition: transform .2s, box-shadow .2s;
+  transition: box-shadow .2s;
 }
 
 .header-avatar:hover,
-.header-avatar.is-active { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(179, 61, 128, .28); }
+.header-avatar.is-active { box-shadow: 0 7px 16px rgba(179, 61, 128, .28); }
 .login-button { min-height: 40px; padding: 9px 15px; }
 
 .header-actions .install-app-button:not([hidden]) {
@@ -181,7 +181,6 @@ body.account-navigation-open { overflow: hidden; }
   padding: 18px max(18px, calc((100vw - 1180px) / 2));
   background: rgba(3, 30, 69, .58);
   opacity: 0;
-  backdrop-filter: blur(5px);
   transition: opacity .22s ease;
 }
 
@@ -202,14 +201,11 @@ body.account-navigation-open { overflow: hidden; }
   color: var(--catback-navy, #031e45);
   opacity: 0;
   outline: none;
-  transform: translateY(-14px) scale(.985);
-  transform-origin: top right;
-  transition: opacity .22s ease, transform .22s ease;
+  transition: opacity .22s ease;
 }
 
 .account-navigation-overlay.is-open .account-navigation-drawer {
   opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 .account-navigation-header {
@@ -280,7 +276,7 @@ body.account-navigation-open { overflow: hidden; }
   font-size: 18px;
   text-decoration: none;
   cursor: pointer;
-  transition: border-color .18s ease, background .18s ease, color .18s ease, transform .18s ease;
+  transition: border-color .18s ease, background .18s ease, color .18s ease;
 }
 
 .account-navigation-action:hover,
@@ -289,7 +285,6 @@ body.account-navigation-open { overflow: hidden; }
   background: #edf8f8;
   color: var(--catback-teal, #068e94);
   outline: none;
-  transform: translateY(-1px);
 }
 
 .account-navigation-action-badge {
@@ -337,7 +332,7 @@ body.account-navigation-open { overflow: hidden; }
   font-weight: 700;
   line-height: 1.35;
   text-decoration: none;
-  transition: background .18s ease, color .18s ease, transform .18s ease;
+  transition: background .18s ease, color .18s ease;
 }
 
 .account-navigation-item:last-child { border-bottom-color: transparent; }
@@ -347,7 +342,6 @@ body.account-navigation-open { overflow: hidden; }
   background: #edf8f8;
   color: var(--catback-teal, #068e94);
   outline: none;
-  transform: translateX(2px);
 }
 
 .account-navigation-icon {
@@ -450,7 +444,6 @@ body.account-navigation-open { overflow: hidden; }
     width: 100%;
     max-height: 100%;
     border-radius: 28px;
-    transform-origin: top center;
   }
 
   .account-navigation-header { grid-template-columns: minmax(0, 1fr) 40px 40px; gap: 8px; padding: 20px 16px 17px; }

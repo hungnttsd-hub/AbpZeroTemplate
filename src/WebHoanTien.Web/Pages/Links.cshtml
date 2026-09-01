@@ -1,13 +1,91 @@
 @page
 @model LinksModel
-@{ ViewData["Title"] = "Link đã tạo"; }
+@{
+    ViewData["Title"] = "Link đã tạo";
+    ViewData["BodyClass"] = "catback-link-page";
+}
 <section class="page-shell">
     <div class="page-heading"><div><span class="eyebrow">Lịch sử</span><h1>Link đã tạo</h1></div><a class="button button-primary" href="/">Tạo link mới</a></div>
-    <div class="card-list">
-    @if (Model.Links.Items.Count == 0) { <div class="empty"><h2>Chưa có link nào</h2><p>Dán link Shopee ở trang chủ để bắt đầu.</p></div> }
-    @foreach (var item in Model.Links.Items)
-    {
-        <article class="order-card"><div><h2>@(item.ProductName ?? item.NormalizedUrl)</h2><p class="muted">Tạo lúc @item.CreationTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @item.ClickCount lượt mở</p></div><a class="button button-ghost" href="/LinkResult?id=@item.Id">Mở link</a></article>
-    }
-    </div>
+    <section class="dashboard-links" aria-label="Danh sách link đã tạo">
+        @if (Model.Links.Items.Count == 0)
+        {
+            <div class="dashboard-empty dashboard-link-empty">
+                <img src="~/catback/icons/empty-box.svg" alt="" />
+                <h3>Bạn chưa có link nào</h3>
+                <p>Dán link Shopee để nhận hoàn tiền ngay!</p>
+                <div class="dashboard-link-empty-actions">
+                    <a class="button button-primary" href="/">Tạo link ngay</a>
+                    <a href="/huong-dan#tao-link-hoan-tien">Hướng dẫn tạo link <span>›</span></a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="affiliate-link-list">
+            @foreach (var item in Model.Links.Items)
+            {
+                var productName = string.IsNullOrWhiteSpace(item.ProductName) ? "Sản phẩm Shopee" : item.ProductName;
+                <article class="affiliate-link-card" data-link-id="@item.Id">
+                    <div class="affiliate-product-image">
+                        @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="Ảnh @productName" loading="lazy" />
+                        }
+                        else
+                        {
+                            <span><img src="~/catback/icons/shopping-bag.svg" alt="" /></span>
+                        }
+                    </div>
+                    <div class="affiliate-link-details">
+                        <h3>@productName</h3>
+                        <p class="affiliate-store">Sản phẩm từ Shopee</p>
+                        <p class="affiliate-link-meta">Tạo lúc @item.CreationTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @item.ClickCount lượt mở</p>
+                        @if (item.EstimatedCommission.HasValue)
+                        {
+                            <p class="affiliate-estimate">Hoàn lại dự kiến @item.EstimatedCommission.Value.ToString("N0")₫</p>
+                        }
+                        else
+                        {
+                            <p class="affiliate-estimate unavailable">Chưa có ước tính hoa hồng</p>
+                        }
+                    </div>
+                    <div class="affiliate-link-actions">
+                        <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop data-turbo="false" rel="nofollow sponsored noopener">Mua ngay</a>
+                        <div class="affiliate-link-secondary-actions">
+                            <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="@item.RedirectUrl" aria-label="Sao chép link" title="Sao chép link">
+                                <img src="~/catback/icons/copy-link.svg" alt="" />
+                                <span class="sr-only" data-copy-label>Sao chép link</span>
+                            </button>
+                            <form method="post" action="/?handler=SetHidden" data-link-visibility-form data-link-id="@item.Id" data-turbo="false">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="linkId" value="@item.Id" />
+                                <input type="hidden" name="visibilityAction" value="hide" />
+                                <input type="hidden" name="showHidden" value="false" />
+                                <button class="affiliate-icon-action affiliate-hide-desktop-button" type="submit" aria-label="Ẩn link khỏi danh sách" title="Ẩn link khỏi danh sách">
+                                    <img src="~/catback/icons/trash.svg" alt="" />
+                                    <span class="sr-only">Ẩn link khỏi danh sách</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            }
+            </div>
+        }
+        <template id="affiliate-link-empty-template">
+            <div class="dashboard-empty dashboard-link-empty">
+                <img src="~/catback/icons/empty-box.svg" alt="" />
+                <h3>Bạn chưa có link nào</h3>
+                <p>Dán link Shopee để nhận hoàn tiền ngay!</p>
+                <div class="dashboard-link-empty-actions">
+                    <a class="button button-primary" href="/">Tạo link ngay</a>
+                    <a href="/huong-dan#tao-link-hoan-tien">Hướng dẫn tạo link <span>›</span></a>
+                </div>
+            </div>
+        </template>
+    </section>
 </section>
+
+@section Scripts {
+    <script src="~/customer.js" asp-append-version="true"></script>
+}

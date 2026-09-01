@@ -14,7 +14,14 @@
                 <img src="~/orders-icons/arrow-left.svg" alt="" />
             </a>
             <h1>Thông tin đơn hàng</h1>
-            <span class="cb-title-spacer" aria-hidden="true"></span>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+            }
+            else
+            {
+                <span class="cb-title-spacer" aria-hidden="true"></span>
+            }
         </div>
 
         <div class="cb-detail-summary">

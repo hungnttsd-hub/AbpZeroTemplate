@@ -39,6 +39,7 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
         var payoutAccount = await _payoutAccounts.FindAsync(x => x.UserId == user.Id);
         var displayName = string.Join(' ', new[] { user.Name, user.Surname }.Where(x => !string.IsNullOrWhiteSpace(x))).Trim();
         if (string.IsNullOrWhiteSpace(displayName)) displayName = user.Email ?? user.UserName;
+        displayName = ShortenDisplayName(displayName);
         return new CustomerProfileDto
         {
             UserId = user.Id,
@@ -102,6 +103,12 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
         var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0) return "U";
         return string.Concat(parts.TakeLast(2).Select(x => char.ToUpperInvariant(x[0])));
+    }
+
+    private static string ShortenDisplayName(string value)
+    {
+        var separatorIndex = value.IndexOf('@');
+        return separatorIndex > 0 ? value[..separatorIndex] : value;
     }
 
     private static PayoutAccountDto MapPayoutAccount(UserPayoutAccount account) => new()

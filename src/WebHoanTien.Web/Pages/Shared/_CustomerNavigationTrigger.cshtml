@@ -1,0 +1,24 @@
+@using Volo.Abp.Users
+@inject ICurrentUser CurrentUser
+@{
+    var userName = CurrentUser.UserName?.Trim() ?? User.Identity?.Name?.Trim();
+    var displayedUserName = CurrentUser.Name?.Trim();
+
+    if (string.IsNullOrWhiteSpace(displayedUserName))
+    {
+        displayedUserName = string.IsNullOrWhiteSpace(userName) ? "Tài khoản" : userName;
+    }
+
+    var emailSeparatorIndex = displayedUserName.IndexOf('@');
+
+    if (emailSeparatorIndex > 0)
+    {
+        displayedUserName = displayedUserName[..emailSeparatorIndex];
+    }
+
+    var userInitial = displayedUserName[..1].ToUpperInvariant();
+}
+<button class="header-avatar customer-navigation-trigger" type="button"
+        title="Tài khoản: @displayedUserName" aria-label="Mở menu tài khoản của @displayedUserName"
+        aria-haspopup="dialog" aria-controls="account-navigation-drawer" aria-expanded="false"
+        data-account-navigation-open>@userInitial</button>

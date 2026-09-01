@@ -13,8 +13,10 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
         </a>
         <h1>Chi tiết hướng dẫn</h1>
-        <img class="guide-hero-mascot" src="~/catback-mascot-reference.png" alt="" />
-        <span class="guide-hero-spark guide-hero-spark--one" aria-hidden="true">✦</span>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+        }
     </header>
 
     <div class="guide-detail-content">

@@ -24,6 +24,10 @@
                     aria-label="Mở bộ lọc thông báo">
                 <img src="~/notification-icons/filters.svg" alt="" />
             </button>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+            }
         </div>
 
         <nav class="notification-chips" aria-label="Lọc nhanh thông báo">

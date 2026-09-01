@@ -133,6 +133,21 @@ body.catback-guide-video-page > main {
   stroke-linejoin: round;
 }
 
+.guide-hero .customer-navigation-trigger,
+.guide-detail-hero .customer-navigation-trigger {
+  position: absolute;
+  z-index: 3;
+  top: calc(20px + env(safe-area-inset-top));
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(255, 255, 255, .9);
+  background: linear-gradient(145deg, var(--guide-teal-500), var(--guide-teal-700));
+  box-shadow: 0 8px 20px rgba(0, 26, 58, .22);
+  color: var(--guide-white);
+  font-size: 14px;
+}
+
 .guide-hero-copy {
   position: relative;
   z-index: 2;

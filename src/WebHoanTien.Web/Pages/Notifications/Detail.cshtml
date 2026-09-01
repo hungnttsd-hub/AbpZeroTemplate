@@ -18,6 +18,10 @@
                 aria-label="Xóa thông báo">
             <img src="~/notification-icons/delete.svg" alt="" />
         </button>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+        }
     </header>
 
     <article class="notification-detail-card">
