@@ -85,8 +85,9 @@ public class CustomerNotificationManager : DomainService
         var existingKeys = new HashSet<string>(StringComparer.Ordinal);
         foreach (var chunk in rows.Select(value => $"order:{value.Order.Id:N}:settled").Chunk(500))
         {
+            var chunkIds = chunk.ToList();
             var notifications = await _notifications.GetListAsync(notification =>
-                chunk.Contains(notification.EventKey));
+                chunkIds.Contains(notification.EventKey));
             foreach (var notification in notifications) existingKeys.Add(notification.EventKey);
         }
 

@@ -36,6 +36,7 @@ public sealed class AdminShopeeSettlementBatchDto : CreationAuditedEntityDto<Gui
     public int UnmatchedCount { get; set; }
     public int AlreadySettledCount { get; set; }
     public int InvalidCount { get; set; }
+    public int WaitingPaymentCount { get; set; }
     public decimal TotalEligibleCommission { get; set; }
     public decimal TotalPaidCommission { get; set; }
     public decimal PendingPaidCommission { get; set; }
@@ -49,7 +50,18 @@ public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Gu
     public string SourceAffiliateId { get; set; } = string.Empty;
     public string ValidationId { get; set; } = string.Empty;
     public string PayoutId { get; set; } = string.Empty;
-    public DateTime PaidAt { get; set; }
+    public DateTime? PaidAt { get; set; }
+    public int PaymentStatus { get; set; }
+    public int ValidationPayoutStatus { get; set; }
+    public int? OverallValidationStatus { get; set; }
+    public int? BillValidationStatus { get; set; }
+    public int? SettlementCycle { get; set; }
+    public bool IsShopeePaid { get; set; }
+    public bool HasAdjustment { get; set; }
+    public bool HasClawback { get; set; }
+    public bool IsCumulative { get; set; }
+    public bool HasBonus { get; set; }
+    public bool HasPpp { get; set; }
     public string ExternalOrderId { get; set; } = string.Empty;
     public decimal EligibleCommission { get; set; }
     public decimal AllocatedServiceFee { get; set; }
@@ -60,6 +72,8 @@ public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Gu
     public ShopeeSettlementRecordStatus Status { get; set; }
     public Guid? AffiliateOrderId { get; set; }
     public Guid? UserId { get; set; }
+    public List<string> ProductNames { get; set; } = new();
+    public string? UserEmail { get; set; }
     public DateTime? ApprovedAt { get; set; }
     public string? Issue { get; set; }
 }

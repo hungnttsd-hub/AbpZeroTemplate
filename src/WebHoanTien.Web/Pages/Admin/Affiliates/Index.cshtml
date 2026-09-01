@@ -12,7 +12,7 @@
     <div class="step-grid">
         <article><b>@(Model.Connection.IsConfigured ? "✓" : "!")</b><h3>Affiliate ID</h3><p>Link tạo bởi ứng dụng dùng <code>@Model.Connection.Mode</code>.</p></article>
         <article><b>@Model.CurrentCommissionRule.UserShareRate.ToString("0.##")%</b><h3>Khách nhận</h3><p>Áp dụng cho estimate mới và đơn Shopee theo thời điểm đặt hàng.</p></article>
-        <article><b>CSV</b><h3>Nguồn chi trả</h3><p>Đơn hoàn thành chỉ được rút sau khi có bảng kê Shopee đã thanh toán.</p></article>
+        <article><b>CSV</b><h3>Nguồn chi trả</h3><p>Lưu toàn bộ trạng thái đối soát để admin kiểm tra và chủ động quyết định duyệt cộng ví.</p></article>
     </div>
     <form method="post" asp-page-handler="SetCommissionRate" class="panel commission-rate-form">
         <div>
@@ -95,7 +95,7 @@
         <button class="button button-primary" type="submit">Import báo cáo chuyển đổi</button>
     </form>
     <form method="post" enctype="multipart/form-data" asp-page-handler="ImportSettlement" class="card-list" data-turbo="false">
-        <label for="shopee-settlement-report">Bảng kê Shopee đã thanh toán (CSV/TXT)</label>
+        <label for="shopee-settlement-report">File tổng hợp bảng kê Shopee (CSV/TXT)</label>
         <input id="shopee-settlement-report" asp-for="SettlementReport" type="file" accept=".csv,.txt,text/csv,text/plain" required />
         <p class="fine-print">Cần có cột ID đơn hàng và Số tiền Shopee thực trả sau các khoản cấn trừ. File import chỉ tạo dữ liệu chờ duyệt, chưa cộng tiền vào ví.</p>
         <p class="fine-print"><a href="~/templates/shopee-settlement-template.csv" download data-turbo="false">>Tải file CSV mẫu</a></p>

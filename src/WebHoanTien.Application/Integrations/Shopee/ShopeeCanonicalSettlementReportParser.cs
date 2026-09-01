@@ -15,9 +15,19 @@ public sealed record ShopeeCanonicalSettlementRow(
     string SourceAffiliateId,
     string ValidationId,
     string PayoutId,
-    DateTime PaidAt,
+    DateTime? PaidAt,
     DateTime? OrderCompletedFrom,
     DateTime? OrderCompletedTo,
+    int PaymentStatus,
+    int ValidationPayoutStatus,
+    int? OverallValidationStatus,
+    int? BillValidationStatus,
+    int? SettlementCycle,
+    bool HasAdjustment,
+    bool HasClawback,
+    bool IsCumulative,
+    bool HasBonus,
+    bool HasPpp,
     decimal BillEligibleCommission,
     decimal BillAfterServiceFeeCommission,
     decimal BillPaidCommission,
@@ -33,7 +43,8 @@ public sealed record ShopeeCanonicalSettlementReport(
 
 public class ShopeeCanonicalSettlementReportParser : ITransientDependency
 {
-    public const string SchemaVersion = "catsback-settlement-v1";
+    public const string SchemaVersion = "catsback-settlement-v2";
+    public const string LegacySchemaVersion = "catsback-settlement-v1";
 
     public async Task<ShopeeCanonicalSettlementReport> ParseAsync(Stream stream,
         CancellationToken cancellationToken = default)
@@ -58,9 +69,14 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
         var completedToColumn = Required(columns, "order_completed_to_utc");
         var paymentStatusColumn = Required(columns, "payment_status");
         var validationPayoutStatusColumn = Required(columns, "validation_payout_status");
+        var overallValidationStatusColumn = Optional(columns, "overall_validation_status");
+        var billValidationStatusColumn = Optional(columns, "bill_validation_status");
+        var settlementCycleColumn = Optional(columns, "settlement_cycle");
         var adjustmentColumn = Required(columns, "has_adjustment");
         var clawbackColumn = Required(columns, "has_clawback");
         var cumulativeColumn = Required(columns, "is_cumulative");
+        var bonusColumn = Optional(columns, "has_bonus");
+        var pppColumn = Optional(columns, "has_ppp");
         var billEligibleColumn = Required(columns, "bill_eligible_commission");
         var billAfterServiceColumn = Required(columns, "bill_after_service_fee");
         var billPaidColumn = Required(columns, "bill_paid_commission");
@@ -76,13 +92,20 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
             var record = records[index];
             if (record.All(string.IsNullOrWhiteSpace)) continue;
             var rowNumber = index + 1;
-            if (!string.Equals(Value(record, schemaColumn), SchemaVersion, StringComparison.Ordinal))
+            var schemaVersion = Value(record, schemaColumn);
+            var isLegacy = string.Equals(schemaVersion, LegacySchemaVersion, StringComparison.Ordinal);
+            if (!isLegacy && !string.Equals(schemaVersion, SchemaVersion, StringComparison.Ordinal))
                 throw Invalid($"Dòng {rowNumber}: schema_version không được hỗ trợ.");
-            if (Integer(record, paymentStatusColumn, rowNumber) != 4 ||
-                Integer(record, validationPayoutStatusColumn, rowNumber) != 2)
+            var paymentStatus = Integer(record, paymentStatusColumn, rowNumber);
+            var validationPayoutStatus = Integer(record, validationPayoutStatusColumn, rowNumber);
+            if (isLegacy && (paymentStatus != 4 || validationPayoutStatus != 2))
                 throw Invalid($"Dòng {rowNumber}: bảng kê chưa ở trạng thái đã thanh toán.");
-            if (Boolean(record, adjustmentColumn, rowNumber) || Boolean(record, clawbackColumn, rowNumber) ||
-                Boolean(record, cumulativeColumn, rowNumber))
+            var hasAdjustment = Boolean(record, adjustmentColumn, rowNumber);
+            var hasClawback = Boolean(record, clawbackColumn, rowNumber);
+            var isCumulative = Boolean(record, cumulativeColumn, rowNumber);
+            var hasBonus = Boolean(record, bonusColumn, rowNumber, required: false);
+            var hasPpp = Boolean(record, pppColumn, rowNumber, required: false);
+            if (isLegacy && (hasAdjustment || hasClawback || isCumulative))
                 throw Invalid($"Dòng {rowNumber}: bảng kê có điều chỉnh, truy thu hoặc thanh toán cộng dồn chưa được hỗ trợ.");
 
             var affiliateId = RequiredValue(record, affiliateColumn, rowNumber, "source_affiliate_id",
@@ -90,15 +113,28 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
             var validationId = RequiredValue(record, validationColumn, rowNumber, "validation_id", 64);
             if (validationId.Any(character => character is < '0' or > '9'))
                 throw Invalid($"Dòng {rowNumber}: validation_id không hợp lệ.");
-            var payoutId = RequiredValue(record, payoutColumn, rowNumber, "payout_id", 128);
+            var payoutId = Value(record, payoutColumn);
+            if (payoutId.Length > 128) throw Invalid($"Dòng {rowNumber}: payout_id dài quá 128 ký tự.");
+            if (isLegacy && string.IsNullOrWhiteSpace(payoutId))
+                throw Invalid($"Dòng {rowNumber}: thiếu payout_id.");
             var externalOrderId = RequiredValue(record, orderColumn, rowNumber, "order_id", 256);
             rows.Add(new ShopeeCanonicalSettlementRow(
                 affiliateId,
                 validationId,
                 payoutId,
-                Date(record, paidAtColumn, rowNumber, required: true)!.Value,
+                Date(record, paidAtColumn, rowNumber, required: isLegacy),
                 Date(record, completedFromColumn, rowNumber, required: false),
                 Date(record, completedToColumn, rowNumber, required: false),
+                paymentStatus,
+                validationPayoutStatus,
+                NullableInteger(record, overallValidationStatusColumn, rowNumber),
+                NullableInteger(record, billValidationStatusColumn, rowNumber),
+                NullableInteger(record, settlementCycleColumn, rowNumber),
+                hasAdjustment,
+                hasClawback,
+                isCumulative,
+                hasBonus,
+                hasPpp,
                 Money(record, billEligibleColumn, rowNumber),
                 Money(record, billAfterServiceColumn, rowNumber),
                 Money(record, billPaidColumn, rowNumber),
@@ -122,6 +158,15 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
             if (bill.Any(row => row.PayoutId != first.PayoutId || row.PaidAt != first.PaidAt ||
                     row.OrderCompletedFrom != first.OrderCompletedFrom ||
                     row.OrderCompletedTo != first.OrderCompletedTo ||
+                    row.PaymentStatus != first.PaymentStatus ||
+                    row.ValidationPayoutStatus != first.ValidationPayoutStatus ||
+                    row.OverallValidationStatus != first.OverallValidationStatus ||
+                    row.BillValidationStatus != first.BillValidationStatus ||
+                    row.SettlementCycle != first.SettlementCycle ||
+                    row.HasAdjustment != first.HasAdjustment ||
+                    row.HasClawback != first.HasClawback ||
+                    row.IsCumulative != first.IsCumulative ||
+                    row.HasBonus != first.HasBonus || row.HasPpp != first.HasPpp ||
                     row.BillEligibleCommission != first.BillEligibleCommission ||
                     row.BillAfterServiceFeeCommission != first.BillAfterServiceFeeCommission ||
                     row.BillPaidCommission != first.BillPaidCommission))
@@ -172,13 +217,28 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
             ? result
             : throw Invalid($"Dòng {rowNumber}: trạng thái không hợp lệ.");
 
-    private static bool Boolean(IReadOnlyList<string> row, int column, int rowNumber)
+    private static bool Boolean(IReadOnlyList<string> row, int? column, int rowNumber, bool required = true)
     {
-        var value = Value(row, column);
+        if (!column.HasValue)
+        {
+            if (!required) return false;
+            throw Invalid($"Dòng {rowNumber}: thiếu cột boolean bắt buộc.");
+        }
+        var value = Value(row, column.Value);
         if (bool.TryParse(value, out var result)) return result;
         if (value == "0") return false;
         if (value == "1") return true;
         throw Invalid($"Dòng {rowNumber}: giá trị boolean không hợp lệ.");
+    }
+
+    private static int? NullableInteger(IReadOnlyList<string> row, int? column, int rowNumber)
+    {
+        if (!column.HasValue) return null;
+        var value = Value(row, column.Value);
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : throw Invalid($"Dòng {rowNumber}: trạng thái không hợp lệ.");
     }
 
     private static DateTime? Date(IReadOnlyList<string> row, int column, int rowNumber, bool required)
@@ -199,6 +259,9 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
         columns.TryGetValue(Normalize(name), out var index)
             ? index
             : throw Invalid($"Không thấy cột bắt buộc: {name}.");
+
+    private static int? Optional(IReadOnlyDictionary<string, int> columns, string name) =>
+        columns.TryGetValue(Normalize(name), out var index) ? index : null;
 
     private static string RequiredValue(IReadOnlyList<string> row, int column, int rowNumber, string name,
         int maxLength)

@@ -819,13 +819,16 @@ async function runSettlementCollection(mode) {
     const execution = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       world: "MAIN",
-      func: collectShopeeSettlementRowsInPage,
-      args: [{ historyStartUtc: "2015-01-01T00:00:00.000Z" }]
+      func: collectShopeeSettlementRowsInPage
     });
     const report = execution?.[0]?.result;
     if (!report?.ok) throw new Error(report?.error || "Shopee không trả về dữ liệu đối soát hợp lệ.");
     if (!Array.isArray(report.rows) || report.rows.length === 0) {
-      throw new Error("Không tìm thấy bảng kê nào đã thanh toán để tổng hợp.");
+      const requestInfo = report.billingListRequestUrl ? ` Request: ${report.billingListRequestUrl}` : "";
+      throw new Error(
+        `Không tìm thấy bảng kê nào có dữ liệu đơn hàng trong response Billing của Shopee ` +
+        `(list=${report.billingListCount || 0}, candidates=${report.candidateCount || 0}).${requestInfo}`
+      );
     }
 
     const helperResponse = await fetch(`${SETTLEMENT_HELPER_BASE_URL}/api/settlements/${action}`, {
@@ -878,8 +881,14 @@ async function ensureShopeeBillingTab() {
     }
   });
 
-  if (!tab) tab = await chrome.tabs.create({ url: SHOPEE_BILLING_URL, active: false });
-  else if (tab.url !== SHOPEE_BILLING_URL) tab = await chrome.tabs.update(tab.id, { url: SHOPEE_BILLING_URL });
+  if (!tab) {
+    tab = await chrome.tabs.create({ url: SHOPEE_BILLING_URL, active: false });
+  } else if (tab.url !== SHOPEE_BILLING_URL) {
+    tab = await chrome.tabs.update(tab.id, { url: SHOPEE_BILLING_URL });
+  } else {
+    await chrome.tabs.reload(tab.id);
+    await sleep(250);
+  }
 
   await waitForTabReady(tab.id, 1200);
   const refreshed = await chrome.tabs.get(tab.id);
@@ -889,13 +898,13 @@ async function ensureShopeeBillingTab() {
   return refreshed;
 }
 
-// Hàm này được inject vào MAIN world của trang billing. Mọi API call dùng chính
-// cookie/CSRF/session của Shopee và chỉ trả về các trường tối thiểu cần cho CSV.
-async function collectShopeeSettlementRowsInPage(options) {
-  const SCHEMA_VERSION = "catsback-settlement-v1";
+// Hàm này được inject vào MAIN world của trang billing. Danh sách bảng kê được lấy
+// từ response billing_list do chính trang Shopee đã gọi; chỉ các API chi tiết mới
+// được gọi bổ sung bằng cookie/CSRF/session của tab hiện tại.
+async function collectShopeeSettlementRowsInPage() {
+  const SCHEMA_VERSION = "catsback-settlement-v2";
   const MONEY_SCALE = 100000;
   const OUTPUT_SCALE = 10000;
-  const DAY_SECONDS = 86400;
   const MAX_VALIDATIONS = 2000;
   const MAX_CHECKOUTS_PER_BILL = 10000;
   const PAGE_SIZE = 100;
@@ -905,56 +914,53 @@ async function collectShopeeSettlementRowsInPage(options) {
       throw new Error("Tab hiện tại không thuộc affiliate.shopee.vn.");
     }
 
-    const historyStartMs = Date.parse(options?.historyStartUtc || "2020-01-01T00:00:00.000Z");
-    if (!Number.isFinite(historyStartMs)) throw new Error("Mốc bắt đầu quét không hợp lệ.");
-    const nowSeconds = Math.floor(Date.now() / 1000);
-    const validations = new Map();
-    let windowStart = Math.floor(historyStartMs / 1000);
+    const capture = await waitForBillingListNetworkCapture(15000);
+    const payload = capture.payload;
+    if (Number(payload?.code ?? -1) !== 0) {
+      throw new Error(`Shopee API billing_list lỗi: ${String(payload?.msg || payload?.message || payload?.code || "unknown")}`);
+    }
 
-    while (windowStart <= nowSeconds) {
-      const windowEnd = Math.min(nowSeconds, windowStart + 349 * DAY_SECONDS - 1);
-      const payload = await apiGet("/api/v3/payment/billing_list", {
-        order_completed_start_time: String(windowStart),
-        order_completed_end_time: String(windowEnd),
-        settlement_cycle: "4"
-      });
-      const list = Array.isArray(payload?.data?.list) ? payload.data.list : [];
-      for (const item of list) {
-        const validationId = String(item?.validation_id ?? "").trim();
-        if (!/^\d+$/.test(validationId)) continue;
-        if (!isPaid(item)) continue;
-        const existing = validations.get(validationId);
-        if (!existing || rawNumber(item.payment_completed_time, "payment_completed_time") >=
-          rawNumber(existing.payment_completed_time, "payment_completed_time")) {
-          validations.set(validationId, item);
-        }
+    const list = Array.isArray(payload?.data?.list) ? payload.data.list : [];
+    const candidates = flattenBillingList(list);
+    const validations = new Map();
+
+    for (const item of candidates) {
+      const validationId = String(item?.validation_id ?? "").trim();
+      if (!/^\d+$/.test(validationId)) continue;
+      const existing = validations.get(validationId);
+      if (!existing || summaryTimestamp(item) >= summaryTimestamp(existing)) {
+        validations.set(validationId, item);
       }
-      windowStart = windowEnd + 1;
     }
 
     if (validations.size > MAX_VALIDATIONS) {
-      throw new Error(`Có ${validations.size} bảng kê đã thanh toán, vượt giới hạn an toàn ${MAX_VALIDATIONS}.`);
+      throw new Error(`Có ${validations.size} bảng kê, vượt giới hạn an toàn ${MAX_VALIDATIONS}.`);
     }
 
-    const paidValidations = [...validations.values()].sort((left, right) =>
-      rawNumber(left.payment_completed_time, "payment_completed_time") -
-      rawNumber(right.payment_completed_time, "payment_completed_time"));
+    const validationSummaries = [...validations.values()].sort((left, right) =>
+      summaryTimestamp(left) - summaryTimestamp(right));
     const rows = [];
 
-    for (const summary of paidValidations) {
+    for (const summary of validationSummaries) {
       const validationId = String(summary.validation_id);
       const payload = await apiGet("/api/v3/payment/billing_detail", { validation_id: validationId });
       const bill = payload?.data;
       if (!bill || String(bill.validation_id ?? "") !== validationId) {
         throw new Error(`Bảng kê ${validationId}: Shopee trả về sai validation_id.`);
       }
-      if (!isPaid(bill)) throw new Error(`Bảng kê ${validationId}: chưa ở trạng thái đã thanh toán.`);
-
-      const payoutId = String(bill.payout_id ?? "").trim();
+      const payoutId = String(summary.payout_id ?? bill.payout_id ?? "").trim();
       const sourceAffiliateId = String(bill.affiliate_id ?? "").trim();
-      if (!payoutId || !sourceAffiliateId) {
-        throw new Error(`Bảng kê ${validationId}: thiếu payout_id hoặc affiliate_id.`);
-      }
+      if (!sourceAffiliateId) throw new Error(`Bảng kê ${validationId}: thiếu affiliate_id.`);
+      const paymentStatus = rawNumber(summary.payment_status ?? bill.payment_status ?? -1, "payment_status");
+      const validationPayoutStatus = rawNumber(
+        summary.validation_payout_status ?? bill.validation_payout_status ?? -1,
+        "validation_payout_status"
+      );
+      const overallValidationStatus = optionalSafeInteger(
+        summary.overall_validation_status ?? bill.overall_validation_status
+      );
+      const billValidationStatus = optionalSafeInteger(summary.validation_status ?? bill.validation_status);
+      const settlementCycle = optionalSafeInteger(summary.settlement_cycle ?? bill.settlement_cycle);
 
       const paymentValidation = bill.payment_validation || {};
       const commissionSettlements = Array.isArray(paymentValidation.commission_settlement_list)
@@ -971,22 +977,22 @@ async function collectShopeeSettlementRowsInPage(options) {
         (Array.isArray(paymentValidation.ppp_settlement_list) && paymentValidation.ppp_settlement_list.length > 0);
       const cumulativeStatus = rawNumber(bill?.payment_confirmation?.cumulative_status ?? 0, "cumulative_status");
       const isCumulative = cumulativeStatus !== 0;
-      if (hasAdjustment || hasClawback || hasBonus || hasPpp || isCumulative) {
-        throw new Error(`Bảng kê ${validationId}: có điều chỉnh, truy thu, bonus, PPP hoặc thanh toán cộng dồn chưa được hỗ trợ.`);
-      }
-
       const completedFrom = positiveTimestamp(bill.order_completed_period_start_time,
         `Bảng kê ${validationId}: thiếu ngày bắt đầu hoàn thành đơn.`);
       const completedTo = positiveTimestamp(bill.order_completed_period_end_time,
         `Bảng kê ${validationId}: thiếu ngày kết thúc hoàn thành đơn.`);
-      const paidAt = positiveTimestamp(bill.payment_completed_time,
-        `Bảng kê ${validationId}: thiếu thời gian thanh toán.`);
+      const paidAt = optionalPositiveTimestamp(summary.payment_completed_time ?? bill.payment_completed_time);
       if (completedTo < completedFrom) throw new Error(`Bảng kê ${validationId}: khoảng ngày hoàn thành đơn không hợp lệ.`);
 
       const eligibleRaw = moneyRaw(bill.eligible_total_commission_amount, "eligible_total_commission_amount");
       const afterServiceRaw = moneyRaw(bill.bill_commission_amount, "bill_commission_amount");
-      const paidRaw = moneyRaw(bill.payable_total_commission_amount, "payable_total_commission_amount");
-      if (eligibleRaw < afterServiceRaw || afterServiceRaw < paidRaw) {
+      const providerPaidRaw = moneyRaw(bill.payable_total_commission_amount, "payable_total_commission_amount");
+      const providerPaymentCompleted = paymentStatus === 4 && validationPayoutStatus === 2 && paidAt !== null;
+      // Shopee trả payable_total_commission_amount = 0 khi bill còn Pending. Số 0 đó chưa phải
+      // tiền sau thuế, vì vậy không được biến toàn bộ bill_commission_amount thành thuế.
+      const taxRaw = providerPaymentCompleted ? afterServiceRaw - providerPaidRaw : 0;
+      const settlementRaw = afterServiceRaw - taxRaw;
+      if (eligibleRaw < afterServiceRaw || taxRaw < 0 || settlementRaw < 0) {
         throw new Error(`Bảng kê ${validationId}: tổng tiền sau phí hoặc sau thuế không hợp lệ.`);
       }
 
@@ -1006,7 +1012,7 @@ async function collectShopeeSettlementRowsInPage(options) {
 
       const eligibleUnits = rawToOutputUnits(eligibleRaw);
       const afterServiceUnits = rawToOutputUnits(afterServiceRaw);
-      const paidUnits = rawToOutputUnits(paidRaw);
+      const paidUnits = rawToOutputUnits(settlementRaw);
       const orderEligibleUnits = allocateUnits(eligibleUnits, orderWeights.map(order => order.weightRaw));
       const feeUnits = allocateUnits(eligibleUnits - afterServiceUnits, orderEligibleUnits, orderEligibleUnits);
       const afterFeeCapacities = orderEligibleUnits.map((value, index) => value - feeUnits[index]);
@@ -1023,14 +1029,19 @@ async function collectShopeeSettlementRowsInPage(options) {
           source_affiliate_id: sourceAffiliateId,
           validation_id: validationId,
           payout_id: payoutId,
-          payment_completed_at_utc: timestampIso(paidAt),
+          payment_completed_at_utc: paidAt ? timestampIso(paidAt) : "",
           order_completed_from_utc: timestampIso(completedFrom),
           order_completed_to_utc: timestampIso(completedTo),
-          payment_status: "4",
-          validation_payout_status: "2",
-          has_adjustment: "false",
-          has_clawback: "false",
-          is_cumulative: "false",
+          payment_status: String(paymentStatus),
+          validation_payout_status: String(validationPayoutStatus),
+          overall_validation_status: overallValidationStatus === null ? "" : String(overallValidationStatus),
+          bill_validation_status: billValidationStatus === null ? "" : String(billValidationStatus),
+          settlement_cycle: settlementCycle === null ? "" : String(settlementCycle),
+          has_adjustment: String(hasAdjustment),
+          has_clawback: String(hasClawback),
+          is_cumulative: String(isCumulative),
+          has_bonus: String(hasBonus),
+          has_ppp: String(hasPpp),
           bill_eligible_commission: formatUnits(eligibleUnits),
           bill_after_service_fee: formatUnits(afterServiceUnits),
           bill_paid_commission: formatUnits(paidUnits),
@@ -1046,11 +1057,67 @@ async function collectShopeeSettlementRowsInPage(options) {
     return {
       ok: true,
       schemaVersion: SCHEMA_VERSION,
-      validationCount: paidValidations.length,
+      validationCount: validationSummaries.length,
+      billingListRequestUrl: capture.url,
+      billingListCount: list.length,
+      candidateCount: candidates.length,
       rows
     };
   } catch (error) {
     return { ok: false, error: error?.message || String(error) };
+  }
+
+  async function waitForBillingListNetworkCapture(timeoutMs) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const capture = window.__catsBackBillingListNetworkCaptureV1?.latest;
+      if (capture) {
+        if (capture.status < 200 || capture.status >= 300) {
+          throw new Error(`Request billing_list của trang Shopee trả về HTTP ${capture.status}.`);
+        }
+        if (!capture.payload) {
+          throw new Error(`Không đọc được response billing_list của trang Shopee${capture.error ? `: ${capture.error}` : "."}`);
+        }
+        return capture;
+      }
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    throw new Error(
+      "Không bắt được request /api/v3/payment/billing_list do trang Shopee phát ra. " +
+      "Hãy reload extension rồi đăng nhập lại Shopee nếu lỗi tiếp tục xuất hiện."
+    );
+  }
+
+  function flattenBillingList(list) {
+    const result = [];
+    for (const item of list) {
+      const bills = Array.isArray(item?.bills) ? item.bills : [];
+      if (bills.length === 0) {
+        result.push(item);
+        continue;
+      }
+      for (const bill of bills) {
+        result.push({
+          ...item,
+          ...bill,
+          validation_id: bill?.validation_id ?? item?.validation_id
+        });
+      }
+    }
+    return result;
+  }
+
+  function summaryTimestamp(value) {
+    return optionalSafeInteger(value?.payment_completed_time) ??
+      optionalSafeInteger(value?.payment_time) ??
+      optionalSafeInteger(value?.payout_created_time) ??
+      0;
+  }
+
+  function optionalSafeInteger(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) && Number.isSafeInteger(number) ? number : null;
   }
 
   async function apiGet(path, query) {
@@ -1194,13 +1261,6 @@ async function collectShopeeSettlementRowsInPage(options) {
     return result;
   }
 
-  function isPaid(value) {
-    return rawNumber(value?.payment_status ?? -1, "payment_status") === 4 &&
-      rawNumber(value?.validation_payout_status ?? -1, "validation_payout_status") === 2 &&
-      Boolean(String(value?.payout_id ?? "").trim()) &&
-      rawNumber(value?.payment_completed_time ?? 0, "payment_completed_time") > 0;
-  }
-
   function moneyRaw(value, field) {
     const number = rawNumber(value ?? 0, field);
     if (number < 0) throw new Error(`${field} không được âm.`);
@@ -1223,6 +1283,11 @@ async function collectShopeeSettlementRowsInPage(options) {
     const number = rawNumber(value ?? 0, "timestamp");
     if (number <= 0) throw new Error(message);
     return number;
+  }
+
+  function optionalPositiveTimestamp(value) {
+    const number = rawNumber(value ?? 0, "timestamp");
+    return number > 0 ? number : null;
   }
 
   function rawToOutputUnits(raw) {

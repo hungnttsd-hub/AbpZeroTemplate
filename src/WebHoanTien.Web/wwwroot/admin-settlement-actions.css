@@ -15,9 +15,105 @@
     color: #06767c;
 }
 
+.admin-settlement-batch > em.waitingforshopee,
+.admin-settlement-status.awaitingshopeepayment {
+    background: #fff2c8;
+    color: #8b6000;
+}
+
+.admin-settlement-statuses {
+    display: grid;
+    justify-items: end;
+    gap: 5px;
+}
+
+.admin-settlement-shopee-status {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.admin-settlement-shopee-status.paid {
+    background: #def7ee;
+    color: #08745e;
+}
+
+.admin-settlement-shopee-status.waiting {
+    background: #fff2c8;
+    color: #8b6000;
+}
+
+.admin-settlement-provider-state {
+    margin: 9px 0 0;
+    color: #687986;
+    font-size: 10px;
+}
+
+.admin-settlement-provider-state b {
+    color: #315066;
+}
+
+.admin-settlement-context {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+    margin-top: 12px;
+    border: 1px solid #e2ebee;
+    border-radius: 12px;
+    background: #f7fafb;
+}
+
+.admin-settlement-context > div {
+    min-width: 0;
+    padding: 10px 12px;
+}
+
+.admin-settlement-context > div + div {
+    border-left: 1px solid #e2ebee;
+}
+
+.admin-settlement-context span,
+.admin-settlement-context strong,
+.admin-settlement-context small {
+    display: block;
+}
+
+.admin-settlement-context span {
+    margin-bottom: 4px;
+    color: #687986;
+    font-size: 10px;
+}
+
+.admin-settlement-context strong {
+    overflow-wrap: anywhere;
+    color: #031e45;
+    font-size: 12px;
+}
+
+.admin-settlement-context small {
+    margin-top: 3px;
+    color: #068e94;
+    font-size: 10px;
+    font-weight: 700;
+}
+
 @media (max-width: 640px) {
     .admin-settlement-actions {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .admin-settlement-statuses {
+        justify-items: start;
+    }
+
+    .admin-settlement-context {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-settlement-context > div + div {
+        border-top: 1px solid #e2ebee;
+        border-left: 0;
     }
 }

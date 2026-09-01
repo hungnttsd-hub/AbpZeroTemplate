@@ -61,7 +61,7 @@ public class AdminShopeeSettlementsController : WebHoanTienController
         CancellationToken cancellationToken)
     {
         if (report is null || report.Length == 0)
-            throw new Volo.Abp.UserFriendlyException("Chọn bảng kê Shopee đã thanh toán trước khi import.");
+            throw new Volo.Abp.UserFriendlyException("Chọn file tổng hợp bảng kê Shopee trước khi import.");
         await using var stream = report.OpenReadStream();
         return await _service.ImportAsync(stream, report.FileName, cancellationToken);
     }

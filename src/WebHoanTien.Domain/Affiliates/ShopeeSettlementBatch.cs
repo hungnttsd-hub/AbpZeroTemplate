@@ -16,6 +16,7 @@ public class ShopeeSettlementBatch : CreationAuditedAggregateRoot<Guid>
     public int UnmatchedCount { get; private set; }
     public int AlreadySettledCount { get; private set; }
     public int InvalidCount { get; private set; }
+    public int WaitingPaymentCount { get; private set; }
     public decimal TotalEligibleCommission { get; private set; }
     public decimal TotalPaidCommission { get; private set; }
     public decimal PendingPaidCommission { get; private set; }
@@ -33,7 +34,8 @@ public class ShopeeSettlementBatch : CreationAuditedAggregateRoot<Guid>
     }
 
     public void UpdateSummary(int billCount, int recordCount, int pendingCount, int approvedCount,
-        int unmatchedCount, int alreadySettledCount, int invalidCount, decimal totalEligibleCommission,
+        int unmatchedCount, int alreadySettledCount, int invalidCount, int waitingPaymentCount,
+        decimal totalEligibleCommission,
         decimal totalPaidCommission, decimal pendingPaidCommission, decimal approvedPaidCommission)
     {
         BillCount = billCount;
@@ -43,6 +45,7 @@ public class ShopeeSettlementBatch : CreationAuditedAggregateRoot<Guid>
         UnmatchedCount = unmatchedCount;
         AlreadySettledCount = alreadySettledCount;
         InvalidCount = invalidCount;
+        WaitingPaymentCount = waitingPaymentCount;
         TotalEligibleCommission = totalEligibleCommission;
         TotalPaidCommission = totalPaidCommission;
         PendingPaidCommission = pendingPaidCommission;
@@ -53,7 +56,9 @@ public class ShopeeSettlementBatch : CreationAuditedAggregateRoot<Guid>
             ? approvedCount > 0
                 ? ShopeeSettlementBatchStatus.PartiallyApproved
                 : ShopeeSettlementBatchStatus.PendingApproval
-            : hasIssues
+            : waitingPaymentCount > 0 && approvedCount == 0 && !hasIssues
+                ? ShopeeSettlementBatchStatus.WaitingForShopee
+            : hasIssues || waitingPaymentCount > 0
                 ? ShopeeSettlementBatchStatus.CompletedWithIssues
                 : ShopeeSettlementBatchStatus.Approved;
     }

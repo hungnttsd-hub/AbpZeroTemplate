@@ -2280,6 +2280,9 @@ namespace WebHoanTien.Migrations
                     b.Property<int>("UnmatchedCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("WaitingPaymentCount")
+                        .HasColumnType("integer");
+
                     b.Property<int>("UpdatedCount")
                         .HasColumnType("integer");
 
@@ -2583,6 +2586,9 @@ namespace WebHoanTien.Migrations
                     b.Property<Guid>("BatchId")
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("BillValidationStatus")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -2610,13 +2616,31 @@ namespace WebHoanTien.Migrations
                     b.Property<bool>("HasAuthoritativeEligibleCommission")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("HasAdjustment")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasBonus")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasClawback")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("HasPpp")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsCumulative")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime?>("OrderCompletedFrom")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("OrderCompletedTo")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("PaidAt")
+                    b.Property<int?>("OverallValidationStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("PaidCommission")
@@ -2628,12 +2652,18 @@ namespace WebHoanTien.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
                     b.Property<int>("RecordCount")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("ServiceFeeAmount")
                         .HasPrecision(20, 4)
                         .HasColumnType("numeric(20,4)");
+
+                    b.Property<int?>("SettlementCycle")
+                        .HasColumnType("integer");
 
                     b.Property<string>("SourceAffiliateId")
                         .IsRequired()
@@ -2648,6 +2678,9 @@ namespace WebHoanTien.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
+
+                    b.Property<int>("ValidationPayoutStatus")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CatsBack Shopee Affiliate Sync",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "Đồng bộ conversion và tổng hợp/import đối soát Shopee trực tiếp từ API trong phiên đăng nhập hiện tại.",
   "permissions": [
     "alarms",
@@ -19,6 +19,16 @@
     "service_worker": "background.js"
   },
   "content_scripts": [
+    {
+      "matches": [
+        "https://affiliate.shopee.vn/payment/billing*"
+      ],
+      "js": [
+        "billing-network-interceptor.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
     {
       "matches": [
         "https://affiliate.shopee.vn/*"

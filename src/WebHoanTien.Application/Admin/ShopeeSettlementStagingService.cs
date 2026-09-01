@@ -66,7 +66,9 @@ public class ShopeeSettlementStagingService : ITransientDependency
 
         var normalized = await ParseAsync(bytes, reportFileName, hash, source, cancellationToken);
         var existingBillCount = 0;
+        Guid? firstExistingBatchId = null;
         var newBills = new List<NormalizedBill>();
+        var updatedBills = new List<UpdatedBill>();
         foreach (var bill in normalized)
         {
             var existingBill = await _bills.FindAsync(value => value.SourceAffiliateId == bill.SourceAffiliateId &&
@@ -79,56 +81,92 @@ public class ShopeeSettlementStagingService : ITransientDependency
 
             var existingRows = await _records.GetListAsync(record => record.BillId == existingBill.Id,
                 cancellationToken: cancellationToken);
-            EnsureSameBill(existingBill, existingRows, bill);
-            existingBillCount++;
-        }
-
-        if (newBills.Count == 0)
-        {
-            return new ShopeeSettlementImportResultDto
+            firstExistingBatchId ??= existingBill.BatchId;
+            if (SameBill(existingBill, existingRows, bill))
             {
-                ImportedRowCount = 0,
-                ValidationCount = normalized.Count,
-                AlreadyImportedValidationCount = existingBillCount,
-                IsDuplicate = true
-            };
+                existingBillCount++;
+                continue;
+            }
+
+            EnsureCanUpdate(existingBill, existingRows, bill);
+            existingBill.UpdateFromImport(bill.PayoutId, bill.PaidAt, bill.OrderCompletedFrom,
+                bill.OrderCompletedTo, bill.EligibleCommission, bill.AfterServiceFeeCommission,
+                bill.PaidCommission, bill.HasAuthoritativeEligibleCommission, bill.Rows.Count,
+                bill.PaymentStatus, bill.ValidationPayoutStatus, bill.OverallValidationStatus,
+                bill.BillValidationStatus, bill.SettlementCycle, bill.HasAdjustment, bill.HasClawback,
+                bill.IsCumulative, bill.HasBonus, bill.HasPpp);
+            var existingByOrder = existingRows.ToDictionary(row => row.ExternalOrderId, StringComparer.Ordinal);
+            foreach (var inputRow in bill.Rows)
+            {
+                existingByOrder[inputRow.ExternalOrderId].UpdateAmounts(inputRow.EligibleCommission,
+                    inputRow.AllocatedServiceFee, inputRow.AllocatedTax, inputRow.ActualPaidCommission);
+            }
+            updatedBills.Add(new UpdatedBill(existingBill, existingRows, bill));
         }
 
-        var allOrderIds = newBills.SelectMany(bill => bill.Rows).Select(row => row.ExternalOrderId)
-            .Distinct(StringComparer.Ordinal).ToList();
-        foreach (var chunk in allOrderIds.Chunk(500))
+        if (newBills.Count == 0 && updatedBills.Count == 0)
         {
+            var duplicateBatch = await _batches.GetAsync(firstExistingBatchId!.Value,
+                cancellationToken: cancellationToken);
+            var duplicateResult = ToResult(duplicateBatch, isDuplicate: true);
+            duplicateResult.ImportedRowCount = 0;
+            duplicateResult.ValidationCount = normalized.Count;
+            duplicateResult.AlreadyImportedValidationCount = existingBillCount;
+            return duplicateResult;
+        }
+
+        var changedBills = newBills.Concat(updatedBills.Select(item => item.Input)).ToList();
+        var allOrderIds = changedBills.SelectMany(bill => bill.Rows).Select(row => row.ExternalOrderId)
+            .Distinct(StringComparer.Ordinal).ToList();
+        var newOrderIds = newBills.SelectMany(bill => bill.Rows).Select(row => row.ExternalOrderId)
+            .Distinct(StringComparer.Ordinal).ToList();
+        foreach (var chunk in newOrderIds.Chunk(500))
+        {
+            var chunkIds = chunk.ToList();
             var conflictingRecords = await _records.GetListAsync(
-                record => chunk.Contains(record.ExternalOrderId), cancellationToken: cancellationToken);
+                record => chunkIds.Contains(record.ExternalOrderId), cancellationToken: cancellationToken);
             if (conflictingRecords.Count > 0)
                 throw Invalid($"Đơn hàng {conflictingRecords[0].ExternalOrderId} đã thuộc một batch đối soát khác.");
         }
 
         var candidateOrders = new List<AffiliateOrder>();
         foreach (var chunk in allOrderIds.Chunk(500))
-            candidateOrders.AddRange(await _orders.GetListAsync(order => chunk.Contains(order.ExternalOrderId),
+        {
+            var chunkIds = chunk.ToList();
+            candidateOrders.AddRange(await _orders.GetListAsync(order => chunkIds.Contains(order.ExternalOrderId),
                 cancellationToken: cancellationToken));
+        }
         var conversionIds = candidateOrders.Select(order => order.ConversionId).Distinct().ToList();
         var candidateConversions = new List<AffiliateConversion>();
         foreach (var chunk in conversionIds.Chunk(500))
-            candidateConversions.AddRange(await _conversions.GetListAsync(conversion => chunk.Contains(conversion.Id),
+        {
+            var chunkIds = chunk.ToList();
+            candidateConversions.AddRange(await _conversions.GetListAsync(conversion => chunkIds.Contains(conversion.Id),
                 cancellationToken: cancellationToken));
+        }
         var conversions = candidateConversions.Where(conversion => conversion.Platform == AffiliatePlatform.Shopee)
             .ToDictionary(conversion => conversion.Id);
         var ordersByExternalId = candidateOrders.Where(order => conversions.ContainsKey(order.ConversionId))
             .GroupBy(order => order.ExternalOrderId, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
 
-        var batch = new ShopeeSettlementBatch(_guidGenerator.Create(), source,
-            Path.GetFileName(reportFileName), hash);
-        await _batches.InsertAsync(batch, autoSave: false, cancellationToken: cancellationToken);
+        ShopeeSettlementBatch? batch = null;
         var records = new List<ShopeeSettlementRecord>();
+        if (newBills.Count > 0)
+        {
+            batch = new ShopeeSettlementBatch(_guidGenerator.Create(), source,
+                Path.GetFileName(reportFileName), hash);
+            await _batches.InsertAsync(batch, autoSave: false, cancellationToken: cancellationToken);
+        }
         foreach (var inputBill in newBills)
         {
-            var bill = new ShopeeSettlementBill(_guidGenerator.Create(), batch.Id, inputBill.SourceAffiliateId,
+            var bill = new ShopeeSettlementBill(_guidGenerator.Create(), batch!.Id, inputBill.SourceAffiliateId,
                 inputBill.ValidationId, inputBill.PayoutId, inputBill.PaidAt, inputBill.OrderCompletedFrom,
                 inputBill.OrderCompletedTo, inputBill.EligibleCommission, inputBill.AfterServiceFeeCommission,
-                inputBill.PaidCommission, inputBill.HasAuthoritativeEligibleCommission, inputBill.Rows.Count);
+                inputBill.PaidCommission, inputBill.HasAuthoritativeEligibleCommission, inputBill.Rows.Count,
+                inputBill.PaymentStatus, inputBill.ValidationPayoutStatus, inputBill.OverallValidationStatus,
+                inputBill.BillValidationStatus, inputBill.SettlementCycle, inputBill.HasAdjustment,
+                inputBill.HasClawback, inputBill.IsCumulative, inputBill.HasBonus, inputBill.HasPpp);
             await _bills.InsertAsync(bill, autoSave: false, cancellationToken: cancellationToken);
 
             foreach (var inputRow in inputBill.Rows)
@@ -136,46 +174,49 @@ public class ShopeeSettlementStagingService : ITransientDependency
                 var record = new ShopeeSettlementRecord(_guidGenerator.Create(), batch.Id, bill.Id,
                     inputRow.ExternalOrderId, inputRow.EligibleCommission, inputRow.AllocatedServiceFee,
                     inputRow.AllocatedTax, inputRow.ActualPaidCommission);
-                if (!ordersByExternalId.TryGetValue(inputRow.ExternalOrderId, out var matches) || matches.Count == 0)
-                {
-                    record.SetUnmatched("Không tìm thấy đơn hàng tương ứng trong CatsBack.");
-                }
-                else if (matches.Count != 1)
-                {
-                    record.SetUnmatched("Tìm thấy nhiều đơn hàng có cùng ID; cần kiểm tra dữ liệu nguồn.");
-                }
-                else
-                {
-                    var order = matches[0];
-                    var conversion = conversions[order.ConversionId];
-                    if (!conversion.UserId.HasValue)
-                        record.SetUnmatched("Đơn hàng có trong CatsBack nhưng chưa được ghép với người dùng.");
-                    else if (inputBill.HasAuthoritativeEligibleCommission &&
-                             !CloseMoney(inputRow.EligibleCommission, order.NetCommission))
-                        record.SetInvalid(order.Id, conversion.Id, conversion.UserId,
-                            "Hoa hồng hợp lệ từ bảng kê lệch với hoa hồng đơn hàng trong CatsBack.");
-                    else if (!inputBill.HasAuthoritativeEligibleCommission &&
-                             !NotGreaterThan(inputRow.ActualPaidCommission, order.NetCommission))
-                        record.SetInvalid(order.Id, conversion.Id, conversion.UserId,
-                            "Tiền thực trả trong file lớn hơn hoa hồng đơn hàng trong CatsBack.");
-                    else if (order.Status == AffiliateOrderStatus.Completed)
-                        record.SetPendingApproval(order.Id, conversion.Id, conversion.UserId);
-                    else if (order.Status == AffiliateOrderStatus.Settled)
-                        record.SetAlreadySettled(order.Id, conversion.Id, conversion.UserId);
-                    else
-                        record.SetInvalid(order.Id, conversion.Id, conversion.UserId,
-                            $"Đơn hàng đang ở trạng thái {order.Status}, chưa thể duyệt đối soát.");
-                }
+                Classify(record, inputBill, inputRow, ordersByExternalId, conversions);
                 records.Add(record);
             }
         }
 
-        await _records.InsertManyAsync(records, autoSave: false, cancellationToken: cancellationToken);
-        UpdateBatch(batch, newBills.Count, records);
-        await _batches.UpdateAsync(batch, autoSave: true, cancellationToken: cancellationToken);
-        var result = ToResult(batch, isDuplicate: false);
-        result.ValidationCount = newBills.Count;
+        var updatedRecords = new List<ShopeeSettlementRecord>();
+        foreach (var item in updatedBills)
+        {
+            var rowsByOrder = item.Records.ToDictionary(record => record.ExternalOrderId, StringComparer.Ordinal);
+            foreach (var inputRow in item.Input.Rows)
+            {
+                var record = rowsByOrder[inputRow.ExternalOrderId];
+                Classify(record, item.Input, inputRow, ordersByExternalId, conversions);
+                updatedRecords.Add(record);
+            }
+        }
+
+        if (records.Count > 0)
+            await _records.InsertManyAsync(records, autoSave: false, cancellationToken: cancellationToken);
+        if (updatedBills.Count > 0)
+        {
+            await _bills.UpdateManyAsync(updatedBills.Select(item => item.Entity), autoSave: false,
+                cancellationToken: cancellationToken);
+            await _records.UpdateManyAsync(updatedRecords, autoSave: false, cancellationToken: cancellationToken);
+            foreach (var batchId in updatedBills.Select(item => item.Entity.BatchId).Distinct())
+            {
+                var refreshedBatch = await _batches.GetAsync(batchId, cancellationToken: cancellationToken);
+                var existingRecords = await _records.GetListAsync(record => record.BatchId == batchId,
+                    cancellationToken: cancellationToken);
+                UpdateBatch(refreshedBatch, refreshedBatch.BillCount, existingRecords);
+                await _batches.UpdateAsync(refreshedBatch, autoSave: false, cancellationToken: cancellationToken);
+                batch ??= refreshedBatch;
+            }
+        }
+        if (newBills.Count > 0)
+        {
+            UpdateBatch(batch!, newBills.Count, records);
+            await _batches.UpdateAsync(batch!, autoSave: false, cancellationToken: cancellationToken);
+        }
+        var result = ToResult(batch!, isDuplicate: false);
+        result.ValidationCount = normalized.Count;
         result.AlreadyImportedValidationCount = existingBillCount;
+        result.UpdatedValidationCount = updatedBills.Count;
         return result;
     }
 
@@ -194,14 +235,17 @@ public class ShopeeSettlementStagingService : ITransientDependency
                     return new NormalizedBill(first.SourceAffiliateId, first.ValidationId, first.PayoutId,
                         first.PaidAt, first.OrderCompletedFrom, first.OrderCompletedTo,
                         first.BillEligibleCommission, first.BillAfterServiceFeeCommission,
-                        first.BillPaidCommission, true, group.Select(row => new NormalizedRow(row.ExternalOrderId,
+                        first.BillPaidCommission, true, first.PaymentStatus, first.ValidationPayoutStatus,
+                        first.OverallValidationStatus, first.BillValidationStatus, first.SettlementCycle,
+                        first.HasAdjustment, first.HasClawback, first.IsCumulative, first.HasBonus, first.HasPpp,
+                        group.Select(row => new NormalizedRow(row.ExternalOrderId,
                             row.OrderEligibleCommission, row.AllocatedServiceFee, row.AllocatedTax,
                             row.ActualPaidCommission)).ToList());
                 }).ToList();
         }
 
         if (source != ShopeeSettlementImportSource.Manual)
-            throw Invalid("Tool chỉ được import file theo schema catsback-settlement-v1.");
+            throw Invalid("Tool chỉ được import file theo schema catsback-settlement-v1 hoặc catsback-settlement-v2.");
         await using var legacyStream = new MemoryStream(bytes, writable: false);
         var legacy = await _legacyParser.ParseAsync(legacyStream, cancellationToken);
         var paidAt = legacy.Rows.Max(row => row.PaidAt) ?? _clock.Now;
@@ -212,8 +256,46 @@ public class ShopeeSettlementStagingService : ITransientDependency
         var total = rows.Sum(row => row.ActualPaidCommission);
         return new List<NormalizedBill>
         {
-            new("manual", $"manual-{hash[..24]}", payoutId, paidAt, null, null, total, total, total, false, rows)
+            new("manual", $"manual-{hash[..24]}", payoutId, paidAt, null, null, total, total, total, false,
+                4, 2, null, null, null, false, false, false, false, false, rows)
         };
+    }
+
+    private static void Classify(ShopeeSettlementRecord record, NormalizedBill bill, NormalizedRow row,
+        IReadOnlyDictionary<string, List<AffiliateOrder>> ordersByExternalId,
+        IReadOnlyDictionary<Guid, AffiliateConversion> conversions)
+    {
+        ordersByExternalId.TryGetValue(row.ExternalOrderId, out var matches);
+        if (matches is null || matches.Count == 0)
+        {
+            record.SetUnmatched("Không tìm thấy đơn hàng tương ứng trong CatsBack.");
+        }
+        else if (matches.Count != 1)
+        {
+            record.SetUnmatched("Tìm thấy nhiều đơn hàng có cùng ID; cần kiểm tra dữ liệu nguồn.");
+        }
+        else
+        {
+            var order = matches[0];
+            var conversion = conversions[order.ConversionId];
+            if (!conversion.UserId.HasValue)
+                record.SetUnmatched("Đơn hàng có trong CatsBack nhưng chưa được ghép với người dùng.");
+            else if (bill.HasAuthoritativeEligibleCommission &&
+                     !CloseMoney(row.EligibleCommission, order.NetCommission))
+                record.SetInvalid(order.Id, conversion.Id, conversion.UserId,
+                    "Hoa hồng hợp lệ từ bảng kê lệch với hoa hồng đơn hàng trong CatsBack.");
+            else if (!bill.HasAuthoritativeEligibleCommission &&
+                     !NotGreaterThan(row.ActualPaidCommission, order.NetCommission))
+                record.SetInvalid(order.Id, conversion.Id, conversion.UserId,
+                    "Tiền thực trả trong file lớn hơn hoa hồng đơn hàng trong CatsBack.");
+            else if (order.Status == AffiliateOrderStatus.Completed)
+                record.SetPendingApproval(order.Id, conversion.Id, conversion.UserId);
+            else if (order.Status == AffiliateOrderStatus.Settled)
+                record.SetAlreadySettled(order.Id, conversion.Id, conversion.UserId);
+            else
+                record.SetInvalid(order.Id, conversion.Id, conversion.UserId,
+                    $"Đơn hàng đang ở trạng thái {order.Status}, chưa thể duyệt đối soát.");
+        }
     }
 
     private static void UpdateBatch(ShopeeSettlementBatch batch, int billCount,
@@ -225,6 +307,7 @@ public class ShopeeSettlementStagingService : ITransientDependency
             records.Count(record => record.Status == ShopeeSettlementRecordStatus.Unmatched),
             records.Count(record => record.Status == ShopeeSettlementRecordStatus.AlreadySettled),
             records.Count(record => record.Status == ShopeeSettlementRecordStatus.Invalid),
+            records.Count(record => record.Status == ShopeeSettlementRecordStatus.AwaitingShopeePayment),
             records.Sum(record => record.EligibleCommission),
             records.Sum(record => record.ActualPaidCommission),
             records.Where(record => record.Status == ShopeeSettlementRecordStatus.PendingApproval)
@@ -233,7 +316,7 @@ public class ShopeeSettlementStagingService : ITransientDependency
                 .Sum(record => record.ActualPaidCommission));
     }
 
-    private static void EnsureSameBill(ShopeeSettlementBill existingBill,
+    private static bool SameBill(ShopeeSettlementBill existingBill,
         IReadOnlyCollection<ShopeeSettlementRecord> existingRows, NormalizedBill inputBill)
     {
         var sameMetadata = string.Equals(existingBill.PayoutId, inputBill.PayoutId, StringComparison.Ordinal) &&
@@ -244,20 +327,39 @@ public class ShopeeSettlementStagingService : ITransientDependency
             existingBill.AfterServiceFeeCommission == inputBill.AfterServiceFeeCommission &&
             existingBill.PaidCommission == inputBill.PaidCommission &&
             existingBill.HasAuthoritativeEligibleCommission == inputBill.HasAuthoritativeEligibleCommission &&
+            existingBill.PaymentStatus == inputBill.PaymentStatus &&
+            existingBill.ValidationPayoutStatus == inputBill.ValidationPayoutStatus &&
+            existingBill.OverallValidationStatus == inputBill.OverallValidationStatus &&
+            existingBill.BillValidationStatus == inputBill.BillValidationStatus &&
+            existingBill.SettlementCycle == inputBill.SettlementCycle &&
+            existingBill.HasAdjustment == inputBill.HasAdjustment &&
+            existingBill.HasClawback == inputBill.HasClawback &&
+            existingBill.IsCumulative == inputBill.IsCumulative &&
+            existingBill.HasBonus == inputBill.HasBonus && existingBill.HasPpp == inputBill.HasPpp &&
             existingBill.RecordCount == inputBill.Rows.Count && existingRows.Count == inputBill.Rows.Count;
-        if (!sameMetadata)
-            throw Invalid($"Bảng kê {inputBill.ValidationId} đã import trước đó nhưng metadata hoặc tổng tiền đã thay đổi.");
+        if (!sameMetadata) return false;
+        if (existingRows.Any(row => row.Status == ShopeeSettlementRecordStatus.AwaitingShopeePayment))
+            return false;
 
         var rowsByOrder = existingRows.ToDictionary(row => row.ExternalOrderId, StringComparer.Ordinal);
-        foreach (var inputRow in inputBill.Rows)
-        {
-            if (!rowsByOrder.TryGetValue(inputRow.ExternalOrderId, out var existingRow) ||
-                existingRow.EligibleCommission != inputRow.EligibleCommission ||
-                existingRow.AllocatedServiceFee != inputRow.AllocatedServiceFee ||
-                existingRow.AllocatedTax != inputRow.AllocatedTax ||
-                existingRow.ActualPaidCommission != inputRow.ActualPaidCommission)
-                throw Invalid($"Bảng kê {inputBill.ValidationId} đã import trước đó nhưng chi tiết đơn hàng đã thay đổi.");
-        }
+        return inputBill.Rows.All(inputRow =>
+            rowsByOrder.TryGetValue(inputRow.ExternalOrderId, out var existingRow) &&
+            existingRow.EligibleCommission == inputRow.EligibleCommission &&
+            existingRow.AllocatedServiceFee == inputRow.AllocatedServiceFee &&
+            existingRow.AllocatedTax == inputRow.AllocatedTax &&
+            existingRow.ActualPaidCommission == inputRow.ActualPaidCommission);
+    }
+
+    private static void EnsureCanUpdate(ShopeeSettlementBill existingBill,
+        IReadOnlyCollection<ShopeeSettlementRecord> existingRows, NormalizedBill inputBill)
+    {
+        if (existingRows.Any(row => row.Status == ShopeeSettlementRecordStatus.Approved))
+            throw Invalid($"Bảng kê {inputBill.ValidationId} đã được admin duyệt nên không thể cập nhật metadata.");
+        var existingOrderIds = existingRows.Select(row => row.ExternalOrderId).ToHashSet(StringComparer.Ordinal);
+        var inputOrderIds = inputBill.Rows.Select(row => row.ExternalOrderId).ToHashSet(StringComparer.Ordinal);
+        if (existingBill.RecordCount != inputBill.Rows.Count || existingRows.Count != inputBill.Rows.Count ||
+            !existingOrderIds.SetEquals(inputOrderIds))
+            throw Invalid($"Bảng kê {inputBill.ValidationId} đã import trước đó nhưng danh sách đơn hàng đã thay đổi.");
     }
 
     private static bool CloseDate(DateTime? left, DateTime? right)
@@ -288,6 +390,7 @@ public class ShopeeSettlementStagingService : ITransientDependency
         AlreadySettledCount = batch.AlreadySettledCount,
         UnmatchedCount = batch.UnmatchedCount,
         ErrorCount = batch.InvalidCount,
+        WaitingPaymentCount = batch.WaitingPaymentCount,
         IsDuplicate = isDuplicate
     };
 
@@ -295,10 +398,16 @@ public class ShopeeSettlementStagingService : ITransientDependency
         new(message, code: WebHoanTienDomainErrorCodes.InvalidShopeeSettlementReport);
 
     private sealed record NormalizedBill(string SourceAffiliateId, string ValidationId, string PayoutId,
-        DateTime PaidAt, DateTime? OrderCompletedFrom, DateTime? OrderCompletedTo, decimal EligibleCommission,
+        DateTime? PaidAt, DateTime? OrderCompletedFrom, DateTime? OrderCompletedTo, decimal EligibleCommission,
         decimal AfterServiceFeeCommission, decimal PaidCommission, bool HasAuthoritativeEligibleCommission,
+        int PaymentStatus, int ValidationPayoutStatus, int? OverallValidationStatus,
+        int? BillValidationStatus, int? SettlementCycle, bool HasAdjustment, bool HasClawback,
+        bool IsCumulative, bool HasBonus, bool HasPpp,
         IReadOnlyList<NormalizedRow> Rows);
 
     private sealed record NormalizedRow(string ExternalOrderId, decimal EligibleCommission,
         decimal AllocatedServiceFee, decimal AllocatedTax, decimal ActualPaidCommission);
+
+    private sealed record UpdatedBill(ShopeeSettlementBill Entity,
+        IReadOnlyCollection<ShopeeSettlementRecord> Records, NormalizedBill Input);
 }

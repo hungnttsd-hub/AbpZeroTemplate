@@ -5,7 +5,7 @@ const os = require("os");
 const crypto = require("crypto");
 const http = require("http");
 
-const APP_VERSION = "0.7.1";
+const APP_VERSION = "0.7.3";
 const APP_DIR = __dirname;
 const CONFIG_PATH = path.join(APP_DIR, "config.json");
 const EXAMPLE_CONFIG_PATH = path.join(APP_DIR, "config.example.json");
@@ -36,7 +36,7 @@ const DEFAULT_CONFIG = {
   settingsPort: 32145
 };
 
-const SETTLEMENT_SCHEMA_VERSION = "catsback-settlement-v1";
+const SETTLEMENT_SCHEMA_VERSION = "catsback-settlement-v2";
 const SETTLEMENT_HEADERS = [
   "schema_version",
   "source_affiliate_id",
@@ -47,9 +47,14 @@ const SETTLEMENT_HEADERS = [
   "order_completed_to_utc",
   "payment_status",
   "validation_payout_status",
+  "overall_validation_status",
+  "bill_validation_status",
+  "settlement_cycle",
   "has_adjustment",
   "has_clawback",
   "is_cumulative",
+  "has_bonus",
+  "has_ppp",
   "bill_eligible_commission",
   "bill_after_service_fee",
   "bill_paid_commission",
@@ -451,12 +456,24 @@ function validateCanonicalSettlementReport(input) {
     if (!/^\d+$/.test(row.source_affiliate_id) || !/^\d+$/.test(row.validation_id)) {
       throw new Error(`Settlement row ${index + 1} has an invalid affiliate/validation id.`);
     }
-    if (!row.payout_id || !row.order_id) throw new Error(`Settlement row ${index + 1} is missing payout_id/order_id.`);
-    if (row.payment_status !== "4" || row.validation_payout_status !== "2" ||
-      row.has_adjustment !== "false" || row.has_clawback !== "false" || row.is_cumulative !== "false") {
-      throw new Error(`Settlement row ${index + 1} is not a supported paid bill.`);
+    if (!row.order_id) throw new Error(`Settlement row ${index + 1} is missing order_id.`);
+    for (const field of ["payment_status", "validation_payout_status"]) {
+      if (!/^\d+$/.test(row[field])) throw new Error(`Settlement row ${index + 1} has an invalid ${field}.`);
     }
-    for (const field of ["payment_completed_at_utc", "order_completed_from_utc", "order_completed_to_utc"]) {
+    for (const field of ["overall_validation_status", "bill_validation_status", "settlement_cycle"]) {
+      if (row[field] && !/^\d+$/.test(row[field])) {
+        throw new Error(`Settlement row ${index + 1} has an invalid ${field}.`);
+      }
+    }
+    for (const field of ["has_adjustment", "has_clawback", "is_cumulative", "has_bonus", "has_ppp"]) {
+      if (row[field] !== "true" && row[field] !== "false") {
+        throw new Error(`Settlement row ${index + 1} has an invalid ${field}.`);
+      }
+    }
+    if (row.payment_completed_at_utc && !Number.isFinite(Date.parse(row.payment_completed_at_utc))) {
+      throw new Error(`Settlement row ${index + 1} has an invalid payment_completed_at_utc.`);
+    }
+    for (const field of ["order_completed_from_utc", "order_completed_to_utc"]) {
       if (!Number.isFinite(Date.parse(row[field]))) throw new Error(`Settlement row ${index + 1} has an invalid ${field}.`);
     }
     for (const field of [
@@ -516,7 +533,9 @@ function summarizeSettlementImport(parsed, rawText) {
     const parts = [];
     const labels = [
       ["validationCount", "bảng kê"],
+      ["updatedValidationCount", "bảng kê cập nhật"],
       ["pendingApprovalCount", "chờ duyệt"],
+      ["waitingPaymentCount", "chờ Shopee thanh toán"],
       ["alreadySettledCount", "đã đối soát"],
       ["unmatchedCount", "không khớp"],
       ["errorCount", "lỗi"]
@@ -788,7 +807,7 @@ function settingsHtml(port) {
 <style>
 body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;padding:0 18px;color:#1f2937}h1{font-size:24px}h2{font-size:18px;margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb}label{display:block;font-weight:600;margin-top:16px}input{box-sizing:border-box;width:100%;margin-top:6px;padding:10px;border:1px solid #d1d5db;border-radius:8px}.row{display:flex;gap:16px}.row>div{flex:1}.check{display:flex;gap:8px;align-items:center;font-weight:400}.check input{width:auto;margin:0}button{margin-top:20px;padding:10px 16px;border:0;border-radius:8px;background:#111827;color:#fff;cursor:pointer}button.secondary{background:#e5e7eb;color:#111827;margin-left:8px}.hint{font-size:12px;color:#6b7280;margin-top:4px;line-height:1.45}.status{margin-top:16px;padding:10px 12px;background:#f3f4f6;border-radius:8px;white-space:pre-wrap}</style></head>
 <body>
-<h1>CatsBack Sync Helper Settings v0.7.1</h1>
+<h1>CatsBack Sync Helper Settings v0.7.3</h1>
 <p>Helper tu lay Bearer token ngan han bang Client ID/Client Secret. Access token chi duoc giu trong RAM va tu refresh khi het han.</p>
 <label>CatsBack API Base URL<input id="apiBaseUrl"></label>
 <div class="row"><div><label>Client ID<input id="clientId" autocomplete="off"></label></div><div><label>Client Secret<input id="clientSecret" type="password" autocomplete="new-password" placeholder="De trong de giu secret cu"></label></div></div>

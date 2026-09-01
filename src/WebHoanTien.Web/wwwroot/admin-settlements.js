@@ -100,7 +100,9 @@
         const confirmed = await window.CatsBackModal.confirm({
             variant: "info",
             title: bulk ? `Duyệt ${count} đơn đối soát?` : "Duyệt đơn đối soát?",
-            message: `Thao tác sẽ cộng tiền vào ví người dùng. Tổng hoa hồng Shopee tương ứng: ${money.format(amount)}đ.`,
+            message: amount > 0
+                ? `Thao tác sẽ cộng tiền vào ví người dùng. Tổng hoa hồng tương ứng: ${money.format(amount)}đ.`
+                : "Thao tác sẽ dùng giá trị đối soát đang hiển thị để cộng tiền vào ví người dùng.",
             cancelText: "Kiểm tra lại",
             confirmText: "Xác nhận duyệt"
         });
@@ -124,7 +126,9 @@
                 window.setTimeout(() => window.location.reload(), 700);
                 return;
             }
-            if (bulk) document.querySelectorAll('[data-settlement-record][data-status="pendingapproval"]').forEach(markApproved);
+            if (bulk) document.querySelectorAll('[data-settlement-record]').forEach(item => {
+                if (!['approved', 'alreadysettled'].includes(item.dataset.status)) markApproved(item);
+            });
             else markApproved(form.closest("[data-settlement-record]"));
             applySummary(payload.result);
             notify(payload.message);

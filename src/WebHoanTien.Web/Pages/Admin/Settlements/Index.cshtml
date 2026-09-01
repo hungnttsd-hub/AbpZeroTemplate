@@ -6,19 +6,19 @@
 
 <section class="admin-settlement-shell">
     <header class="admin-settlement-heading">
-        <div><span>CATBACK OPERATIONS</span><h1>Duyệt đối soát Shopee</h1><p>Import chỉ tạo bản ghi chờ duyệt. Ví người dùng chỉ thay đổi sau khi admin xác nhận.</p></div>
+        <div><span>CATBACK OPERATIONS</span><h1>Duyệt đối soát Shopee</h1><p>Import lưu mọi trạng thái Shopee. Admin kiểm tra dữ liệu và quyết định bản ghi nào được cộng ví.</p></div>
         <a href="/Admin/Affiliates">Quản trị affiliate</a>
     </header>
 
     <div class="admin-settlement-stats">
         <article class="pending"><span>Chờ duyệt</span><strong data-summary-pending-count>@Model.Data.Summary.PendingCount</strong><small data-summary-pending-amount data-value="@Model.Data.Summary.PendingAmount">@SettlementPageUi.Money(Model.Data.Summary.PendingAmount)</small></article>
         <article class="approved"><span>Đã duyệt</span><strong data-summary-approved-count>@Model.Data.Summary.ApprovedCount</strong><small data-summary-approved-amount data-value="@Model.Data.Summary.ApprovedAmount">@SettlementPageUi.Money(Model.Data.Summary.ApprovedAmount)</small></article>
-        <article class="issues"><span>Cần kiểm tra</span><strong>@Model.Data.Summary.IssueCount</strong><small>Không khớp hoặc sai trạng thái</small></article>
+        <article class="issues"><span>Chưa thể duyệt</span><strong>@Model.Data.Summary.IssueCount</strong><small>Chờ Shopee, không khớp hoặc sai trạng thái</small></article>
     </div>
 
     <form method="get" class="admin-settlement-filters">
         <label><span>Tìm batch</span><input asp-for="Filter" placeholder="Tên file hoặc SHA-256" /></label>
-        <label><span>Trạng thái</span><select asp-for="Status"><option value="">Tất cả</option><option value="PendingApproval">Chờ duyệt</option><option value="PartiallyApproved">Đã duyệt một phần</option><option value="Approved">Đã duyệt</option><option value="CompletedWithIssues">Có cảnh báo</option></select></label>
+        <label><span>Trạng thái</span><select asp-for="Status"><option value="">Tất cả</option><option value="WaitingForShopee">Chờ Shopee thanh toán</option><option value="PendingApproval">Chờ duyệt</option><option value="PartiallyApproved">Đã duyệt một phần</option><option value="Approved">Đã duyệt</option><option value="CompletedWithIssues">Có cảnh báo</option></select></label>
         <button type="submit">Lọc dữ liệu</button><a href="/Admin/Settlements">Xóa lọc</a>
     </form>
 
@@ -42,9 +42,11 @@
         @if (Model.Details is not null)
         {
             var batch = Model.Details.Batch;
+            var reviewableCount = batch.RecordCount - batch.ApprovedCount - batch.AlreadySettledCount;
+            var reviewableAmount = Math.Max(0m, batch.TotalPaidCommission - batch.ApprovedPaidCommission);
             <main class="admin-settlement-detail" data-settlement-batch="@batch.Id">
                 <header>
-                    <div><span>Batch @batch.Id.ToString("N")[..8]</span><h2>@batch.OriginalFileName</h2><p>@batch.BillCount validation_id · tổng Shopee trả @SettlementPageUi.Money(batch.TotalPaidCommission)</p></div>
+                    <div><span>Batch @batch.Id.ToString("N")[..8]</span><h2>@batch.OriginalFileName</h2><p>@batch.BillCount validation_id · tổng giá trị đối soát @SettlementPageUi.Money(batch.TotalPaidCommission)</p></div>
                     <div class="admin-settlement-actions">
                         @if (batch.UnmatchedCount + batch.InvalidCount > 0)
                         {
@@ -53,11 +55,11 @@
                                 <button type="submit" class="secondary">Đối chiếu lại</button>
                             </form>
                         }
-                        @if (batch.PendingCount > 0)
+                        @if (reviewableCount > 0)
                         {
-                            <form method="post" asp-page-handler="ApproveAll" data-approve-all data-count="@batch.PendingCount" data-amount="@batch.PendingPaidCommission">
+                            <form method="post" asp-page-handler="ApproveAll" data-approve-all data-count="@reviewableCount" data-amount="@reviewableAmount">
                                 @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@batch.Id" />
-                                <button type="submit">Duyệt tất cả (@batch.PendingCount)</button>
+                                <button type="submit">Duyệt tất cả (@reviewableCount)</button>
                             </form>
                         }
                     </div>
@@ -67,16 +69,46 @@
                     <span>Đã duyệt <b data-batch-approved-count>@batch.ApprovedCount</b></span>
                     <span>Không khớp <b>@batch.UnmatchedCount</b></span>
                     <span>Lỗi trạng thái <b>@batch.InvalidCount</b></span>
+                    <span>Chờ Shopee thanh toán <b>@batch.WaitingPaymentCount</b></span>
                 </div>
 
                 <div class="admin-settlement-records">
                     @foreach (var record in Model.Details.Records.Items)
                     {
+                        var productNamesTitle = string.Join(" · ", record.ProductNames);
                         <article class="admin-settlement-record" data-settlement-record="@record.Id" data-status="@record.Status.ToString().ToLowerInvariant()" data-paid="@record.ActualPaidCommission">
-                            <header><div><code>@record.ExternalOrderId</code><small>Validation @record.ValidationId · trả @SettlementPageUi.Date(record.PaidAt)</small></div><span class="admin-settlement-status @SettlementPageUi.StatusClass(record.Status)" data-record-status>@SettlementPageUi.RecordLabel(record.Status)</span></header>
-                            <dl><div><dt>Hoa hồng hợp lệ</dt><dd>@SettlementPageUi.Money(record.EligibleCommission)</dd></div><div><dt>Phí dịch vụ</dt><dd>-@SettlementPageUi.Money(record.AllocatedServiceFee)</dd></div><div><dt>Thuế</dt><dd>-@SettlementPageUi.Money(record.AllocatedTax)</dd></div><div><dt>Shopee thực trả</dt><dd>@SettlementPageUi.Money(record.ActualPaidCommission)</dd></div><div><dt>User dự kiến nhận</dt><dd>@SettlementPageUi.Money(record.ProjectedUserCommission)</dd></div></dl>
+                            <header>
+                                <div><code>@record.ExternalOrderId</code><small>Validation @record.ValidationId · @SettlementPageUi.PaymentTime(record.PaidAt)</small></div>
+                                <div class="admin-settlement-statuses">
+                                    <span class="admin-settlement-status @SettlementPageUi.StatusClass(record.Status)" data-record-status>@SettlementPageUi.RecordLabel(record.Status)</span>
+                                    <span class="admin-settlement-shopee-status @(record.IsShopeePaid ? "paid" : "waiting")">Shopee: @SettlementPageUi.ShopeePaymentLabel(record.PaymentStatus)</span>
+                                </div>
+                            </header>
+                            <div class="admin-settlement-context">
+                                <div>
+                                    <span>Tên sản phẩm</span>
+                                    @if (record.ProductNames.Count > 0)
+                                    {
+                                        <strong title="@productNamesTitle">@record.ProductNames[0]</strong>
+                                        @if (record.ProductNames.Count > 1)
+                                        {
+                                            <small>+@(record.ProductNames.Count - 1) sản phẩm khác</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <strong>Chưa có tên sản phẩm</strong>
+                                    }
+                                </div>
+                                <div>
+                                    <span>Người dùng</span>
+                                    <strong>@(record.UserEmail ?? (record.UserId.HasValue ? record.UserId.Value.ToString() : "Chưa ghép người dùng"))</strong>
+                                </div>
+                            </div>
+                            <p class="admin-settlement-provider-state">payment_status=<b>@record.PaymentStatus</b> · validation_payout_status=<b>@record.ValidationPayoutStatus</b> · overall_validation_status=<b>@SettlementPageUi.Code(record.OverallValidationStatus)</b> · bill_validation_status=<b>@SettlementPageUi.Code(record.BillValidationStatus)</b></p>
+                            <dl><div><dt>Hoa hồng hợp lệ</dt><dd>@SettlementPageUi.Money(record.EligibleCommission)</dd></div><div><dt>Phí dịch vụ</dt><dd>@SettlementPageUi.Deduction(record.AllocatedServiceFee)</dd></div><div><dt>Thuế</dt><dd>@SettlementPageUi.Deduction(record.AllocatedTax)</dd></div><div><dt>@(record.IsShopeePaid ? "Shopee thực trả" : "Giá trị đối soát")</dt><dd>@SettlementPageUi.Money(record.ActualPaidCommission)</dd></div><div><dt>User dự kiến nhận</dt><dd>@SettlementPageUi.Money(record.ProjectedUserCommission)</dd></div></dl>
                             @if (!string.IsNullOrWhiteSpace(record.Issue)) { <p class="admin-settlement-warning">@record.Issue</p> }
-                            @if (record.Status == ShopeeSettlementRecordStatus.PendingApproval)
+                            @if (record.Status is not ShopeeSettlementRecordStatus.Approved and not ShopeeSettlementRecordStatus.AlreadySettled)
                             {
                                 <form method="post" asp-page-handler="Approve" data-approve-record>
                                     @Html.AntiForgeryToken()<input type="hidden" name="recordId" value="@record.Id" />

@@ -75,8 +75,8 @@ async function runSettlementAction(action) {
   exportSettlementsBtn.disabled = true;
   importSettlementsBtn.disabled = true;
   settlementResultEl.textContent = isImport
-    ? "Đang lấy các bảng kê đã thanh toán và gửi về CatsBack..."
-    : "Đang lấy các bảng kê đã thanh toán và tổng hợp CSV...";
+    ? "Đang lấy toàn bộ bảng kê trong danh sách và gửi về CatsBack..."
+    : "Đang lấy toàn bộ bảng kê trong danh sách và tổng hợp CSV...";
 
   try {
     const result = await chrome.runtime.sendMessage({

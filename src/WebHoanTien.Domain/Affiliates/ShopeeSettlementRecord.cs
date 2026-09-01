@@ -61,6 +61,25 @@ public class ShopeeSettlementRecord : CreationAuditedAggregateRoot<Guid>
         Issue = "Đơn hàng đã được ghi nhận thanh toán trước đó.";
     }
 
+    public void SetAwaitingShopeePayment(Guid? orderId, Guid? conversionId, Guid? userId, string issue)
+    {
+        AffiliateOrderId = orderId;
+        AffiliateConversionId = conversionId;
+        UserId = userId;
+        Status = ShopeeSettlementRecordStatus.AwaitingShopeePayment;
+        Issue = issue;
+    }
+
+    public void UpdateAmounts(decimal eligibleCommission, decimal allocatedServiceFee,
+        decimal allocatedTax, decimal actualPaidCommission)
+    {
+        if (Status == ShopeeSettlementRecordStatus.Approved) return;
+        EligibleCommission = eligibleCommission;
+        AllocatedServiceFee = allocatedServiceFee;
+        AllocatedTax = allocatedTax;
+        ActualPaidCommission = actualPaidCommission;
+    }
+
     public void SetInvalid(Guid orderId, Guid conversionId, Guid? userId, string issue)
     {
         AffiliateOrderId = orderId;

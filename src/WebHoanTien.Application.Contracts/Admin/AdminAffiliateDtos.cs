@@ -164,11 +164,13 @@ public sealed class ShopeeSettlementImportResultDto
     public int ImportedRowCount { get; set; }
     public int ValidationCount { get; set; }
     public int AlreadyImportedValidationCount { get; set; }
+    public int UpdatedValidationCount { get; set; }
     public int PendingApprovalCount { get; set; }
     public int ApprovedCount { get; set; }
     public int AlreadySettledCount { get; set; }
     public int UnmatchedCount { get; set; }
     public int ErrorCount { get; set; }
+    public int WaitingPaymentCount { get; set; }
     public bool IsDuplicate { get; set; }
     public List<string> Errors { get; set; } = new();
 }

@@ -7,6 +7,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Notifications;
@@ -23,20 +24,25 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     private readonly IRepository<ShopeeSettlementBill, Guid> _bills;
     private readonly IRepository<ShopeeSettlementRecord, Guid> _records;
     private readonly IRepository<AffiliateOrder, Guid> _orders;
+    private readonly IRepository<AffiliateOrderItem, Guid> _items;
     private readonly IRepository<AffiliateConversion, Guid> _conversions;
+    private readonly IRepository<IdentityUser, Guid> _users;
     private readonly AffiliateCommissionCalculator _calculator;
     private readonly CustomerNotificationManager _notificationManager;
 
     public AdminShopeeSettlementApprovalAppService(IRepository<ShopeeSettlementBatch, Guid> batches,
         IRepository<ShopeeSettlementBill, Guid> bills, IRepository<ShopeeSettlementRecord, Guid> records,
-        IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateConversion, Guid> conversions,
+        IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
+        IRepository<AffiliateConversion, Guid> conversions, IRepository<IdentityUser, Guid> users,
         AffiliateCommissionCalculator calculator, CustomerNotificationManager notificationManager)
     {
         _batches = batches;
         _bills = bills;
         _records = records;
         _orders = orders;
+        _items = items;
         _conversions = conversions;
+        _users = users;
         _calculator = calculator;
         _notificationManager = notificationManager;
     }
@@ -64,7 +70,8 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 PendingAmount = all.Sum(batch => batch.PendingPaidCommission),
                 ApprovedCount = all.Sum(batch => batch.ApprovedCount),
                 ApprovedAmount = all.Sum(batch => batch.ApprovedPaidCommission),
-                IssueCount = all.Sum(batch => batch.UnmatchedCount + batch.AlreadySettledCount + batch.InvalidCount)
+                IssueCount = all.Sum(batch => batch.UnmatchedCount + batch.AlreadySettledCount +
+                    batch.InvalidCount + batch.WaitingPaymentCount)
             },
             Batches = new PagedResultDto<AdminShopeeSettlementBatchDto>(totalCount,
                 rows.Select(MapBatch).ToList())
@@ -88,11 +95,31 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             ? new Dictionary<Guid, AffiliateConversion>()
             : (await _conversions.GetListAsync(value => conversionIds.Contains(value.Id)))
                 .ToDictionary(value => value.Id);
+        var orderIds = rows.Where(row => row.AffiliateOrderId.HasValue)
+            .Select(row => row.AffiliateOrderId!.Value).Distinct().ToList();
+        var productNamesByOrder = orderIds.Count == 0
+            ? new Dictionary<Guid, List<string>>()
+            : (await _items.GetListAsync(item => orderIds.Contains(item.OrderId)))
+                .Where(item => !string.IsNullOrWhiteSpace(item.ProductName))
+                .GroupBy(item => item.OrderId)
+                .ToDictionary(group => group.Key, group => group
+                    .Select(item => item.ProductName!.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                    .ToList());
+        var userIds = rows.Where(row => row.UserId.HasValue)
+            .Select(row => row.UserId!.Value).Distinct().ToList();
+        var users = userIds.Count == 0
+            ? new Dictionary<Guid, IdentityUser>()
+            : (await _users.GetListAsync(user => userIds.Contains(user.Id))).ToDictionary(user => user.Id);
+        var batchDto = MapBatch(batch);
+        batchDto.TotalPaidCommission = bills.Values.Sum(EffectiveBillPaidCommission);
         return new AdminShopeeSettlementBatchDetailsDto
         {
-            Batch = MapBatch(batch),
+            Batch = batchDto,
             Records = new PagedResultDto<AdminShopeeSettlementRecordDto>(count,
-                rows.Select(row => MapRecord(row, bills[row.BillId], conversions)).ToList())
+                rows.Select(row => MapRecord(row, bills[row.BillId], conversions, productNamesByOrder, users))
+                    .ToList())
         };
     }
 
@@ -101,7 +128,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         var record = await _records.GetAsync(recordId);
         var batch = await _batches.GetAsync(record.BatchId);
-        if (record.Status != ShopeeSettlementRecordStatus.PendingApproval)
+        if (record.Status is ShopeeSettlementRecordStatus.Approved or ShopeeSettlementRecordStatus.AlreadySettled)
             return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 1);
         var bill = await _bills.GetAsync(record.BillId);
         var work = await TryPrepareAsync(record, bill);
@@ -119,24 +146,25 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     public async Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId)
     {
         var batch = await _batches.GetAsync(batchId);
-        var pending = await _records.GetListAsync(record => record.BatchId == batchId &&
-            record.Status == ShopeeSettlementRecordStatus.PendingApproval);
-        if (pending.Count == 0)
+        var candidates = await _records.GetListAsync(record => record.BatchId == batchId &&
+            record.Status != ShopeeSettlementRecordStatus.Approved &&
+            record.Status != ShopeeSettlementRecordStatus.AlreadySettled);
+        if (candidates.Count == 0)
             return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 0);
-        var billIds = pending.Select(record => record.BillId).Distinct().ToList();
+        var billIds = candidates.Select(record => record.BillId).Distinct().ToList();
         var bills = (await _bills.GetListAsync(bill => billIds.Contains(bill.Id))).ToDictionary(bill => bill.Id);
-        var preparation = await PrepareManyAsync(pending, bills);
+        var preparation = await PrepareManyAsync(candidates, bills);
         var adminId = CurrentUser.Id ??
             throw new AbpAuthorizationException("Không xác định được admin duyệt đối soát.");
         foreach (var item in preparation.Work)
         {
             item.Order.Settle(item.Record.ActualPaidCommission, item.UserCommission,
-                item.Bill.PayoutId, item.Bill.PaidAt);
+                SettlementReference(item.Bill), SettlementTime(item.Bill));
             item.Record.Approve(adminId, Clock.Now, item.UserCommission);
         }
         await _orders.UpdateManyAsync(preparation.Work.Select(item => item.Order).DistinctBy(order => order.Id),
             autoSave: false);
-        await _records.UpdateManyAsync(pending, autoSave: false);
+        await _records.UpdateManyAsync(candidates, autoSave: false);
         await _notificationManager.NotifySettledOrdersAsync(preparation.Work
             .Where(item => item.Conversion.UserId.HasValue)
             .Select(item => (item.Conversion.UserId!.Value, item.Order)));
@@ -156,13 +184,19 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             .Select(record => record.AffiliateOrderId!.Value).Distinct().ToList();
         var orderRows = new List<AffiliateOrder>();
         foreach (var chunk in orderIds.Chunk(500))
-            orderRows.AddRange(await _orders.GetListAsync(order => chunk.Contains(order.Id)));
+        {
+            var chunkIds = chunk.ToList();
+            orderRows.AddRange(await _orders.GetListAsync(order => chunkIds.Contains(order.Id)));
+        }
         var orders = orderRows.ToDictionary(order => order.Id);
         var conversionIds = records.Where(record => record.AffiliateConversionId.HasValue)
             .Select(record => record.AffiliateConversionId!.Value).Distinct().ToList();
         var conversionRows = new List<AffiliateConversion>();
         foreach (var chunk in conversionIds.Chunk(500))
-            conversionRows.AddRange(await _conversions.GetListAsync(conversion => chunk.Contains(conversion.Id)));
+        {
+            var chunkIds = chunk.ToList();
+            conversionRows.AddRange(await _conversions.GetListAsync(conversion => chunkIds.Contains(conversion.Id)));
+        }
         var conversions = conversionRows.ToDictionary(conversion => conversion.Id);
 
         var work = new List<ApprovalWork>(records.Count);
@@ -211,6 +245,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 continue;
             }
             var bill = bills[record.BillId];
+            NormalizePendingAmounts(record, bill);
             if (bill.HasAuthoritativeEligibleCommission &&
                 !CloseMoney(record.EligibleCommission, order.NetCommission))
             {
@@ -247,11 +282,17 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 .Distinct(StringComparer.Ordinal).ToList();
             var orders = new List<AffiliateOrder>();
             foreach (var chunk in externalOrderIds.Chunk(500))
-                orders.AddRange(await _orders.GetListAsync(order => chunk.Contains(order.ExternalOrderId)));
+            {
+                var chunkIds = chunk.ToList();
+                orders.AddRange(await _orders.GetListAsync(order => chunkIds.Contains(order.ExternalOrderId)));
+            }
             var conversionIds = orders.Select(order => order.ConversionId).Distinct().ToList();
             var conversionRows = new List<AffiliateConversion>();
             foreach (var chunk in conversionIds.Chunk(500))
-                conversionRows.AddRange(await _conversions.GetListAsync(conversion => chunk.Contains(conversion.Id)));
+            {
+                var chunkIds = chunk.ToList();
+                conversionRows.AddRange(await _conversions.GetListAsync(conversion => chunkIds.Contains(conversion.Id)));
+            }
             var conversions = conversionRows.Where(conversion => conversion.Platform == AffiliatePlatform.Shopee)
                 .ToDictionary(conversion => conversion.Id);
             var ordersByExternalId = orders.Where(order => conversions.ContainsKey(order.ConversionId))
@@ -310,7 +351,8 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
 
     private async Task<ApprovalWork?> TryPrepareAsync(ShopeeSettlementRecord record, ShopeeSettlementBill bill)
     {
-        if (record.Status != ShopeeSettlementRecordStatus.PendingApproval) return null;
+        if (record.Status is ShopeeSettlementRecordStatus.Approved or ShopeeSettlementRecordStatus.AlreadySettled)
+            return null;
         if (!record.AffiliateOrderId.HasValue || !record.AffiliateConversionId.HasValue)
             return await MarkInvalidAsync(record, "Bản ghi không còn liên kết đầy đủ với đơn hàng CatsBack.");
 
@@ -339,6 +381,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         if (order.Status != AffiliateOrderStatus.Completed)
             return await MarkInvalidAsync(record,
                 $"Đơn hàng đang ở trạng thái {order.Status}, không còn đủ điều kiện duyệt.");
+        NormalizePendingAmounts(record, bill);
         if (bill.HasAuthoritativeEligibleCommission &&
             !CloseMoney(record.EligibleCommission, order.NetCommission))
             return await MarkInvalidAsync(record,
@@ -389,7 +432,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         var adminId = CurrentUser.Id ?? throw new AbpAuthorizationException("Không xác định được admin duyệt đối soát.");
         work.Order.Settle(work.Record.ActualPaidCommission, work.UserCommission,
-            work.Bill.PayoutId, work.Bill.PaidAt);
+            SettlementReference(work.Bill), SettlementTime(work.Bill));
         work.Record.Approve(adminId, Clock.Now, work.UserCommission);
         await _orders.UpdateAsync(work.Order, autoSave: false);
         await _records.UpdateAsync(work.Record, autoSave: false);
@@ -406,6 +449,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             rows.Count(record => record.Status == ShopeeSettlementRecordStatus.Unmatched),
             rows.Count(record => record.Status == ShopeeSettlementRecordStatus.AlreadySettled),
             rows.Count(record => record.Status == ShopeeSettlementRecordStatus.Invalid),
+            rows.Count(record => record.Status == ShopeeSettlementRecordStatus.AwaitingShopeePayment),
             rows.Sum(record => record.EligibleCommission), rows.Sum(record => record.ActualPaidCommission),
             rows.Where(record => record.Status == ShopeeSettlementRecordStatus.PendingApproval)
                 .Sum(record => record.ActualPaidCommission),
@@ -426,12 +470,16 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     });
 
     private AdminShopeeSettlementRecordDto MapRecord(ShopeeSettlementRecord record, ShopeeSettlementBill bill,
-        IReadOnlyDictionary<Guid, AffiliateConversion> conversions)
+        IReadOnlyDictionary<Guid, AffiliateConversion> conversions,
+        IReadOnlyDictionary<Guid, List<string>> productNamesByOrder,
+        IReadOnlyDictionary<Guid, IdentityUser> users)
     {
         var projected = record.ApprovedUserCommission;
-        if (record.Status == ShopeeSettlementRecordStatus.PendingApproval && record.AffiliateConversionId.HasValue &&
+        var allocatedTax = EffectiveAllocatedTax(record, bill);
+        var actualPaidCommission = EffectivePaidCommission(record, bill);
+        if (record.Status != ShopeeSettlementRecordStatus.Approved && record.AffiliateConversionId.HasValue &&
             conversions.TryGetValue(record.AffiliateConversionId.Value, out var conversion))
-            projected = _calculator.CalculateUserCommission(record.ActualPaidCommission, conversion.UserShareRate);
+            projected = _calculator.CalculateUserCommission(actualPaidCommission, conversion.UserShareRate);
         return new AdminShopeeSettlementRecordDto
         {
             Id = record.Id,
@@ -442,16 +490,34 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             ValidationId = bill.ValidationId,
             PayoutId = bill.PayoutId,
             PaidAt = bill.PaidAt,
+            PaymentStatus = bill.PaymentStatus,
+            ValidationPayoutStatus = bill.ValidationPayoutStatus,
+            OverallValidationStatus = bill.OverallValidationStatus,
+            BillValidationStatus = bill.BillValidationStatus,
+            SettlementCycle = bill.SettlementCycle,
+            IsShopeePaid = bill.IsShopeePaid,
+            HasAdjustment = bill.HasAdjustment,
+            HasClawback = bill.HasClawback,
+            IsCumulative = bill.IsCumulative,
+            HasBonus = bill.HasBonus,
+            HasPpp = bill.HasPpp,
             ExternalOrderId = record.ExternalOrderId,
             EligibleCommission = record.EligibleCommission,
             AllocatedServiceFee = record.AllocatedServiceFee,
-            AllocatedTax = record.AllocatedTax,
-            ActualPaidCommission = record.ActualPaidCommission,
+            AllocatedTax = allocatedTax,
+            ActualPaidCommission = actualPaidCommission,
             ProjectedUserCommission = projected,
             ApprovedUserCommission = record.ApprovedUserCommission,
             Status = record.Status,
             AffiliateOrderId = record.AffiliateOrderId,
             UserId = record.UserId,
+            ProductNames = record.AffiliateOrderId.HasValue &&
+                productNamesByOrder.TryGetValue(record.AffiliateOrderId.Value, out var productNames)
+                    ? productNames
+                    : new List<string>(),
+            UserEmail = record.UserId.HasValue && users.TryGetValue(record.UserId.Value, out var user)
+                ? user.Email ?? user.UserName
+                : null,
             ApprovedAt = record.ApprovedAt,
             Issue = record.Issue
         };
@@ -472,6 +538,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         UnmatchedCount = batch.UnmatchedCount,
         AlreadySettledCount = batch.AlreadySettledCount,
         InvalidCount = batch.InvalidCount,
+        WaitingPaymentCount = batch.WaitingPaymentCount,
         TotalEligibleCommission = batch.TotalEligibleCommission,
         TotalPaidCommission = batch.TotalPaidCommission,
         PendingPaidCommission = batch.PendingPaidCommission,
@@ -482,4 +549,33 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         AffiliateOrder Order, AffiliateConversion Conversion, decimal UserCommission);
 
     private sealed record BulkApprovalPreparation(List<ApprovalWork> Work, int SkippedCount);
+
+    private DateTime SettlementTime(ShopeeSettlementBill bill) => bill.PaidAt ?? Clock.Now;
+
+    private static string SettlementReference(ShopeeSettlementBill bill) =>
+        string.IsNullOrWhiteSpace(bill.PayoutId) ? $"validation:{bill.ValidationId}" : bill.PayoutId;
+
+    private static decimal EffectiveAllocatedTax(ShopeeSettlementRecord record, ShopeeSettlementBill bill) =>
+        HasLegacyPendingTaxMapping(record, bill) ? 0m : record.AllocatedTax;
+
+    private static decimal EffectivePaidCommission(ShopeeSettlementRecord record, ShopeeSettlementBill bill) =>
+        HasLegacyPendingTaxMapping(record, bill)
+            ? Math.Max(0m, record.EligibleCommission - record.AllocatedServiceFee)
+            : record.ActualPaidCommission;
+
+    private static decimal EffectiveBillPaidCommission(ShopeeSettlementBill bill) =>
+        !bill.IsShopeePaid && bill.PaidCommission == 0m
+            ? bill.AfterServiceFeeCommission
+            : bill.PaidCommission;
+
+    private static void NormalizePendingAmounts(ShopeeSettlementRecord record, ShopeeSettlementBill bill)
+    {
+        if (!HasLegacyPendingTaxMapping(record, bill)) return;
+        record.UpdateAmounts(record.EligibleCommission, record.AllocatedServiceFee, 0m,
+            Math.Max(0m, record.EligibleCommission - record.AllocatedServiceFee));
+    }
+
+    private static bool HasLegacyPendingTaxMapping(ShopeeSettlementRecord record, ShopeeSettlementBill bill) =>
+        !bill.IsShopeePaid && bill.PaidCommission == 0m &&
+        record.ActualPaidCommission == 0m && record.AllocatedTax > 0m;
 }

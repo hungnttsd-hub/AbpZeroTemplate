@@ -89,7 +89,8 @@ public enum ShopeeSettlementBatchStatus
     PendingApproval = 1,
     PartiallyApproved = 2,
     Approved = 3,
-    CompletedWithIssues = 4
+    CompletedWithIssues = 4,
+    WaitingForShopee = 5
 }
 
 public enum ShopeeSettlementRecordStatus
@@ -98,5 +99,6 @@ public enum ShopeeSettlementRecordStatus
     Approved = 2,
     Unmatched = 3,
     AlreadySettled = 4,
-    Invalid = 5
+    Invalid = 5,
+    AwaitingShopeePayment = 6
 }

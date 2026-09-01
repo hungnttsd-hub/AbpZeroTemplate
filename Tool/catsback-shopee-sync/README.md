@@ -1,4 +1,4 @@
-# CatsBack Shopee Sync v0.7.1
+# CatsBack Shopee Sync v0.7.3
 
 Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 
@@ -6,18 +6,18 @@ Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 
 Popup có hai thao tác:
 
-- **Tổng hợp file**: mở tab `https://affiliate.shopee.vn/payment/billing` ở nền, lấy các bảng kê đã thanh toán, tổng hợp một CSV chuẩn và lưu vào `Downloads\\CatsBackSettlements`.
+- **Tổng hợp file**: mở tab `https://affiliate.shopee.vn/payment/billing` ở nền, lấy toàn bộ bảng kê trong response danh sách hiện tại, tổng hợp một CSV chuẩn và lưu vào `Downloads\\CatsBackSettlements`.
 - **Import đối soát**: thực hiện cùng bước tổng hợp, lưu CSV cục bộ rồi upload đến CatsBack. Dữ liệu chỉ được đưa vào hàng chờ duyệt của admin; helper không cộng ví.
 
-Extension không mở trang chi tiết của từng `validation_id`. API Shopee được gọi trong MAIN world của đúng tab billing để dùng phiên đăng nhập hiện tại:
+Extension không mở trang chi tiết của từng `validation_id`. Extension mở/reload trang Billing và bắt response `billing_list` do chính trang Shopee phát ra; nó không tự tạo thêm request `billing_list`. Các API chi tiết vẫn được gọi trong MAIN world của đúng tab billing để dùng phiên đăng nhập hiện tại:
 
-1. `GET /api/v3/payment/billing_list`
+1. Bắt response `GET /api/v3/payment/billing_list` của trang Billing
 2. `GET /api/v3/payment/billing_detail?validation_id=...`
 3. `GET /api/v3/report/validation_detail/v2?...`
 
-Chỉ bảng kê thỏa đồng thời `payment_status=4`, `validation_payout_status=2`, có `payout_id` và `payment_completed_time` mới được lấy. Bảng kê có điều chỉnh, truy thu, bonus settlement, PPP hoặc thanh toán cộng dồn bị chặn. Tool phân bổ phí dịch vụ và thuế độc lập trong từng `validation_id`, không gộp chéo bảng kê.
+Mọi `validation_id` trong response `billing_list` đều được tổng hợp, không lọc theo trạng thái thanh toán. CSV giữ nguyên `payment_status`, `validation_payout_status`, trạng thái validation và các cờ điều chỉnh. Website hiển thị trạng thái Shopee để admin tự quyết định duyệt cộng ví; trạng thái nhà cung cấp không tự động ẩn nút duyệt.
 
-CSV dùng schema `catsback-settlement-v1`. `validation_id`, `payout_id` và mã đơn luôn được giữ dưới dạng chuỗi.
+CSV dùng schema `catsback-settlement-v2`. `validation_id`, `payout_id` và mã đơn luôn được giữ dưới dạng chuỗi. Website vẫn đọc được file v1 cũ.
 
 ## Cài Local Helper
 

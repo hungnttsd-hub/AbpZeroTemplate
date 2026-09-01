@@ -77,7 +77,7 @@ public class IndexModel : PageModel
     {
         if (SettlementReport is null || SettlementReport.Length == 0)
         {
-            TempData["SettlementMessage"] = "Chọn bảng kê Shopee đã thanh toán trước khi import.";
+            TempData["SettlementMessage"] = "Chọn file tổng hợp bảng kê Shopee trước khi import.";
             return RedirectToPage();
         }
 
@@ -85,7 +85,9 @@ public class IndexModel : PageModel
         var result = await _settlementImports.ImportAsync(stream, SettlementReport.FileName);
         TempData["SettlementMessage"] = result.IsDuplicate
             ? "File hoặc bảng kê này đã được import trước đó."
-            : $"Đã tạo batch chờ duyệt: {result.PendingApprovalCount} dòng có thể duyệt, {result.UnmatchedCount} không khớp, {result.AlreadySettledCount} đã ghi nhận, {result.ErrorCount} cần kiểm tra.";
+            : $"Đã xử lý bảng kê: {result.PendingApprovalCount} dòng có thể duyệt, " +
+              $"{result.WaitingPaymentCount} đang chờ Shopee thanh toán, {result.UpdatedValidationCount} bảng kê được cập nhật, " +
+              $"{result.UnmatchedCount} không khớp, {result.AlreadySettledCount} đã ghi nhận, {result.ErrorCount} cần kiểm tra.";
         return RedirectToPage();
     }
 

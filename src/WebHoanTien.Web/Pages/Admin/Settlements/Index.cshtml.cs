@@ -57,7 +57,9 @@ public class IndexModel : PageModel
             return new JsonResult(new
             {
                 success = true,
-                message = result.ApprovedCount > 0 ? "Đã duyệt đối soát và cộng tiền vào ví." : "Bản ghi đã được xử lý trước đó.",
+                message = result.ApprovedCount > 0
+                    ? "Đã duyệt đối soát và cộng tiền vào ví."
+                    : "Bản ghi chưa đủ dữ liệu để cộng ví hoặc đã được xử lý trước đó.",
                 result
             });
         }
@@ -133,7 +135,18 @@ public class IndexModel : PageModel
 public static class SettlementPageUi
 {
     public static string Money(decimal value) => $"{value:N0}đ";
+    public static string Deduction(decimal value) => value == 0m ? Money(0m) : $"-{Money(value)}";
     public static string Date(DateTime value) => value.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+    public static string PaymentTime(DateTime? value) => value.HasValue
+        ? $"Shopee trả {Date(value.Value)}"
+        : "Shopee chưa ghi nhận thời gian thanh toán";
+    public static string Code(int? value) => value?.ToString() ?? "-";
+    public static string ShopeePaymentLabel(int status) => status switch
+    {
+        4 => "Đã thanh toán (4)",
+        8 => "Chờ thanh toán (8)",
+        _ => $"Mã trạng thái {status}"
+    };
 
     public static string BatchLabel(ShopeeSettlementBatchStatus status) => status switch
     {
@@ -141,6 +154,7 @@ public static class SettlementPageUi
         ShopeeSettlementBatchStatus.PartiallyApproved => "Đã duyệt một phần",
         ShopeeSettlementBatchStatus.Approved => "Đã duyệt",
         ShopeeSettlementBatchStatus.CompletedWithIssues => "Hoàn tất có cảnh báo",
+        ShopeeSettlementBatchStatus.WaitingForShopee => "Chờ Shopee thanh toán",
         _ => status.ToString()
     };
 
@@ -151,6 +165,7 @@ public static class SettlementPageUi
         ShopeeSettlementRecordStatus.Unmatched => "Không khớp",
         ShopeeSettlementRecordStatus.AlreadySettled => "Đã ghi nhận trước",
         ShopeeSettlementRecordStatus.Invalid => "Chưa hợp lệ",
+        ShopeeSettlementRecordStatus.AwaitingShopeePayment => "Chờ Shopee thanh toán",
         _ => status.ToString()
     };
 
