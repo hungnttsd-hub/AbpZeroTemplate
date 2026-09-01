@@ -1,9 +1,21 @@
+@using Microsoft.AspNetCore.Authorization
+@using Volo.Abp.Identity
+@using Volo.Abp.Users
 @using WebHoanTien.Notifications
+@using WebHoanTien.Permissions
+@inject IAuthorizationService AuthorizationService
+@inject ICurrentUser CurrentUser
 @inject ICustomerNotificationAppService CustomerNotifications
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
-    var userName = User.Identity?.Name?.Trim();
-    var displayedUserName = string.IsNullOrWhiteSpace(userName) ? "Tài khoản" : userName;
+    var userName = CurrentUser.UserName?.Trim() ?? User.Identity?.Name?.Trim();
+    var displayedUserName = CurrentUser.Name?.Trim();
+
+    if (string.IsNullOrWhiteSpace(displayedUserName))
+    {
+        displayedUserName = string.IsNullOrWhiteSpace(userName) ? "Tài khoản" : userName;
+    }
+
     var emailSeparatorIndex = displayedUserName.IndexOf('@');
 
     if (emailSeparatorIndex > 0)
@@ -12,13 +24,64 @@
     }
 
     var userInitial = displayedUserName[..1].ToUpperInvariant();
+    var displayedUserEmail = userName?.Contains('@') == true
+        ? userName
+        : CurrentUser.Email?.Trim();
+
     var currentPath = Context.Request.Path.Value ?? string.Empty;
     var isHomeActive = currentPath == "/" || currentPath.Equals("/Index", StringComparison.OrdinalIgnoreCase);
+    var isLinksActive = currentPath.StartsWith("/Links", StringComparison.OrdinalIgnoreCase) ||
+                        currentPath.StartsWith("/LinkResult", StringComparison.OrdinalIgnoreCase);
     var isOrdersActive = currentPath.StartsWith("/Orders", StringComparison.OrdinalIgnoreCase);
     var isWalletActive = currentPath.StartsWith("/Wallet", StringComparison.OrdinalIgnoreCase);
+    var isWalletOverviewActive = currentPath.Equals("/Wallet", StringComparison.OrdinalIgnoreCase) ||
+                                 currentPath.Equals("/Wallet/Index", StringComparison.OrdinalIgnoreCase);
+    var isWithdrawActive = currentPath.StartsWith("/Wallet/Withdraw", StringComparison.OrdinalIgnoreCase);
+    var isWalletHistoryActive = currentPath.StartsWith("/Wallet/History", StringComparison.OrdinalIgnoreCase);
+    var isNotificationsActive = currentPath.StartsWith("/Notifications", StringComparison.OrdinalIgnoreCase);
+    var isGuideActive = currentPath.StartsWith("/huong-dan", StringComparison.OrdinalIgnoreCase) ||
+                        currentPath.StartsWith("/Guide", StringComparison.OrdinalIgnoreCase);
     var isAccountActive = currentPath.StartsWith("/Account", StringComparison.OrdinalIgnoreCase);
     var bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
     var unreadNotificationCount = isAuthenticated ? await CustomerNotifications.GetUnreadCountAsync() : 0;
+
+    var hasAdminRole = isAuthenticated && User.IsInRole("admin");
+    var hasAdminDefaultPermission = hasAdminRole &&
+                                    (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Default)).Succeeded;
+    var hasAdminOrdersPermission = hasAdminRole &&
+                                   (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Orders)).Succeeded;
+    var hasAdminSettingsPermission = hasAdminRole &&
+                                     (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Settings)).Succeeded;
+    var hasAdminCommissionRulesPermission = hasAdminRole &&
+                                            (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.CommissionRules)).Succeeded;
+    var canManageAffiliates = hasAdminDefaultPermission && hasAdminOrdersPermission &&
+                              hasAdminSettingsPermission && hasAdminCommissionRulesPermission;
+    var canManageSettlements = hasAdminOrdersPermission;
+    var canManagePayouts = hasAdminRole &&
+                           (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Payouts)).Succeeded;
+    var canManageNotifications = hasAdminRole &&
+                                 (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Notifications)).Succeeded;
+    var canManageSettings = hasAdminSettingsPermission;
+    var canManageUsers = hasAdminRole &&
+                         (await AuthorizationService.AuthorizeAsync(User, IdentityPermissions.Users.Default)).Succeeded;
+    var canManageRoles = hasAdminRole &&
+                         (await AuthorizationService.AuthorizeAsync(User, IdentityPermissions.Roles.Default)).Succeeded;
+    var hasAdminNavigation = canManageAffiliates || canManageSettlements || canManagePayouts ||
+                             canManageNotifications || canManageSettings || canManageUsers || canManageRoles || hasAdminRole;
+
+    var customerNavigationItems = new[]
+    {
+        (Url: "/", Label: "Trang chủ", Icon: "fa-solid fa-house", IsActive: isHomeActive, ShowBadge: false),
+        (Url: "/#link-form", Label: "Tạo link hoàn tiền", Icon: "fa-solid fa-link", IsActive: false, ShowBadge: false),
+        (Url: "/Links", Label: "Link đã tạo", Icon: "fa-solid fa-clock-rotate-left", IsActive: isLinksActive, ShowBadge: false),
+        (Url: "/Orders", Label: "Đơn hàng", Icon: "fa-solid fa-bag-shopping", IsActive: isOrdersActive, ShowBadge: false),
+        (Url: "/Wallet", Label: "Ví tiền", Icon: "fa-solid fa-wallet", IsActive: isWalletOverviewActive, ShowBadge: false),
+        (Url: "/Wallet/Withdraw", Label: "Rút tiền", Icon: "fa-solid fa-money-bill-transfer", IsActive: isWithdrawActive, ShowBadge: false),
+        (Url: "/Wallet/History", Label: "Lịch sử ví", Icon: "fa-solid fa-file-lines", IsActive: isWalletHistoryActive, ShowBadge: false),
+        (Url: "/Notifications", Label: "Thông báo", Icon: "fa-regular fa-bell", IsActive: isNotificationsActive, ShowBadge: true),
+        (Url: "/huong-dan", Label: "Hướng dẫn", Icon: "fa-regular fa-circle-question", IsActive: isGuideActive, ShowBadge: false),
+        (Url: "/Account/Profile", Label: "Tài khoản & cài đặt", Icon: "fa-regular fa-user", IsActive: isAccountActive, ShowBadge: false)
+    };
 }
 <!doctype html>
 <html lang="vi">
@@ -42,6 +105,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/libs/@@fortawesome/fontawesome-free/css/all.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/customer.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/customer-dashboard.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/account.css" asp-append-version="true" data-turbo-track="reload" />
@@ -90,7 +154,10 @@
         }
         @if (isAuthenticated)
         {
-            <a class="header-avatar @(isAccountActive ? "is-active" : null)" href="/Account/Profile" title="Tài khoản: @displayedUserName" aria-label="Mở thông tin tài khoản của @displayedUserName">@userInitial</a>
+            <button class="header-avatar @(isAccountActive ? "is-active" : null)" type="button"
+                    title="Tài khoản: @displayedUserName" aria-label="Mở menu tài khoản của @displayedUserName"
+                    aria-haspopup="dialog" aria-controls="account-navigation-drawer" aria-expanded="false"
+                    data-account-navigation-open>@userInitial</button>
         }
         else
         {
@@ -98,6 +165,122 @@
         }
     </div>
 </header>
+@if (isAuthenticated)
+{
+    <div class="account-navigation-overlay" data-account-navigation-overlay hidden aria-hidden="true">
+        <aside class="account-navigation-drawer" id="account-navigation-drawer" role="dialog" aria-modal="true"
+               aria-labelledby="account-navigation-title" tabindex="-1">
+            <header class="account-navigation-header">
+                <a class="account-navigation-profile" href="/Account/Profile" data-account-navigation-link>
+                    <span class="account-navigation-avatar" aria-hidden="true">@userInitial</span>
+                    <span class="account-navigation-identity">
+                        <strong id="account-navigation-title">@displayedUserName</strong>
+                        @if (!string.IsNullOrWhiteSpace(displayedUserEmail))
+                        {
+                            <small>@displayedUserEmail</small>
+                        }
+                    </span>
+                </a>
+                <a class="account-navigation-action" href="/Notifications" aria-label="Mở thông báo"
+                   data-account-navigation-link>
+                    <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                    <span class="account-navigation-action-badge" data-notification-badge
+                          hidden="@(unreadNotificationCount == 0)">@(unreadNotificationCount > 99 ? "99+" : unreadNotificationCount)</span>
+                </a>
+                <button class="account-navigation-action account-navigation-close" type="button" aria-label="Đóng menu tài khoản"
+                        data-account-navigation-close>
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="account-navigation-scroll">
+                <nav class="account-navigation-list" aria-label="Tính năng tài khoản">
+                    @foreach (var item in customerNavigationItems)
+                    {
+                        <a class="account-navigation-item @(item.IsActive ? "is-active" : null)" href="@item.Url"
+                           aria-current="@(item.IsActive ? "page" : null)" data-account-navigation-link>
+                            <span class="account-navigation-icon" aria-hidden="true"><i class="@item.Icon"></i></span>
+                            <span class="account-navigation-label">@item.Label</span>
+                            @if (item.ShowBadge)
+                            {
+                                <span class="account-navigation-badge" data-notification-badge
+                                      hidden="@(unreadNotificationCount == 0)">
+                                    @(unreadNotificationCount > 99 ? "99+" : unreadNotificationCount)
+                                </span>
+                            }
+                            <i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                        </a>
+                    }
+                </nav>
+
+                @if (hasAdminNavigation)
+                {
+                    <section class="account-navigation-admin" aria-labelledby="account-navigation-admin-title">
+                        <h2 id="account-navigation-admin-title"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Quản trị</h2>
+                        <nav class="account-navigation-list" aria-label="Tính năng quản trị">
+                            @if (canManageAffiliates)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Affiliates", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Affiliates" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span><span class="account-navigation-label">Quản trị hoàn tiền</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManageSettlements)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Settlements", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Settlements" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-file-invoice-dollar"></i></span><span class="account-navigation-label">Duyệt đối soát Shopee</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManagePayouts)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Payouts", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Payouts" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-money-check-dollar"></i></span><span class="account-navigation-label">Duyệt yêu cầu rút tiền</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManageNotifications)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Notifications", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Notifications" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-bullhorn"></i></span><span class="account-navigation-label">Quản lý thông báo</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManageSettings)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Settings", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Settings" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-envelope-open-text"></i></span><span class="account-navigation-label">Cấu hình email</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManageUsers)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Identity/Users", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Identity/Users" data-turbo="false">
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span><span class="account-navigation-label">Quản lý người dùng</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManageRoles)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Identity/Roles", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Identity/Roles" data-turbo="false">
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-user-lock"></i></span><span class="account-navigation-label">Quản lý vai trò</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (hasAdminRole)
+                            {
+                                <a class="account-navigation-item" href="/hangfire" data-turbo="false">
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span><span class="account-navigation-label">Tác vụ nền</span><i class="fa-solid fa-arrow-up-right-from-square account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                        </nav>
+                    </section>
+                }
+            </div>
+
+            <footer class="account-navigation-footer">
+                <a class="account-navigation-logout" href="@Url.Page("/Account/Logout", new { returnUrl = "/" })" data-turbo="false">
+                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
+                    <span>Đăng xuất</span>
+                </a>
+                <p><a href="/Legal/Terms" data-account-navigation-link>Điều khoản</a><span aria-hidden="true">•</span><a href="/Legal/Privacy" data-account-navigation-link>Quyền riêng tư</a></p>
+            </footer>
+        </aside>
+    </div>
+}
 <main id="main-content" tabindex="-1">@RenderBody()</main>
 @if (isAuthenticated)
 {

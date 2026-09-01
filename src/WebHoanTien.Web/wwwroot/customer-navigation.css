@@ -161,3 +161,319 @@
 @media (prefers-reduced-motion: reduce) {
   .header-actions .install-app-button:not([hidden]) { animation: none; }
 }
+
+.header-avatar {
+  padding: 0;
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+body.account-navigation-open { overflow: hidden; }
+
+.account-navigation-overlay {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 18px max(18px, calc((100vw - 1180px) / 2));
+  background: rgba(3, 30, 69, .58);
+  opacity: 0;
+  backdrop-filter: blur(5px);
+  transition: opacity .22s ease;
+}
+
+.account-navigation-overlay[hidden] { display: none; }
+.account-navigation-overlay.is-open { opacity: 1; }
+
+.account-navigation-drawer {
+  width: min(100%, 470px);
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid rgba(190, 211, 215, .92);
+  border-radius: 32px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(3, 30, 69, .32);
+  color: var(--catback-navy, #031e45);
+  opacity: 0;
+  outline: none;
+  transform: translateY(-14px) scale(.985);
+  transform-origin: top right;
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.account-navigation-overlay.is-open .account-navigation-drawer {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.account-navigation-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px 42px;
+  gap: 10px;
+  align-items: center;
+  padding: 24px 22px 20px;
+  border-bottom: 1px solid #e3ecee;
+}
+
+.account-navigation-profile {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+  border-radius: 18px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.account-navigation-profile:focus-visible,
+.account-navigation-profile:hover { color: var(--catback-teal, #068e94); }
+
+.account-navigation-avatar {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  place-items: center;
+  border: 3px solid #e2f4f3;
+  border-radius: 50%;
+  background: var(--catback-teal, #068e94);
+  box-shadow: 0 8px 20px rgba(6, 142, 148, .2);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.account-navigation-identity {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.account-navigation-identity strong,
+.account-navigation-identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-navigation-identity strong { font-size: 17px; font-weight: 800; line-height: 1.35; }
+.account-navigation-identity small { color: var(--catback-muted, #57606c); font-size: 12px; line-height: 1.45; }
+
+.account-navigation-action {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #d9e7e9;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--catback-navy, #031e45);
+  font: inherit;
+  font-size: 18px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.account-navigation-action:hover,
+.account-navigation-action:focus-visible {
+  border-color: #8bc8ca;
+  background: #edf8f8;
+  color: var(--catback-teal, #068e94);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.account-navigation-action-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  min-width: 19px;
+  height: 19px;
+  place-items: center;
+  padding: 0 5px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #e04162;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.account-navigation-action-badge[hidden] { display: none; }
+
+.account-navigation-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 18px 14px;
+  scrollbar-color: #b8d3d6 transparent;
+  scrollbar-width: thin;
+}
+
+.account-navigation-list { display: grid; }
+
+.account-navigation-item {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 13px;
+  padding: 9px 10px;
+  border-bottom: 1px solid #e8eff0;
+  border-radius: 14px;
+  color: var(--catback-navy, #031e45);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.account-navigation-item:last-child { border-bottom-color: transparent; }
+.account-navigation-item:hover,
+.account-navigation-item:focus-visible,
+.account-navigation-item.is-active {
+  background: #edf8f8;
+  color: var(--catback-teal, #068e94);
+  outline: none;
+  transform: translateX(2px);
+}
+
+.account-navigation-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border-radius: 12px;
+  background: #e6f5f5;
+  color: var(--catback-teal, #068e94);
+  font-size: 16px;
+}
+
+.account-navigation-item.is-active .account-navigation-icon {
+  background: var(--catback-teal, #068e94);
+  color: #fff;
+}
+
+.account-navigation-label { min-width: 0; flex: 1 1 auto; }
+.account-navigation-chevron { flex: 0 0 auto; color: #93a3ab; font-size: 11px; }
+
+.account-navigation-badge {
+  display: inline-grid;
+  min-width: 23px;
+  height: 23px;
+  place-items: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #e04162;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.account-navigation-badge[hidden] { display: none; }
+
+.account-navigation-admin {
+  margin-top: 14px;
+  padding-top: 16px;
+  border-top: 1px solid #dce8ea;
+}
+
+.account-navigation-admin h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 8px 7px;
+  color: var(--catback-blue-teal, #075b81);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .11em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.account-navigation-footer {
+  padding: 13px 18px 16px;
+  border-top: 1px solid #dce8ea;
+  background: #fbfdfd;
+}
+
+.account-navigation-logout {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 13px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  color: var(--catback-navy, #031e45);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.account-navigation-logout:hover,
+.account-navigation-logout:focus-visible { background: #edf8f8; color: var(--catback-teal, #068e94); outline: none; }
+
+.account-navigation-footer p {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  margin: 7px 0 0;
+  color: #78868e;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.account-navigation-footer p a { text-decoration: none; }
+.account-navigation-footer p a:hover { color: var(--catback-teal, #068e94); }
+
+@media (max-width: 640px) {
+  .account-navigation-overlay {
+    justify-content: center;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  }
+
+  .account-navigation-drawer {
+    width: 100%;
+    max-height: 100%;
+    border-radius: 28px;
+    transform-origin: top center;
+  }
+
+  .account-navigation-header { grid-template-columns: minmax(0, 1fr) 40px 40px; gap: 8px; padding: 20px 16px 17px; }
+  .account-navigation-avatar { width: 52px; height: 52px; flex-basis: 52px; font-size: 17px; }
+  .account-navigation-identity strong { font-size: 15px; }
+  .account-navigation-identity small { font-size: 11px; }
+  .account-navigation-action { width: 40px; height: 40px; font-size: 17px; }
+  .account-navigation-scroll { padding: 8px 12px 11px; }
+  .account-navigation-item { min-height: 54px; gap: 11px; padding: 8px; font-size: 13px; }
+  .account-navigation-icon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 11px; font-size: 15px; }
+  .account-navigation-footer { padding: 10px 12px 11px; }
+}
+
+@media (max-width: 370px) {
+  .account-navigation-header { grid-template-columns: minmax(0, 1fr) 38px 38px; gap: 6px; padding-right: 12px; padding-left: 12px; }
+  .account-navigation-profile { gap: 9px; }
+  .account-navigation-avatar { width: 46px; height: 46px; flex-basis: 46px; }
+  .account-navigation-action { width: 38px; height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-navigation-overlay,
+  .account-navigation-drawer,
+  .account-navigation-action,
+  .account-navigation-item { transition: none; }
+}
