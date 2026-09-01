@@ -21,14 +21,17 @@ public class ShopeeAutomationController : ControllerBase
     private const long MaximumAcceptedBodySize = 20L * 1024 * 1024;
     private readonly ShopeeAutomationTokenService _tokenService;
     private readonly IShopeeAutomationImportAppService _importService;
+    private readonly IShopeeAutomationSettlementImportAppService _settlementImportService;
     private readonly IOptionsMonitor<ShopeeAutomationOptions> _options;
 
     public ShopeeAutomationController(ShopeeAutomationTokenService tokenService,
         IShopeeAutomationImportAppService importService,
+        IShopeeAutomationSettlementImportAppService settlementImportService,
         IOptionsMonitor<ShopeeAutomationOptions> options)
     {
         _tokenService = tokenService;
         _importService = importService;
+        _settlementImportService = settlementImportService;
         _options = options;
     }
 
@@ -91,6 +94,24 @@ public class ShopeeAutomationController : ControllerBase
 
         await using var stream = report.OpenReadStream();
         return Ok(await _importService.ImportAsync(stream, report.FileName, cancellationToken));
+    }
+
+    [HttpPost("settlements/import")]
+    [Authorize(AuthenticationSchemes = ShopeeAutomationAuthenticationDefaults.AuthenticationScheme)]
+    [DisableAuditing]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaximumAcceptedBodySize)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaximumAcceptedBodySize)]
+    public async Task<ActionResult<ShopeeSettlementImportResultDto>> ImportSettlementAsync(
+        [FromForm] IFormFile? report, CancellationToken cancellationToken)
+    {
+        if (report is null || report.Length == 0)
+            return BadRequest(new { error = "report_required", error_description = "Cần gửi file đối soát Shopee." });
+        var maxSizeMb = Math.Clamp(_options.CurrentValue.MaxReportSizeMb, 1, 20);
+        if (report.Length > maxSizeMb * 1024L * 1024L)
+            return BadRequest(new { error = "report_too_large", error_description = $"File đối soát không được vượt quá {maxSizeMb} MB." });
+        await using var stream = report.OpenReadStream();
+        return Ok(await _settlementImportService.ImportAsync(stream, report.FileName, cancellationToken));
     }
 }
 

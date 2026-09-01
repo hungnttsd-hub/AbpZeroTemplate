@@ -4,7 +4,7 @@
 <section class="page-shell">
     <div class="page-heading">
         <div><span class="eyebrow">Operations</span><h1>Quản trị affiliate</h1></div>
-        <a class="button button-ghost" href="/Admin/Settings">Cấu hình email</a>
+        <div class="page-heading-actions"><a class="button button-ghost" href="/Admin/Settlements">Duyệt đối soát</a><a class="button button-ghost" href="/Admin/Settings">Cấu hình email</a></div>
     </div>
     @if (TempData["ImportMessage"] is string message) { <div class="flash">@message</div> }
     @if (TempData["SettlementMessage"] is string settlementMessage) { <div class="flash">@settlementMessage</div> }
@@ -97,9 +97,9 @@
     <form method="post" enctype="multipart/form-data" asp-page-handler="ImportSettlement" class="card-list">
         <label for="shopee-settlement-report">Bảng kê Shopee đã thanh toán (CSV/TXT)</label>
         <input id="shopee-settlement-report" asp-for="SettlementReport" type="file" accept=".csv,.txt,text/csv,text/plain" required />
-        <p class="fine-print">Cần có cột ID đơn hàng và Số tiền Shopee thực trả sau các khoản cấn trừ. Có thể thêm Mã bảng kê và Ngày thanh toán.</p>
+        <p class="fine-print">Cần có cột ID đơn hàng và Số tiền Shopee thực trả sau các khoản cấn trừ. File import chỉ tạo dữ liệu chờ duyệt, chưa cộng tiền vào ví.</p>
         <p class="fine-print"><a href="~/templates/shopee-settlement-template.csv" download>Tải file CSV mẫu</a></p>
-        <button class="button button-primary" type="submit">Ghi nhận tiền vào ví</button>
+        <button class="button button-primary" type="submit">Import đối soát chờ duyệt</button>
     </form>
     <p class="fine-print"><a href="/hangfire">Mở Hangfire Dashboard</a> · API import: <code>POST /api/app/admin/shopee-reports/import</code>.</p>
 </section>

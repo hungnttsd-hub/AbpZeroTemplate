@@ -70,6 +70,8 @@ public class WebHoanTienApplicationModule : AbpModule
         context.Services.AddTransient<IAdminShopeeReportImportAppService, ShopeeReportImportAppService>();
         context.Services.AddTransient<IShopeeAutomationImportAppService, ShopeeAutomationImportAppService>();
         context.Services.AddTransient<IAdminShopeeSettlementImportAppService, ShopeeSettlementImportAppService>();
+        context.Services.AddTransient<IShopeeAutomationSettlementImportAppService, ShopeeAutomationSettlementImportAppService>();
+        context.Services.AddTransient<IAdminShopeeSettlementApprovalAppService, AdminShopeeSettlementApprovalAppService>();
         if (string.Equals(configuration["Affiliate:ProviderMode"], "Mock", StringComparison.OrdinalIgnoreCase))
             context.Services.AddTransient<IAffiliateProvider, MockShopeeAffiliateProvider>();
         else

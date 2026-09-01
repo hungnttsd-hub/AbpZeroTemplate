@@ -38,7 +38,21 @@ public class AdminShopeeReportsController : WebHoanTienController
 public class AdminShopeeSettlementsController : WebHoanTienController
 {
     private readonly IAdminShopeeSettlementImportAppService _service;
-    public AdminShopeeSettlementsController(IAdminShopeeSettlementImportAppService service) => _service = service;
+    private readonly IAdminShopeeSettlementApprovalAppService _approvals;
+    public AdminShopeeSettlementsController(IAdminShopeeSettlementImportAppService service,
+        IAdminShopeeSettlementApprovalAppService approvals)
+    {
+        _service = service;
+        _approvals = approvals;
+    }
+
+    [HttpGet]
+    public Task<AdminShopeeSettlementPageDto> GetListAsync([FromQuery] AdminShopeeSettlementBatchListInput input) =>
+        _approvals.GetListAsync(input);
+
+    [HttpGet("{batchId:guid}")]
+    public Task<AdminShopeeSettlementBatchDetailsDto> GetAsync(Guid batchId, [FromQuery] int skipCount = 0,
+        [FromQuery] int maxResultCount = 50) => _approvals.GetAsync(batchId, skipCount, maxResultCount);
 
     [HttpPost("import")]
     [Consumes("multipart/form-data")]
@@ -51,6 +65,18 @@ public class AdminShopeeSettlementsController : WebHoanTienController
         await using var stream = report.OpenReadStream();
         return await _service.ImportAsync(stream, report.FileName, cancellationToken);
     }
+
+    [HttpPost("records/{recordId:guid}/approve")]
+    public Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId) =>
+        _approvals.ApproveAsync(recordId);
+
+    [HttpPost("{batchId:guid}/approve-all")]
+    public Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId) =>
+        _approvals.ApproveAllAsync(batchId);
+
+    [HttpPost("{batchId:guid}/refresh-matches")]
+    public Task<AdminShopeeSettlementRefreshResultDto> RefreshMatchesAsync(Guid batchId) =>
+        _approvals.RefreshMatchesAsync(batchId);
 }
 
 [Route("api/app/admin/commission-rules")]

@@ -77,3 +77,26 @@ public enum WalletMovementKind
     Commission = 1,
     Withdrawal = 2
 }
+
+public enum ShopeeSettlementImportSource
+{
+    Automation = 1,
+    Manual = 2
+}
+
+public enum ShopeeSettlementBatchStatus
+{
+    PendingApproval = 1,
+    PartiallyApproved = 2,
+    Approved = 3,
+    CompletedWithIssues = 4
+}
+
+public enum ShopeeSettlementRecordStatus
+{
+    PendingApproval = 1,
+    Approved = 2,
+    Unmatched = 3,
+    AlreadySettled = 4,
+    Invalid = 5
+}

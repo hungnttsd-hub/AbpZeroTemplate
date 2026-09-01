@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CatsBack Shopee Sync - Cài đặt</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 32px auto; padding: 0 18px; color: #1f2937; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    h2 { margin-top: 34px; font-size: 19px; border-top: 1px solid #e5e7eb; padding-top: 24px; }
+    .intro { color:#6b7280; margin: 0 0 20px; line-height:1.5; }
+    label { display:block; font-weight:600; margin-top:16px; }
+    input, textarea, select { box-sizing:border-box; width:100%; margin-top:6px; padding:10px; border:1px solid #d1d5db; border-radius:8px; background:white; }
+    .row { display:flex; gap:16px; }
+    .row > div { flex:1; }
+    .check { display:flex; gap:8px; align-items:center; font-weight:400; }
+    .check input { width:auto; margin-top:0; }
+    button { margin-top:20px; padding:10px 16px; border-radius:8px; border:0; background:#111827; color:white; cursor:pointer; }
+    button.secondary { background:#e5e7eb; color:#111827; margin-left:8px; }
+    button:disabled { opacity:.6; cursor:default; }
+    #saved { margin-left:10px; color:#047857; }
+    .hint { font-size:12px; color:#6b7280; margin-top:4px; line-height:1.45; }
+    .note { margin-top:20px; padding:12px 14px; background:#f3f4f6; border-radius:10px; line-height:1.5; font-size:13px; }
+    .api-status { margin-top:12px; padding:10px 12px; border-radius:8px; font-size:13px; background:#f9fafb; border:1px solid #e5e7eb; }
+    .ok { color:#047857; }
+    .warn { color:#b45309; }
+    code { background:#f3f4f6; padding:2px 5px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <h1>Cài đặt CatsBack Shopee Sync</h1>
+  <p class="intro">v0.6.3 dùng semantic locator không phụ thuộc CSS class: nhận diện nút theo text/ngữ nghĩa tương tác; report theo filename + task_id trong download URL. Tool không can thiệp ô ngày.</p>
+
+  <h2>Shopee Affiliate</h2>
+
+  <label>Conversion Report URL
+    <input id="reportUrl" />
+  </label>
+
+  <label>Export Management URL
+    <input id="exportManagementUrl" />
+  </label>
+
+  <h2>Thu muc tai file</h2>
+
+  <label>Thư mục con trong Chrome Downloads
+    <input id="downloadSubfolder" value="CatsBack" />
+  </label>
+  <div class="hint">Chrome Extension chỉ được chọn đường dẫn tương đối bên trong thư mục Downloads của Chrome. Với Chrome Downloads = <code>C:\Users\HUNGNT\Downloads</code> và giá trị <code>CatsBack</code>, file sẽ vào đúng <code>C:\Users\HUNGNT\Downloads\CatsBack</code>.</div>
+
+  <div class="row">
+    <div>
+      <label>Chu kỳ (phút)
+        <input id="intervalMinutes" type="number" min="60" step="1" />
+      </label>
+      <div class="hint">Tối thiểu 60 phút.</div>
+    </div>
+    <div>
+      <label>Delay chờ trang (ms)
+        <input id="pageReadyDelayMs" type="number" min="500" step="500" />
+      </label>
+    </div>
+  </div>
+
+  <label>Timeout chờ Shopee tự mở Export Management (ms)
+    <input id="exportPageOpenTimeoutMs" type="number" min="2000" step="1000" />
+  </label>
+  <div class="hint">Nếu popup/tab mới bị Chrome chặn, tool sẽ fallback sang trang Export Management đã mở để tiếp tục kiểm tra file.</div>
+
+  <div class="row">
+    <div>
+      <label>Timeout chờ Shopee tạo CSV (ms)
+        <input id="exportTimeoutMs" type="number" min="30000" step="5000" />
+      </label>
+    </div>
+    <div>
+      <label>Chu kỳ kiểm tra task (ms)
+        <input id="exportPollMs" type="number" min="1000" step="500" />
+      </label>
+    </div>
+  </div>
+
+  <label>Reload trang Quản lý xuất dữ liệu sau mỗi (ms)
+    <input id="refreshExportPageEveryMs" type="number" min="0" step="1000" />
+  </label>
+  <div class="hint">Mặc định 10000. Đặt 0 nếu không muốn extension chủ động reload.</div>
+
+  <label>CSS selector override khẩn cấp (không bắt buộc)
+    <input id="exportButtonSelector" placeholder="Để trống để semantic locator tự tìm" />
+  </label>
+
+  <label>Nhãn ngữ nghĩa của nút Export (mỗi dòng một giá trị)
+    <textarea id="exportButtonTexts" rows="4"></textarea>
+  </label>
+
+  <label class="check"><input id="openShopeeTabsActive" type="checkbox" /> Mở tab Shopee ở foreground</label>
+  <label class="check"><input id="closeAutoOpenedExportTab" type="checkbox" /> Đóng tab Export Management do Shopee tự mở sau khi tải xong</label>
+  <label class="check"><input id="notifyOnSuccess" type="checkbox" /> Hiện notification khi tải thành công</label>
+
+  <div class="note">
+    <strong>v0.6.3:</strong> mặc định không dùng class Shopee làm identity. Nút Export được chấm điểm theo exact text <code>Xuất dữ liệu</code>, element tương tác native/ARIA, visibility và trạng thái enabled. Nếu có nhiều candidate ngang điểm, tool dừng với <code>EXPORT_BUTTON_AMBIGUOUS</code> thay vì click nhầm. Ở Export Management, tool nhận diện report bằng <code>AffiliateCommissionReport_YYYYMMDDHHmm.csv</code> và URL download có <code>task_id</code>; icon/class chỉ còn phục vụ debug.
+  </div>
+
+  <h2>CatsBack Automation API</h2>
+  <p class="intro">Endpoint đã cấu hình sẵn theo tài liệu API. Bạn chỉ cần nhập <strong>Client ID</strong> và <strong>Client Secret</strong>. Helper không lưu access token dài hạn; token ngắn hạn được lấy tự động và giữ trong RAM.</p>
+
+  <div id="helperStatus" class="api-status">Đang kiểm tra Local Helper...</div>
+
+  <label>Local Helper đang theo dõi thư mục
+    <input id="helperWatchDir" readonly />
+  </label>
+  <div class="hint">Nên khớp với thư mục tải của extension. Nếu bạn đang dùng <code>C:\Users\HUNGNT\Downloads\CatsBack</code> thì để <strong>Thư mục con trong Chrome Downloads = CatsBack</strong>.</div>
+
+  <label>CatsBack API Base URL
+    <input id="apiBaseUrl" value="https://catsback.onrender.com" />
+  </label>
+
+  <div class="row">
+    <div>
+      <label>Client ID
+        <input id="clientId" autocomplete="off" placeholder="Nhập khi bạn tạo credential" />
+      </label>
+    </div>
+    <div>
+      <label>Client Secret
+        <input id="clientSecret" type="password" autocomplete="new-password" placeholder="Để trống khi lưu để giữ secret cũ" />
+      </label>
+      <div id="secretState" class="hint">Chưa kiểm tra secret đã lưu.</div>
+    </div>
+  </div>
+  <label class="check"><input id="clearClientSecret" type="checkbox" /> Xóa Client Secret đang lưu trong Local Helper</label>
+
+  <label>Token endpoint
+    <input id="tokenPath" value="/api/public/shopee-automation/token" />
+  </label>
+
+  <label>Import endpoint
+    <input id="importPath" value="/api/public/shopee-automation/reports/import" />
+  </label>
+
+  <div class="row">
+    <div>
+      <label>Form field name
+        <input id="formFieldName" value="report" />
+      </label>
+      <div class="hint">Theo API hiện tại: <code>report=&lt;file CSV/TXT&gt;</code>.</div>
+    </div>
+    <div>
+      <label>Refresh token trước khi hết hạn (giây)
+        <input id="tokenRefreshSkewSeconds" type="number" min="0" max="600" value="60" />
+      </label>
+    </div>
+  </div>
+
+  <div class="note">
+    Flow API: Helper POST JSON <code>client_id</code>/<code>client_secret</code> để lấy token → cache token đến gần hạn → POST <code>multipart/form-data</code> sang endpoint import với <code>Authorization: Bearer ...</code>. Nếu import trả 401, Helper tự xin token mới một lần rồi thử lại.
+  </div>
+
+  <button id="save">Lưu cài đặt</button>
+  <button id="testApi" class="secondary">Lưu & kiểm tra kết nối API</button>
+  <button id="openHelperSettings" class="secondary">Mở cài đặt Local Helper</button>
+  <span id="saved"></span>
+  <script src="options.js"></script>
+</body>
+</html>

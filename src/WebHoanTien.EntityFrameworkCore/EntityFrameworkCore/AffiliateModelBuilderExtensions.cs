@@ -148,6 +148,58 @@ public static class AffiliateModelBuilderExtensions
             b.HasOne<AffiliateConversion>().WithMany().HasForeignKey(x => x.ConversionId).OnDelete(DeleteBehavior.SetNull);
         });
 
+        builder.Entity<ShopeeSettlementBatch>(b =>
+        {
+            b.ToTable("ShopeeSettlementBatch", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.OriginalFileName).HasMaxLength(255).IsRequired();
+            b.Property(x => x.ContentHash).HasMaxLength(64).IsRequired();
+            Money(b.Property(x => x.TotalEligibleCommission));
+            Money(b.Property(x => x.TotalPaidCommission));
+            Money(b.Property(x => x.PendingPaidCommission));
+            Money(b.Property(x => x.ApprovedPaidCommission));
+            b.HasIndex(x => x.ContentHash).IsUnique();
+            b.HasIndex(x => new { x.Status, x.CreationTime });
+        });
+
+        builder.Entity<ShopeeSettlementBill>(b =>
+        {
+            b.ToTable("ShopeeSettlementBill", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.SourceAffiliateId).HasMaxLength(WebHoanTienConsts.AffiliateIdMaxLength).IsRequired();
+            b.Property(x => x.ValidationId).HasMaxLength(64).IsRequired();
+            b.Property(x => x.PayoutId).HasMaxLength(128).IsRequired();
+            Money(b.Property(x => x.EligibleCommission));
+            Money(b.Property(x => x.AfterServiceFeeCommission));
+            Money(b.Property(x => x.PaidCommission));
+            Money(b.Property(x => x.ServiceFeeAmount));
+            Money(b.Property(x => x.TaxAmount));
+            b.HasIndex(x => new { x.SourceAffiliateId, x.ValidationId }).IsUnique();
+            b.HasIndex(x => x.PayoutId);
+            b.HasOne<ShopeeSettlementBatch>().WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ShopeeSettlementRecord>(b =>
+        {
+            b.ToTable("ShopeeSettlementRecord", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.ExternalOrderId).HasMaxLength(256).IsRequired();
+            b.Property(x => x.Issue).HasMaxLength(1000);
+            Money(b.Property(x => x.EligibleCommission));
+            Money(b.Property(x => x.AllocatedServiceFee));
+            Money(b.Property(x => x.AllocatedTax));
+            Money(b.Property(x => x.ActualPaidCommission));
+            Money(b.Property(x => x.ApprovedUserCommission));
+            b.HasIndex(x => x.ExternalOrderId).IsUnique();
+            b.HasIndex(x => new { x.BatchId, x.Status });
+            b.HasOne<ShopeeSettlementBatch>().WithMany().HasForeignKey(x => x.BatchId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<ShopeeSettlementBill>().WithMany().HasForeignKey(x => x.BillId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<AffiliateOrder>().WithMany().HasForeignKey(x => x.AffiliateOrderId).OnDelete(DeleteBehavior.SetNull);
+            b.HasOne<AffiliateConversion>().WithMany().HasForeignKey(x => x.AffiliateConversionId).OnDelete(DeleteBehavior.SetNull);
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.ApprovedByUserId).OnDelete(DeleteBehavior.SetNull);
+        });
+
         builder.Entity<UserLegalConsent>(b =>
         {
             b.ToTable("UserLegalConsent", schema);

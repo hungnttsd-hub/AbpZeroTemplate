@@ -104,10 +104,22 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
     private readonly IRepository<AffiliateTracking, Guid> _trackings;
     private readonly IRepository<AffiliateOrder, Guid> _orders;
     private readonly IRepository<AffiliateOrderItem, Guid> _items;
+    private readonly AffiliateCommissionRuleManager _ruleManager;
+    private readonly AffiliateUserShareRateResolver _shareRateResolver;
+    private readonly AffiliateCommissionCalculator _calculator;
     public AdminAffiliateOrderAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateTracking, Guid> trackings, IRepository<AffiliateOrder, Guid> orders,
-        IRepository<AffiliateOrderItem, Guid> items)
-    { _conversions = conversions; _trackings = trackings; _orders = orders; _items = items; }
+        IRepository<AffiliateOrderItem, Guid> items, AffiliateCommissionRuleManager ruleManager,
+        AffiliateUserShareRateResolver shareRateResolver, AffiliateCommissionCalculator calculator)
+    {
+        _conversions = conversions;
+        _trackings = trackings;
+        _orders = orders;
+        _items = items;
+        _ruleManager = ruleManager;
+        _shareRateResolver = shareRateResolver;
+        _calculator = calculator;
+    }
 
     public async Task<PagedResultDto<AdminAffiliateConversionDto>> GetListAsync(AdminAffiliateConversionListInput input)
     {
@@ -158,12 +170,42 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
     }
 
     [Authorize(WebHoanTienPermissions.Admin.ManualMatch)]
+    [UnitOfWork]
     public async Task ManualMatchAsync(Guid conversionId, ManualMatchInput input)
     {
         var conversion = await _conversions.GetAsync(conversionId);
         var tracking = await _trackings.GetAsync(input.TrackingId);
         if (conversion.Platform != tracking.Platform) throw new UserFriendlyException("Tracking và conversion phải cùng nền tảng.");
+        if (conversion.UserId.HasValue && conversion.UserId.Value != tracking.UserId)
+            throw new UserFriendlyException("Conversion đã được ghép với người dùng khác và không thể chuyển chủ sở hữu.");
         conversion.MapTo(tracking.Id, tracking.UserId, conversion.AttributionValue);
+        var rule = await _ruleManager.GetForPurchaseAsync(conversion.Platform, conversion.PurchaseTime);
+        var userShareRate = await _shareRateResolver.GetForOrderAsync(tracking.UserId, conversion.Platform,
+            conversion.PurchaseTime, conversion.Id, conversion.ExternalConversionId, rule.UserShareRate);
+        conversion.ApplyCommission(conversion.GrossCommission, conversion.NetCommission,
+            conversion.CommissionSource, userShareRate);
+
+        var orders = await _orders.GetListAsync(order => order.ConversionId == conversion.Id);
+        foreach (var order in orders)
+        {
+            order.Update(order.Status, order.ShopType, order.PurchaseAmount, order.NetCommission,
+                _calculator.CalculateUserCommission(order.NetCommission, userShareRate));
+            var items = await _items.GetListAsync(item => item.OrderId == order.Id);
+            var allocation = _calculator.Allocate(order.NetCommission, userShareRate,
+                    items.Select(item => new CommissionAllocationInput(
+                        item.ExternalItemId + ":" + item.ModelId, item.ItemTotalCommission)))
+                .ToDictionary(item => item.Key, StringComparer.Ordinal);
+            foreach (var item in items)
+            {
+                var allocated = allocation[item.ExternalItemId + ":" + item.ModelId];
+                item.Update(item.ProductName, item.PurchaseAmount, item.Quantity, item.ItemTotalCommission,
+                    allocated.NetCommission, allocated.UserCommission, item.RefundAmount, item.IsFraud,
+                    item.ProviderStatus);
+            }
+            if (items.Count > 0) await _items.UpdateManyAsync(items, autoSave: false);
+        }
+
+        if (orders.Count > 0) await _orders.UpdateManyAsync(orders, autoSave: false);
         await _conversions.UpdateAsync(conversion, autoSave: true);
     }
 

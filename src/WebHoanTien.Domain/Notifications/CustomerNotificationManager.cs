@@ -75,6 +75,38 @@ public class CustomerNotificationManager : DomainService
         };
     }
 
+    public async Task<int> NotifySettledOrdersAsync(
+        IEnumerable<(Guid UserId, AffiliateOrder Order)> settledOrders)
+    {
+        var rows = settledOrders.GroupBy(value => value.Order.Id)
+            .Select(group => group.First()).ToList();
+        if (rows.Count == 0) return 0;
+
+        var existingKeys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var chunk in rows.Select(value => $"order:{value.Order.Id:N}:settled").Chunk(500))
+        {
+            var notifications = await _notifications.GetListAsync(notification =>
+                chunk.Contains(notification.EventKey));
+            foreach (var notification in notifications) existingKeys.Add(notification.EventKey);
+        }
+
+        var additions = rows.Select(value => new
+            {
+                value.UserId,
+                value.Order,
+                EventKey = $"order:{value.Order.Id:N}:settled"
+            })
+            .Where(value => !existingKeys.Contains(value.EventKey))
+            .Select(value => new CustomerNotification(_guidGenerator.Create(), value.UserId,
+                CustomerNotificationCategory.Cashback, CustomerNotificationKind.CashbackRecorded,
+                "Hoàn tiền đã ghi nhận",
+                $"{FormatMoney(value.Order.PayableUserCommission)} từ đơn Shopee {Shorten(value.Order.ExternalOrderId, 40)} đã được cộng vào ví.",
+                "/Wallet", value.EventKey))
+            .ToList();
+        if (additions.Count > 0) await _notifications.InsertManyAsync(additions);
+        return additions.Count;
+    }
+
     public Task<bool> NotifyWithdrawalStatusAsync(WithdrawalRequest request)
     {
         var actionUrl = "/Wallet/History";

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CatsBack Shopee Sync</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main>
+    <h1>CatsBack Sync <span class="version">v0.7.1</span></h1>
+    <div class="status-card">
+      <div class="label">Trạng thái</div>
+      <div id="status">Đang đọc...</div>
+      <div id="message" class="muted"></div>
+      <div id="lastRun" class="muted"></div>
+      <div id="lastFile" class="muted"></div>
+      <div id="helper" class="muted"></div>
+    </div>
+    <section class="settlement-card">
+      <div class="section-title">Đối soát thanh toán</div>
+      <div class="hint">Tool chỉ mở trang danh sách đối soát, sau đó đọc API Shopee trong chính phiên đăng nhập. Không mở tab chi tiết.</div>
+      <button id="exportSettlements" class="primary">Tổng hợp file</button>
+      <button id="importSettlements" class="accent">Import đối soát</button>
+      <div id="settlementResult" class="muted"></div>
+    </section>
+    <details>
+      <summary>Đồng bộ Conversion Report</summary>
+      <button id="syncNow">Đồng bộ ngay</button>
+      <button id="clearLock" style="display:none">Xóa khóa đồng bộ bị kẹt</button>
+      <button id="openReport">Mở Conversion Report</button>
+      <button id="openExports">Mở Quản lý xuất dữ liệu</button>
+    </details>
+    <button id="options">Cài đặt</button>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

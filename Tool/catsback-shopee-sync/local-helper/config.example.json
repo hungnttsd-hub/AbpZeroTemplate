@@ -1,0 +1,21 @@
+{
+  "watchDir": "%USERPROFILE%\\Downloads\\CatsBack",
+  "fileRegex": "^AffiliateCommissionReport_.*\\.(csv|txt)$",
+  "apiBaseUrl": "https://catsback.onrender.com",
+  "tokenPath": "/api/public/shopee-automation/token",
+  "importPath": "/api/public/shopee-automation/reports/import",
+  "settlementImportPath": "/api/public/shopee-automation/settlements/import",
+  "settlementOutputDir": "%USERPROFILE%\\Downloads\\CatsBackSettlements",
+  "clientId": "",
+  "clientSecret": "",
+  "formFieldName": "report",
+  "tokenRefreshSkewSeconds": 60,
+  "archiveOnSuccess": true,
+  "archiveDir": "%USERPROFILE%\\Downloads\\CatsBackArchive",
+  "stableChecks": 4,
+  "stableCheckIntervalMs": 1500,
+  "retryCount": 3,
+  "retryDelayMs": 5000,
+  "requestTimeoutMs": 120000,
+  "settingsPort": 32145
+}

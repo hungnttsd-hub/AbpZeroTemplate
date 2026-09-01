@@ -30,10 +30,13 @@ public class WebHoanTienMenuContributor : IMenuContributor
             "Affiliate.Notifications", l["Menu:Notifications"], "~/Admin/Notifications", "fas fa-bell", 44,
             requiredPermissionName: WebHoanTienPermissions.Admin.Notifications));
         context.Menu.Items.Add(new ApplicationMenuItem(
-            "Affiliate.Payouts", l["Menu:Payouts"], "~/Admin/Payouts", "fas fa-money-check-alt", 45,
+            "Affiliate.Settlements", l["Menu:Settlements"], "~/Admin/Settlements", "fas fa-file-invoice-dollar", 45,
+            requiredPermissionName: WebHoanTienPermissions.Admin.Orders));
+        context.Menu.Items.Add(new ApplicationMenuItem(
+            "Affiliate.Payouts", l["Menu:Payouts"], "~/Admin/Payouts", "fas fa-money-check-alt", 46,
             requiredPermissionName: WebHoanTienPermissions.Admin.Payouts));
         context.Menu.Items.Add(new ApplicationMenuItem(
-            "Affiliate.EmailSettings", l["Menu:EmailSettings"], "~/Admin/Settings", "fas fa-envelope-open-text", 46,
+            "Affiliate.EmailSettings", l["Menu:EmailSettings"], "~/Admin/Settings", "fas fa-envelope-open-text", 47,
             requiredPermissionName: WebHoanTienPermissions.Admin.Settings));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Affiliate.Admin", l["Menu:AffiliateAdmin"], "~/Admin/Affiliates", "fas fa-chart-line", 50,

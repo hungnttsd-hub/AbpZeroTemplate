@@ -1,0 +1,13 @@
+{
+  "name": "catsback-shopee-sync-helper",
+  "version": "0.7.1",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "check": "node --check index.js"
+  }
+}

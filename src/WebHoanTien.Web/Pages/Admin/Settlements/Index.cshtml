@@ -1,0 +1,98 @@
+@page "/Admin/Settlements"
+@using WebHoanTien.Affiliates
+@using WebHoanTien.Web.Pages.Admin.Settlements
+@model WebHoanTien.Web.Pages.Admin.Settlements.IndexModel
+@{ ViewData["Title"] = "Duyệt đối soát Shopee"; }
+
+<section class="admin-settlement-shell">
+    <header class="admin-settlement-heading">
+        <div><span>CATBACK OPERATIONS</span><h1>Duyệt đối soát Shopee</h1><p>Import chỉ tạo bản ghi chờ duyệt. Ví người dùng chỉ thay đổi sau khi admin xác nhận.</p></div>
+        <a href="/Admin/Affiliates">Quản trị affiliate</a>
+    </header>
+
+    <div class="admin-settlement-stats">
+        <article class="pending"><span>Chờ duyệt</span><strong data-summary-pending-count>@Model.Data.Summary.PendingCount</strong><small data-summary-pending-amount data-value="@Model.Data.Summary.PendingAmount">@SettlementPageUi.Money(Model.Data.Summary.PendingAmount)</small></article>
+        <article class="approved"><span>Đã duyệt</span><strong data-summary-approved-count>@Model.Data.Summary.ApprovedCount</strong><small data-summary-approved-amount data-value="@Model.Data.Summary.ApprovedAmount">@SettlementPageUi.Money(Model.Data.Summary.ApprovedAmount)</small></article>
+        <article class="issues"><span>Cần kiểm tra</span><strong>@Model.Data.Summary.IssueCount</strong><small>Không khớp hoặc sai trạng thái</small></article>
+    </div>
+
+    <form method="get" class="admin-settlement-filters">
+        <label><span>Tìm batch</span><input asp-for="Filter" placeholder="Tên file hoặc SHA-256" /></label>
+        <label><span>Trạng thái</span><select asp-for="Status"><option value="">Tất cả</option><option value="PendingApproval">Chờ duyệt</option><option value="PartiallyApproved">Đã duyệt một phần</option><option value="Approved">Đã duyệt</option><option value="CompletedWithIssues">Có cảnh báo</option></select></label>
+        <button type="submit">Lọc dữ liệu</button><a href="/Admin/Settlements">Xóa lọc</a>
+    </form>
+
+    <div class="admin-settlement-workspace">
+        <aside class="admin-settlement-batches" aria-label="Danh sách file đối soát">
+            @if (Model.Data.Batches.Items.Count == 0) { <div class="admin-settlement-empty"><strong>Chưa có dữ liệu đối soát</strong><p>Dùng tool hoặc form import thủ công để tạo batch chờ duyệt.</p></div> }
+            @foreach (var batch in Model.Data.Batches.Items)
+            {
+                <a class="admin-settlement-batch @(Model.BatchId == batch.Id ? "is-active" : null)" asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-PageNumber="@Model.PageNumber" asp-route-BatchId="@batch.Id">
+                    <span>@SettlementPageUi.Date(batch.CreationTime)</span><strong>@batch.OriginalFileName</strong>
+                    <small>@batch.BillCount bảng kê · @batch.RecordCount đơn</small>
+                    <em class="@SettlementPageUi.StatusClass(batch.Status)">@SettlementPageUi.BatchLabel(batch.Status)</em>
+                </a>
+            }
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="admin-settlement-pagination"><a asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-PageNumber="@(Math.Max(1, Model.PageNumber - 1))">‹</a><b>@Model.PageNumber/@Model.TotalPages</b><a asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-PageNumber="@(Math.Min(Model.TotalPages, Model.PageNumber + 1))">›</a></nav>
+            }
+        </aside>
+
+        @if (Model.Details is not null)
+        {
+            var batch = Model.Details.Batch;
+            <main class="admin-settlement-detail" data-settlement-batch="@batch.Id">
+                <header>
+                    <div><span>Batch @batch.Id.ToString("N")[..8]</span><h2>@batch.OriginalFileName</h2><p>@batch.BillCount validation_id · tổng Shopee trả @SettlementPageUi.Money(batch.TotalPaidCommission)</p></div>
+                    <div class="admin-settlement-actions">
+                        @if (batch.UnmatchedCount + batch.InvalidCount > 0)
+                        {
+                            <form method="post" asp-page-handler="RefreshMatches" data-refresh-matches>
+                                @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@batch.Id" />
+                                <button type="submit" class="secondary">Đối chiếu lại</button>
+                            </form>
+                        }
+                        @if (batch.PendingCount > 0)
+                        {
+                            <form method="post" asp-page-handler="ApproveAll" data-approve-all data-count="@batch.PendingCount" data-amount="@batch.PendingPaidCommission">
+                                @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@batch.Id" />
+                                <button type="submit">Duyệt tất cả (@batch.PendingCount)</button>
+                            </form>
+                        }
+                    </div>
+                </header>
+                <div class="admin-settlement-batch-summary">
+                    <span>Chờ duyệt <b data-batch-pending-count>@batch.PendingCount</b></span>
+                    <span>Đã duyệt <b data-batch-approved-count>@batch.ApprovedCount</b></span>
+                    <span>Không khớp <b>@batch.UnmatchedCount</b></span>
+                    <span>Lỗi trạng thái <b>@batch.InvalidCount</b></span>
+                </div>
+
+                <div class="admin-settlement-records">
+                    @foreach (var record in Model.Details.Records.Items)
+                    {
+                        <article class="admin-settlement-record" data-settlement-record="@record.Id" data-status="@record.Status.ToString().ToLowerInvariant()" data-paid="@record.ActualPaidCommission">
+                            <header><div><code>@record.ExternalOrderId</code><small>Validation @record.ValidationId · trả @SettlementPageUi.Date(record.PaidAt)</small></div><span class="admin-settlement-status @SettlementPageUi.StatusClass(record.Status)" data-record-status>@SettlementPageUi.RecordLabel(record.Status)</span></header>
+                            <dl><div><dt>Hoa hồng hợp lệ</dt><dd>@SettlementPageUi.Money(record.EligibleCommission)</dd></div><div><dt>Phí dịch vụ</dt><dd>-@SettlementPageUi.Money(record.AllocatedServiceFee)</dd></div><div><dt>Thuế</dt><dd>-@SettlementPageUi.Money(record.AllocatedTax)</dd></div><div><dt>Shopee thực trả</dt><dd>@SettlementPageUi.Money(record.ActualPaidCommission)</dd></div><div><dt>User dự kiến nhận</dt><dd>@SettlementPageUi.Money(record.ProjectedUserCommission)</dd></div></dl>
+                            @if (!string.IsNullOrWhiteSpace(record.Issue)) { <p class="admin-settlement-warning">@record.Issue</p> }
+                            @if (record.Status == ShopeeSettlementRecordStatus.PendingApproval)
+                            {
+                                <form method="post" asp-page-handler="Approve" data-approve-record>
+                                    @Html.AntiForgeryToken()<input type="hidden" name="recordId" value="@record.Id" />
+                                    <button type="submit">Duyệt và cộng ví</button><span role="status"></span>
+                                </form>
+                            }
+                        </article>
+                    }
+                </div>
+                @if (Model.TotalRecordPages > 1)
+                {
+                    <nav class="admin-settlement-pagination record-pages"><a asp-page="/Admin/Settlements/Index" asp-route-BatchId="@batch.Id" asp-route-RecordPageNumber="@(Math.Max(1, Model.RecordPageNumber - 1))">‹ Trước</a><b>@Model.RecordPageNumber/@Model.TotalRecordPages</b><a asp-page="/Admin/Settlements/Index" asp-route-BatchId="@batch.Id" asp-route-RecordPageNumber="@(Math.Min(Model.TotalRecordPages, Model.RecordPageNumber + 1))">Sau ›</a></nav>
+                }
+            </main>
+        }
+    </div>
+</section>
+<div class="admin-settlement-toast" data-admin-settlement-toast hidden></div>
+<script src="~/admin-settlements.js" asp-append-version="true"></script>

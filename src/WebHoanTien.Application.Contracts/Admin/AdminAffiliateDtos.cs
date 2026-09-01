@@ -160,15 +160,27 @@ public interface IShopeeAutomationImportAppService : IApplicationService
 
 public sealed class ShopeeSettlementImportResultDto
 {
+    public Guid BatchId { get; set; }
     public int ImportedRowCount { get; set; }
-    public int SettledCount { get; set; }
+    public int ValidationCount { get; set; }
+    public int AlreadyImportedValidationCount { get; set; }
+    public int PendingApprovalCount { get; set; }
+    public int ApprovedCount { get; set; }
     public int AlreadySettledCount { get; set; }
     public int UnmatchedCount { get; set; }
     public int ErrorCount { get; set; }
+    public bool IsDuplicate { get; set; }
     public List<string> Errors { get; set; } = new();
 }
 
 public interface IAdminShopeeSettlementImportAppService : IApplicationService
+{
+    [DisableValidation]
+    Task<ShopeeSettlementImportResultDto> ImportAsync(Stream reportStream, string reportFileName,
+        CancellationToken cancellationToken = default);
+}
+
+public interface IShopeeAutomationSettlementImportAppService : IApplicationService
 {
     [DisableValidation]
     Task<ShopeeSettlementImportResultDto> ImportAsync(Stream reportStream, string reportFileName,
