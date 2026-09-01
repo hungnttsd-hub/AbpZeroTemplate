@@ -1,6 +1,4 @@
-(function () {
-    'use strict';
-
+window.CatBackSpa.mount('customer-profile', ({ signal }) => {
     const forms = document.querySelectorAll('[data-profile-ajax-form]');
     if (forms.length === 0) return;
 
@@ -191,6 +189,6 @@
                     submitButton.textContent = originalButtonText;
                 }
             }
-        });
+        }, { signal });
     });
-})();
+});

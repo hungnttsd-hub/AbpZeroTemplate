@@ -1,4 +1,4 @@
-(() => {
+window.CatBackSpa.mount('admin-affiliate-overrides', ({ signal }) => {
   const form = document.querySelector('[data-affiliate-override-form]');
   const removeForm = document.getElementById('affiliate-override-remove-form');
   const list = document.querySelector('[data-affiliate-override-list]');
@@ -98,7 +98,7 @@
     } finally {
       submit.disabled = false;
     }
-  });
+  }, { signal });
 
   list.addEventListener('click', async (event) => {
     const target = event.target instanceof Element ? event.target : null;
@@ -132,5 +132,5 @@
       showStatus(error.message, 'error');
       removeButton.disabled = false;
     }
-  });
-})();
+  }, { signal });
+});

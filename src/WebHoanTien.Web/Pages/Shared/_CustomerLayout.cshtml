@@ -31,6 +31,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="CatBack" />
+    <meta name="turbo-cache-control" content="no-cache" />
+    <meta name="turbo-prefetch" content="false" />
     <title>@(ViewData["Title"] ?? "CatBack")</title>
     <link rel="manifest" href="~/manifest.webmanifest" asp-append-version="true" />
     <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />
@@ -40,23 +42,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="~/customer.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/customer-dashboard.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/account.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/customer-navigation.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/customer-profile.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/customer-theme-green.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/orders-mobile.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/link-page-mobile.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/wallet.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/notifications.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/catback-modal.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/guide.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/admin-affiliate-overrides.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/admin-settlements.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/admin-settlement-actions.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/customer.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/customer-dashboard.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/account.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/customer-navigation.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/customer-profile.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/customer-theme-green.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/orders-mobile.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/link-page-mobile.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/wallet.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/notifications.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/catback-modal.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/guide.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/admin-affiliate-overrides.css" asp-append-version="true" data-turbo-track="reload" />
+        <link rel="stylesheet" href="~/admin-settlements.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/admin-settlement-actions.css" asp-append-version="true" data-turbo-track="reload" />
+</
+    <link rel="stylesheet" href="~/catback-spa.css" asp-append-version="true" data-turbo-track="reload" />
+    <script src="~/catback-spa.js" asp-append-version="true" data-turbo-track="reload"></script>
+    <script src="~/libs/@@hotwired/turbo/turbo.es2017-umd.js" asp-append-version="true" data-turbo-track="reload" defer></script>
+    <script src="~/catback-modal.js" asp-append-version="true" data-turbo-track="reload" defer></script>
+    <script src="~/pwa.js" asp-append-version="true" data-turbo-track="reload" defer></script>
+    <script src="~/customer-navigation.js" asp-append-version="true" data-turbo-track="reload" defer></script>
 </head>
-<body class="@bodyClass">
+<body class="@bodyClass" data-catback-spa-shell>
 <header class="site-header">
     <a class="brand" href="/" aria-label="Về trang chủ"><span class="brand-mark" aria-hidden="true"><img src="~/catback-mascot-reference.png" alt="" /></span></a>
     <nav class="site-navigation" aria-label="Điều hướng chính">
@@ -89,9 +98,7 @@
         }
     </div>
 </header>
-<script src="~/catback-modal.js" asp-append-version="true"></script>
-<script src="~/pwa.js" asp-append-version="true" defer></script>
-<main>@RenderBody()</main>
+<main id="main-content" tabindex="-1">@RenderBody()</main>
 @if (isAuthenticated)
 {
     <nav class="mobile-bottom-navigation" aria-label="Điều hướng nhanh">
@@ -105,7 +112,6 @@
     <div><strong>CatBack</strong><p>Nền tảng chia sẻ hoa hồng tiếp thị liên kết.</p></div>
     <div class="footer-links"><a href="/Legal/Terms">Điều khoản</a><a href="/Legal/Privacy">Riêng tư</a><a href="mailto:support@webhoantien.com">Liên hệ</a></div>
 </footer>
-<script src="~/customer-navigation.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

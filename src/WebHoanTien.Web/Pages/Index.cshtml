@@ -48,7 +48,7 @@
 
     <div class="dashboard-grid">
         <div class="dashboard-main">
-            <form method="post" asp-page-handler="Prepare" class="dashboard-create-card" id="link-form" data-ajax-create>
+            <form method="post" asp-page-handler="Prepare" class="dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
                 <div class="dashboard-create-heading">
                     <span class="dashboard-create-icon" aria-hidden="true"><img src="~/catback/icons/link.svg" alt="" /></span>
                     <div><h2>Dán link Shopee tại đây <span aria-hidden="true">✦</span></h2><a class="dashboard-guide-link" href="/huong-dan#tao-link-hoan-tien">Xem hướng dẫn <span aria-hidden="true">›</span></a></div>
@@ -118,7 +118,7 @@
                                 }
                             </div>
                             <div class="affiliate-link-actions">
-                                <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
+                                <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop data-turbo="false" rel="nofollow sponsored noopener">Mua ngay</a>
                                 <div class="affiliate-link-secondary-actions">
                                     @if (!string.IsNullOrWhiteSpace(item.RedirectUrl))
                                     {
@@ -127,7 +127,7 @@
                                             <span class="sr-only" data-copy-label>Sao chép link</span>
                                         </button>
                                     }
-                                    <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true"
+                                    <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true" data-turbo="false"
                                           data-link-visibility-form data-link-id="@item.Id">
                                         <input type="hidden" name="linkId" value="@item.Id" />
                                         <input type="hidden" name="visibilityAction" value="@(item.IsHidden ? "show" : "hide")" />
@@ -170,13 +170,13 @@
                                 <p class="affiliate-estimate unavailable" data-estimated-commission>Chưa có ước tính hoa hồng</p>
                             </div>
                             <div class="affiliate-link-actions">
-                                <a class="affiliate-buy-button" href="#" data-open-in-new-tab-on-desktop rel="nofollow sponsored noopener">Mua ngay</a>
+                                <a class="affiliate-buy-button" href="#" data-open-in-new-tab-on-desktop data-turbo="false" rel="nofollow sponsored noopener">Mua ngay</a>
                                 <div class="affiliate-link-secondary-actions">
                                     <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="" aria-label="Sao chép link" title="Sao chép link">
                                         <img src="~/catback/icons/copy-link.svg" alt="" />
                                         <span class="sr-only" data-copy-label>Sao chép link</span>
                                     </button>
-                                    <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true"
+                                    <form method="post" asp-page-handler="SetHidden" asp-antiforgery="true" data-turbo="false"
                                           data-link-visibility-form data-link-id="">
                                         <input type="hidden" name="linkId" value="" />
                                         <input type="hidden" name="visibilityAction" value="hide" />

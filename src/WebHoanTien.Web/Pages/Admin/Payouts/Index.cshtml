@@ -71,7 +71,7 @@
                     <div class="admin-payout-actions" data-payout-actions>
                         <details class="admin-pay-panel" @(!request.IsBacked ? "data-disabled" : null)>
                             <summary>Đánh dấu đã thanh toán</summary>
-                            <form method="post" asp-page-handler="Pay" enctype="multipart/form-data" data-admin-pay>
+                            <form method="post" asp-page-handler="Pay" enctype="multipart/form-data" data-admin-pay data-turbo="false">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="requestId" value="@request.Id" />
                                 <label><span>Mã giao dịch *</span><input name="paymentReference" maxlength="128" required /></label>
@@ -84,7 +84,7 @@
                         </details>
                         <details class="admin-reject-panel">
                             <summary>Từ chối yêu cầu</summary>
-                            <form method="post" asp-page-handler="Reject" data-admin-reject>
+                            <form method="post" asp-page-handler="Reject" data-admin-reject data-turbo="false">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="requestId" value="@request.Id" />
                                 <label class="wide"><span>Lý do từ chối *</span><textarea name="reason" maxlength="500" rows="3" required></textarea></label>

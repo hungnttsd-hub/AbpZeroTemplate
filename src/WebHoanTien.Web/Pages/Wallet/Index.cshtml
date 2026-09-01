@@ -40,7 +40,7 @@
     {
         <div class="wallet-pending-banner" data-pending-withdrawal>
             <div><strong>Đang xử lý yêu cầu @Model.Overview.PendingWithdrawal.RequestCode</strong><span>@WalletPageUi.FormatMoney(Model.Overview.PendingWithdrawal.Amount) · Gửi lúc @WalletPageUi.FormatDate(Model.Overview.PendingWithdrawal.CreationTime)</span></div>
-            <form method="post" action="/Wallet?handler=Cancel" data-wallet-cancel>
+            <form method="post" action="/Wallet?handler=Cancel" data-wallet-cancel data-turbo="false">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="requestId" value="@Model.Overview.PendingWithdrawal.Id" />
                 <button type="submit">Hủy yêu cầu</button>

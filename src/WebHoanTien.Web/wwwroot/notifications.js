@@ -1,4 +1,4 @@
-(function () {
+window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
     const root = document.querySelector('[data-notification-root]');
     if (!root) return;
 
@@ -36,15 +36,9 @@
     }
 
     backButton?.addEventListener('click', (event) => {
-        if (!document.referrer) return;
-        try {
-            if (new URL(document.referrer).origin !== window.location.origin) return;
-            event.preventDefault();
-            window.history.back();
-        } catch {
-            // Keep the home-page fallback from the anchor.
-        }
-    });
+        event.preventDefault();
+        back('/', '/');
+    }, { signal });
 
     function updateBadges(count) {
         document.querySelectorAll('[data-notification-badge]').forEach((badge) => {
@@ -173,7 +167,7 @@
         const query = new URLSearchParams();
         if (category) query.set('category', category);
         if (unreadOnly) query.set('unreadOnly', 'true');
-        history.replaceState(null, '', `/Notifications${query.size ? `?${query}` : ''}`);
+        history.replaceState(history.state, '', `/Notifications${query.size ? `?${query}` : ''}`);
     }
 
     function syncFilters() {
@@ -264,13 +258,13 @@
                 const data = await postHandler('Read', { notificationId: card.dataset.notificationId });
                 card.classList.remove('is-unread');
                 updateBadges(data.unreadCount);
-                window.location.assign(card.href);
+                visit(card.href);
             } catch (error) {
                 delete card.dataset.opening;
                 showToast(error.message);
             }
         }
-    });
+    }, { signal });
 
     loadMoreButton.addEventListener('click', async () => {
         if (isBusy) return;
@@ -290,23 +284,24 @@
             isBusy = false;
             loadMoreButton.disabled = false;
         }
-    });
+    }, { signal });
 
-    document.querySelector('[data-open-notification-filter]').addEventListener('click', openFilter);
-    document.querySelector('[data-close-notification-filter]').addEventListener('click', closeFilter);
-    filterBackdrop.addEventListener('click', closeFilter);
+    document.querySelector('[data-open-notification-filter]').addEventListener('click', openFilter, { signal });
+    document.querySelector('[data-close-notification-filter]').addEventListener('click', closeFilter, { signal });
+    filterBackdrop.addEventListener('click', closeFilter, { signal });
     filterSheet.addEventListener('click', (event) => {
         const option = event.target.closest('[data-sheet-category]');
         if (!option) return;
         filterSheet.querySelectorAll('[data-sheet-category]').forEach((button) => button.classList.remove('is-active'));
         option.classList.add('is-active');
-    });
+    }, { signal });
     document.querySelector('[data-apply-notification-filter]').addEventListener('click', async () => {
         category = filterSheet.querySelector('[data-sheet-category].is-active')?.dataset.sheetCategory || '';
         unreadOnly = unreadInput.checked;
         closeFilter();
         syncFilters();
         await reloadList();
-    });
+    }, { signal });
     syncFilters();
-})();
+    return closeFilter;
+});

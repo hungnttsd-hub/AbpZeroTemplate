@@ -1,4 +1,4 @@
-(function () {
+window.CatBackSpa.mount('orders', ({ signal }) => {
   async function copyText(value) {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(value);
@@ -37,5 +37,5 @@
     } catch {
       button.classList.remove("is-copied");
     }
-  });
-})();
+  }, { signal });
+});

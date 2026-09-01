@@ -457,6 +457,7 @@ public class WebHoanTienWebModule : AbpModule
         app.UseMiddleware<LegalConsentMiddleware>();
         app.UseDynamicClaims();
         app.UseAuthorization();
+        app.UseMiddleware<CatBackTurboResponseMiddleware>();
 
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {

@@ -1,4 +1,4 @@
-(() => {
+window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   const linkForm = document.getElementById('link-form');
   const createButton = document.getElementById('create-button');
   const linkInput = document.getElementById('affiliate-url');
@@ -235,7 +235,7 @@
           sheet?.remove();
           renderEmptyLinkState();
         };
-        card?.addEventListener('animationend', finishRemoval, { once: true });
+        card?.addEventListener('animationend', finishRemoval, { once: true, signal });
         removalFallback = window.setTimeout(finishRemoval, 500);
       } else {
         updateCardVisibility(card, linkId, result.isHidden ?? requestedHidden);
@@ -247,12 +247,12 @@
     }
   };
 
-  linkInput?.addEventListener('input', syncClearButton);
+  linkInput?.addEventListener('input', syncClearButton, { signal });
   clearButton?.addEventListener('click', () => {
     linkInput.value = '';
     syncClearButton();
     linkInput.focus();
-  });
+  }, { signal });
   syncClearButton();
 
   linkForm?.addEventListener('submit', async (event) => {
@@ -271,7 +271,7 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || 'Không thể tạo link mua hàng lúc này.');
       if (result.requiresLogin) {
-        window.location.assign(result.redirectUrl);
+        visit(result.redirectUrl);
         return;
       }
 
@@ -285,14 +285,14 @@
       createButton.disabled = false;
       if (createButtonContent !== undefined) createButton.innerHTML = createButtonContent;
     }
-  });
+  }, { signal });
 
   document.addEventListener('submit', (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement) || !form.matches('[data-link-visibility-form]')) return;
     event.preventDefault();
     void submitLinkVisibility(form);
-  });
+  }, { signal });
 
   document.addEventListener('click', async (event) => {
     const target = event.target instanceof Element ? event.target : null;
@@ -344,9 +344,9 @@
       label.textContent = 'Không thể sao chép';
       copyButton.setAttribute('aria-label', 'Không thể sao chép');
     }
-  });
+  }, { signal });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeActionSheet(document.querySelector('.affiliate-action-sheet:not([hidden])'));
-  });
-})();
+  }, { signal });
+});
