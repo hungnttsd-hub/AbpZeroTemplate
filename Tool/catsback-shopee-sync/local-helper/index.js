@@ -5,7 +5,7 @@ const os = require("os");
 const crypto = require("crypto");
 const http = require("http");
 
-const APP_VERSION = "0.7.3";
+const APP_VERSION = "0.7.4";
 const APP_DIR = __dirname;
 const CONFIG_PATH = path.join(APP_DIR, "config.json");
 const EXAMPLE_CONFIG_PATH = path.join(APP_DIR, "config.example.json");
@@ -807,7 +807,7 @@ function settingsHtml(port) {
 <style>
 body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;padding:0 18px;color:#1f2937}h1{font-size:24px}h2{font-size:18px;margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb}label{display:block;font-weight:600;margin-top:16px}input{box-sizing:border-box;width:100%;margin-top:6px;padding:10px;border:1px solid #d1d5db;border-radius:8px}.row{display:flex;gap:16px}.row>div{flex:1}.check{display:flex;gap:8px;align-items:center;font-weight:400}.check input{width:auto;margin:0}button{margin-top:20px;padding:10px 16px;border:0;border-radius:8px;background:#111827;color:#fff;cursor:pointer}button.secondary{background:#e5e7eb;color:#111827;margin-left:8px}.hint{font-size:12px;color:#6b7280;margin-top:4px;line-height:1.45}.status{margin-top:16px;padding:10px 12px;background:#f3f4f6;border-radius:8px;white-space:pre-wrap}</style></head>
 <body>
-<h1>CatsBack Sync Helper Settings v0.7.3</h1>
+<h1>CatsBack Sync Helper Settings v0.7.4</h1>
 <p>Helper tu lay Bearer token ngan han bang Client ID/Client Secret. Access token chi duoc giu trong RAM va tu refresh khi het han.</p>
 <label>CatsBack API Base URL<input id="apiBaseUrl"></label>
 <div class="row"><div><label>Client ID<input id="clientId" autocomplete="off"></label></div><div><label>Client Secret<input id="clientSecret" type="password" autocomplete="new-password" placeholder="De trong de giu secret cu"></label></div></div>

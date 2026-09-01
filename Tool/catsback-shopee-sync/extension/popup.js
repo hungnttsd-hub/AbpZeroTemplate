@@ -66,6 +66,8 @@ async function refresh() {
 
   syncNowBtn.disabled = Boolean(data?.isRunning);
   syncNowBtn.textContent = data?.isRunning ? "Đang chạy..." : "Đồng bộ ngay";
+  exportSettlementsBtn.disabled = Boolean(data?.isRunning);
+  importSettlementsBtn.disabled = Boolean(data?.isRunning);
   const hasPersistedLock = Boolean(data?.syncLockAt);
   clearLockBtn.style.display = hasPersistedLock && !data?.isRunning ? "block" : "none";
 }
@@ -87,6 +89,7 @@ async function runSettlementAction(action) {
     const parts = [
       `${result.validationCount || 0} bảng kê`,
       `${result.rowCount || 0} đơn`,
+      `${result.shopeeRequestCount || 0} request chi tiết Shopee${result.shopeeRetryCount ? ` (${result.shopeeRetryCount} retry)` : ""}`,
       result.filePath ? `File: ${result.filePath}` : ""
     ].filter(Boolean);
     if (isImport && result.importSummary) parts.push(result.importSummary);

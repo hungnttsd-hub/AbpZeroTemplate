@@ -1,4 +1,4 @@
-# CatsBack Shopee Sync v0.7.3
+# CatsBack Shopee Sync v0.7.4
 
 Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 
@@ -14,6 +14,8 @@ Extension không mở trang chi tiết của từng `validation_id`. Extension m
 1. Bắt response `GET /api/v3/payment/billing_list` của trang Billing
 2. `GET /api/v3/payment/billing_detail?validation_id=...`
 3. `GET /api/v3/report/validation_detail/v2?...`
+
+Các request chi tiết luôn chạy tuần tự và nghỉ ngẫu nhiên 1,8–3,2 giây giữa hai lần gọi. Tool chỉ cho phép một phiên đồng bộ chạy tại một thời điểm; khi gặp HTTP `429`, `408`, `425` hoặc `5xx`, request GET được thử lại tối đa ba lần với exponential backoff và tôn trọng header `Retry-After` của Shopee. Riêng `429` luôn chờ tối thiểu 30 giây trước lần thử tiếp theo.
 
 Mọi `validation_id` trong response `billing_list` đều được tổng hợp, không lọc theo trạng thái thanh toán. CSV giữ nguyên `payment_status`, `validation_payout_status`, trạng thái validation và các cờ điều chỉnh. Website hiển thị trạng thái Shopee để admin tự quyết định duyệt cộng ví; trạng thái nhà cung cấp không tự động ẩn nút duyệt.
 

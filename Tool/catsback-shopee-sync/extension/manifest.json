@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CatsBack Shopee Affiliate Sync",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Đồng bộ conversion và tổng hợp/import đối soát Shopee trực tiếp từ API trong phiên đăng nhập hiện tại.",
   "permissions": [
     "alarms",

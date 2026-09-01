@@ -18,6 +18,7 @@ const DEFAULTS = {
 
 const ALARM_NAME = "catsback-shopee-hourly-sync";
 let activeRunToken = null;
+let activeSettlementRunToken = null;
 const LEGACY_LOCK_TTL_MS = 7 * 60 * 1000;
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -85,7 +86,8 @@ async function getStatusWithHelper() {
     "syncLockSource"
   ]);
 
-  data.isRunning = Boolean(activeRunToken);
+  data.isRunning = Boolean(activeRunToken || activeSettlementRunToken);
+  data.isSettlementRunning = Boolean(activeSettlementRunToken);
   data.lockAgeMs = data.syncLockAt ? Math.max(0, Date.now() - Number(data.syncLockAt)) : 0;
 
   try {
@@ -113,7 +115,7 @@ async function ensureAlarm() {
 async function runSync(source) {
   const startedAt = Date.now();
 
-  if (activeRunToken) {
+  if (activeRunToken || activeSettlementRunToken) {
     return {
       ok: false,
       reason: "locked",
@@ -806,6 +808,15 @@ const SETTLEMENT_HELPER_BASE_URL = "http://127.0.0.1:32145";
 
 async function runSettlementCollection(mode) {
   const action = mode === "import" ? "import" : "export";
+  if (activeSettlementRunToken || activeRunToken) {
+    return {
+      ok: false,
+      error: "Một lần đồng bộ khác đang chạy. Hãy chờ lần đó hoàn tất."
+    };
+  }
+
+  const runToken = crypto.randomUUID();
+  activeSettlementRunToken = runToken;
   try {
     const healthResponse = await fetch(`${SETTLEMENT_HELPER_BASE_URL}/health`, { cache: "no-store" });
     if (!healthResponse.ok) throw new Error(`Local Helper trả về HTTP ${healthResponse.status}.`);
@@ -849,6 +860,8 @@ async function runSettlementCollection(mode) {
       ok: true,
       validationCount: report.validationCount,
       rowCount: report.rows.length,
+      shopeeRequestCount: report.shopeeRequestCount || 0,
+      shopeeRetryCount: report.shopeeRetryCount || 0,
       filePath: helperPayload.filePath || "",
       importSummary: helperPayload.importSummary || ""
     };
@@ -867,6 +880,8 @@ async function runSettlementCollection(mode) {
       lastSettlementMessage: message
     });
     return { ok: false, error: message };
+  } finally {
+    if (activeSettlementRunToken === runToken) activeSettlementRunToken = null;
   }
 }
 
@@ -908,6 +923,19 @@ async function collectShopeeSettlementRowsInPage() {
   const MAX_VALIDATIONS = 2000;
   const MAX_CHECKOUTS_PER_BILL = 10000;
   const PAGE_SIZE = 100;
+  // Giữ nhịp cố định cho toàn bộ API Shopee của một lần tổng hợp. Các vòng lặp
+  // phía dưới đã chạy tuần tự; khoảng nghỉ ngẫu nhiên này ngăn request nối đuôi
+  // quá sát nhau, kể cả giữa billing_detail và các trang validation_detail.
+  const REQUEST_DELAY_MIN_MS = 1800;
+  const REQUEST_DELAY_MAX_MS = 3200;
+  const REQUEST_MAX_ATTEMPTS = 4;
+  const RETRY_BACKOFF_BASE_MS = 5000;
+  const RATE_LIMIT_BACKOFF_BASE_MS = 30000;
+  const RETRY_BACKOFF_MAX_MS = 60000;
+  const RETRY_AFTER_MAX_MS = 10 * 60 * 1000;
+  let nextShopeeRequestAt = 0;
+  let shopeeRequestCount = 0;
+  let shopeeRetryCount = 0;
 
   try {
     if (location.hostname !== "affiliate.shopee.vn") {
@@ -915,6 +943,9 @@ async function collectShopeeSettlementRowsInPage() {
     }
 
     const capture = await waitForBillingListNetworkCapture(15000);
+    // billing_list vừa được chính trang Shopee gọi. Chờ một nhịp trước request
+    // chi tiết đầu tiên để không tạo burst ngay sau khi trang vừa tải xong.
+    scheduleNextShopeeRequest();
     const payload = capture.payload;
     if (Number(payload?.code ?? -1) !== 0) {
       throw new Error(`Shopee API billing_list lỗi: ${String(payload?.msg || payload?.message || payload?.code || "unknown")}`);
@@ -1061,6 +1092,8 @@ async function collectShopeeSettlementRowsInPage() {
       billingListRequestUrl: capture.url,
       billingListCount: list.length,
       candidateCount: candidates.length,
+      shopeeRequestCount,
+      shopeeRetryCount,
       rows
     };
   } catch (error) {
@@ -1123,22 +1156,88 @@ async function collectShopeeSettlementRowsInPage() {
   async function apiGet(path, query) {
     const url = new URL(path, location.origin);
     for (const [key, value] of Object.entries(query || {})) url.searchParams.set(key, value);
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      credentials: "include",
-      headers: { Accept: "application/json, text/plain, */*" },
-      cache: "no-store"
-    });
-    if (!response.ok) throw new Error(`Shopee API ${path} trả về HTTP ${response.status}.`);
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.toLowerCase().includes("json")) {
-      throw new Error("Phiên đăng nhập Shopee đã hết hạn. Hãy đăng nhập lại rồi chạy lại tool.");
+    let lastFailure = "";
+
+    for (let attempt = 0; attempt < REQUEST_MAX_ATTEMPTS; attempt++) {
+      await waitForShopeeRequestSlot();
+      let response;
+      try {
+        shopeeRequestCount += 1;
+        response = await fetch(url.toString(), {
+          method: "GET",
+          credentials: "include",
+          headers: { Accept: "application/json, text/plain, */*" },
+          cache: "no-store"
+        });
+      } catch (error) {
+        lastFailure = error?.message || String(error);
+        scheduleNextShopeeRequest();
+        if (attempt + 1 >= REQUEST_MAX_ATTEMPTS) {
+          throw new Error(`Shopee API ${path} không kết nối được sau ${REQUEST_MAX_ATTEMPTS} lần: ${lastFailure}`);
+        }
+        shopeeRetryCount += 1;
+        postponeNextShopeeRequest(retryBackoffMs(attempt));
+        continue;
+      }
+
+      scheduleNextShopeeRequest();
+      if (isRetryableStatus(response.status) && attempt + 1 < REQUEST_MAX_ATTEMPTS) {
+        shopeeRetryCount += 1;
+        const retryAfter = retryAfterMs(response.headers.get("retry-after"));
+        postponeNextShopeeRequest(Math.max(retryAfter, retryBackoffMs(attempt, response.status)));
+        continue;
+      }
+      if (!response.ok) throw new Error(`Shopee API ${path} trả về HTTP ${response.status}.`);
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.toLowerCase().includes("json")) {
+        throw new Error("Phiên đăng nhập Shopee đã hết hạn. Hãy đăng nhập lại rồi chạy lại tool.");
+      }
+      const payload = await response.json();
+      if (Number(payload?.code ?? -1) !== 0) {
+        throw new Error(`Shopee API ${path} lỗi: ${String(payload?.msg || payload?.message || payload?.code || "unknown")}`);
+      }
+      return payload;
     }
-    const payload = await response.json();
-    if (Number(payload?.code ?? -1) !== 0) {
-      throw new Error(`Shopee API ${path} lỗi: ${String(payload?.msg || payload?.message || payload?.code || "unknown")}`);
-    }
-    return payload;
+
+    throw new Error(`Shopee API ${path} thất bại: ${lastFailure || "unknown"}.`);
+  }
+
+  async function waitForShopeeRequestSlot() {
+    const waitMs = Math.max(0, nextShopeeRequestAt - Date.now());
+    if (waitMs > 0) await new Promise(resolve => setTimeout(resolve, waitMs));
+  }
+
+  function scheduleNextShopeeRequest() {
+    nextShopeeRequestAt = Date.now() + randomInteger(REQUEST_DELAY_MIN_MS, REQUEST_DELAY_MAX_MS);
+  }
+
+  function postponeNextShopeeRequest(delayMs) {
+    nextShopeeRequestAt = Math.max(nextShopeeRequestAt, Date.now() + Math.max(0, delayMs));
+  }
+
+  function retryBackoffMs(attempt, status = 0) {
+    const baseDelay = status === 429 ? RATE_LIMIT_BACKOFF_BASE_MS : RETRY_BACKOFF_BASE_MS;
+    const exponential = Math.min(RETRY_BACKOFF_MAX_MS, baseDelay * (2 ** attempt));
+    return exponential + randomInteger(0, 1000);
+  }
+
+  function retryAfterMs(value) {
+    const text = String(value || "").trim();
+    if (!text) return 0;
+    const seconds = Number(text);
+    const delay = Number.isFinite(seconds)
+      ? seconds * 1000
+      : Date.parse(text) - Date.now();
+    return Number.isFinite(delay) ? Math.min(RETRY_AFTER_MAX_MS, Math.max(0, delay)) : 0;
+  }
+
+  function isRetryableStatus(status) {
+    return status === 408 || status === 425 || status === 429 || status >= 500;
+  }
+
+  function randomInteger(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   async function getValidationCheckouts(startTime, endTime, validationId) {

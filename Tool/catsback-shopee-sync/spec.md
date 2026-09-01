@@ -1,4 +1,4 @@
-# Settlement sync specification v0.7.3
+# Settlement sync specification v0.7.4
 
 ## Boundary
 
@@ -6,6 +6,12 @@
 - Extension chỉ chuyển canonical settlement rows sang `127.0.0.1:32145`.
 - Local Helper tạo CSV, lưu cục bộ và chỉ upload CSV cùng Bearer token CatsBack.
 - Không gửi item name, bank account, Shopee cookie hoặc toàn bộ billing response đến CatsBack.
+
+## Request pacing
+
+- Chỉ một luồng conversion/settlement được chạy tại một thời điểm.
+- Các request chi tiết Shopee chạy tuần tự và nghỉ ngẫu nhiên 1,8–3,2 giây sau khi request trước hoàn tất.
+- GET gặp `408`, `425`, `429` hoặc `5xx` được retry tối đa ba lần bằng exponential backoff; `Retry-After` được ưu tiên nếu Shopee gửi về và `429` luôn chờ tối thiểu 30 giây.
 
 ## Collection and admin approval
 
