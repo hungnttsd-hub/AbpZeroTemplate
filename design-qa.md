@@ -3,6 +3,7 @@
 - Source visual truth: `D:\Desktop\catbackSidebar.png`
 - Implementation screenshot: not captured
 - Intended state: authenticated account, avatar menu open; regular and admin variants
+- Additional states: Identity user/role administration pages and the admin notification form
 - Intended viewport: responsive desktop and mobile, with the supplied source representing a mobile viewport
 - Source dimensions: 852 × 1852 px
 - Implementation dimensions / CSS viewport / density normalization: unavailable
@@ -29,6 +30,8 @@ Blocked for the same reason. Header identity, navigation rows, permission-specif
 - Capture the authenticated regular-user menu at mobile and desktop widths.
 - Capture the authenticated admin menu at the same widths.
 - Verify avatar, backdrop, close button, Escape, focus trap, scrolling and route navigation.
+- Verify `/Identity/Users` and `/Identity/Roles` render with the ABP application layout instead of returning an unrendered-section error.
+- Verify the notification audience/email grid in both audience modes and the success/error response states.
 - Compare the mobile open state against the supplied source image and fix any P0/P1/P2 differences.
 
 final result: blocked

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ public class IndexModel : PageModel
     private readonly IAdminNotificationAppService _notifications;
 
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
+    [BindProperty] public SendPromotionNotificationInput Form { get; set; } = new();
     public PagedResultDto<AdminNotificationCampaignDto> Campaigns { get; private set; } = new();
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(Campaigns.TotalCount / (double)PageSize));
 
@@ -34,21 +36,35 @@ public class IndexModel : PageModel
             SkipCount = (PageNumber - 1) * PageSize,
             MaxResultCount = PageSize
         });
+
+        if (PageNumber > TotalPages)
+        {
+            PageNumber = TotalPages;
+            Campaigns = await _notifications.GetListAsync(new GetAdminNotificationCampaignsInput
+            {
+                SkipCount = (PageNumber - 1) * PageSize,
+                MaxResultCount = PageSize
+            });
+        }
     }
 
-    public async Task<IActionResult> OnPostSendAsync(string title, string message, string? actionUrl,
-        NotificationAudience audience, string? targetEmail)
+    public async Task<IActionResult> OnPostSendAsync()
     {
+        if (!ModelState.IsValid)
+        {
+            var validationError = ModelState.Values.SelectMany(value => value.Errors)
+                .Select(error => error.ErrorMessage)
+                .FirstOrDefault(message => !string.IsNullOrWhiteSpace(message));
+            return BadRequest(new
+            {
+                success = false,
+                error = validationError ?? "Thông tin gửi thông báo chưa hợp lệ."
+            });
+        }
+
         try
         {
-            var campaign = await _notifications.SendPromotionAsync(new SendPromotionNotificationInput
-            {
-                Title = title,
-                Message = message,
-                ActionUrl = actionUrl,
-                Audience = audience,
-                TargetEmail = targetEmail
-            });
+            var campaign = await _notifications.SendPromotionAsync(Form);
             return new JsonResult(new
             {
                 success = true,

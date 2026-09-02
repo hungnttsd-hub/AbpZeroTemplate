@@ -10,11 +10,14 @@
 .admin-notification-form-heading { grid-column: 1/-1; margin-bottom: 4px; }
 .admin-notification-form-heading h2,.admin-campaign-history h2 { margin: 3px 0 5px; font-size: 24px; font-weight: 800; }
 .admin-notification-grid label { display: grid; gap: 7px; color: #334867; font-size: 12px; font-weight: 700; }
-.admin-notification-grid label:nth-of-type(n+3) { grid-column: 1/-1; }
-.admin-notification-grid input,.admin-notification-grid select,.admin-notification-grid textarea { width: 100%; border: 1px solid #cfdbe7; border-radius: 14px; padding: 12px 14px; background: #fbfdff; color: #08254a; font: 500 14px Inter,"Segoe UI",sans-serif; outline: 0; }
+.admin-notification-field--full { grid-column: 1/-1; }
+.admin-notification-form:not(.is-single-user) .admin-notification-field--audience { grid-column: 1/-1; }
+.admin-notification-grid [data-target-email][hidden] { display: none !important; }
+.admin-notification-grid input,.admin-notification-grid select,.admin-notification-grid textarea { width: 100%; border: 1px solid #cfdbe7; border-radius: 14px; padding: 12px 14px; background: #fbfdff; color: #08254a; font: inherit; font-size: 14px; font-weight: 500; outline: 0; }
 .admin-notification-grid input:focus,.admin-notification-grid select:focus,.admin-notification-grid textarea:focus { border-color: #0b9098; box-shadow: 0 0 0 3px rgba(11,144,152,.1); }
 .admin-notification-grid label small { color: #8794a8; font-weight: 500; }
 .admin-notification-grid form>button { grid-column: 1/-1; min-height: 48px; border: 0; border-radius: 15px; background: linear-gradient(135deg,#18b8b0,#0b9098); color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 10px 22px rgba(11,144,152,.18); }
+.admin-notification-grid form>button:disabled { opacity: .62; cursor: wait; }
 .admin-notification-grid form>p { grid-column: 1/-1; min-height: 20px; margin: 0; color: #0b7d63; font-size: 13px; }
 .admin-notification-grid form>p.is-error { color: #c43d4d; }
 .admin-notification-note { display: flex; gap: 14px; padding: 22px; background: linear-gradient(145deg,#eefbfa,#fff); }

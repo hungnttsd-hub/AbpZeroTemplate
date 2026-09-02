@@ -9,8 +9,29 @@ window.CatBackSpa.mount('admin-notifications', ({ signal }) => {
 
     function syncAudience() {
         const single = audience.value === 'SingleUser';
+        const emailInput = targetEmail.querySelector('input');
+        form.classList.toggle('is-single-user', single);
         targetEmail.hidden = !single;
-        targetEmail.querySelector('input').required = single;
+        emailInput.required = single;
+        emailInput.disabled = !single;
+    }
+
+    async function readResponse(response) {
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            if (response.redirected || response.status === 401 || response.status === 403) {
+                throw new Error('Phiên đăng nhập đã hết hạn hoặc bạn không có quyền thực hiện thao tác này.');
+            }
+            throw new Error('Máy chủ trả về dữ liệu không hợp lệ. Vui lòng tải lại trang và thử lại.');
+        }
+
+        return response.json();
+    }
+
+    function getErrorMessage(data) {
+        if (typeof data?.error === 'string') return data.error;
+        if (typeof data?.error?.message === 'string') return data.error.message;
+        return 'Không thể gửi thông báo.';
     }
 
     function showToast(message) {
@@ -44,8 +65,8 @@ window.CatBackSpa.mount('admin-notifications', ({ signal }) => {
         status.textContent = 'Đang gửi thông báo…';
         try {
             const response = await fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' });
-            const data = await response.json();
-            if (!response.ok || data.success === false) throw new Error(data.error || 'Không thể gửi thông báo.');
+            const data = await readResponse(response);
+            if (!response.ok || data.success === false) throw new Error(getErrorMessage(data));
             list.querySelector('[data-admin-campaign-empty]')?.remove();
             list.prepend(createCampaign(data.campaign));
             form.reset();

@@ -12,14 +12,13 @@
     </header>
 
     <div class="admin-notification-grid">
-        <form method="post" asp-page-handler="Send" data-admin-notification-form data-turbo="false">
-            @Html.AntiForgeryToken()
+        <form class="admin-notification-form" method="post" asp-page-handler="Send" data-admin-notification-form data-turbo="false">
             <div class="admin-notification-form-heading"><span>Gửi ngay</span><h2>Thông báo ưu đãi</h2><p>Nội dung được lưu riêng cho từng người nhận tại thời điểm gửi.</p></div>
-            <label><span>Đối tượng nhận</span><select name="audience" data-notification-audience><option value="AllUsers">Toàn bộ người dùng</option><option value="SingleUser">Một người dùng</option></select></label>
-            <label data-target-email hidden><span>Email người nhận</span><input name="targetEmail" type="email" maxlength="256" placeholder="khachhang@gmail.com" /></label>
-            <label><span>Tiêu đề</span><input name="title" maxlength="160" required placeholder="Ưu đãi mới từ CatBack" /></label>
-            <label><span>Nội dung</span><textarea name="message" maxlength="700" rows="4" required placeholder="Nhập nội dung ngắn gọn mà khách hàng sẽ nhìn thấy."></textarea></label>
-            <label><span>Đường dẫn nội bộ</span><input name="actionUrl" maxlength="500" placeholder="/ hoặc /Wallet" /><small>Không bắt buộc. Chỉ nhận đường dẫn bắt đầu bằng /.</small></label>
+            <label class="admin-notification-field--audience"><span>Đối tượng nhận</span><select asp-for="Form.Audience" data-notification-audience><option value="AllUsers">Toàn bộ người dùng</option><option value="SingleUser">Một người dùng</option></select></label>
+            <label data-target-email hidden><span>Email người nhận</span><input asp-for="Form.TargetEmail" type="email" maxlength="256" placeholder="khachhang@gmail.com" /></label>
+            <label class="admin-notification-field--full"><span>Tiêu đề</span><input asp-for="Form.Title" maxlength="160" required placeholder="Ưu đãi mới từ CatBack" /></label>
+            <label class="admin-notification-field--full"><span>Nội dung</span><textarea asp-for="Form.Message" maxlength="700" rows="4" required placeholder="Nhập nội dung ngắn gọn mà khách hàng sẽ nhìn thấy."></textarea></label>
+            <label class="admin-notification-field--full"><span>Đường dẫn nội bộ</span><input asp-for="Form.ActionUrl" maxlength="500" placeholder="/ hoặc /Wallet" /><small>Không bắt buộc. Chỉ nhận đường dẫn bắt đầu bằng /.</small></label>
             <button type="submit">Gửi thông báo</button>
             <p data-admin-notification-status role="status"></p>
         </form>
