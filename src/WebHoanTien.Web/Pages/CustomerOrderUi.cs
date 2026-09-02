@@ -41,6 +41,7 @@ public static class CustomerOrderUi
     public static string FormatMoney(decimal value) => $"{value:N0}đ";
 
     public static decimal DisplayCommission(AffiliateOrderDto order) =>
+        IsCancelled(order.Status) ? 0m :
         order.Status == AffiliateOrderStatus.Settled ? order.PayableUserCommission : order.ExpectedUserCommission;
 
     public static string FormatDate(DateTime value) => value.ToLocalTime().ToString("HH:mm · dd/MM/yyyy");

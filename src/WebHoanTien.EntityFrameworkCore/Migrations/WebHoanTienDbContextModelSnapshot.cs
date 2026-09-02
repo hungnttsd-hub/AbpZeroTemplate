@@ -2046,6 +2046,9 @@ namespace WebHoanTien.Migrations
                         .HasPrecision(20, 4)
                         .HasColumnType("numeric(20,4)");
 
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("PurchaseAmount")
                         .HasPrecision(20, 4)
                         .HasColumnType("numeric(20,4)");
@@ -2078,8 +2081,11 @@ namespace WebHoanTien.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConversionId", "ExternalOrderId")
-                        .IsUnique();
+                    b.HasIndex("ConversionId");
+
+                    b.HasIndex("Platform", "ExternalOrderId")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = FALSE");
 
                     b.HasIndex("Status", "SettledAt");
 
@@ -2171,9 +2177,117 @@ namespace WebHoanTien.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId", "ExternalItemId", "ModelId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = FALSE");
 
                     b.ToTable("OrderItem", "affiliate");
+                });
+
+            modelBuilder.Entity("WebHoanTien.Affiliates.AffiliateOrderItemAttribution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AllocatedNetCommission")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<string>("AttributionValue")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsFraud")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("ItemTotalCommission")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OrderItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProviderStatus")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<decimal>("PurchaseAmount")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<decimal?>("SettledNetCommission")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<decimal?>("SettledUserCommission")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("TrackingId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UserCommissionSnapshot")
+                        .HasPrecision(20, 4)
+                        .HasColumnType("numeric(20,4)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UserShareRate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("numeric(7,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackingId");
+
+                    b.HasIndex("OrderItemId", "AttributionValue")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = FALSE");
+
+                    b.HasIndex("UserId", "OrderItemId");
+
+                    b.ToTable("OrderItemAttribution", "affiliate");
                 });
 
             modelBuilder.Entity("WebHoanTien.Affiliates.AffiliateRawPayload", b =>
@@ -2278,9 +2392,6 @@ namespace WebHoanTien.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("UnmatchedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WaitingPaymentCount")
                         .HasColumnType("integer");
 
                     b.Property<int>("UpdatedCount")
@@ -2564,6 +2675,9 @@ namespace WebHoanTien.Migrations
                     b.Property<int>("UnmatchedCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("WaitingPaymentCount")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ContentHash")
@@ -2613,10 +2727,10 @@ namespace WebHoanTien.Migrations
                         .HasColumnType("text")
                         .HasColumnName("ExtraProperties");
 
-                    b.Property<bool>("HasAuthoritativeEligibleCommission")
+                    b.Property<bool>("HasAdjustment")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("HasAdjustment")
+                    b.Property<bool>("HasAuthoritativeEligibleCommission")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("HasBonus")
@@ -2647,13 +2761,13 @@ namespace WebHoanTien.Migrations
                         .HasPrecision(20, 4)
                         .HasColumnType("numeric(20,4)");
 
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PayoutId")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
-
-                    b.Property<int>("PaymentStatus")
-                        .HasColumnType("integer");
 
                     b.Property<int>("RecordCount")
                         .HasColumnType("integer");
@@ -3494,6 +3608,25 @@ namespace WebHoanTien.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("WebHoanTien.Affiliates.AffiliateOrderItemAttribution", b =>
+                {
+                    b.HasOne("WebHoanTien.Affiliates.AffiliateOrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebHoanTien.Affiliates.AffiliateTracking", null)
+                        .WithMany()
+                        .HasForeignKey("TrackingId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Volo.Abp.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("WebHoanTien.Affiliates.AffiliateRawPayload", b =>

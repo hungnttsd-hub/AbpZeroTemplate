@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -69,7 +70,12 @@ public class IndexModel : PageModel
 
         await using var stream = Report.OpenReadStream();
         var result = await _imports.ImportAsync(stream, Report.FileName);
-        TempData["ImportMessage"] = $"Đã xử lý {result.ImportedRowCount} dòng: thêm {result.InsertedCount}, cập nhật {result.UpdatedCount}, chưa ghép {result.UnmatchedCount}, lỗi {result.ErrorCount}.";
+        var errorDetails = result.Errors.Count == 0
+            ? string.Empty
+            : $" Chi tiết: {string.Join(" | ", result.Errors.Take(3))}";
+        TempData["ImportMessage"] = $"Đã xử lý {result.ImportedRowCount} dòng: thêm {result.InsertedCount}, cập nhật {result.UpdatedCount}, " +
+            $"item đã ghép {result.MatchedItemCount}, item chưa ghép {result.UnmatchedItemCount}, " +
+            $"đơn nhiều link {result.MultiTrackingOrderCount}, lỗi {result.ErrorCount}.{errorDetails}";
         return RedirectToPage();
     }
 

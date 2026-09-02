@@ -102,12 +102,25 @@
                                 </div>
                                 <div>
                                     <span>Người dùng</span>
-                                    <strong>@(record.UserEmail ?? (record.UserId.HasValue ? record.UserId.Value.ToString() : "Chưa ghép người dùng"))</strong>
+                                    @if (record.Recipients.Count > 0)
+                                    {
+                                        <strong>@string.Join(" · ", record.Recipients.Select(x =>
+                                            $"{x.UserEmail ?? x.UserId.ToString()} ({SettlementPageUi.Money(x.ProjectedUserCommission)})"))</strong>
+                                    }
+                                    else
+                                    {
+                                        <strong>@(record.UserEmail ?? (record.UserId.HasValue ? record.UserId.Value.ToString() : "Chưa ghép người dùng"))</strong>
+                                    }
                                 </div>
                             </div>
                             <p class="admin-settlement-provider-state">payment_status=<b>@record.PaymentStatus</b> · validation_payout_status=<b>@record.ValidationPayoutStatus</b> · overall_validation_status=<b>@SettlementPageUi.Code(record.OverallValidationStatus)</b> · bill_validation_status=<b>@SettlementPageUi.Code(record.BillValidationStatus)</b></p>
                             <dl><div><dt>Hoa hồng hợp lệ</dt><dd>@SettlementPageUi.Money(record.EligibleCommission)</dd></div><div><dt>Phí dịch vụ</dt><dd>@SettlementPageUi.Deduction(record.AllocatedServiceFee)</dd></div><div><dt>Thuế</dt><dd>@SettlementPageUi.Deduction(record.AllocatedTax)</dd></div><div><dt>@(record.IsShopeePaid ? "Shopee thực trả" : "Giá trị đối soát")</dt><dd>@SettlementPageUi.Money(record.ActualPaidCommission)</dd></div><div><dt>User dự kiến nhận</dt><dd>@SettlementPageUi.Money(record.ProjectedUserCommission)</dd></div></dl>
                             @if (!string.IsNullOrWhiteSpace(record.Issue)) { <p class="admin-settlement-warning">@record.Issue</p> }
+                            @if (record.AffiliateOrderId.HasValue)
+                            {
+                                var returnUrl = $"/Admin/Settlements?BatchId={batch.Id}&RecordPageNumber={Model.RecordPageNumber}";
+                                <a class="button button-ghost" href="/Orders/@record.AffiliateOrderId.Value?returnUrl=@Uri.EscapeDataString(returnUrl)">Xem sản phẩm và token</a>
+                            }
                             @if (record.Status is not ShopeeSettlementRecordStatus.Approved and not ShopeeSettlementRecordStatus.AlreadySettled)
                             {
                                 <form method="post" asp-page-handler="Approve" data-approve-record>

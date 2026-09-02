@@ -61,3 +61,5 @@ public class ShopeeUrlNormalizer : IAffiliateUrlNormalizer, ITransientDependency
 
 public sealed record CommissionAllocationInput(string Key, decimal Weight);
 public sealed record CommissionAllocation(string Key, decimal NetCommission, decimal UserCommission);
+public sealed record AmountAllocationInput(string Key, decimal Weight);
+public sealed record AmountAllocation(string Key, decimal Amount);

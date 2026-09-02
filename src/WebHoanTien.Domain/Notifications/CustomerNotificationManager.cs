@@ -40,34 +40,37 @@ public class CustomerNotificationManager : DomainService
         return true;
     }
 
-    public Task<bool> NotifyOrderStatusAsync(Guid userId, AffiliateOrder order)
+    public Task<bool> NotifyOrderStatusAsync(Guid userId, AffiliateOrder order,
+        decimal? expectedUserCommission = null, decimal? settledUserCommission = null)
     {
         var orderLabel = Shorten(order.ExternalOrderId, 40);
         var actionUrl = $"/Orders/{order.Id}";
+        var expectedAmount = expectedUserCommission ?? order.UserCommissionSnapshot;
+        var settledAmount = settledUserCommission ?? order.PayableUserCommission;
         return order.Status switch
         {
-            AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending => CreateOnceAsync(userId,
+            AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending => CreateOrRefreshOrderAsync(userId,
                 CustomerNotificationCategory.Cashback, CustomerNotificationKind.CashbackPending,
                 "Hoa hồng sắp ghi nhận",
-                $"{FormatMoney(order.UserCommissionSnapshot)} từ đơn Shopee {orderLabel} đang chờ đối soát.",
+                $"{FormatMoney(expectedAmount)} từ đơn Shopee {orderLabel} đang chờ đối soát.",
                 actionUrl, $"order:{order.Id:N}:pending"),
-            AffiliateOrderStatus.Completed => CreateOnceAsync(userId, CustomerNotificationCategory.Order,
+            AffiliateOrderStatus.Completed => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderReconciled, "Đơn hàng đã đối soát",
                 $"Đơn Shopee {orderLabel} đã hoàn tất đối soát và đang chờ Shopee thanh toán hoa hồng.",
                 actionUrl, $"order:{order.Id:N}:completed"),
-            AffiliateOrderStatus.Settled => CreateOnceAsync(userId, CustomerNotificationCategory.Cashback,
+            AffiliateOrderStatus.Settled => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Cashback,
                 CustomerNotificationKind.CashbackRecorded, "Hoàn tiền đã ghi nhận",
-                $"{FormatMoney(order.PayableUserCommission)} từ đơn Shopee {orderLabel} đã được cộng vào ví.",
+                $"{FormatMoney(settledAmount)} từ đơn Shopee {orderLabel} đã được cộng vào ví.",
                 "/Wallet", $"order:{order.Id:N}:settled"),
-            AffiliateOrderStatus.Cancelled => CreateOnceAsync(userId, CustomerNotificationCategory.Order,
+            AffiliateOrderStatus.Cancelled => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderCancelled, "Đơn hàng đã hủy",
                 $"Đơn Shopee {orderLabel} đã bị hủy và không phát sinh hoàn tiền.", actionUrl,
                 $"order:{order.Id:N}:cancelled"),
-            AffiliateOrderStatus.Refunded => CreateOnceAsync(userId, CustomerNotificationCategory.Order,
+            AffiliateOrderStatus.Refunded => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderRefunded, "Đơn hàng đã hoàn trả",
                 $"Đơn Shopee {orderLabel} đã hoàn trả và không còn đủ điều kiện hoàn tiền.", actionUrl,
                 $"order:{order.Id:N}:refunded"),
-            AffiliateOrderStatus.Rejected => CreateOnceAsync(userId, CustomerNotificationCategory.Order,
+            AffiliateOrderStatus.Rejected => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderRejected, "Đơn hàng không được ghi nhận",
                 $"Đơn Shopee {orderLabel} đã bị từ chối ghi nhận hoa hồng.", actionUrl,
                 $"order:{order.Id:N}:rejected"),
@@ -75,37 +78,46 @@ public class CustomerNotificationManager : DomainService
         };
     }
 
-    public async Task<int> NotifySettledOrdersAsync(
-        IEnumerable<(Guid UserId, AffiliateOrder Order)> settledOrders)
+    private async Task<bool> CreateOrRefreshOrderAsync(Guid userId, CustomerNotificationCategory category,
+        CustomerNotificationKind kind, string title, string message, string? actionUrl, string eventKey)
     {
-        var rows = settledOrders.GroupBy(value => value.Order.Id)
-            .Select(group => group.First()).ToList();
-        if (rows.Count == 0) return 0;
-
-        var existingKeys = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var chunk in rows.Select(value => $"order:{value.Order.Id:N}:settled").Chunk(500))
+        var normalizedActionUrl = NormalizeActionUrl(actionUrl);
+        var normalizedEventKey = eventKey.Trim();
+        var existing = await _notifications.FindAsync(x => x.UserId == userId && x.EventKey == normalizedEventKey);
+        if (existing is null)
         {
-            var chunkIds = chunk.ToList();
-            var notifications = await _notifications.GetListAsync(notification =>
-                chunkIds.Contains(notification.EventKey));
-            foreach (var notification in notifications) existingKeys.Add(notification.EventKey);
+            await _notifications.InsertAsync(new CustomerNotification(_guidGenerator.Create(), userId, category, kind,
+                title, message, normalizedActionUrl, normalizedEventKey));
+            return true;
         }
 
-        var additions = rows.Select(value => new
-            {
-                value.UserId,
-                value.Order,
-                EventKey = $"order:{value.Order.Id:N}:settled"
-            })
-            .Where(value => !existingKeys.Contains(value.EventKey))
-            .Select(value => new CustomerNotification(_guidGenerator.Create(), value.UserId,
-                CustomerNotificationCategory.Cashback, CustomerNotificationKind.CashbackRecorded,
-                "Hoàn tiền đã ghi nhận",
-                $"{FormatMoney(value.Order.PayableUserCommission)} từ đơn Shopee {Shorten(value.Order.ExternalOrderId, 40)} đã được cộng vào ví.",
-                "/Wallet", value.EventKey))
-            .ToList();
-        if (additions.Count > 0) await _notifications.InsertManyAsync(additions);
-        return additions.Count;
+        existing.UpdateContent(title, message, normalizedActionUrl);
+        await _notifications.UpdateAsync(existing);
+        return false;
+    }
+
+    public async Task<int> NotifySettledOrdersAsync(
+        IEnumerable<(Guid UserId, AffiliateOrder Order)> settledOrders)
+        => await NotifySettledOrdersAsync(settledOrders.Select(value =>
+            (value.UserId, value.Order, value.Order.PayableUserCommission)));
+
+    public async Task<int> NotifySettledOrdersAsync(
+        IEnumerable<(Guid UserId, AffiliateOrder Order, decimal Amount)> settledOrders)
+    {
+        var rows = settledOrders.GroupBy(value => new { value.UserId, value.Order.Id })
+            .Select(group => group.First()).ToList();
+        if (rows.Count == 0) return 0;
+        var created = 0;
+        foreach (var value in rows)
+        {
+            if (await CreateOnceAsync(value.UserId, CustomerNotificationCategory.Cashback,
+                    CustomerNotificationKind.CashbackRecorded, "Hoàn tiền đã ghi nhận",
+                    $"{FormatMoney(value.Amount)} từ đơn Shopee {Shorten(value.Order.ExternalOrderId, 40)} đã được cộng vào ví.",
+                    "/Wallet", $"order:{value.Order.Id:N}:settled"))
+                created++;
+        }
+
+        return created;
     }
 
     public Task<bool> NotifyWithdrawalStatusAsync(WithdrawalRequest request)

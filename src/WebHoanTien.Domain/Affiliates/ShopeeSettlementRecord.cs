@@ -37,13 +37,13 @@ public class ShopeeSettlementRecord : CreationAuditedAggregateRoot<Guid>
         Status = ShopeeSettlementRecordStatus.Unmatched;
     }
 
-    public void SetPendingApproval(Guid orderId, Guid conversionId, Guid? userId)
+    public void SetPendingApproval(Guid orderId, Guid conversionId, Guid? userId, string? issue = null)
     {
         AffiliateOrderId = orderId;
         AffiliateConversionId = conversionId;
         UserId = userId;
         Status = ShopeeSettlementRecordStatus.PendingApproval;
-        Issue = null;
+        Issue = issue;
     }
 
     public void SetUnmatched(string issue)
@@ -100,6 +100,5 @@ public class ShopeeSettlementRecord : CreationAuditedAggregateRoot<Guid>
         ApprovedByUserId = approvedByUserId;
         ApprovedAt = approvedAt;
         ApprovedUserCommission = approvedUserCommission;
-        Issue = null;
     }
 }

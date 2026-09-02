@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -104,18 +105,22 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
     private readonly IRepository<AffiliateTracking, Guid> _trackings;
     private readonly IRepository<AffiliateOrder, Guid> _orders;
     private readonly IRepository<AffiliateOrderItem, Guid> _items;
+    private readonly IRepository<AffiliateOrderItemAttribution, Guid> _attributions;
     private readonly AffiliateCommissionRuleManager _ruleManager;
     private readonly AffiliateUserShareRateResolver _shareRateResolver;
     private readonly AffiliateCommissionCalculator _calculator;
     public AdminAffiliateOrderAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateTracking, Guid> trackings, IRepository<AffiliateOrder, Guid> orders,
-        IRepository<AffiliateOrderItem, Guid> items, AffiliateCommissionRuleManager ruleManager,
+        IRepository<AffiliateOrderItem, Guid> items,
+        IRepository<AffiliateOrderItemAttribution, Guid> attributions,
+        AffiliateCommissionRuleManager ruleManager,
         AffiliateUserShareRateResolver shareRateResolver, AffiliateCommissionCalculator calculator)
     {
         _conversions = conversions;
         _trackings = trackings;
         _orders = orders;
         _items = items;
+        _attributions = attributions;
         _ruleManager = ruleManager;
         _shareRateResolver = shareRateResolver;
         _calculator = calculator;
@@ -126,9 +131,21 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
         var query = await _conversions.GetQueryableAsync();
         if (input.Platform.HasValue) query = query.Where(x => x.Platform == input.Platform.Value);
         if (input.Status.HasValue) query = query.Where(x => x.Status == input.Status.Value);
-        if (input.IsMatched.HasValue) query = input.IsMatched.Value
-            ? query.Where(x => x.TrackingId.HasValue)
-            : query.Where(x => !x.TrackingId.HasValue);
+        if (input.IsMatched.HasValue)
+        {
+            var matchedAttributions = await _attributions.GetListAsync(x =>
+                x.Status != AffiliateAttributionStatus.Unmatched && x.UserId.HasValue);
+            var matchedItemIds = matchedAttributions.Select(x => x.OrderItemId).Distinct().ToList();
+            var matchedItems = matchedItemIds.Count == 0 ? new List<AffiliateOrderItem>() :
+                await _items.GetListAsync(x => matchedItemIds.Contains(x.Id));
+            var matchedOrderIds = matchedItems.Select(x => x.OrderId).Distinct().ToList();
+            var matchedConversionIds = matchedOrderIds.Count == 0 ? new List<Guid>() :
+                (await _orders.GetListAsync(x => matchedOrderIds.Contains(x.Id)))
+                .Select(x => x.ConversionId).Distinct().ToList();
+            query = input.IsMatched.Value
+                ? query.Where(x => matchedConversionIds.Contains(x.Id))
+                : query.Where(x => !matchedConversionIds.Contains(x.Id));
+        }
         if (input.From.HasValue) query = query.Where(x => x.PurchaseTime >= input.From.Value);
         if (input.To.HasValue) query = query.Where(x => x.PurchaseTime < input.To.Value);
         if (!string.IsNullOrWhiteSpace(input.Filter))
@@ -145,7 +162,9 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
         query = query.OrderByDescending(x => x.PurchaseTime);
         var total = await AsyncExecuter.CountAsync(query);
         var rows = await AsyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
-        return new PagedResultDto<AdminAffiliateConversionDto>(total, rows.Select(MapConversion).ToList());
+        var mapped = rows.Select(MapConversion).ToList();
+        await ApplyAttributionStatsAsync(mapped);
+        return new PagedResultDto<AdminAffiliateConversionDto>(total, mapped);
     }
 
     public async Task<AdminAffiliateConversionDetailsDto> GetAsync(Guid id)
@@ -156,16 +175,41 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
         foreach (var order in orders)
         {
             var dto = MapOrder(order, conversion);
-            dto.Items = (await _items.GetListAsync(x => x.OrderId == order.Id))
-                .OrderBy(x => x.ExternalItemId, StringComparer.Ordinal)
-                .Select(x => new AdminAffiliateOrderItemDto
+            var items = (await _items.GetListAsync(x => x.OrderId == order.Id))
+                .OrderBy(x => x.ExternalItemId, StringComparer.Ordinal).ToList();
+            var itemIds = items.Select(x => x.Id).ToList();
+            var attributionByItem = itemIds.Count == 0
+                ? new Dictionary<Guid, List<AffiliateOrderItemAttribution>>()
+                : (await _attributions.GetListAsync(x => itemIds.Contains(x.OrderItemId)))
+                    .GroupBy(x => x.OrderItemId).ToDictionary(group => group.Key, group => group.ToList());
+            var orderAttributions = attributionByItem.Values.SelectMany(x => x).ToList();
+            result.MatchedAttributionCount += orderAttributions.Count(x =>
+                x.Status == AffiliateAttributionStatus.Matched && x.UserId.HasValue);
+            result.UnmatchedAttributionCount += orderAttributions.Count(x =>
+                x.Status != AffiliateAttributionStatus.Matched || !x.UserId.HasValue);
+            dto.Items = items.Select(x => new AdminAffiliateOrderItemDto
                 {
                     Id = x.Id, ExternalItemId = x.ExternalItemId, ModelId = x.ModelId, ProductName = x.ProductName,
                     PurchaseAmount = x.PurchaseAmount, Quantity = x.Quantity, UserCommission = x.UserCommissionSnapshot,
-                    RefundAmount = x.RefundAmount, IsFraud = x.IsFraud, ProviderStatus = x.ProviderStatus
+                    RefundAmount = x.RefundAmount, IsFraud = x.IsFraud, ProviderStatus = x.ProviderStatus,
+                    Attributions = attributionByItem.GetValueOrDefault(x.Id, new List<AffiliateOrderItemAttribution>())
+                        .OrderBy(value => value.AttributionValue, StringComparer.Ordinal)
+                        .Select(value => new AdminAffiliateOrderItemAttributionDto
+                        {
+                            Id = value.Id, AttributionValue = value.AttributionValue,
+                            TrackingId = value.TrackingId, UserId = value.UserId, Status = value.Status,
+                            PurchaseAmount = value.PurchaseAmount, Quantity = value.Quantity,
+                            AllocatedNetCommission = value.AllocatedNetCommission,
+                            SettledNetCommission = value.SettledNetCommission,
+                            UserCommission = value.UserCommissionSnapshot,
+                            SettledUserCommission = value.SettledUserCommission
+                        }).ToList()
                 }).ToList();
             result.Orders.Add(dto);
         }
+        result.AttributedUserCount = result.Orders.SelectMany(x => x.Items)
+            .SelectMany(x => x.Attributions).Where(x => x.UserId.HasValue)
+            .Select(x => x.UserId!.Value).Distinct().Count();
         return result;
     }
 
@@ -174,22 +218,42 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
     public async Task ManualMatchAsync(Guid conversionId, ManualMatchInput input)
     {
         var conversion = await _conversions.GetAsync(conversionId);
+        var conversionOrders = await _orders.GetListAsync(order => order.ConversionId == conversion.Id);
+        var conversionOrderIds = conversionOrders.Select(x => x.Id).ToList();
+        if (conversionOrders.Any(x => x.Status == AffiliateOrderStatus.Settled))
+            throw new UserFriendlyException("Đơn đã thanh toán không thể ghép lại affiliate link.");
+        var conversionItems = conversionOrderIds.Count == 0 ? new List<AffiliateOrderItem>() :
+            await _items.GetListAsync(item => conversionOrderIds.Contains(item.OrderId));
+        var conversionItemIds = conversionItems.Select(x => x.Id).ToList();
+        var itemAttributions = conversionItemIds.Count == 0 ? new List<AffiliateOrderItemAttribution>() :
+            await _attributions.GetListAsync(value => conversionItemIds.Contains(value.OrderItemId));
+        if (itemAttributions.Select(x => x.AttributionValue).Distinct(StringComparer.Ordinal).Count() > 1)
+            throw new UserFriendlyException("Conversion có nhiều affiliate link; không thể ghép toàn bộ về một tracking.");
         var tracking = await _trackings.GetAsync(input.TrackingId);
         if (conversion.Platform != tracking.Platform) throw new UserFriendlyException("Tracking và conversion phải cùng nền tảng.");
         if (conversion.UserId.HasValue && conversion.UserId.Value != tracking.UserId)
             throw new UserFriendlyException("Conversion đã được ghép với người dùng khác và không thể chuyển chủ sở hữu.");
-        conversion.MapTo(tracking.Id, tracking.UserId, conversion.AttributionValue);
+        var attributionValue = itemAttributions.Select(x => x.AttributionValue)
+            .Distinct(StringComparer.Ordinal).SingleOrDefault() ?? conversion.AttributionValue;
+        conversion.MapTo(tracking.Id, tracking.UserId, attributionValue);
         var rule = await _ruleManager.GetForPurchaseAsync(conversion.Platform, conversion.PurchaseTime);
-        var userShareRate = await _shareRateResolver.GetForOrderAsync(tracking.UserId, conversion.Platform,
-            conversion.PurchaseTime, conversion.Id, conversion.ExternalConversionId, rule.UserShareRate);
-        conversion.ApplyCommission(conversion.GrossCommission, conversion.NetCommission,
-            conversion.CommissionSource, userShareRate);
-
-        var orders = await _orders.GetListAsync(order => order.ConversionId == conversion.Id);
+        var orders = conversionOrders;
+        var rateByOrder = new Dictionary<Guid, decimal>();
         foreach (var order in orders)
         {
+            rateByOrder[order.Id] = await _shareRateResolver.GetForAttributedOrderAsync(tracking.UserId,
+                conversion.Platform, conversion.PurchaseTime, order.Id, order.ExternalOrderId,
+                rule.UserShareRate);
+        }
+
+        decimal aggregateUserCommission = 0m;
+        foreach (var order in orders)
+        {
+            var userShareRate = rateByOrder[order.Id];
+            var orderUserCommission = _calculator.CalculateUserCommission(order.NetCommission, userShareRate);
+            aggregateUserCommission += orderUserCommission;
             order.Update(order.Status, order.ShopType, order.PurchaseAmount, order.NetCommission,
-                _calculator.CalculateUserCommission(order.NetCommission, userShareRate));
+                orderUserCommission);
             var items = await _items.GetListAsync(item => item.OrderId == order.Id);
             var allocation = _calculator.Allocate(order.NetCommission, userShareRate,
                     items.Select(item => new CommissionAllocationInput(
@@ -201,12 +265,36 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
                 item.Update(item.ProductName, item.PurchaseAmount, item.Quantity, item.ItemTotalCommission,
                     allocated.NetCommission, allocated.UserCommission, item.RefundAmount, item.IsFraud,
                     item.ProviderStatus);
+                foreach (var attribution in itemAttributions.Where(x => x.OrderItemId == item.Id))
+                {
+                    attribution.UpdateSource(attribution.PurchaseAmount, attribution.Quantity,
+                        attribution.ItemTotalCommission, allocated.NetCommission, attribution.RefundAmount,
+                        attribution.IsFraud, attribution.ProviderStatus);
+                    attribution.Match(tracking.Id, tracking.UserId, userShareRate, allocated.UserCommission);
+                }
             }
             if (items.Count > 0) await _items.UpdateManyAsync(items, autoSave: false);
         }
 
+        if (orders.Count == 0)
+        {
+            var userShareRate = await _shareRateResolver.GetForOrderAsync(tracking.UserId, conversion.Platform,
+                conversion.PurchaseTime, conversion.Id, conversion.ExternalConversionId, rule.UserShareRate);
+            conversion.ApplyCommission(conversion.GrossCommission, conversion.NetCommission,
+                conversion.CommissionSource, userShareRate);
+        }
+        else
+        {
+            var distinctRates = rateByOrder.Values.Distinct().ToList();
+            conversion.ApplyAttributedCommission(conversion.GrossCommission, conversion.NetCommission,
+                conversion.CommissionSource, distinctRates.Count == 1 ? distinctRates[0] : null,
+                aggregateUserCommission);
+        }
+
         if (orders.Count > 0) await _orders.UpdateManyAsync(orders, autoSave: false);
+        if (itemAttributions.Count > 0) await _attributions.UpdateManyAsync(itemAttributions, autoSave: false);
         await _conversions.UpdateAsync(conversion, autoSave: true);
+        await _shareRateResolver.RecalculateUnsettledOrdersAsync(new[] { tracking.UserId }, conversion.Platform);
     }
 
     private static AdminAffiliateConversionDto MapConversion(AffiliateConversion x) => new()
@@ -218,6 +306,33 @@ public class AdminAffiliateOrderAppService : WebHoanTienAppService, IAdminAffili
         UserShareRate = x.UserShareRate, UserCommission = x.UserCommissionSnapshot,
         PayableUserCommission = x.PayableUserCommission, LastProviderUpdateAt = x.LastProviderUpdateAt
     };
+
+    private async Task ApplyAttributionStatsAsync(IReadOnlyCollection<AdminAffiliateConversionDto> conversions)
+    {
+        var conversionIds = conversions.Select(x => x.Id).ToList();
+        if (conversionIds.Count == 0) return;
+        var orders = await _orders.GetListAsync(x => conversionIds.Contains(x.ConversionId));
+        var orderById = orders.ToDictionary(x => x.Id, x => x.ConversionId);
+        var orderIds = orderById.Keys.ToList();
+        var items = orderIds.Count == 0 ? new List<AffiliateOrderItem>() :
+            await _items.GetListAsync(x => orderIds.Contains(x.OrderId));
+        var conversionByItem = items.ToDictionary(x => x.Id, x => orderById[x.OrderId]);
+        var itemIds = conversionByItem.Keys.ToList();
+        var attributions = itemIds.Count == 0 ? new List<AffiliateOrderItemAttribution>() :
+            await _attributions.GetListAsync(x => itemIds.Contains(x.OrderItemId));
+        var dtoById = conversions.ToDictionary(x => x.Id);
+        foreach (var group in attributions.Where(x => conversionByItem.ContainsKey(x.OrderItemId))
+                     .GroupBy(x => conversionByItem[x.OrderItemId]))
+        {
+            if (!dtoById.TryGetValue(group.Key, out var dto)) continue;
+            dto.MatchedAttributionCount = group.Count(x => x.Status == AffiliateAttributionStatus.Matched &&
+                x.UserId.HasValue);
+            dto.UnmatchedAttributionCount = group.Count(x => x.Status != AffiliateAttributionStatus.Matched ||
+                !x.UserId.HasValue);
+            dto.AttributedUserCount = group.Where(x => x.UserId.HasValue).Select(x => x.UserId!.Value)
+                .Distinct().Count();
+        }
+    }
 
     private static AdminAffiliateConversionDetailsDto MapConversionDetails(AffiliateConversion x) => new()
     {

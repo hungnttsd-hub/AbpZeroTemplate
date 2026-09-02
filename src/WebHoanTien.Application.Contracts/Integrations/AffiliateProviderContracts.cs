@@ -47,6 +47,16 @@ public sealed record NormalizedAffiliateOrderItem(
     decimal ItemTotalCommission,
     decimal RefundAmount,
     bool IsFraud,
+    string? ProviderStatus,
+    IReadOnlyList<NormalizedAffiliateOrderItemAttribution> Attributions);
+
+public sealed record NormalizedAffiliateOrderItemAttribution(
+    string AttributionValue,
+    decimal PurchaseAmount,
+    int Quantity,
+    decimal ItemTotalCommission,
+    decimal RefundAmount,
+    bool IsFraud,
     string? ProviderStatus);
 
 public interface IAffiliateProviderRegistry

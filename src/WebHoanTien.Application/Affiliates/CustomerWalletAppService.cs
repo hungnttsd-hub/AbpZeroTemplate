@@ -19,6 +19,8 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
 {
     private readonly IRepository<AffiliateConversion, Guid> _conversions;
     private readonly IRepository<AffiliateOrder, Guid> _orders;
+    private readonly IRepository<AffiliateOrderItem, Guid> _items;
+    private readonly IRepository<AffiliateOrderItemAttribution, Guid> _attributions;
     private readonly IRepository<WithdrawalRequest, Guid> _withdrawals;
     private readonly IRepository<WithdrawalPaymentProof, Guid> _proofs;
     private readonly IRepository<UserPayoutAccount, Guid> _payoutAccounts;
@@ -27,13 +29,17 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
     private readonly CustomerNotificationManager _notificationManager;
 
     public CustomerWalletAppService(IRepository<AffiliateConversion, Guid> conversions,
-        IRepository<AffiliateOrder, Guid> orders, IRepository<WithdrawalRequest, Guid> withdrawals,
+        IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
+        IRepository<AffiliateOrderItemAttribution, Guid> attributions,
+        IRepository<WithdrawalRequest, Guid> withdrawals,
         IRepository<WithdrawalPaymentProof, Guid> proofs, IRepository<UserPayoutAccount, Guid> payoutAccounts,
         WalletBalanceCalculator balanceCalculator, IUnitOfWorkManager unitOfWorkManager,
         CustomerNotificationManager notificationManager)
     {
         _conversions = conversions;
         _orders = orders;
+        _items = items;
+        _attributions = attributions;
         _withdrawals = withdrawals;
         _proofs = proofs;
         _payoutAccounts = payoutAccounts;
@@ -167,13 +173,27 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
     private async Task<List<WalletMovementDto>> BuildMovementsAsync(Guid userId,
         IReadOnlyCollection<WithdrawalRequest> withdrawals, HashSet<Guid> proofRequestIds)
     {
-        var conversions = await _conversions.GetListAsync(x => x.UserId == userId);
-        var conversionById = conversions.ToDictionary(x => x.Id);
-        var conversionIds = conversionById.Keys.ToList();
-        var orders = conversionIds.Count == 0
-            ? new List<AffiliateOrder>()
-            : await _orders.GetListAsync(x => conversionIds.Contains(x.ConversionId));
-        var movements = orders.Select(order => MapOrderMovement(order, conversionById[order.ConversionId])).ToList();
+        var attributions = await _attributions.GetListAsync(x => x.UserId == userId &&
+            x.Status != AffiliateAttributionStatus.Unmatched);
+        var itemIds = attributions.Select(x => x.OrderItemId).Distinct().ToList();
+        var items = itemIds.Count == 0 ? new List<AffiliateOrderItem>() :
+            await _items.GetListAsync(x => itemIds.Contains(x.Id));
+        var itemById = items.ToDictionary(x => x.Id);
+        var orderIds = items.Select(x => x.OrderId).Distinct().ToList();
+        var orders = orderIds.Count == 0 ? new List<AffiliateOrder>() :
+            await _orders.GetListAsync(x => orderIds.Contains(x.Id));
+        var orderById = orders.ToDictionary(x => x.Id);
+        var conversionIds = orders.Select(x => x.ConversionId).Distinct().ToList();
+        var conversionById = (await _conversions.GetListAsync(x => conversionIds.Contains(x.Id)))
+            .ToDictionary(x => x.Id);
+        var movements = attributions.Where(x => itemById.ContainsKey(x.OrderItemId))
+            .GroupBy(x => itemById[x.OrderItemId].OrderId)
+            .Where(group => orderById.ContainsKey(group.Key) &&
+                conversionById.ContainsKey(orderById[group.Key].ConversionId))
+            .Select(group => MapOrderMovement(orderById[group.Key],
+                conversionById[orderById[group.Key].ConversionId],
+                group.Sum(x => x.UserCommissionSnapshot), group.Sum(x => x.SettledUserCommission ?? 0m)))
+            .ToList();
         movements.AddRange(withdrawals.Select(x => MapWithdrawalMovement(x, proofRequestIds.Contains(x.Id))));
         return movements.OrderByDescending(x => x.OccurredAt).ThenByDescending(x => x.Id).ToList();
     }
@@ -186,13 +206,14 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
             .Select(x => x.WithdrawalRequestId).ToHashSet();
     }
 
-    private static WalletMovementDto MapOrderMovement(AffiliateOrder order, AffiliateConversion conversion)
+    private static WalletMovementDto MapOrderMovement(AffiliateOrder order, AffiliateConversion conversion,
+        decimal expectedUserCommission, decimal settledUserCommission)
     {
         var (label, css, amount) = order.Status switch
         {
-            AffiliateOrderStatus.Settled => ("Đã ghi nhận", "confirmed", order.PayableUserCommission),
-            AffiliateOrderStatus.Completed => ("Chờ Shopee thanh toán", "pending", order.UserCommissionSnapshot),
-            AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending => ("Sắp ghi nhận", "pending", order.UserCommissionSnapshot),
+            AffiliateOrderStatus.Settled => ("Đã ghi nhận", "confirmed", settledUserCommission),
+            AffiliateOrderStatus.Completed => ("Chờ Shopee thanh toán", "pending", expectedUserCommission),
+            AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending => ("Sắp ghi nhận", "pending", expectedUserCommission),
             AffiliateOrderStatus.Refunded => ("Đã hoàn tiền", "cancelled", 0m),
             AffiliateOrderStatus.Cancelled => ("Đã hủy", "cancelled", 0m),
             _ => ("Không được ghi nhận", "cancelled", 0m)

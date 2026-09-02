@@ -32,7 +32,10 @@
             <dl>
                 @if (Model.IsAdminOrderView)
                 {
-                    <div><dt>Người dùng</dt><dd>@(string.IsNullOrWhiteSpace(order.UserEmail) ? "Chưa xác định" : order.UserEmail)</dd></div>
+                    <div><dt>Người nhận</dt><dd>@(order.Recipients.Count == 0
+                        ? "Chưa xác định"
+                        : string.Join(" · ", order.Recipients.Select(x =>
+                            $"{x.UserEmail ?? x.UserId.ToString()} (+{CustomerOrderUi.FormatMoney(x.SettledUserCommission ?? x.ExpectedUserCommission)})")))</dd></div>
                 }
                 <div><dt>Giá trị đơn hàng</dt><dd>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</dd></div>
                 <div><dt>Ưu đãi</dt><dd>@(string.IsNullOrWhiteSpace(order.ShopType) ? "Ưu đãi Shopee" : order.ShopType)</dd></div>
@@ -55,9 +58,9 @@
                     var productName = string.IsNullOrWhiteSpace(item.ProductName) ? "Sản phẩm Shopee" : item.ProductName;
                     <article class="cb-detail-product">
                         <div class="cb-order-product-image">
-                            @if (item == firstItem && !string.IsNullOrWhiteSpace(order.ProductImageUrl))
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl ?? (item == firstItem ? order.ProductImageUrl : null)))
                             {
-                                <img src="@order.ProductImageUrl" alt="Ảnh @productName" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
+                                <img src="@(item.ImageUrl ?? order.ProductImageUrl)" alt="Ảnh @productName" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
                                 <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
                             }
                             else
@@ -69,6 +72,20 @@
                             <h3>@productName</h3>
                             <p><img src="~/orders-icons/store.svg" alt="" /> Sản phẩm từ Shopee</p>
                             <span>Số lượng: @item.Quantity</span>
+                            <span>@(order.Status == AffiliateOrderStatus.Settled ? "Đã ghi nhận" : "Hoàn tiền dự kiến"): +@CustomerOrderUi.FormatMoney(CustomerOrderUi.IsCancelled(order.Status) ? 0m : order.Status == AffiliateOrderStatus.Settled ? item.SettledUserCommission ?? 0m : item.ExpectedUserCommission)</span>
+                            @if (Model.IsAdminOrderView)
+                            {
+                                foreach (var attribution in item.Attributions)
+                                {
+                                    var attributionStatus = attribution.Status switch
+                                    {
+                                        AffiliateAttributionStatus.Matched => "Đã ghép",
+                                        AffiliateAttributionStatus.Conflict => "Xung đột sau thanh toán",
+                                        _ => "Chưa ghép"
+                                    };
+                                    <small>Token: <code>@attribution.AttributionValue</code> · @attributionStatus · @(attribution.UserEmail ?? "Chưa có người nhận") · Shopee phân bổ @CustomerOrderUi.FormatMoney(attribution.SettledNetCommission ?? attribution.AllocatedNetCommission)</small>
+                                }
+                            }
                         </div>
                         <strong>@CustomerOrderUi.FormatMoney(item.PurchaseAmount)</strong>
                     </article>

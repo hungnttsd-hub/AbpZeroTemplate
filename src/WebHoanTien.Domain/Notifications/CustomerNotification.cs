@@ -40,4 +40,12 @@ public class CustomerNotification : AuditedAggregateRoot<Guid>
         ReadAt = readAt;
         return true;
     }
+
+    public void UpdateContent(string title, string message, string? actionUrl)
+    {
+        Title = Check.NotNullOrWhiteSpace(title, nameof(title), WebHoanTienConsts.NotificationTitleMaxLength).Trim();
+        Message = Check.NotNullOrWhiteSpace(message, nameof(message), WebHoanTienConsts.NotificationMessageMaxLength)
+            .Trim();
+        ActionUrl = string.IsNullOrWhiteSpace(actionUrl) ? null : actionUrl.Trim();
+    }
 }

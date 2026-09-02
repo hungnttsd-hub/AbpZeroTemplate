@@ -42,6 +42,7 @@ public class WebHoanTienDbContext :
     public DbSet<AffiliateConversion> AffiliateConversions { get; set; } = null!;
     public DbSet<AffiliateOrder> AffiliateOrders { get; set; } = null!;
     public DbSet<AffiliateOrderItem> AffiliateOrderItems { get; set; } = null!;
+    public DbSet<AffiliateOrderItemAttribution> AffiliateOrderItemAttributions { get; set; } = null!;
     public DbSet<AffiliateCommissionRule> AffiliateCommissionRules { get; set; } = null!;
     public DbSet<AffiliateSyncState> AffiliateSyncStates { get; set; } = null!;
     public DbSet<AffiliateSyncRun> AffiliateSyncRuns { get; set; } = null!;

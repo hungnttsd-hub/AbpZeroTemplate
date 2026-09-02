@@ -86,6 +86,9 @@ public class AdminAffiliateConversionDto : EntityDto<Guid>
     public decimal UserShareRate { get; set; }
     public decimal UserCommission { get; set; }
     public decimal PayableUserCommission { get; set; }
+    public int MatchedAttributionCount { get; set; }
+    public int UnmatchedAttributionCount { get; set; }
+    public int AttributedUserCount { get; set; }
     public DateTime LastProviderUpdateAt { get; set; }
 }
 
@@ -124,6 +127,21 @@ public sealed class AdminAffiliateOrderItemDto : EntityDto<Guid>
     public decimal RefundAmount { get; set; }
     public bool IsFraud { get; set; }
     public string? ProviderStatus { get; set; }
+    public List<AdminAffiliateOrderItemAttributionDto> Attributions { get; set; } = new();
+}
+
+public sealed class AdminAffiliateOrderItemAttributionDto : EntityDto<Guid>
+{
+    public string AttributionValue { get; set; } = string.Empty;
+    public Guid? TrackingId { get; set; }
+    public Guid? UserId { get; set; }
+    public AffiliateAttributionStatus Status { get; set; }
+    public decimal PurchaseAmount { get; set; }
+    public int Quantity { get; set; }
+    public decimal AllocatedNetCommission { get; set; }
+    public decimal? SettledNetCommission { get; set; }
+    public decimal UserCommission { get; set; }
+    public decimal? SettledUserCommission { get; set; }
 }
 
 public interface IAdminAffiliateOrderAppService : IApplicationService
@@ -140,6 +158,9 @@ public sealed class ShopeeReportImportResultDto
     public int InsertedCount { get; set; }
     public int UpdatedCount { get; set; }
     public int UnmatchedCount { get; set; }
+    public int MatchedItemCount { get; set; }
+    public int UnmatchedItemCount { get; set; }
+    public int MultiTrackingOrderCount { get; set; }
     public int ErrorCount { get; set; }
     public List<string> Errors { get; set; } = new();
 }

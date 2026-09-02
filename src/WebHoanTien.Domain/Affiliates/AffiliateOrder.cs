@@ -7,6 +7,7 @@ namespace WebHoanTien.Affiliates;
 public class AffiliateOrder : FullAuditedAggregateRoot<Guid>
 {
     public Guid ConversionId { get; private set; }
+    public AffiliatePlatform Platform { get; private set; }
     public string ExternalOrderId { get; private set; } = null!;
     public AffiliateOrderStatus Status { get; private set; }
     public string? ShopType { get; private set; }
@@ -21,25 +22,27 @@ public class AffiliateOrder : FullAuditedAggregateRoot<Guid>
 
     protected AffiliateOrder() { }
 
-    public AffiliateOrder(Guid id, Guid conversionId, string externalOrderId) : base(id)
+    public AffiliateOrder(Guid id, Guid conversionId, string externalOrderId,
+        AffiliatePlatform platform = AffiliatePlatform.Shopee) : base(id)
     {
         ConversionId = conversionId;
+        Platform = platform;
         ExternalOrderId = externalOrderId;
         Status = AffiliateOrderStatus.Unpaid;
     }
 
     public void Update(AffiliateOrderStatus status, string? shopType, decimal purchaseAmount, decimal netCommission, decimal userCommission)
     {
-        ShopType = shopType;
-        PurchaseAmount = purchaseAmount;
-        NetCommission = netCommission;
-        UserCommissionSnapshot = userCommission;
-
         if (Status == AffiliateOrderStatus.Settled && status is not AffiliateOrderStatus.Cancelled
             and not AffiliateOrderStatus.Refunded and not AffiliateOrderStatus.Rejected)
         {
             return;
         }
+
+        ShopType = shopType;
+        PurchaseAmount = purchaseAmount;
+        NetCommission = netCommission;
+        UserCommissionSnapshot = userCommission;
 
         Status = status;
         PayableUserCommission = 0m;

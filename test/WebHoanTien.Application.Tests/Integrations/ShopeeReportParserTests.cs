@@ -1,8 +1,8 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Shouldly;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Integrations.Shopee;
@@ -66,6 +66,43 @@ public class ShopeeReportParserTests
     }
 
     [Fact]
+    public async Task ParseAsync_Should_Preserve_Different_Tracking_Tokens_Per_Item()
+    {
+        const string tokenA = "tracking-token-aaaaaaaaaaaaaaaaaaaaaaaa";
+        const string tokenB = "tracking-token-bbbbbbbbbbbbbbbbbbbbbbbb";
+        var csv = "order_id,sub_id,purchase_time,net_commission,item_id,model_id,product_name,quantity,purchase_amount\n" +
+                  $"ORDER-MULTI,{tokenA},2026-08-21 10:06:07,4000,ITEM-A,MODEL-A,Sản phẩm A,1,50000\n" +
+                  $"ORDER-MULTI,{tokenB},2026-08-21 10:06:07,6000,ITEM-B,MODEL-B,Sản phẩm B,1,70000";
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var conversion = (await new ShopeeReportParser().ParseAsync(stream)).Conversions[0];
+
+        conversion.AttributionValue.ShouldBeNull();
+        conversion.Orders.Count.ShouldBe(1);
+        conversion.Orders[0].Items.Count.ShouldBe(2);
+        conversion.Orders[0].Items[0].Attributions.Single().AttributionValue.ShouldBe(tokenA);
+        conversion.Orders[0].Items[1].Attributions.Single().AttributionValue.ShouldBe(tokenB);
+    }
+
+    [Fact]
+    public async Task ParseAsync_Should_Keep_Two_Attributions_For_The_Same_Item_And_Order_Them_Stably()
+    {
+        const string tokenA = "tracking-token-aaaaaaaaaaaaaaaaaaaaaaaa";
+        const string tokenB = "tracking-token-bbbbbbbbbbbbbbbbbbbbbbbb";
+        var csv = "order_id,sub_id,purchase_time,net_commission,item_id,model_id,product_name,quantity,purchase_amount\n" +
+                  $"ORDER-SAME-ITEM,{tokenB},2026-08-21 10:06:07,3000,ITEM-A,MODEL-A,Sản phẩm A,1,40000\n" +
+                  $"ORDER-SAME-ITEM,{tokenA},2026-08-21 10:06:07,2000,ITEM-A,MODEL-A,Sản phẩm A,1,30000";
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var item = (await new ShopeeReportParser().ParseAsync(stream)).Conversions[0].Orders[0].Items.Single();
+
+        item.Attributions.Count.ShouldBe(2);
+        item.Attributions.Select(x => x.AttributionValue).ShouldBe(new[] { tokenA, tokenB });
+        item.ItemTotalCommission.ShouldBe(5000m);
+        item.PurchaseAmount.ShouldBe(70000m);
+    }
+
+    [Fact]
     public async Task Settlement_Report_Should_Group_Order_Rows_And_Read_Actual_Payment()
     {
         var csv = "ID đơn hàng,Số tiền Shopee thực trả,Mã bảng kê,Ngày thanh toán\n" +
@@ -84,12 +121,10 @@ public class ShopeeReportParserTests
     [Fact]
     public void Build_Should_Create_AnRedir_Link_From_A_Canonical_Origin()
     {
-        var builder = new ShopeeAffiliateLinkBuilder(Options.Create(new ShopeeAffiliateOptions
-        {
-            AffiliateId = "123456789"
-        }));
+        var builder = new ShopeeAffiliateLinkBuilder();
 
-        var result = builder.Build("https://shopee.vn/product/1/2?affiliate_id=old&sub_id=old&foo=bar", "tracking-token");
+        var result = builder.Build("https://shopee.vn/product/1/2?affiliate_id=old&sub_id=old&foo=bar",
+            "tracking-token", "123456789");
 
         result.ShouldBe("https://s.shopee.vn/an_redir?origin_link=https%3A%2F%2Fshopee.vn%2Fproduct%2F1%2F2&affiliate_id=123456789&sub_id=tracking-token");
     }
@@ -97,10 +132,10 @@ public class ShopeeReportParserTests
     [Fact]
     public void Build_Should_Explain_When_AffiliateId_Is_Not_Configured()
     {
-        var builder = new ShopeeAffiliateLinkBuilder(Options.Create(new ShopeeAffiliateOptions()));
+        var builder = new ShopeeAffiliateLinkBuilder();
 
         var exception = Should.Throw<Volo.Abp.UserFriendlyException>(() =>
-            builder.Build("https://shopee.vn/product/1/2", "tracking-token"));
+            builder.Build("https://shopee.vn/product/1/2", "tracking-token", string.Empty));
 
         exception.Message.ShouldContain("Shopee Affiliate ID");
     }

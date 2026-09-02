@@ -68,9 +68,9 @@
                     <article class="cb-order-card @(Model.IsAdminOrderView ? "cb-order-card-admin" : null)">
                         <div class="cb-order-card-top">
                             <div class="cb-order-product-image">
-                                @if (!string.IsNullOrWhiteSpace(order.ProductImageUrl))
+                                @if (!string.IsNullOrWhiteSpace(firstItem?.ImageUrl ?? order.ProductImageUrl))
                                 {
-                                    <img src="@order.ProductImageUrl" alt="Ảnh @productName" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
+                                    <img src="@(firstItem?.ImageUrl ?? order.ProductImageUrl)" alt="Ảnh @productName" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
                                     <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
                                 }
                                 else
@@ -88,8 +88,15 @@
                         @if (Model.IsAdminOrderView)
                         {
                             <div class="cb-order-user">
-                                <span>Người dùng</span>
-                                <strong>@(string.IsNullOrWhiteSpace(order.UserEmail) ? "Chưa xác định" : order.UserEmail)</strong>
+                                <span>Người nhận</span>
+                                <strong>@(order.Recipients.Count == 0
+                                    ? "Chưa xác định"
+                                    : string.Join(" · ", order.Recipients.Select(x =>
+                                        $"{x.UserEmail ?? x.UserId.ToString()} (+{CustomerOrderUi.FormatMoney(x.SettledUserCommission ?? x.ExpectedUserCommission)})")))</strong>
+                                @if (order.UnmatchedAttributionCount > 0)
+                                {
+                                    <small>@order.UnmatchedAttributionCount token chưa ghép hoặc đang xung đột</small>
+                                }
                             </div>
                         }
                         <dl class="cb-order-values">

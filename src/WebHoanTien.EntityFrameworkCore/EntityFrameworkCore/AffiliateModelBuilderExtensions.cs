@@ -78,7 +78,8 @@ public static class AffiliateModelBuilderExtensions
             Money(b.Property(x => x.SettledNetCommission));
             Money(b.Property(x => x.SettledUserCommission));
             b.Property(x => x.SettlementReference).HasMaxLength(128);
-            b.HasIndex(x => new { x.ConversionId, x.ExternalOrderId }).IsUnique();
+            b.HasIndex(x => new { x.Platform, x.ExternalOrderId }).IsUnique()
+                .HasFilter("\"IsDeleted\" = FALSE");
             b.HasIndex(x => new { x.Status, x.SettledAt });
             b.HasOne<AffiliateConversion>().WithMany().HasForeignKey(x => x.ConversionId).OnDelete(DeleteBehavior.Cascade);
         });
@@ -96,7 +97,8 @@ public static class AffiliateModelBuilderExtensions
             Money(b.Property(x => x.AllocatedNetCommission));
             Money(b.Property(x => x.UserCommissionSnapshot));
             Money(b.Property(x => x.RefundAmount));
-            b.HasIndex(x => new { x.OrderId, x.ExternalItemId, x.ModelId }).IsUnique();
+            b.HasIndex(x => new { x.OrderId, x.ExternalItemId, x.ModelId }).IsUnique()
+                .HasFilter("\"IsDeleted\" = FALSE");
             b.HasOne<AffiliateOrder>().WithMany().HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -146,6 +148,32 @@ public static class AffiliateModelBuilderExtensions
             b.HasIndex(x => x.ExpiresAt);
             b.HasOne<AffiliateSyncRun>().WithMany().HasForeignKey(x => x.SyncRunId).OnDelete(DeleteBehavior.Cascade);
             b.HasOne<AffiliateConversion>().WithMany().HasForeignKey(x => x.ConversionId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<AffiliateOrderItemAttribution>(b =>
+        {
+            b.ToTable("OrderItemAttribution", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.AttributionValue).HasMaxLength(256).IsRequired();
+            b.Property(x => x.ProviderStatus).HasMaxLength(128);
+            Money(b.Property(x => x.PurchaseAmount));
+            Money(b.Property(x => x.ItemTotalCommission));
+            Money(b.Property(x => x.AllocatedNetCommission));
+            Rate(b.Property(x => x.UserShareRate));
+            Money(b.Property(x => x.UserCommissionSnapshot));
+            Money(b.Property(x => x.SettledNetCommission));
+            Money(b.Property(x => x.SettledUserCommission));
+            Money(b.Property(x => x.RefundAmount));
+            b.HasIndex(x => new { x.OrderItemId, x.AttributionValue }).IsUnique()
+                .HasFilter("\"IsDeleted\" = FALSE");
+            b.HasIndex(x => x.TrackingId);
+            b.HasIndex(x => new { x.UserId, x.OrderItemId });
+            b.HasOne<AffiliateOrderItem>().WithMany().HasForeignKey(x => x.OrderItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<AffiliateTracking>().WithMany().HasForeignKey(x => x.TrackingId)
+                .OnDelete(DeleteBehavior.SetNull);
+            b.HasOne<Volo.Abp.Identity.IdentityUser>().WithMany().HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         builder.Entity<ShopeeSettlementBatch>(b =>

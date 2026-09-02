@@ -44,6 +44,21 @@ public class AffiliateDomainTests
     }
 
     [Fact]
+    public void Amount_Allocation_Should_Not_Redistribute_Or_Lose_Rounding_Residual()
+    {
+        var result = _calculator.AllocateAmount(9999.1234m, new[]
+        {
+            new AmountAllocationInput("matched-a", 20m),
+            new AmountAllocationInput("unmatched", 30m),
+            new AmountAllocationInput("matched-b", 50m)
+        }, 4);
+
+        result.Sum(x => x.Amount).ShouldBe(9999.1234m);
+        result.Select(x => x.Key).ShouldBe(new[] { "matched-a", "matched-b", "unmatched" });
+        result.Single(x => x.Key == "unmatched").Amount.ShouldBeGreaterThan(0m);
+    }
+
+    [Fact]
     public void Cancelled_Conversion_Should_Keep_Snapshot_But_Pay_Zero()
     {
         var conversion = new AffiliateConversion(Guid.NewGuid(), AffiliatePlatform.Shopee, "conversion-1", DateTime.UtcNow);

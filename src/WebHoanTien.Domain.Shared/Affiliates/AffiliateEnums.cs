@@ -35,6 +35,13 @@ public enum AffiliateOrderStatus
     Settled = 7
 }
 
+public enum AffiliateAttributionStatus
+{
+    Unmatched = 0,
+    Matched = 1,
+    Conflict = 2
+}
+
 public enum AffiliateSyncKind
 {
     Conversion = 1,

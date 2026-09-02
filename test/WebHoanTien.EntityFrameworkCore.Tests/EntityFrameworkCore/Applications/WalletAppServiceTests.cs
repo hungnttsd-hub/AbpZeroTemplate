@@ -25,6 +25,8 @@ public class WalletAppServiceTests : WebHoanTienEntityFrameworkCoreTestBase
     private readonly IRepository<AffiliateTracking, Guid> _trackings;
     private readonly IRepository<AffiliateConversion, Guid> _conversions;
     private readonly IRepository<AffiliateOrder, Guid> _orders;
+    private readonly IRepository<AffiliateOrderItem, Guid> _items;
+    private readonly IRepository<AffiliateOrderItemAttribution, Guid> _attributions;
     private readonly IRepository<UserPayoutAccount, Guid> _accounts;
     private readonly ICustomerWalletAppService _wallet;
     private readonly IAdminPayoutAppService _adminPayouts;
@@ -36,6 +38,8 @@ public class WalletAppServiceTests : WebHoanTienEntityFrameworkCoreTestBase
         _trackings = GetRequiredService<IRepository<AffiliateTracking, Guid>>();
         _conversions = GetRequiredService<IRepository<AffiliateConversion, Guid>>();
         _orders = GetRequiredService<IRepository<AffiliateOrder, Guid>>();
+        _items = GetRequiredService<IRepository<AffiliateOrderItem, Guid>>();
+        _attributions = GetRequiredService<IRepository<AffiliateOrderItemAttribution, Guid>>();
         _accounts = GetRequiredService<IRepository<UserPayoutAccount, Guid>>();
         _wallet = GetRequiredService<ICustomerWalletAppService>();
         _adminPayouts = GetRequiredService<IAdminPayoutAppService>();
@@ -252,6 +256,17 @@ public class WalletAppServiceTests : WebHoanTienEntityFrameworkCoreTestBase
         if (status == AffiliateOrderStatus.Settled)
             order.Settle(commission, commission, $"SETTLEMENT-{orderId:N}", DateTime.UtcNow);
         await _orders.InsertAsync(order);
+        var itemId = Guid.NewGuid();
+        var item = new AffiliateOrderItem(itemId, orderId, $"ITEM-{itemId:N}", null);
+        item.Update("Test item", commission * 10m, 1, commission, commission, commission,
+            0m, false, status.ToString());
+        await _items.InsertAsync(item);
+        var attribution = new AffiliateOrderItemAttribution(Guid.NewGuid(), itemId, token);
+        attribution.UpdateSource(commission * 10m, 1, commission, commission, 0m, false,
+            status.ToString());
+        attribution.Match(trackingId, userId, 100m, commission);
+        if (status == AffiliateOrderStatus.Settled) attribution.Settle(commission, commission);
+        await _attributions.InsertAsync(attribution);
         return orderId;
     }
 

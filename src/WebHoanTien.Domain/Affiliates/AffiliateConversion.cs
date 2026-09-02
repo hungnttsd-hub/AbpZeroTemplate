@@ -41,6 +41,13 @@ public class AffiliateConversion : FullAuditedAggregateRoot<Guid>
         AttributionValue = attributionValue;
     }
 
+    public void ClearMapping()
+    {
+        TrackingId = null;
+        UserId = null;
+        AttributionValue = null;
+    }
+
     public void SetClickTime(DateTime? value) => ClickTime = value;
 
     public void ApplyCommission(decimal gross, decimal net, CommissionSource source, decimal userShareRate)
@@ -50,6 +57,18 @@ public class AffiliateConversion : FullAuditedAggregateRoot<Guid>
         CommissionSource = source;
         UserShareRate = userShareRate;
         UserCommissionSnapshot = decimal.Round(net * userShareRate / 100m, 0, MidpointRounding.AwayFromZero);
+        PlatformRevenueSnapshot = net - UserCommissionSnapshot;
+        RefreshPayable();
+    }
+
+    public void ApplyAttributedCommission(decimal gross, decimal net, CommissionSource source,
+        decimal? soleUserShareRate, decimal aggregateUserCommission)
+    {
+        GrossCommission = gross;
+        NetCommission = net;
+        CommissionSource = source;
+        UserShareRate = soleUserShareRate ?? 0m;
+        UserCommissionSnapshot = Math.Max(0m, aggregateUserCommission);
         PlatformRevenueSnapshot = net - UserCommissionSnapshot;
         RefreshPayable();
     }

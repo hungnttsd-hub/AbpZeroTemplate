@@ -95,14 +95,41 @@ public sealed class AffiliateOrderDto : FullAuditedEntityDto<Guid>
     public string? SettlementReference { get; set; }
     public DateTime? SettledAt { get; set; }
     public DateTime LastUpdatedAt { get; set; }
+    public int AttributionCount { get; set; }
+    public int UnmatchedAttributionCount { get; set; }
+    public List<AffiliateOrderRecipientDto> Recipients { get; set; } = new();
     public List<AffiliateOrderItemDto> Items { get; set; } = new();
+}
+
+public sealed class AffiliateOrderRecipientDto
+{
+    public Guid UserId { get; set; }
+    public string? UserEmail { get; set; }
+    public decimal ExpectedUserCommission { get; set; }
+    public decimal? SettledUserCommission { get; set; }
 }
 
 public sealed class AffiliateOrderItemDto : EntityDto<Guid>
 {
     public string? ProductName { get; set; }
+    public string? ImageUrl { get; set; }
     public decimal PurchaseAmount { get; set; }
     public int Quantity { get; set; }
+    public decimal ExpectedUserCommission { get; set; }
+    public decimal? SettledUserCommission { get; set; }
+    public List<AffiliateOrderItemAttributionDto> Attributions { get; set; } = new();
+}
+
+public sealed class AffiliateOrderItemAttributionDto : EntityDto<Guid>
+{
+    public string AttributionValue { get; set; } = string.Empty;
+    public AffiliateAttributionStatus Status { get; set; }
+    public Guid? UserId { get; set; }
+    public string? UserEmail { get; set; }
+    public decimal AllocatedNetCommission { get; set; }
+    public decimal? SettledNetCommission { get; set; }
+    public decimal ExpectedUserCommission { get; set; }
+    public decimal? SettledUserCommission { get; set; }
 }
 
 public interface IAffiliateOrderAppService : IApplicationService

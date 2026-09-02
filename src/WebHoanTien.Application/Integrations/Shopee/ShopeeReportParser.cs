@@ -47,7 +47,6 @@ public class ShopeeReportParser : ITransientDependency
         var commissionColumn = RequiredColumn(columns, "Hoa hồng thực nhận", "netcommission", "actualcommission", "commission",
             "hoahongthucnhan", "hoahongrongtiepthilienket", "hoahong", "commissionvalue");
 
-        var conversionIdColumn = OptionalColumn(columns, "conversionid", "transactionid", "conversion", "ma giaodich", "magiaodich");
         var statusColumn = OptionalColumn(columns, "orderstatus", "status", "trangthaidathang", "trangthaidonhang", "trangthai");
         var purchaseAmountColumn = OptionalColumn(columns, "purchaseamount", "ordervalue", "actualamount", "gmv", "giatridonhang", "giatri");
         var itemIdColumn = OptionalColumn(columns, "itemid", "productid", "masanpham", "id san pham", "idsanpham");
@@ -73,9 +72,8 @@ public class ShopeeReportParser : ITransientDependency
 
             var purchaseTime = ParsePurchaseTime(GetValue(record, purchaseTimeColumn), rowNumber);
             var commission = ParseRequiredDecimal(GetValue(record, commissionColumn), "Hoa hồng thực nhận", rowNumber);
-            var conversionId = GetValue(record, conversionIdColumn);
             rows.Add(new ReportRow(
-                string.IsNullOrWhiteSpace(conversionId) ? orderId : conversionId,
+                orderId,
                 orderId,
                 attributionValue,
                 purchaseTime,
@@ -109,6 +107,19 @@ public class ShopeeReportParser : ITransientDependency
                 .Select(itemRows =>
                 {
                     var item = itemRows.ToList();
+                    var attributions = item
+                        .GroupBy(row => row.AttributionValue, StringComparer.Ordinal)
+                        .OrderBy(group => group.Key, StringComparer.Ordinal)
+                        .Select(group => new NormalizedAffiliateOrderItemAttribution(
+                            group.Key,
+                            group.Sum(row => row.PurchaseAmount),
+                            group.Sum(row => row.Quantity),
+                            group.Sum(row => row.NetCommission),
+                            group.Sum(row => row.RefundAmount),
+                            group.Any(row => row.IsFraud),
+                            group.Select(row => row.ProviderStatus)
+                                .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))))
+                        .ToList();
                     return new NormalizedAffiliateOrderItem(
                         itemRows.Key.ExternalItemId,
                         string.IsNullOrWhiteSpace(itemRows.Key.ModelId) ? null : itemRows.Key.ModelId,
@@ -118,16 +129,22 @@ public class ShopeeReportParser : ITransientDependency
                         item.Sum(row => row.NetCommission),
                         item.Sum(row => row.RefundAmount),
                         item.Any(row => row.IsFraud),
-                        item.Select(row => row.ProviderStatus).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)));
+                        item.Select(row => row.ProviderStatus).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
+                        attributions);
                 }).ToList();
             return new NormalizedAffiliateOrder(orderRows.Key, DeriveOrderStatus(rows), null,
                 rows.Sum(row => row.PurchaseAmount), rows.Sum(row => row.NetCommission), items);
         }).ToList();
 
         var allRows = conversionRows.ToList();
+        var attributionValues = allRows.Select(row => row.AttributionValue)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToList();
         return new NormalizedAffiliateConversion(
             conversionRows.Key,
-            allRows.Select(row => row.AttributionValue).FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)),
+            attributionValues.Count == 1 ? attributionValues[0] : null,
             allRows.Min(row => row.PurchaseTime),
             null,
             DeriveConversionStatus(orders),

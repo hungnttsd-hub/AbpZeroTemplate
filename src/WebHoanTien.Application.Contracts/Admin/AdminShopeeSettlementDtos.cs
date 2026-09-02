@@ -74,8 +74,17 @@ public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Gu
     public Guid? UserId { get; set; }
     public List<string> ProductNames { get; set; } = new();
     public string? UserEmail { get; set; }
+    public List<AdminShopeeSettlementRecipientDto> Recipients { get; set; } = new();
     public DateTime? ApprovedAt { get; set; }
     public string? Issue { get; set; }
+}
+
+public sealed class AdminShopeeSettlementRecipientDto
+{
+    public Guid UserId { get; set; }
+    public string? UserEmail { get; set; }
+    public decimal ProjectedUserCommission { get; set; }
+    public decimal ApprovedUserCommission { get; set; }
 }
 
 public sealed class AdminShopeeSettlementPageDto

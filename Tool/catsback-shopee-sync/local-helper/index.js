@@ -386,11 +386,17 @@ function summarizeResponse(text) {
       "insertedCount",
       "updatedCount",
       "unmatchedCount",
+      "matchedItemCount",
+      "unmatchedItemCount",
+      "multiTrackingOrderCount",
       "errorCount"
     ];
     const out = {};
     for (const key of keys) {
       if (Object.prototype.hasOwnProperty.call(parsed, key)) out[key] = parsed[key];
+    }
+    if (Array.isArray(parsed.errors) && parsed.errors.length) {
+      out.errors = parsed.errors.slice(0, 20);
     }
     if (Object.keys(out).length) return JSON.stringify(out);
   } catch (_) {}
