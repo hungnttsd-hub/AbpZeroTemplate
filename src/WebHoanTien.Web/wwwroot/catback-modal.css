@@ -129,11 +129,7 @@
     font-weight: 800;
     line-height: 1.2;
     cursor: pointer;
-    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
-}
-
-.cb-modal-button:hover {
-    transform: translateY(-1px);
+    transition: box-shadow .18s ease, filter .18s ease, background-color .18s ease;
 }
 
 .cb-modal-button:focus-visible,
