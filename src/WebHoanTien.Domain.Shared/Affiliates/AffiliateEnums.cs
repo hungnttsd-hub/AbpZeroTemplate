@@ -7,6 +7,13 @@ public enum AffiliatePlatform
     Lazada = 3
 }
 
+public enum AffiliateLinkTargetType
+{
+    Unknown = 0,
+    Product = 1,
+    Shop = 2
+}
+
 public enum AffiliateTrackingStatus
 {
     Active = 1,

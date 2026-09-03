@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
+  <title>Shop placeholder</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="48" y2="48">
+      <stop stop-color="#0B9098"/>
+      <stop offset="1" stop-color="#10A7A5"/>
+    </linearGradient>
+  </defs>
+  <circle cx="28" cy="28" r="27" fill="#EAF8F8"/>
+  <path d="M13 23h30l-2.5-8H15.5L13 23Z" fill="url(#g)"/>
+  <path d="M15 23v20h26V23" fill="#fff" stroke="#0B9098" stroke-width="2"/>
+  <path d="M22 43V31h12v12" fill="#DFF6F5" stroke="#0B9098" stroke-width="2"/>
+  <path d="M13 23c0 3 2 5 5 5s5-2 5-5c0 3 2 5 5 5s5-2 5-5c0 3 2 5 5 5s5-2 5-5" stroke="#087C89" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -4,6 +4,8 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   const linkInput = document.getElementById('affiliate-url');
   const clearButton = document.getElementById('affiliate-url-clear');
   const urlStatus = document.getElementById('url-status');
+  const urlLabel = document.getElementById('affiliate-url-label');
+  const targetInputs = Array.from(linkForm?.querySelectorAll('input[name="LinkTargetType"]') || []);
   const dashboardLinks = document.querySelector('.dashboard-links');
   const createButtonContent = createButton?.innerHTML;
 
@@ -16,6 +18,25 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
 
   const syncClearButton = () => {
     if (clearButton) clearButton.hidden = !linkInput?.value;
+  };
+
+  const selectedTargetType = () => targetInputs.find((input) => input.checked)?.value || 'Product';
+
+  const clearInlineResult = () => {
+    linkForm?.querySelector('[data-affiliate-inline-result]')?.remove();
+    if (createButton) createButton.hidden = false;
+  };
+
+  const syncTargetMode = (resetState = false) => {
+    const isShop = selectedTargetType() === 'Shop';
+    if (linkInput) linkInput.placeholder = isShop
+      ? 'Dán link cửa hàng Shopee tại đây...'
+      : 'Dán link sản phẩm Shopee tại đây...';
+    if (urlLabel) urlLabel.textContent = isShop ? 'Link cửa hàng Shopee' : 'Link sản phẩm Shopee';
+    if (resetState) {
+      clearInlineResult();
+      showUrlStatus('', 'idle');
+    }
   };
 
   const showUrlStatus = (message, state) => {
@@ -61,7 +82,8 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
       badge = document.createElement('span');
       badge.className = 'affiliate-hidden-badge';
       badge.textContent = 'Đã ẩn';
-      details.querySelector('.affiliate-store')?.insertAdjacentElement('afterend', badge);
+      (details.querySelector('.affiliate-link-meta') || details.querySelector('.affiliate-store') ||
+        details.querySelector('h3'))?.insertAdjacentElement('afterend', badge);
     } else if (!isHidden) {
       badge?.remove();
     }
@@ -82,20 +104,28 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     });
   };
 
-  const setProductImage = (card, imageUrl, productName) => {
+  const setLinkImage = (card, imageUrl, title, targetType) => {
     const imageBox = card.querySelector('.affiliate-product-image');
     if (!imageBox) return;
     let image = Array.from(imageBox.children).find((element) => element.tagName === 'IMG');
     let placeholder = Array.from(imageBox.children).find((element) => element.tagName === 'SPAN');
+    const isProduct = targetType === 'Product';
+    const supportsRemoteImage = isProduct || targetType === 'Shop';
 
-    if (imageUrl) {
+    if (supportsRemoteImage && imageUrl) {
       if (!image) {
         image = document.createElement('img');
         imageBox.prepend(image);
       }
       image.src = imageUrl;
-      image.alt = `Ảnh ${productName}`;
+      image.alt = `Ảnh ${title}`;
       image.loading = 'lazy';
+      image.onerror = () => {
+        image.onerror = null;
+        image.src = targetType === 'Shop'
+          ? '/catback/icons/shop-placeholder.svg'
+          : '/catback/icons/shopping-bag.svg';
+      };
       image.hidden = false;
       if (placeholder) placeholder.hidden = true;
       return;
@@ -105,28 +135,73 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     if (!placeholder) {
       placeholder = document.createElement('span');
       const placeholderImage = document.createElement('img');
-      placeholderImage.src = '/catback/icons/shopping-bag.svg';
       placeholderImage.alt = '';
       placeholder.append(placeholderImage);
       imageBox.append(placeholder);
     }
+    const placeholderImage = placeholder.querySelector('img') || document.createElement('img');
+    placeholderImage.src = targetType === 'Shop'
+      ? '/catback/icons/shop-placeholder.svg'
+      : '/catback/icons/shopping-bag.svg';
+    placeholderImage.alt = '';
+    if (!placeholderImage.isConnected) placeholder.append(placeholderImage);
     placeholder.hidden = false;
   };
 
   const setLinkCardData = (card, sheet, link) => {
     const linkId = String(link.id);
     const actionSheetId = getActionSheetId(linkId);
-    const productName = link.productName || 'Sản phẩm Shopee';
+    const targetType = link.targetType || 'Product';
+    const isShop = targetType === 'Shop';
+    const title = isShop
+      ? (link.productName || (link.shopId ? `Shop #${link.shopId}` : 'Cửa hàng Shopee'))
+      : (link.productName || 'Sản phẩm Shopee');
     card.dataset.linkId = linkId;
+    card.dataset.targetType = targetType;
     card.classList.remove('is-hidden', 'is-removing');
+    card.classList.toggle('is-shop-link', isShop);
+    card.classList.remove('is-legacy-link');
     card.classList.add('is-new');
 
-    setProductImage(card, link.imageUrl, productName);
+    setLinkImage(card, link.imageUrl, title, targetType);
     const productNameElement = card.querySelector('.affiliate-link-details h3');
-    if (productNameElement) productNameElement.textContent = productName;
+    if (productNameElement) productNameElement.textContent = title;
+
+    const details = card.querySelector('.affiliate-link-details');
+    let store = details?.querySelector('.affiliate-store');
+    let targetBadge = details?.querySelector('.affiliate-target-badge');
+    let linkMeta = details?.querySelector('.affiliate-link-meta');
+    if (!store && details) {
+      store = document.createElement('p');
+      store.className = 'affiliate-store';
+      details.querySelector('h3')?.insertAdjacentElement('afterend', store);
+    }
+    if (!targetBadge && details) {
+      targetBadge = document.createElement('span');
+      targetBadge.className = 'affiliate-target-badge';
+      store?.insertAdjacentElement('afterend', targetBadge);
+    }
+    if (!linkMeta && details) {
+      linkMeta = document.createElement('p');
+      linkMeta.className = 'affiliate-link-meta';
+      targetBadge?.insertAdjacentElement('afterend', linkMeta);
+    }
+    if (store) {
+      store.textContent = 'Sản phẩm từ Shopee';
+      store.hidden = isShop;
+    }
+    if (targetBadge) {
+      targetBadge.textContent = 'Link cửa hàng';
+      targetBadge.hidden = !isShop;
+    }
+    if (linkMeta) {
+      linkMeta.textContent = 'Mua nhiều sản phẩm trong cùng shop';
+      linkMeta.hidden = !isShop;
+    }
 
     const estimate = card.querySelector('.affiliate-estimate');
     if (estimate) {
+      estimate.hidden = isShop;
       estimate.textContent = link.estimatedCommissionLabel
         ? `Hoàn lại dự kiến ${link.estimatedCommissionLabel}`
         : 'Chưa có ước tính hoa hồng';
@@ -136,6 +211,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const buyButton = card.querySelector('.affiliate-buy-button');
     if (buyButton) {
       buyButton.href = link.redirectUrl;
+      buyButton.textContent = isShop ? 'Vào Shop' : 'Mua ngay';
       if (window.matchMedia('(min-width: 768px)').matches) buyButton.target = '_blank';
       else buyButton.removeAttribute('target');
     }
@@ -163,6 +239,54 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
 
     updateCardVisibility(card, linkId, false);
     window.setTimeout(() => card.classList.remove('is-new'), 1800);
+  };
+
+  const renderInlineResult = (link) => {
+    if (!linkForm || !link?.redirectUrl) return;
+    clearInlineResult();
+    const template = document.getElementById('affiliate-inline-result-template');
+    if (!template) return;
+    const fragment = template.content.cloneNode(true);
+    const result = fragment.querySelector('[data-affiliate-inline-result]');
+    const isShop = link.targetType === 'Shop';
+    const fallbackImage = isShop
+      ? '/catback/icons/shop-placeholder.svg'
+      : '/catback/icons/shopping-bag.svg';
+    const title = isShop
+      ? (link.productName || (link.shopId ? `Shop #${link.shopId}` : 'Cửa hàng Shopee'))
+      : (link.productName || 'Sản phẩm Shopee');
+    result?.classList.add(isShop ? 'is-shop' : 'is-product');
+    const titleElement = result?.querySelector('[data-affiliate-title]');
+    if (titleElement) titleElement.textContent = title;
+    const targetBadge = result?.querySelector('[data-affiliate-target-badge]');
+    if (targetBadge) targetBadge.textContent = isShop ? 'Link cửa hàng' : 'Link sản phẩm';
+    const resultImage = result?.querySelector('[data-affiliate-image]');
+    if (resultImage) {
+      resultImage.src = link.imageUrl || fallbackImage;
+      resultImage.alt = `Ảnh ${title}`;
+      resultImage.onerror = () => {
+        resultImage.onerror = null;
+        resultImage.src = fallbackImage;
+      };
+    }
+    const stableUrl = new URL(link.redirectUrl, window.location.origin).href;
+    const stableUrlElement = result?.querySelector('[data-affiliate-stable-url]');
+    if (stableUrlElement) stableUrlElement.textContent = stableUrl.replace(/^https?:\/\//, '');
+    const copyButton = result?.querySelector('[data-copy-url]');
+    if (copyButton) copyButton.dataset.copyUrl = link.redirectUrl;
+    const buyLabel = result?.querySelector('[data-affiliate-buy-label]');
+    if (buyLabel) buyLabel.textContent = isShop ? 'Vào Shop mua hàng' : 'Mua ngay';
+    const hint = result?.querySelector('[data-affiliate-hint]');
+    if (hint) hint.textContent = isShop
+      ? 'Mở shop trên Shopee để thêm nhiều sản phẩm vào giỏ hàng trong cùng một lần mua.'
+      : 'Mở sản phẩm trên Shopee và hoàn tất đơn trong cùng phiên để được ghi nhận hoàn tiền.';
+    const buyButton = result?.querySelector('.affiliate-inline-buy-button');
+    if (buyButton) {
+      buyButton.href = link.redirectUrl;
+      if (window.matchMedia('(min-width: 768px)').matches) buyButton.target = '_blank';
+    }
+    linkForm.insertBefore(fragment, createButton);
+    if (createButton) createButton.hidden = true;
   };
 
   const removeOverflowCards = (list) => {
@@ -247,13 +371,21 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     }
   };
 
-  linkInput?.addEventListener('input', syncClearButton, { signal });
+  targetInputs.forEach((input) => input.addEventListener('change', () => syncTargetMode(true), { signal }));
+  linkInput?.addEventListener('input', () => {
+    syncClearButton();
+    if (linkForm?.querySelector('[data-affiliate-inline-result]')) clearInlineResult();
+    if (urlStatus?.dataset.state !== 'idle') showUrlStatus('', 'idle');
+  }, { signal });
   clearButton?.addEventListener('click', () => {
     linkInput.value = '';
+    clearInlineResult();
+    showUrlStatus('', 'idle');
     syncClearButton();
     linkInput.focus();
   }, { signal });
   syncClearButton();
+  syncTargetMode(false);
 
   linkForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -276,7 +408,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
       }
 
       upsertLinkCard(result.link);
-      linkInput.value = '';
+      renderInlineResult(result.link);
       syncClearButton();
       showUrlStatus(result.message, 'success');
     } catch (error) {

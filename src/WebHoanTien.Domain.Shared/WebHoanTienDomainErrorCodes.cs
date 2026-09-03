@@ -4,6 +4,9 @@ public static class WebHoanTienDomainErrorCodes
 {
     public const string InvalidAffiliateUrl = "WebHoanTien:Affiliate:InvalidUrl";
     public const string UnsafeRedirect = "WebHoanTien:Affiliate:UnsafeRedirect";
+    public const string AffiliateTargetTypeInvalid = "WebHoanTien:Affiliate:TargetTypeInvalid";
+    public const string AffiliateTargetUnsupported = "WebHoanTien:Affiliate:TargetUnsupported";
+    public const string AffiliateTargetMismatch = "WebHoanTien:Affiliate:TargetMismatch";
     public const string CommissionRuleOverlap = "WebHoanTien:Commission:RuleOverlap";
     public const string CommissionRuleNotFound = "WebHoanTien:Commission:RuleNotFound";
     public const string ProviderNotConfigured = "WebHoanTien:Provider:NotConfigured";

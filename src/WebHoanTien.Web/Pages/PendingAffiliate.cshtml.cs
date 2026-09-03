@@ -22,33 +22,45 @@ public class PendingAffiliateModel : PageModel
     public async Task<IActionResult> OnGetAsync()
     {
         if (!Request.Cookies.TryGetValue("wht.pending", out var protectedValue)) return RedirectToPage("/Index");
+        IndexModel.PendingAffiliateAction? action = null;
         try
         {
             var value = _protector.Unprotect(protectedValue, out _);
-            var action = JsonSerializer.Deserialize<IndexModel.PendingAffiliateAction>(value);
+            action = JsonSerializer.Deserialize<IndexModel.PendingAffiliateAction>(value);
             if (action is null || await _cache.GetStringAsync("affiliate:pending:" + action.Nonce) is null) return RedirectToPage("/Index");
             await _cache.RemoveAsync("affiliate:pending:" + action.Nonce);
             Response.Cookies.Delete("wht.pending");
-            var result = await _links.CreateAsync(new CreateAffiliateLinkInput { Url = action.Url });
+            var result = await _links.CreateAsync(new CreateAffiliateLinkInput
+            {
+                Url = action.Url,
+                TargetType = action.TargetType
+            });
             TempData["AffiliateCreatedLinkId"] = result.Id.ToString();
-            TempData["AffiliateLinkSuccess"] = result.WasRestored
-                ? "Link đã được đưa trở lại danh sách của bạn."
-                : result.IsExisting
-                    ? "Link này đã có trong danh sách của bạn."
-                    : "Link mua hàng đã được thêm vào danh sách của bạn.";
+            TempData["AffiliateLinkSuccess"] = IndexModel.SuccessMessageFor(result);
+            TempData["AffiliateLinkTargetType"] = action.TargetType.ToString();
+            TempData["AffiliateLinkUrl"] = action.Url;
             return RedirectToPage("/Index");
         }
         catch (UserFriendlyException exception)
         {
             Response.Cookies.Delete("wht.pending");
+            RestorePendingContext(action);
             TempData["AffiliateLinkError"] = exception.Message;
             return RedirectToPage("/Index");
         }
         catch
         {
             Response.Cookies.Delete("wht.pending");
+            RestorePendingContext(action);
             TempData["AffiliateLinkError"] = "Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.";
             return RedirectToPage("/Index");
         }
+    }
+
+    private void RestorePendingContext(IndexModel.PendingAffiliateAction? action)
+    {
+        if (action is null) return;
+        TempData["AffiliateLinkUrl"] = action.Url;
+        TempData["AffiliateLinkTargetType"] = action.TargetType.ToString();
     }
 }

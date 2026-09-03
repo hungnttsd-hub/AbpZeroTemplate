@@ -90,6 +90,46 @@ public class AffiliateMultiAttributionTests : WebHoanTienEntityFrameworkCoreTest
     }
 
     [Fact]
+    public async Task Shop_Link_Should_Match_All_Order_Items_By_Platform_And_Token()
+    {
+        var userId = Guid.NewGuid();
+        var trackingId = Guid.NewGuid();
+        var token = Token("shop-order");
+        var orderId = $"ORDER-SHOP-{Guid.NewGuid():N}";
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await _users.InsertAsync(new IdentityUser(userId, $"user-{userId:N}", $"user-{userId:N}@test.local"));
+            var tracking = new AffiliateTracking(trackingId, userId, AffiliatePlatform.Shopee, token,
+                "https://shopee.vn/catsback.official", "https://shopee.vn/catsback.official");
+            tracking.Hide(PurchaseTime.AddDays(-1));
+            await _trackings.InsertAsync(tracking);
+
+            var source = Source(orderId, AffiliateOrderStatus.Pending,
+                new SourceItem("SHOP-ITEM-A", token, 4_000m),
+                new SourceItem("SHOP-ITEM-B", token, 6_000m));
+            var firstImport = await _upserter.UpsertAsync(AffiliatePlatform.Shopee, source);
+            var secondImport = await _upserter.UpsertAsync(AffiliatePlatform.Shopee, source);
+
+            firstImport.MatchedItemCount.ShouldBe(2);
+            secondImport.MatchedItemCount.ShouldBe(2);
+            (await _trackings.GetAsync(trackingId)).ProductId.ShouldBeNull();
+            var order = (await _orders.GetListAsync(x => x.ExternalOrderId == orderId)).Single();
+            var rows = await ActiveAttributionsAsync(order.Id);
+            rows.Count.ShouldBe(2);
+            rows.All(x => x.TrackingId == trackingId).ShouldBeTrue();
+            rows.All(x => x.UserId == userId).ShouldBeTrue();
+            rows.All(x => x.Status == AffiliateAttributionStatus.Matched).ShouldBeTrue();
+            rows.Sum(x => x.UserCommissionSnapshot).ShouldBe(10_000m);
+            (await _orders.GetListAsync(x => x.ExternalOrderId == orderId)).Count.ShouldBe(1);
+            (await _notifications.GetListAsync(x => x.UserId == userId &&
+                x.EventKey == $"order:{order.Id:N}:pending")).Count.ShouldBe(1);
+        });
+
+        await AssertSingleWalletMovementAsync(userId, 10_000m);
+    }
+
+    [Fact]
     public async Task Multiple_Users_And_Unknown_Token_Should_Keep_Unknown_Share_Uncredited()
     {
         var userA = Guid.NewGuid();

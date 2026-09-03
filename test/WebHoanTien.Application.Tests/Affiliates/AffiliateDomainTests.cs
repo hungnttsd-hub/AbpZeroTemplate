@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using Shouldly;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Integrations.Shopee;
 using Xunit;
 
 namespace WebHoanTien.Tests.Affiliates;
@@ -150,6 +152,57 @@ public class AffiliateDomainTests
 
         valid.ShouldBeTrue();
         normalized.ShouldBe("https://shopee.vn/collection/123");
+    }
+
+    [Theory]
+    [InlineData("https://shopee.vn/ao-thun-i.123.456", AffiliateLinkTargetType.Product)]
+    [InlineData("https://shopee.vn/product/123/456", AffiliateLinkTargetType.Product)]
+    [InlineData("https://shopee.vn/opaanlp/123/456", AffiliateLinkTargetType.Product)]
+    [InlineData("https://shopee.vn/catsback.official", AffiliateLinkTargetType.Shop)]
+    [InlineData("https://shopee.vn/shop/123456", AffiliateLinkTargetType.Shop)]
+    [InlineData("https://shopee.vn", AffiliateLinkTargetType.Unknown)]
+    [InlineData("https://shopee.vn/search", AffiliateLinkTargetType.Unknown)]
+    [InlineData("https://shopee.vn/live", AffiliateLinkTargetType.Unknown)]
+    [InlineData("https://shopee.vn/campaign/123", AffiliateLinkTargetType.Unknown)]
+    public void Link_Target_Classifier_Should_Recognize_Only_Product_And_Shop_Pages(
+        string url, AffiliateLinkTargetType expected)
+    {
+        new ShopeeLinkTargetClassifier().Classify(url).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Url_Normalizer_Should_Reject_Explicit_Non_Https_Port()
+    {
+        new ShopeeUrlNormalizer().TryNormalize("https://shopee.vn:8443/shop/123", out _, out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Shop_Metadata_Should_Read_Name_Id_And_Avatar()
+    {
+        using var document = JsonDocument.Parse("""
+            {"error":0,"data":{"shopid":88201679,"name":"Apple Flagship Store","account":{"portrait":"62160f74aa5cffa160b2062658d2be75"}}}
+            """);
+
+        var result = ShopeeShopMetadataProvider.ReadMetadata(document.RootElement,
+            new ShopeeShopMetadata(null, "Cửa hàng Shopee", null));
+
+        result.ShopId.ShouldBe("88201679");
+        result.DisplayName.ShouldBe("Apple Flagship Store");
+        result.ImageUrl.ShouldBe("https://down-vn.img.susercontent.com/file/62160f74aa5cffa160b2062658d2be75");
+    }
+
+    [Fact]
+    public void Shop_Metadata_Should_Fall_Back_To_Shop_Id_And_Default_Image()
+    {
+        using var document = JsonDocument.Parse("""
+            {"error":0,"data":{"shopid":88201679,"name":"","account":{"portrait":"unsafe/path"}}}
+            """);
+
+        var result = ShopeeShopMetadataProvider.ReadMetadata(document.RootElement,
+            new ShopeeShopMetadata(null, "Cửa hàng Shopee", null));
+
+        result.DisplayName.ShouldBe("Shop #88201679");
+        result.ImageUrl.ShouldBeNull();
     }
 
     [Fact]

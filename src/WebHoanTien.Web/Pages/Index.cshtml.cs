@@ -25,10 +25,12 @@ public class IndexModel : PageModel
     private readonly IDistributedCache _cache;
 
     [BindProperty] public string LinkUrl { get; set; } = string.Empty;
+    [BindProperty] public AffiliateLinkTargetType LinkTargetType { get; set; } = AffiliateLinkTargetType.Product;
     [BindProperty(SupportsGet = true)] public bool ShowHidden { get; set; }
     public string? Error { get; set; }
     public string? SuccessMessage { get; set; }
     public Guid? CreatedLinkId { get; set; }
+    public AffiliateTrackingDto? CreatedLink { get; private set; }
     public PagedResultDto<AffiliateTrackingDto> RecentLinks { get; private set; } = new();
     public CustomerWalletOverviewDto Wallet { get; private set; } = new();
 
@@ -43,6 +45,13 @@ public class IndexModel : PageModel
     {
         Error = TempData["AffiliateLinkError"] as string;
         SuccessMessage = TempData["AffiliateLinkSuccess"] as string;
+        LinkUrl = TempData["AffiliateLinkUrl"] as string ?? string.Empty;
+        if (Enum.TryParse<AffiliateLinkTargetType>(TempData["AffiliateLinkTargetType"] as string,
+                ignoreCase: true, out var targetType) &&
+            targetType is AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop)
+        {
+            LinkTargetType = targetType;
+        }
         if (Guid.TryParse(TempData["AffiliateCreatedLinkId"] as string, out var createdLinkId))
         {
             CreatedLinkId = createdLinkId;
@@ -52,7 +61,11 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostPrepareAsync()
     {
-        var validation = await _links.ValidateAsync(new ValidateAffiliateUrlInput { Url = LinkUrl });
+        var validation = await _links.ValidateAsync(new ValidateAffiliateUrlInput
+        {
+            Url = LinkUrl,
+            TargetType = LinkTargetType
+        });
         if (!validation.IsValid)
         {
             Error = validation.Error;
@@ -64,15 +77,15 @@ public class IndexModel : PageModel
         {
             try
             {
-                var result = await _links.CreateAsync(new CreateAffiliateLinkInput { Url = LinkUrl });
+                var result = await _links.CreateAsync(new CreateAffiliateLinkInput
+                {
+                    Url = LinkUrl,
+                    TargetType = LinkTargetType
+                });
                 CreatedLinkId = result.Id;
-                LinkUrl = string.Empty;
+                CreatedLink = result;
                 ModelState.Clear();
-                SuccessMessage = result.WasRestored
-                    ? "Link đã được đưa trở lại danh sách của bạn."
-                    : result.IsExisting
-                        ? "Link này đã có trong danh sách của bạn."
-                        : "Link mua hàng đã được thêm vào danh sách của bạn.";
+                SuccessMessage = SuccessMessageFor(result);
                 if (IsAjaxRequest())
                 {
                     return new JsonResult(new
@@ -82,7 +95,9 @@ public class IndexModel : PageModel
                         link = new
                         {
                             id = result.Id,
+                            targetType = result.TargetType.ToString(),
                             productName = result.ProductName,
+                            shopId = result.ShopId,
                             imageUrl = result.ImageUrl,
                             estimatedCommissionLabel = result.EstimatedCommission.HasValue
                                 ? result.EstimatedCommission.Value.ToString("N0") + "₫"
@@ -114,7 +129,12 @@ public class IndexModel : PageModel
         }
 
         var nonce = Guid.NewGuid().ToString("N");
-        var payload = JsonSerializer.Serialize(new PendingAffiliateAction(LinkUrl, nonce));
+        var payload = JsonSerializer.Serialize(new PendingAffiliateAction
+        {
+            Url = LinkUrl,
+            TargetType = LinkTargetType,
+            Nonce = nonce
+        });
         Response.Cookies.Append("wht.pending", _protector.Protect(payload, TimeSpan.FromMinutes(20)), new CookieOptions
         {
             HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.Lax, MaxAge = TimeSpan.FromMinutes(20), IsEssential = true
@@ -162,8 +182,30 @@ public class IndexModel : PageModel
             MaxResultCount = 5,
             IncludeHidden = ShowHidden
         });
+        if (CreatedLinkId.HasValue)
+        {
+            CreatedLink = RecentLinks.Items.FirstOrDefault(x => x.Id == CreatedLinkId.Value) ??
+                          await _links.GetAsync(CreatedLinkId.Value);
+        }
         Wallet = await _wallet.GetOverviewAsync();
     }
 
-    public sealed record PendingAffiliateAction(string Url, string Nonce);
+    internal static string SuccessMessageFor(AffiliateTrackingDto result)
+    {
+        var targetLabel = result.TargetType == AffiliateLinkTargetType.Shop ? "Link cửa hàng" : "Link";
+        return result.WasRestored
+            ? $"{targetLabel} đã được đưa trở lại danh sách của bạn."
+            : result.IsExisting
+                ? $"{targetLabel} này đã có trong danh sách của bạn."
+                : result.TargetType == AffiliateLinkTargetType.Shop
+                    ? "Link cửa hàng đã sẵn sàng."
+                    : "Link mua hàng đã được thêm vào danh sách của bạn.";
+    }
+
+    public sealed class PendingAffiliateAction
+    {
+        public string Url { get; set; } = string.Empty;
+        public AffiliateLinkTargetType TargetType { get; set; } = AffiliateLinkTargetType.Product;
+        public string Nonce { get; set; } = string.Empty;
+    }
 }

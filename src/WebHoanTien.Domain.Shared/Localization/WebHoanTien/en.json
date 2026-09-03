@@ -31,6 +31,9 @@
     "WebHoanTien:Wallet:NotBacked": "Confirmed commission is currently insufficient to pay this request.",
     "WebHoanTien:Notification:NotOwned": "You cannot access this notification.",
     "WebHoanTien:Notification:TargetNotFound": "The notification recipient could not be found.",
-    "WebHoanTien:Notification:InvalidActionUrl": "The notification action URL is invalid."
+    "WebHoanTien:Notification:InvalidActionUrl": "The notification action URL is invalid.",
+    "WebHoanTien:Affiliate:TargetTypeInvalid": "Please select a valid Shopee link type.",
+    "WebHoanTien:Affiliate:TargetUnsupported": "This is not a supported Shopee product or shop page.",
+    "WebHoanTien:Affiliate:TargetMismatch": "The selected link type does not match the Shopee URL."
   }
 }

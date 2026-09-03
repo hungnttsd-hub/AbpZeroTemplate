@@ -20,6 +20,9 @@ public class Index_Tests : WebHoanTienWebTestBase
         response.ShouldContain("<html lang=\"vi\"");
         response.ShouldContain("Mua sắm Shopee");
         response.ShouldContain("webHoanTien.com");
+        response.ShouldContain("Link sản phẩm");
+        response.ShouldContain("Link shop");
+        response.ShouldContain("affiliate-inline-result-template");
     }
 
     [Theory]

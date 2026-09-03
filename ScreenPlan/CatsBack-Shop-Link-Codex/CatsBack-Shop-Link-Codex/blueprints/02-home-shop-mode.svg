@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" fill="none">
+<title>CatsBack home shop idle</title>
+<defs>
+<linearGradient id="header" x1="0" y1="0" x2="390" y2="330"><stop stop-color="#032D59"/><stop offset="1" stop-color="#06466C"/></linearGradient>
+<linearGradient id="teal" x1="0" y1="0" x2="390" y2="0"><stop stop-color="#0B9098"/><stop offset="1" stop-color="#10A7A5"/></linearGradient>
+<linearGradient id="wallet" x1="0" y1="0" x2="390" y2="170"><stop stop-color="#04758B"/><stop offset="1" stop-color="#2EC7AE"/></linearGradient>
+<linearGradient id="yellow" x1="0" y1="0" x2="340" y2="0"><stop stop-color="#FFB718"/><stop offset="1" stop-color="#FFD85A"/></linearGradient>
+</defs>
+<rect width="390" height="844" fill="#F4F8F9"/>
+<rect width="390" height="315" rx="0" fill="url(#header)"/>
+<circle cx="56" cy="74" r="30" fill="#10A7A5"/><text x="45" y="83" fill="#fff" font-family="Inter,Arial" font-size="24" font-weight="800">C</text>
+<text x="100" y="66" fill="#fff" font-family="Inter,Arial" font-size="16" font-weight="900">SẮM SHOPEE LỜI HƠN</text>
+<text x="100" y="87" fill="#fff" font-family="Inter,Arial" font-size="16" font-weight="900">CÙNG CATBACK</text>
+<rect x="99" y="98" width="180" height="29" rx="15" fill="#fff"/>
+<g transform="translate(110 103) scale(.7)" color="#087C89"><path d="M10 2.5 4 5v4.2c0 4 2.4 6.8 6 8.3 3.6-1.5 6-4.3 6-8.3V5l-6-2.5Z" stroke="currentColor" stroke-width="1.6"/><path d="m7.3 10 1.7 1.7 3.8-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="134" y="117" fill="#087C89" font-family="Inter,Arial" font-size="9.5" font-weight="700">Hoàn tiền thật – Rút tiền thật</text>
+<circle cx="319" cy="72" r="21" fill="#fff"/><text x="312" y="79" fill="#087C89" font-family="Inter,Arial" font-size="16">♟</text>
+<circle cx="364" cy="72" r="21" fill="#087C89" stroke="#fff" stroke-width="2"/><text x="358" y="78" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="800">A</text>
+<rect x="16" y="148" width="358" height="147" rx="21" fill="url(#teal)" stroke="#C4A94E"/>
+<text x="40" y="188" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="800">⚡ Hoàn tiền lên tới</text>
+<rect x="182" y="163" width="86" height="43" rx="22" fill="#FFD04A"/>
+<text x="199" y="192" fill="#08254A" font-family="Inter,Arial" font-size="28" font-weight="900">80%</text>
+<text x="280" y="188" fill="#fff" font-family="Inter,Arial" font-size="14" font-weight="800">hoa hồng</text>
+<text x="73" y="218" fill="#E7FFFF" font-family="Inter,Arial" font-size="9.5" font-weight="700">Nhận hoàn tiền sau khi Shopee đối soát đơn hàng.</text>
+<rect x="40" y="232" width="310" height="48" rx="24" fill="url(#yellow)"/>
+<text x="147" y="262" fill="#08254A" font-family="Inter,Arial" font-size="16" font-weight="900">Cài đặt ngay</text>
+<rect x="16" y="327" width="358" height="158" rx="22" fill="url(#wallet)" stroke="#C4A94E"/>
+<text x="33" y="360" fill="#fff" font-family="Inter,Arial" font-size="13" font-weight="700">Số dư ví</text>
+<text x="33" y="402" fill="#fff" font-family="Inter,Arial" font-size="34" font-weight="900">0đ</text>
+<line x1="33" y1="418" x2="228" y2="418" stroke="#67CFC6" stroke-width="1"/>
+<text x="33" y="442" fill="#E7FFFF" font-family="Inter,Arial" font-size="9">Đã ghi nhận</text>
+<text x="33" y="463" fill="#fff" font-family="Inter,Arial" font-size="11" font-weight="800">0đ</text>
+<text x="112" y="442" fill="#E7FFFF" font-family="Inter,Arial" font-size="9">Sắp ghi nhận</text>
+<text x="112" y="463" fill="#fff" font-family="Inter,Arial" font-size="11" font-weight="800">0đ</text>
+<rect x="268" y="368" width="72" height="58" rx="18" fill="#1DB5B2" stroke="#B9FFEC"/>
+<text x="287" y="403" fill="#FFD04A" font-family="Inter,Arial" font-size="28">◉</text>
+<text x="282" y="458" fill="#fff" font-family="Inter,Arial" font-size="11" font-weight="800">Xem ví ›</text>
+<rect x="10" y="505" width="370" height="285" rx="22" fill="#fff" stroke="#DCE4EE"/>
+<rect x="25" y="525" width="40" height="40" rx="13" fill="url(#teal)"/>
+<g transform="translate(35 535)" color="#fff"><path d="M9.5 14.5 7.8 16.2a4 4 0 1 1-5.7-5.7l3.1-3.1a4 4 0 0 1 5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m6.5 9.5 1.7-1.7a4 4 0 1 1 5.7 5.7l-3.1 3.1a4 4 0 0 1-5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<text x="77" y="550" fill="#08254A" font-family="Inter,Arial" font-size="18" font-weight="800">Dán link Shopee tại đây ✦</text>
+<rect x="25.5" y="580.5" width="340" height="43" rx="21.5" fill="#F7F9FB" stroke="#DCE4EE"/>
+<rect x="199" y="584" width="160" height="36" rx="18" fill="url(#teal)"/>
+<g transform="translate(51 592) scale(.8)" color="#66758F"><path d="M9.5 14.5 7.8 16.2a4 4 0 1 1-5.7-5.7l3.1-3.1a4 4 0 0 1 5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m6.5 9.5 1.7-1.7a4 4 0 1 1 5.7 5.7l-3.1 3.1a4 4 0 0 1-5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<text x="75" y="607" fill="#66758F" font-family="Inter,Arial" font-size="12" font-weight="700">Link sản phẩm</text>
+<g transform="translate(221 592) scale(.8)" color="#fff"><path d="M3 8.5h14l-1.2-4H4.2L3 8.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8.5V17h12V8.5M7.2 17v-5h5.6v5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 8.5c0 1.3.9 2.2 2.2 2.2s2.2-.9 2.2-2.2c0 1.3.9 2.2 2.2 2.2s2.2-.9 2.2-2.2c0 1.3.9 2.2 2.2 2.2s2.2-.9 2.2-2.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<text x="245" y="607" fill="#fff" font-family="Inter,Arial" font-size="12" font-weight="700">Link shop</text>
+<g transform="translate(28 634) scale(.68)" color="#94A0B2"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M10 9v5M10 6.2h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<text x="47" y="646" fill="#7E899A" font-family="Inter,Arial" font-size="9.6">Chọn loại link để hệ thống tạo link hoàn tiền phù hợp.</text>
+<text x="27" y="670" fill="#087C89" font-family="Inter,Arial" font-size="11" font-weight="700">Xem hướng dẫn ›</text>
+<rect x="25.5" y="684.5" width="340" height="52" rx="14" fill="#fff" stroke="#DCE4EE"/>
+<text x="39" y="716" fill="#9AA6B8" font-family="Inter,Arial" font-size="11.5">Dán link cửa hàng Shopee tại đây...</text>
+<rect x="25" y="751" width="340" height="48" rx="14" fill="url(#teal)"/>
+<text x="119" y="781" fill="#fff" font-family="Inter,Arial" font-size="13" font-weight="800">Tạo link hoàn tiền →</text><rect x="0" y="778" width="390" height="66" fill="#fff"/>
+<line x1="0" y1="778" x2="390" y2="778" stroke="#E5ECEF"/>
+<text x="40" y="821" fill="#0B9098" font-family="Inter,Arial" font-size="9.5" font-weight="700">Trang chủ</text>
+<text x="131" y="821" fill="#66758F" font-family="Inter,Arial" font-size="9.5" font-weight="700">Ví tiền</text>
+<text x="221" y="821" fill="#66758F" font-family="Inter,Arial" font-size="9.5" font-weight="700">Đơn hàng</text>
+<text x="314" y="821" fill="#66758F" font-family="Inter,Arial" font-size="9.5" font-weight="700">Tài khoản</text>
+
+</svg>

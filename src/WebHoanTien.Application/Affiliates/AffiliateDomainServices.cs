@@ -19,7 +19,8 @@ public class ShopeeUrlNormalizer : IAffiliateUrlNormalizer, ITransientDependency
         if (string.IsNullOrWhiteSpace(input) || input.Length > WebHoanTienConsts.UrlMaxLength ||
             !Uri.TryCreate(input.Trim(), UriKind.Absolute, out var uri) ||
             !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
-            !AllowedHosts.Contains(uri.IdnHost) || !string.IsNullOrEmpty(uri.UserInfo))
+            !AllowedHosts.Contains(uri.IdnHost) || !string.IsNullOrEmpty(uri.UserInfo) ||
+            (!uri.IsDefaultPort && uri.Port != 443))
         {
             return false;
         }

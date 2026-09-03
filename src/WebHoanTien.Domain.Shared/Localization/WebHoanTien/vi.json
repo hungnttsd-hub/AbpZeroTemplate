@@ -31,6 +31,9 @@
     "WebHoanTien:Wallet:NotBacked": "Số hoa hồng đã xác nhận hiện không đủ để thanh toán yêu cầu này.",
     "WebHoanTien:Notification:NotOwned": "Bạn không có quyền truy cập thông báo này.",
     "WebHoanTien:Notification:TargetNotFound": "Không tìm thấy người nhận thông báo.",
-    "WebHoanTien:Notification:InvalidActionUrl": "Đường dẫn thông báo không hợp lệ."
+    "WebHoanTien:Notification:InvalidActionUrl": "Đường dẫn thông báo không hợp lệ.",
+    "WebHoanTien:Affiliate:TargetTypeInvalid": "Vui lòng chọn loại link Shopee hợp lệ.",
+    "WebHoanTien:Affiliate:TargetUnsupported": "Link này không phải trang sản phẩm hoặc cửa hàng Shopee được hỗ trợ.",
+    "WebHoanTien:Affiliate:TargetMismatch": "Loại link đã chọn không khớp với link Shopee."
   }
 }

@@ -598,3 +598,41 @@ body.has-link-action-sheet { overflow: hidden; }
   .affiliate-action-panel { animation: none; }
   .affiliate-link-card.is-removing { animation-duration: .01ms; }
 }
+
+/* Product/Shop link mode, sourced from the approved link-card blueprint. */
+.catback-link-page .affiliate-target-selector { background: #f0f4f7; }
+.catback-link-page .affiliate-target-option input:checked + span { color: #08254a; }
+.catback-link-page .affiliate-target-option input:checked + span svg { color: #0b9098; }
+.catback-link-page .dashboard-guide-link { color: #087c89; }
+.catback-link-page .affiliate-inline-result { border-color: #c6dce2; }
+.catback-link-page .affiliate-link-card.is-shop-link .affiliate-link-meta,
+.catback-link-page .affiliate-link-card.is-legacy-link .affiliate-link-meta { margin-top: 6px; }
+.catback-link-page .affiliate-link-card.is-shop-link .affiliate-buy-button { color: #08254a; }
+
+.result-shop-identity { display: flex; align-items: center; justify-content: center; gap: 13px; margin: 15px 0 10px; text-align: left; }
+.result-shop-identity > img { width: 58px; height: 58px; flex: 0 0 58px; object-fit: cover; border: 1px solid #cfe5e5; border-radius: 15px; background: #eaf8f8; }
+.result-shop-identity h1 { margin: 0; }
+.result-panel.is-shop-result .affiliate-target-badge { margin-top: 7px; }
+.result-panel.is-shop-result .button-dark { border-color: #efad10; color: #08254a; background: linear-gradient(100deg, #ffbd24, #ffd85a); }
+.result-panel.is-legacy-result .button-dark { background: #08254a; }
+
+@media (max-width: 767px) {
+  .catback-link-page .dashboard-create-heading { margin-bottom: 13px; }
+  .catback-link-page .affiliate-target-selector {
+    min-height: 43px;
+    margin-bottom: 7px;
+    padding: 3px;
+  }
+  .catback-link-page .affiliate-target-option > span { min-height: 37px; font-size: 12px; }
+  .catback-link-page .affiliate-target-help { margin-bottom: 4px; font-size: 9px; }
+  .catback-link-page .dashboard-guide-link { margin-bottom: 10px; font-size: 10px; }
+  .catback-link-page .dashboard-input-shell { margin-top: 0; }
+  .catback-link-page .affiliate-inline-result { margin-top: 12px; padding: 12px; border-radius: 14px; }
+  .catback-link-page .affiliate-inline-buy-button { min-height: 50px; border-radius: 14px; }
+  .catback-link-page .affiliate-link-card .affiliate-target-badge { margin-top: 4px; padding: 3px 6px; font-size: 8px; }
+}
+
+@media (min-width: 375px) and (max-width: 430px) {
+  .catback-link-page .customer-dashboard { width: 100%; padding-inline: 10px; }
+  .catback-link-page .dashboard-create-card { width: 100%; max-width: 410px; margin-inline: auto; }
+}

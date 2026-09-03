@@ -54,6 +54,20 @@ public class ShopeeReportParserTests
     }
 
     [Fact]
+    public async Task ParseAsync_Should_Reconstruct_Shop_Token_From_All_SubId_Columns()
+    {
+        const string trackingToken = "shop-tracking-token-12345678901234567890";
+        var csv = "ID đơn hàng,Trạng thái đặt hàng,Thời Gian Đặt Hàng,Item id,Tên Item,ID Model,Số lượng,Giá trị đơn hàng (₫),Hoa hồng ròng tiếp thị liên kết(₫),Sub_id1,Sub_id2,Sub_id3,Sub_id4,Sub_id5\n" +
+                  "ORDER-SHOP,Đang chờ xử lý,2026-08-21 10:06:07,ITEM-SHOP,Sản phẩm trong shop,MODEL-SHOP,1,100000,5000,shop,tracking,token,12345678901234567890,";
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv));
+
+        var conversion = (await new ShopeeReportParser().ParseAsync(stream)).Conversions.Single();
+
+        conversion.AttributionValue.ShouldBe(trackingToken);
+        conversion.Orders.Single().Items.Single().Attributions.Single().AttributionValue.ShouldBe(trackingToken);
+    }
+
+    [Fact]
     public async Task Unknown_Order_Status_Should_Remain_Pending()
     {
         var csv = "order_id,sub_id,purchase_time,net_commission,order_status\n" +

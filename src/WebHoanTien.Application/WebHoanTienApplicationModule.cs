@@ -36,6 +36,12 @@ public class WebHoanTienApplicationModule : AbpModule
         context.Services.Configure<ShopeeAffiliateOptions>(configuration.GetSection(ShopeeAffiliateOptions.SectionName));
         context.Services.AddHttpClient("ShopeeProductData", client =>
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:ProductDataTimeoutSeconds", 10), 1, 120)));
+        context.Services.AddHttpClient("ShopeeShopMetadata", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:ShopMetadataTimeoutSeconds", 4), 1, 15));
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; CatsBack-ShopMetadata/1.0)");
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        });
         var redirectTimeoutSeconds = Math.Clamp(configuration.GetValue("Affiliate:RedirectTimeoutSeconds", 8), 1, 120);
         context.Services.AddHttpClient("AffiliateRedirectResolver", client =>
                 client.Timeout = TimeSpan.FromSeconds(redirectTimeoutSeconds))
@@ -66,6 +72,7 @@ public class WebHoanTienApplicationModule : AbpModule
                 }
             });
         context.Services.AddTransient<ShopeeAffiliateLinkBuilder>();
+        context.Services.AddTransient<ShopeeShopMetadataProvider>();
         context.Services.AddTransient<ShopeeReportImporter>();
         context.Services.AddTransient<IAdminShopeeReportImportAppService, ShopeeReportImportAppService>();
         context.Services.AddTransient<IShopeeAutomationImportAppService, ShopeeAutomationImportAppService>();

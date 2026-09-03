@@ -47,7 +47,7 @@ public class SafeAffiliateUrlResolver : ISafeAffiliateUrlResolver, ITransientDep
                 if (!_normalizer.TryNormalize(current.AbsoluteUri, out normalized, out itemId))
                     throw new BusinessException(WebHoanTienDomainErrorCodes.UnsafeRedirect);
                 current = new Uri(normalized);
-                if (!ShopeeUrlNormalizer.IsShortHost(current.IdnHost) && !string.IsNullOrWhiteSpace(itemId))
+                if (!ShopeeUrlNormalizer.IsShortHost(current.IdnHost))
                     return (normalized, itemId);
                 continue;
             }

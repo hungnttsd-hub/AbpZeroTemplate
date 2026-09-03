@@ -1,0 +1,11 @@
+{
+  "package": "CatsBack-Shop-Link-Codex",
+  "baseline_branch": "Template/WebHoanTien",
+  "baseline_commit": "ff47728d76528443fcdaaccdb6c2d5dbec79367d",
+  "authoritative_spec": "spec.md",
+  "authoritative_blueprint": "blueprint.svg",
+  "references": [
+    "references/approved-template-product-shop.png",
+    "references/current-home-before-upgrade.png"
+  ]
+}

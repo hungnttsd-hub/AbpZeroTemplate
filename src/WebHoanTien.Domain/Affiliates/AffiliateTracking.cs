@@ -52,6 +52,15 @@ public class AffiliateTracking : FullAuditedAggregateRoot<Guid>
         EstimatedCommission = estimate;
     }
 
+    public void SetShop(string? shopId, string displayName, string? imageUrl)
+    {
+        ProductId = null;
+        ShopId = shopId;
+        ProductName = displayName;
+        ImageUrl = imageUrl;
+        EstimatedCommission = null;
+    }
+
     public void RegisterClick(DateTime at)
     {
         ClickCount++;

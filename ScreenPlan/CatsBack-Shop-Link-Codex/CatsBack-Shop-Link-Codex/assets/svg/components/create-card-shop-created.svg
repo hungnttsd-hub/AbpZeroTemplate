@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="430" viewBox="0 0 360 430" fill="none">
+<title>Create card shop created</title>
+<defs>
+<linearGradient id="teal" x1="0" y1="0" x2="360" y2="0"><stop stop-color="#0B9098"/><stop offset="1" stop-color="#10A7A5"/></linearGradient>
+<linearGradient id="yellow" x1="0" y1="0" x2="328" y2="0"><stop stop-color="#FFB718"/><stop offset="1" stop-color="#FFD85A"/></linearGradient>
+<filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#08254A" flood-opacity=".08"/></filter>
+</defs>
+<rect x="1" y="1" width="358" height="428" rx="22" fill="#fff" stroke="#DCE4EE" filter="url(#shadow)"/>
+<rect x="16" y="18" width="40" height="40" rx="13" fill="url(#teal)"/>
+<g transform="translate(26 28)" color="#fff"><path d="M9.5 14.5 7.8 16.2a4 4 0 1 1-5.7-5.7l3.1-3.1a4 4 0 0 1 5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m6.5 9.5 1.7-1.7a4 4 0 1 1 5.7 5.7l-3.1 3.1a4 4 0 0 1-5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<text x="68" y="42" fill="#08254A" font-family="Inter,Arial" font-size="18" font-weight="800">Dán link Shopee tại đây ✦</text>
+<rect x="16.5" y="72.5" width="327" height="43" rx="21.5" fill="#F7F9FB" stroke="#DCE4EE"/>
+<rect x="194" y="76" width="144" height="36" rx="18" fill="url(#teal)"/>
+<g transform="translate(42 84) scale(.8)" color="#66758F"><path d="M9.5 14.5 7.8 16.2a4 4 0 1 1-5.7-5.7l3.1-3.1a4 4 0 0 1 5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m6.5 9.5 1.7-1.7a4 4 0 1 1 5.7 5.7l-3.1 3.1a4 4 0 0 1-5.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<text x="66" y="99" fill="#66758F" font-family="Inter,Arial" font-size="12" font-weight="700">Link sản phẩm</text>
+<g transform="translate(216 84) scale(.8)" color="#fff"><path d="M3 8.5h14l-1.2-4H4.2L3 8.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8.5V17h12V8.5M7.2 17v-5h5.6v5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 8.5c0 1.3.9 2.2 2.2 2.2s2.2-.9 2.2-2.2c0 1.3.9 2.2 2.2 2.2s2.2-.9 2.2-2.2c0 1.3.9 2.2 2.2 2.2s2.2-.9 2.2-2.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<text x="240" y="99" fill="#fff" font-family="Inter,Arial" font-size="12" font-weight="700">Link shop</text>
+<g transform="translate(18 126) scale(.72)" color="#94A0B2"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M10 9v5M10 6.2h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<text x="38" y="139" fill="#7E899A" font-family="Inter,Arial" font-size="9.7">Chọn loại link để hệ thống tạo link hoàn tiền phù hợp.</text>
+<text x="17" y="163" fill="#087C89" font-family="Inter,Arial" font-size="11" font-weight="700">Xem hướng dẫn ›</text>
+<rect x="16.5" y="177.5" width="327" height="52" rx="14" fill="#fff" stroke="#DCE4EE"/>
+<text x="30" y="209" fill="#08254A" font-family="Inter,Arial" font-size="11.5">https://shopee.vn/apple_flagship_store</text>
+<circle cx="322" cy="203" r="10" fill="#EEF1F5"/>
+<g transform="translate(312 193)" color="#8B97AA"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+<rect x="16" y="241" width="327" height="83" rx="15" fill="#F8FBFC" stroke="#DCE4EE"/>
+<circle cx="51" cy="270" r="22" fill="#EAF8F8"/>
+<g transform="translate(32 251) scale(.7)"><defs><linearGradient id="g" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#0B9098"/><stop offset="1" stop-color="#10A7A5"/></linearGradient></defs>
+<circle cx="28" cy="28" r="27" fill="#EAF8F8"/>
+<path d="M13 23h30l-2.5-8H15.5L13 23Z" fill="url(#g)"/>
+<path d="M15 23v20h26V23" fill="#fff" stroke="#0B9098" stroke-width="2"/>
+<path d="M22 43V31h12v12" fill="#DFF6F5" stroke="#0B9098" stroke-width="2"/>
+<path d="M13 23c0 3 2 5 5 5s5-2 5-5c0 3 2 5 5 5s5-2 5-5c0 3 2 5 5 5s5-2 5-5" stroke="#087C89" stroke-width="2" stroke-linecap="round"/>
+</g>
+<text x="82" y="263" fill="#08254A" font-family="Inter,Arial" font-size="12" font-weight="800">Apple Flagship Store</text>
+<rect x="82" y="270" width="83" height="20" rx="10" fill="#E9F8F8"/>
+<text x="96" y="284" fill="#087C89" font-family="Inter,Arial" font-size="9" font-weight="700">Link cửa hàng</text>
+<text x="82" y="306" fill="#66758F" font-family="Inter,Arial" font-size="9.5">catsback.vn/go/AB12CD3</text>
+<rect x="278" y="254" width="48" height="52" rx="12" fill="#fff" stroke="#BBD9DD"/>
+<g transform="translate(292 265)" color="#087C89"><rect x="6" y="6" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M13 6V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="1.6"/></g>
+<text x="289" y="296" fill="#087C89" font-family="Inter,Arial" font-size="8" font-weight="700">Sao chép</text>
+<rect x="16" y="336" width="327" height="43" rx="14" fill="url(#yellow)"/>
+<g transform="translate(92 348) scale(.85)" color="#08254A"><path d="M11 3h6v6M17 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 11v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<text x="118" y="364" fill="#08254A" font-family="Inter,Arial" font-size="13" font-weight="800">Vào Shop mua hàng →</text>
+<g transform="translate(18 390) scale(.7)" color="#087C89"><path d="M10 2.5 4 5v4.2c0 4 2.4 6.8 6 8.3 3.6-1.5 6-4.3 6-8.3V5l-6-2.5Z" stroke="currentColor" stroke-width="1.6"/><path d="m7.3 10 1.7 1.7 3.8-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="41" y="401" fill="#66758F" font-family="Inter,Arial" font-size="9">Mở shop trên Shopee để thêm nhiều sản phẩm vào giỏ hàng</text>
+<text x="41" y="414" fill="#66758F" font-family="Inter,Arial" font-size="9">trong cùng một lần mua.</text>
+
+</svg>

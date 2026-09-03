@@ -11,6 +11,7 @@ public sealed class ValidateAffiliateUrlInput
 {
     [Required, StringLength(WebHoanTienConsts.UrlMaxLength)]
     public string Url { get; set; } = string.Empty;
+    public AffiliateLinkTargetType TargetType { get; set; } = AffiliateLinkTargetType.Product;
 }
 
 public sealed class AffiliateUrlValidationDto
@@ -20,6 +21,8 @@ public sealed class AffiliateUrlValidationDto
     public string? NormalizedUrl { get; set; }
     public string? ItemId { get; set; }
     public bool RequiresRedirectResolution { get; set; }
+    public AffiliateLinkTargetType? DetectedTargetType { get; set; }
+    public string? ErrorCode { get; set; }
     public string? Error { get; set; }
 }
 
@@ -27,6 +30,7 @@ public sealed class CreateAffiliateLinkInput
 {
     [Required, StringLength(WebHoanTienConsts.UrlMaxLength)]
     public string Url { get; set; } = string.Empty;
+    public AffiliateLinkTargetType TargetType { get; set; } = AffiliateLinkTargetType.Product;
 }
 
 public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
@@ -34,6 +38,7 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
     public bool IsExisting { get; set; }
     public bool WasRestored { get; set; }
     public AffiliatePlatform Platform { get; set; }
+    public AffiliateLinkTargetType TargetType { get; set; }
     public string TrackingToken { get; set; } = string.Empty;
     public string OriginalUrl { get; set; } = string.Empty;
     public string NormalizedUrl { get; set; } = string.Empty;
