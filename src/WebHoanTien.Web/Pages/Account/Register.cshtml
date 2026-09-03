@@ -34,7 +34,18 @@
             {
                 <div class="field">
                     <label asp-for="Input.Password">Mật khẩu (ít nhất 6 ký tự)</label>
-                    <input asp-for="Input.Password" type="password" autocomplete="new-password" />
+                    <div class="password-input-shell">
+                        <input asp-for="Input.Password" type="password" autocomplete="new-password" />
+                        <button type="button"
+                                class="password-visibility-toggle"
+                                data-password-toggle
+                                aria-controls="Input_Password"
+                                aria-label="Hiện mật khẩu"
+                                aria-pressed="false"
+                                title="Hiện mật khẩu">
+                            <span class="password-visibility-icon" aria-hidden="true"></span>
+                        </button>
+                    </div>
                     <span asp-validation-for="Input.Password" class="field-error"></span>
                 </div>
             }
@@ -95,5 +106,6 @@
 </section>
 
 @section Scripts {
+    <script src="~/password-visibility.js" asp-append-version="true" defer></script>
     <script src="~/google-identity.js" asp-append-version="true" defer></script>
 }

@@ -91,6 +91,56 @@
     box-shadow: 0 0 0 4px rgba(225, 82, 141, .12);
 }
 
+.password-input-shell {
+    position: relative;
+}
+
+.field .password-input-shell input {
+    padding-right: 56px;
+}
+
+.password-visibility-toggle {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    display: inline-grid;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+.password-visibility-toggle:hover {
+    background: rgba(6, 142, 148, .08);
+    color: var(--teal, #068e94);
+}
+
+.password-visibility-toggle:focus-visible {
+    outline: none;
+    color: var(--teal, #068e94);
+    box-shadow: 0 0 0 3px rgba(6, 142, 148, .16);
+}
+
+.password-visibility-icon {
+    width: 21px;
+    height: 21px;
+    background: currentColor;
+    -webkit-mask: url('/catback/icons/eye.svg') center / contain no-repeat;
+    mask: url('/catback/icons/eye.svg') center / contain no-repeat;
+}
+
+.password-visibility-toggle[aria-pressed="true"] .password-visibility-icon {
+    -webkit-mask-image: url('/catback/icons/eye-off.svg');
+    mask-image: url('/catback/icons/eye-off.svg');
+}
+
 .field-error {
     display: block;
     color: #b64027;
