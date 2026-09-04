@@ -56,7 +56,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     [AllowAnonymous]
     public Task<AffiliateUrlValidationDto> ValidateAsync(ValidateAffiliateUrlInput input)
     {
-        if (!IsSelectableTargetType(input.TargetType))
+        if (!IsSupportedInputTargetType(input.TargetType))
         {
             return Task.FromResult(InvalidValidation(WebHoanTienDomainErrorCodes.AffiliateTargetTypeInvalid,
                 "Vui lòng chọn loại link Shopee hợp lệ."));
@@ -88,7 +88,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
                 "Link này không phải trang sản phẩm hoặc cửa hàng Shopee được hỗ trợ."));
         }
 
-        if (detectedTargetType != input.TargetType)
+        if (EnforcesTargetType(input.TargetType) && detectedTargetType != input.TargetType)
         {
             var result = InvalidValidation(WebHoanTienDomainErrorCodes.AffiliateTargetMismatch,
                 TargetMismatchMessage(input.TargetType, detectedTargetType));
@@ -109,7 +109,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
 
     public async Task<AffiliateTrackingDto> CreateAsync(CreateAffiliateLinkInput input)
     {
-        EnsureSelectableTargetType(input.TargetType);
+        EnsureSupportedInputTargetType(input.TargetType);
         var userId = CurrentUser.GetId();
         var originalUrl = input.Url.Trim();
         var (normalized, itemId) = await _resolver.ResolveAsync(input.Url);
@@ -121,7 +121,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
                 code: WebHoanTienDomainErrorCodes.AffiliateTargetUnsupported);
         }
 
-        if (detectedTargetType != input.TargetType)
+        if (EnforcesTargetType(input.TargetType) && detectedTargetType != input.TargetType)
         {
             throw new UserFriendlyException(TargetMismatchMessage(input.TargetType, detectedTargetType),
                 code: WebHoanTienDomainErrorCodes.AffiliateTargetMismatch);
@@ -260,15 +260,18 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken
     };
 
-    private static bool IsSelectableTargetType(AffiliateLinkTargetType targetType) =>
+    private static bool IsSupportedInputTargetType(AffiliateLinkTargetType targetType) =>
+        targetType is AffiliateLinkTargetType.Auto or AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop;
+
+    private static bool EnforcesTargetType(AffiliateLinkTargetType targetType) =>
         targetType is AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop;
 
     private static bool IsShopFallbackName(string displayName) =>
         displayName == "Cửa hàng Shopee" || displayName.StartsWith("Shop #", StringComparison.Ordinal);
 
-    private static void EnsureSelectableTargetType(AffiliateLinkTargetType targetType)
+    private static void EnsureSupportedInputTargetType(AffiliateLinkTargetType targetType)
     {
-        if (!IsSelectableTargetType(targetType))
+        if (!IsSupportedInputTargetType(targetType))
         {
             throw new UserFriendlyException("Vui lòng chọn loại link Shopee hợp lệ.",
                 code: WebHoanTienDomainErrorCodes.AffiliateTargetTypeInvalid);

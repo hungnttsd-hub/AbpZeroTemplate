@@ -25,7 +25,6 @@ public class IndexModel : PageModel
     private readonly IDistributedCache _cache;
 
     [BindProperty] public string LinkUrl { get; set; } = string.Empty;
-    [BindProperty] public AffiliateLinkTargetType LinkTargetType { get; set; } = AffiliateLinkTargetType.Product;
     [BindProperty(SupportsGet = true)] public bool ShowHidden { get; set; }
     public string? Error { get; set; }
     public string? SuccessMessage { get; set; }
@@ -46,12 +45,6 @@ public class IndexModel : PageModel
         Error = TempData["AffiliateLinkError"] as string;
         SuccessMessage = TempData["AffiliateLinkSuccess"] as string;
         LinkUrl = TempData["AffiliateLinkUrl"] as string ?? string.Empty;
-        if (Enum.TryParse<AffiliateLinkTargetType>(TempData["AffiliateLinkTargetType"] as string,
-                ignoreCase: true, out var targetType) &&
-            targetType is AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop)
-        {
-            LinkTargetType = targetType;
-        }
         if (Guid.TryParse(TempData["AffiliateCreatedLinkId"] as string, out var createdLinkId))
         {
             CreatedLinkId = createdLinkId;
@@ -64,7 +57,7 @@ public class IndexModel : PageModel
         var validation = await _links.ValidateAsync(new ValidateAffiliateUrlInput
         {
             Url = LinkUrl,
-            TargetType = LinkTargetType
+            TargetType = AffiliateLinkTargetType.Auto
         });
         if (!validation.IsValid)
         {
@@ -80,7 +73,7 @@ public class IndexModel : PageModel
                 var result = await _links.CreateAsync(new CreateAffiliateLinkInput
                 {
                     Url = LinkUrl,
-                    TargetType = LinkTargetType
+                    TargetType = AffiliateLinkTargetType.Auto
                 });
                 CreatedLinkId = result.Id;
                 CreatedLink = result;
@@ -132,7 +125,7 @@ public class IndexModel : PageModel
         var payload = JsonSerializer.Serialize(new PendingAffiliateAction
         {
             Url = LinkUrl,
-            TargetType = LinkTargetType,
+            TargetType = AffiliateLinkTargetType.Auto,
             Nonce = nonce
         });
         Response.Cookies.Append("wht.pending", _protector.Protect(payload, TimeSpan.FromMinutes(20)), new CookieOptions

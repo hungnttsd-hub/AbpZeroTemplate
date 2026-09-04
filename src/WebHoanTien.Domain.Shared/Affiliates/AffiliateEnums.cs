@@ -11,7 +11,8 @@ public enum AffiliateLinkTargetType
 {
     Unknown = 0,
     Product = 1,
-    Shop = 2
+    Shop = 2,
+    Auto = 3
 }
 
 public enum AffiliateTrackingStatus

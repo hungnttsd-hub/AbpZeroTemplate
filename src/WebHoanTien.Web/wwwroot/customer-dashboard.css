@@ -660,40 +660,7 @@ body.pwa-install-open { overflow: hidden; }
   .affiliate-buy-button { grid-column: 1 / -1; width: 100%; }
 }
 
-/* Shopee product/shop target selection */
-.affiliate-target-selector {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  min-height: 43px;
-  margin: 0 0 8px;
-  padding: 3px;
-  border: 0;
-  border-radius: 999px;
-  background: #eef3f6;
-}
-
-.affiliate-target-option { display: block; min-width: 0; cursor: pointer; }
-.affiliate-target-option input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
-.affiliate-target-option > span {
-  display: flex;
-  min-height: 37px;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  color: #66758f;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  transition: color .18s ease, background-color .18s ease, box-shadow .18s ease;
-}
-.affiliate-target-option svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.affiliate-target-option input:checked + span { color: #08254a; background: #fff; box-shadow: 0 3px 10px rgba(8, 37, 74, .1); }
-.affiliate-target-option input:focus-visible + span { outline: 3px solid rgba(11, 144, 152, .24); outline-offset: 1px; }
-
-.affiliate-target-help {
+.affiliate-auto-detect-note {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -702,7 +669,7 @@ body.pwa-install-open { overflow: hidden; }
   font-size: 11px;
   line-height: 1.4;
 }
-.affiliate-target-help svg { width: 15px; height: 15px; flex: 0 0 15px; fill: none; stroke: #0b9098; stroke-width: 1.7; stroke-linecap: round; }
+.affiliate-auto-detect-note svg { width: 15px; height: 15px; flex: 0 0 15px; fill: none; stroke: #0b9098; stroke-width: 1.7; stroke-linecap: round; }
 .dashboard-guide-link { display: block; width: max-content; margin: 0 0 11px auto; color: #087c89; font-size: 11px; font-weight: 700; text-decoration: none; }
 
 .affiliate-target-badge {
@@ -735,6 +702,10 @@ body.pwa-install-open { overflow: hidden; }
 .affiliate-inline-result-copy { display: grid; min-width: 0; justify-items: start; }
 .affiliate-inline-result-copy strong { display: -webkit-box; overflow: hidden; color: #08254a; font-size: 14px; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .affiliate-inline-result-copy small { display: block; width: 100%; margin-top: 5px; overflow: hidden; color: #66758f; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.affiliate-inline-result-copy small[hidden] { display: none; }
+.affiliate-inline-estimate { margin-top: 6px; color: #087c89; font-size: 12px; font-weight: 800; line-height: 1.3; }
+.affiliate-inline-estimate.unavailable { color: #8299a9; font-weight: 600; }
+.affiliate-inline-estimate[hidden] { display: none; }
 .affiliate-inline-copy {
   display: grid;
   min-width: 52px;
@@ -779,8 +750,6 @@ body.pwa-install-open { overflow: hidden; }
 .affiliate-link-card.is-legacy-link .affiliate-product-image { border-color: #dce4ee; background: #f2f5f8; }
 
 @media (max-width: 560px) {
-  .affiliate-target-selector { margin-top: 1px; }
-  .affiliate-target-option > span { padding-inline: 7px; font-size: 12px; }
   .affiliate-inline-result-summary { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 8px; }
   .affiliate-inline-result-image { width: 48px; height: 48px; }
 }

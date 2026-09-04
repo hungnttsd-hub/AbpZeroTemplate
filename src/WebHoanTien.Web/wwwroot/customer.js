@@ -4,8 +4,6 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   const linkInput = document.getElementById('affiliate-url');
   const clearButton = document.getElementById('affiliate-url-clear');
   const urlStatus = document.getElementById('url-status');
-  const urlLabel = document.getElementById('affiliate-url-label');
-  const targetInputs = Array.from(linkForm?.querySelectorAll('input[name="LinkTargetType"]') || []);
   const dashboardLinks = document.querySelector('.dashboard-links');
   const createButtonContent = createButton?.innerHTML;
 
@@ -20,23 +18,9 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     if (clearButton) clearButton.hidden = !linkInput?.value;
   };
 
-  const selectedTargetType = () => targetInputs.find((input) => input.checked)?.value || 'Product';
-
   const clearInlineResult = () => {
     linkForm?.querySelector('[data-affiliate-inline-result]')?.remove();
     if (createButton) createButton.hidden = false;
-  };
-
-  const syncTargetMode = (resetState = false) => {
-    const isShop = selectedTargetType() === 'Shop';
-    if (linkInput) linkInput.placeholder = isShop
-      ? 'Dán link cửa hàng Shopee tại đây...'
-      : 'Dán link sản phẩm Shopee tại đây...';
-    if (urlLabel) urlLabel.textContent = isShop ? 'Link cửa hàng Shopee' : 'Link sản phẩm Shopee';
-    if (resetState) {
-      clearInlineResult();
-      showUrlStatus('', 'idle');
-    }
   };
 
   const showUrlStatus = (message, state) => {
@@ -259,7 +243,10 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const titleElement = result?.querySelector('[data-affiliate-title]');
     if (titleElement) titleElement.textContent = title;
     const targetBadge = result?.querySelector('[data-affiliate-target-badge]');
-    if (targetBadge) targetBadge.textContent = isShop ? 'Link cửa hàng' : 'Link sản phẩm';
+    if (targetBadge) {
+      targetBadge.textContent = 'Link cửa hàng';
+      targetBadge.hidden = !isShop;
+    }
     const resultImage = result?.querySelector('[data-affiliate-image]');
     if (resultImage) {
       resultImage.src = link.imageUrl || fallbackImage;
@@ -271,7 +258,22 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     }
     const stableUrl = new URL(link.redirectUrl, window.location.origin).href;
     const stableUrlElement = result?.querySelector('[data-affiliate-stable-url]');
-    if (stableUrlElement) stableUrlElement.textContent = stableUrl.replace(/^https?:\/\//, '');
+    if (stableUrlElement) {
+      if (isShop) {
+        stableUrlElement.textContent = stableUrl.replace(/^https?:\/\//, '');
+        stableUrlElement.hidden = false;
+      } else {
+        stableUrlElement.remove();
+      }
+    }
+    const estimateElement = result?.querySelector('[data-affiliate-estimate]');
+    if (estimateElement) {
+      estimateElement.hidden = isShop;
+      estimateElement.classList.toggle('unavailable', !link.estimatedCommissionLabel);
+      estimateElement.textContent = link.estimatedCommissionLabel
+        ? `Hoàn lại dự kiến ${link.estimatedCommissionLabel}`
+        : 'Chưa có ước tính hoa hồng';
+    }
     const copyButton = result?.querySelector('[data-copy-url]');
     if (copyButton) copyButton.dataset.copyUrl = link.redirectUrl;
     const buyLabel = result?.querySelector('[data-affiliate-buy-label]');
@@ -371,7 +373,6 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     }
   };
 
-  targetInputs.forEach((input) => input.addEventListener('change', () => syncTargetMode(true), { signal }));
   linkInput?.addEventListener('input', () => {
     syncClearButton();
     if (linkForm?.querySelector('[data-affiliate-inline-result]')) clearInlineResult();
@@ -385,7 +386,6 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     linkInput.focus();
   }, { signal });
   syncClearButton();
-  syncTargetMode(false);
 
   linkForm?.addEventListener('submit', async (event) => {
     event.preventDefault();

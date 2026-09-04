@@ -37,7 +37,6 @@ public class PendingAffiliateModel : PageModel
             });
             TempData["AffiliateCreatedLinkId"] = result.Id.ToString();
             TempData["AffiliateLinkSuccess"] = IndexModel.SuccessMessageFor(result);
-            TempData["AffiliateLinkTargetType"] = action.TargetType.ToString();
             TempData["AffiliateLinkUrl"] = action.Url;
             return RedirectToPage("/Index");
         }
@@ -61,6 +60,5 @@ public class PendingAffiliateModel : PageModel
     {
         if (action is null) return;
         TempData["AffiliateLinkUrl"] = action.Url;
-        TempData["AffiliateLinkTargetType"] = action.TargetType.ToString();
     }
 }
