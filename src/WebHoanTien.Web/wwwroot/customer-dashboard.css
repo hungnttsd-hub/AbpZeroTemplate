@@ -103,7 +103,13 @@ body {
 @media (max-width: 800px) {
   .customer-dashboard { margin-top: 12px; }
   .dashboard-grid { grid-template-columns: 1fr; }
-  .dashboard-sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dashboard-sidebar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    min-width: 0;
+  }
+  .dashboard-sidebar > * { width: 100%; min-width: 0; }
   .affiliate-guide { margin-top: 0; }
   .commission-rate-form { grid-template-columns: 1fr; }
   .commission-rate-form .field-error { grid-column: auto; }
