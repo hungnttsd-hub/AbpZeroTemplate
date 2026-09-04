@@ -133,7 +133,7 @@
                 </template>
             </form>
 
-            <section class="dashboard-links" aria-labelledby="your-links-heading">
+            <section class="dashboard-links" aria-labelledby="your-links-heading" data-created-list-limit="5">
                 <header class="dashboard-section-heading">
                     <h2 id="your-links-heading">Link của bạn</h2>
                 </header>
@@ -239,6 +239,13 @@
                         </article>
                     }
                     </div>
+                }
+                @if (User.Identity?.IsAuthenticated == true && Model.RecentLinks.Items.Count > 0)
+                {
+                    <a class="dashboard-view-all-links" href="/Links">
+                        <span>Xem tất cả link đã tạo</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
                 }
                 @if (User.Identity?.IsAuthenticated == true)
                 {

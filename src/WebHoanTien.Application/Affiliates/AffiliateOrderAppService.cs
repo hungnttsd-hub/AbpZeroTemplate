@@ -49,13 +49,85 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
                     join conversion in conversionQuery on order.ConversionId equals conversion.Id
                     select new { Order = order, Conversion = conversion };
         if (allowedOrderIds is not null) query = query.Where(x => allowedOrderIds.Contains(x.Order.Id));
-        if (input.Status.HasValue) query = query.Where(x => x.Order.Status == input.Status.Value);
+        if (input.Status.HasValue)
+        {
+            query = query.Where(x => x.Order.Status == input.Status.Value);
+        }
+        else
+        {
+            query = input.StatusGroup?.Trim().ToLowerInvariant() switch
+            {
+                "pending" => query.Where(x => x.Order.Status == AffiliateOrderStatus.Unpaid ||
+                    x.Order.Status == AffiliateOrderStatus.Pending ||
+                    x.Order.Status == AffiliateOrderStatus.Completed),
+                "confirmed" => query.Where(x => x.Order.Status == AffiliateOrderStatus.Settled),
+                "cancelled" => query.Where(x => x.Order.Status == AffiliateOrderStatus.Cancelled ||
+                    x.Order.Status == AffiliateOrderStatus.Refunded ||
+                    x.Order.Status == AffiliateOrderStatus.Rejected),
+                _ => query
+            };
+        }
         query = query.OrderByDescending(x => x.Conversion.PurchaseTime);
         var total = await AsyncExecuter.CountAsync(query);
         var rows = await AsyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
         return new PagedResultDto<AffiliateOrderDto>(total,
             await MapRowsAsync(rows.Select(x => (x.Order, x.Conversion)).ToList(), scopedUserId,
                 canManageAllOrders));
+    }
+
+    public async Task<AffiliateOrderSummaryDto> GetSummaryAsync()
+    {
+        var canManageAllOrders = await AuthorizationService.IsGrantedAsync(WebHoanTienPermissions.Admin.Orders);
+        Guid? scopedUserId = canManageAllOrders ? null : CurrentUser.GetId();
+        var allowedOrderIds = scopedUserId.HasValue
+            ? await GetAttributedOrderIdsAsync(scopedUserId.Value)
+            : null;
+        var orders = await _orders.GetQueryableAsync();
+        if (allowedOrderIds is not null) orders = orders.Where(x => allowedOrderIds.Contains(x.Id));
+
+        var pendingCount = await AsyncExecuter.CountAsync(orders.Where(x =>
+            x.Status == AffiliateOrderStatus.Unpaid ||
+            x.Status == AffiliateOrderStatus.Pending ||
+            x.Status == AffiliateOrderStatus.Completed));
+        var confirmedCount = await AsyncExecuter.CountAsync(orders.Where(x =>
+            x.Status == AffiliateOrderStatus.Settled));
+
+        decimal expectedCashback;
+        if (!scopedUserId.HasValue)
+        {
+            var values = await AsyncExecuter.ToListAsync(orders
+                .Where(x => x.Status != AffiliateOrderStatus.Cancelled &&
+                    x.Status != AffiliateOrderStatus.Refunded &&
+                    x.Status != AffiliateOrderStatus.Rejected)
+                .Select(x => x.Status == AffiliateOrderStatus.Settled
+                    ? x.PayableUserCommission
+                    : x.UserCommissionSnapshot));
+            expectedCashback = values.Sum();
+        }
+        else
+        {
+            var items = await _items.GetQueryableAsync();
+            var attributions = await _attributions.GetQueryableAsync();
+            var valuesQuery = from attribution in attributions
+                              join item in items on attribution.OrderItemId equals item.Id
+                              join order in orders on item.OrderId equals order.Id
+                              where attribution.UserId == scopedUserId.Value &&
+                                    attribution.Status != AffiliateAttributionStatus.Unmatched &&
+                                    order.Status != AffiliateOrderStatus.Cancelled &&
+                                    order.Status != AffiliateOrderStatus.Refunded &&
+                                    order.Status != AffiliateOrderStatus.Rejected
+                              select order.Status == AffiliateOrderStatus.Settled
+                                  ? attribution.SettledUserCommission ?? 0m
+                                  : attribution.UserCommissionSnapshot;
+            expectedCashback = (await AsyncExecuter.ToListAsync(valuesQuery)).Sum();
+        }
+
+        return new AffiliateOrderSummaryDto
+        {
+            PendingCount = pendingCount,
+            ConfirmedCount = confirmedCount,
+            ExpectedCashback = expectedCashback
+        };
     }
 
     public async Task<AffiliateOrderDto> GetAsync(Guid id)

@@ -27,7 +27,8 @@ window.CatBackSpa.mount('notification-detail', ({ signal, back }) => {
             confirmText: 'Xóa'
         });
         if (!confirmed) return;
-        deleteButton.disabled = true;
+        window.CatBackLoading?.setButtonLoading(deleteButton, true, { text: 'Đang xóa...' });
+        if (!window.CatBackLoading) deleteButton.disabled = true;
         try {
             const response = await fetch(`${window.location.pathname}?handler=Delete`, {
                 method: 'POST',
@@ -47,7 +48,8 @@ window.CatBackSpa.mount('notification-detail', ({ signal, back }) => {
             });
             back(data.redirectUrl || '/Notifications', '/Notifications');
         } catch (error) {
-            deleteButton.disabled = false;
+            window.CatBackLoading?.setButtonLoading(deleteButton, false);
+            if (!window.CatBackLoading) deleteButton.disabled = false;
             showToast(error.message);
         }
     }, { signal });

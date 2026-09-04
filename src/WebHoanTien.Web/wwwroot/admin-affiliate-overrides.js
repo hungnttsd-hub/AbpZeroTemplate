@@ -86,7 +86,8 @@ window.CatBackSpa.mount('admin-affiliate-overrides', ({ signal }) => {
     event.preventDefault();
     if (!form.checkValidity()) return form.reportValidity();
     const submit = form.querySelector('[type="submit"]');
-    submit.disabled = true;
+    window.CatBackLoading?.setButtonLoading(submit, true, { text: 'Đang lưu...' });
+    if (!window.CatBackLoading) submit.disabled = true;
     showStatus('Đang lưu cấu hình...');
     try {
       const result = await postForm(form, new FormData(form));
@@ -96,7 +97,8 @@ window.CatBackSpa.mount('admin-affiliate-overrides', ({ signal }) => {
     } catch (error) {
       showStatus(error.message, 'error');
     } finally {
-      submit.disabled = false;
+      window.CatBackLoading?.setButtonLoading(submit, false);
+      if (!window.CatBackLoading) submit.disabled = false;
     }
   }, { signal });
 
@@ -120,7 +122,8 @@ window.CatBackSpa.mount('admin-affiliate-overrides', ({ signal }) => {
     const email = row.querySelector('[data-user-email]').textContent.trim();
     if (!window.confirm(`Đưa ${email} về Affiliate ID mặc định?`)) return;
 
-    removeButton.disabled = true;
+    window.CatBackLoading?.setButtonLoading(removeButton, true, { text: 'Đang xử lý...' });
+    if (!window.CatBackLoading) removeButton.disabled = true;
     try {
       const data = new FormData();
       data.set('userId', row.dataset.userId);
@@ -130,7 +133,9 @@ window.CatBackSpa.mount('admin-affiliate-overrides', ({ signal }) => {
       showStatus(`Đã đưa ${email} về Affiliate ID mặc định.`);
     } catch (error) {
       showStatus(error.message, 'error');
-      removeButton.disabled = false;
+    } finally {
+      window.CatBackLoading?.setButtonLoading(removeButton, false);
+      if (!window.CatBackLoading) removeButton.disabled = false;
     }
   }, { signal });
 });

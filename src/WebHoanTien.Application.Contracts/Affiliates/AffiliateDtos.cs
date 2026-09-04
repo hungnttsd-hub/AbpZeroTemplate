@@ -78,8 +78,16 @@ public interface IAffiliateLinkAppService : IApplicationService
 public sealed class AffiliateOrderListInput : PagedAndSortedResultRequestDto
 {
     public AffiliateOrderStatus? Status { get; set; }
+    public string? StatusGroup { get; set; }
     public DateTime? From { get; set; }
     public DateTime? To { get; set; }
+}
+
+public sealed class AffiliateOrderSummaryDto
+{
+    public int PendingCount { get; set; }
+    public int ConfirmedCount { get; set; }
+    public decimal ExpectedCashback { get; set; }
 }
 
 public sealed class AffiliateOrderDto : FullAuditedEntityDto<Guid>
@@ -140,6 +148,7 @@ public sealed class AffiliateOrderItemAttributionDto : EntityDto<Guid>
 public interface IAffiliateOrderAppService : IApplicationService
 {
     Task<PagedResultDto<AffiliateOrderDto>> GetListAsync(AffiliateOrderListInput input);
+    Task<AffiliateOrderSummaryDto> GetSummaryAsync();
     Task<AffiliateOrderDto> GetAsync(Guid id);
 }
 

@@ -38,8 +38,11 @@ window.CatBackSpa.mount('google-identity', ({ signal }) => {
     }
 
     submitting = true;
-    button.disabled = true;
-    button.classList.add('is-loading');
+    window.CatBackLoading?.setButtonLoading(button, true, { text: 'Đang xác minh...' });
+    if (!window.CatBackLoading) {
+      button.disabled = true;
+      button.classList.add('is-loading');
+    }
     showStatus('Đang xác minh tài khoản Google…', 'loading');
 
     const body = new FormData(form);
@@ -68,8 +71,11 @@ window.CatBackSpa.mount('google-identity', ({ signal }) => {
     } catch (error) {
       showStatus(error instanceof Error ? error.message : 'Không thể đăng nhập bằng Google lúc này.');
       submitting = false;
-      button.disabled = false;
-      button.classList.remove('is-loading');
+      window.CatBackLoading?.setButtonLoading(button, false);
+      if (!window.CatBackLoading) {
+        button.disabled = false;
+        button.classList.remove('is-loading');
+      }
     }
   };
 

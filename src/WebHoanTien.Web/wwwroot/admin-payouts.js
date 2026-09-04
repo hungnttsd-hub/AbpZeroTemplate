@@ -69,9 +69,16 @@ window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
         const button = form.querySelector("button[type=submit]");
         const status = form.querySelector("[data-form-status]");
         const original = button.textContent;
-        button.disabled = true;
-        button.textContent = "Đang xử lý...";
+        window.CatBackLoading?.setButtonLoading(button, true, { text: "Đang xử lý..." });
+        if (!window.CatBackLoading) {
+            button.disabled = true;
+            button.textContent = "Đang xử lý...";
+        }
         status.textContent = "";
+        const endLongTask = window.CatBackLoading?.beginLongTask({
+            title: isPay ? "Đang xác nhận thanh toán..." : "Đang xử lý từ chối...",
+            message: "Vui lòng không tắt cửa sổ này"
+        });
         try {
             const payload = await parse(await fetch(form.action, {
                 method: "POST",
@@ -103,10 +110,15 @@ window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
             updateSummary(item, nextStatus);
             notify(payload.message);
         } catch (error) {
-            button.disabled = false;
-            button.textContent = original;
+            window.CatBackLoading?.setButtonLoading(button, false);
+            if (!window.CatBackLoading) {
+                button.disabled = false;
+                button.textContent = original;
+            }
             status.textContent = error.message;
             notify(error.message, true);
+        } finally {
+            endLongTask?.();
         }
     }, { signal });
 });

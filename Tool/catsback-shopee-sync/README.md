@@ -24,9 +24,13 @@ CSV dùng schema `catsback-settlement-v2`. `validation_id`, `payout_id` và mã 
 ## Cài Local Helper
 
 1. Cài Node.js 18 trở lên.
-2. Mở `local-helper` và chạy `start-helper.cmd`.
+2. Mở `local-helper` và chạy `run.cmd`.
 3. Mở `http://127.0.0.1:32145/settings` hoặc `open-settings.cmd`.
 4. Nhập CatsBack API Base URL, Client ID và Client Secret mới.
+
+`run.cmd` là entrypoint dùng cho cả cài đặt và cập nhật. Mỗi lần chạy, tool sẽ kiểm tra Node.js/code hiện tại, tự cài hoặc sửa Scheduled Task chạy cùng Windows, dừng helper cũ, khởi động lại bằng code trong đúng thư mục hiện tại và xác nhận endpoint `/health`. Nếu Scheduled Task cũ trỏ sang một thư mục helper khác, `config.json` và `state.json` sẽ được mang sang thư mục hiện tại khi các file này chưa tồn tại, nên không mất credentials hoặc trạng thái đã xử lý. Có thể dùng `run.cmd --no-pause` khi gọi từ terminal.
+
+`start-helper.cmd` chỉ khởi động trực tiếp ở cửa sổ hiện tại và không cài chạy cùng Windows. `reset-local-helper.cmd` được giữ lại như alias tương thích cho `run.cmd`.
 
 Không dùng lại Client Secret từng được đóng gói trong bản cũ. Bản phát hành này không chứa `config.json`, `state.json` hay log. Lần chạy đầu helper tự tạo `config.json` từ `config.example.json` trống credentials.
 

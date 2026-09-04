@@ -72,8 +72,15 @@
         if (!confirmed) return;
         const button = form.querySelector("button[type=submit]");
         const original = button.textContent;
-        button.disabled = true;
-        button.textContent = "Đang kiểm tra...";
+        window.CatBackLoading?.setButtonLoading(button, true, { text: "Đang kiểm tra..." });
+        if (!window.CatBackLoading) {
+            button.disabled = true;
+            button.textContent = "Đang kiểm tra...";
+        }
+        const endLongTask = window.CatBackLoading?.beginLongTask({
+            title: "Đang đối chiếu dữ liệu...",
+            message: "CatBack đang kiểm tra lại các bản ghi. Vui lòng không tắt cửa sổ này."
+        });
         try {
             const payload = await parse(await fetch(form.action, {
                 method: "POST",
@@ -84,9 +91,14 @@
             notify(payload.message);
             window.setTimeout(() => window.location.reload(), 700);
         } catch (error) {
-            button.disabled = false;
-            button.textContent = original;
+            window.CatBackLoading?.setButtonLoading(button, false);
+            if (!window.CatBackLoading) {
+                button.disabled = false;
+                button.textContent = original;
+            }
             notify(error.message, true);
+        } finally {
+            endLongTask?.();
         }
     });
 
@@ -110,9 +122,16 @@
         const button = form.querySelector("button[type=submit]");
         const status = form.querySelector("[role=status]");
         const original = button.textContent;
-        button.disabled = true;
-        button.textContent = "Đang xử lý...";
+        window.CatBackLoading?.setButtonLoading(button, true, { text: "Đang xử lý..." });
+        if (!window.CatBackLoading) {
+            button.disabled = true;
+            button.textContent = "Đang xử lý...";
+        }
         if (status) status.textContent = "";
+        const endLongTask = window.CatBackLoading?.beginLongTask({
+            title: bulk ? "Đang duyệt các đơn đối soát..." : "Đang duyệt đơn đối soát...",
+            message: "CatBack đang cập nhật số dư ví. Vui lòng không tắt cửa sổ này."
+        });
         try {
             const payload = await parse(await fetch(form.action, {
                 method: "POST",
@@ -133,10 +152,15 @@
             applySummary(payload.result);
             notify(payload.message);
         } catch (error) {
-            button.disabled = false;
-            button.textContent = original;
+            window.CatBackLoading?.setButtonLoading(button, false);
+            if (!window.CatBackLoading) {
+                button.disabled = false;
+                button.textContent = original;
+            }
             if (status) status.textContent = error.message;
             notify(error.message, true);
+        } finally {
+            endLongTask?.();
         }
     });
 })();

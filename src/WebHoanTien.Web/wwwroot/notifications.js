@@ -184,6 +184,13 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
         if (isBusy) return;
         isBusy = true;
         loadMoreButton.disabled = true;
+        const hasRenderedItems = Boolean(listHost.querySelector('[data-notification-id]'));
+        const overlay = hasRenderedItems
+            ? window.CatBackLoading?.showOverlay(listHost, 'Đang tải thông báo...')
+            : null;
+        const skeleton = hasRenderedItems
+            ? null
+            : window.CatBackLoading?.showSkeleton(listHost, { rows: 4 });
         try {
             const data = await getNotifications(0);
             totalCount = data.totalCount;
@@ -194,6 +201,8 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
         } catch (error) {
             showToast(error.message);
         } finally {
+            window.CatBackLoading?.hideOverlay(listHost, overlay);
+            window.CatBackLoading?.hideSkeleton(listHost, skeleton);
             isBusy = false;
             loadMoreButton.disabled = false;
         }
@@ -234,7 +243,8 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
 
         const readAll = event.target.closest('[data-mark-all-read]');
         if (readAll) {
-            readAll.disabled = true;
+            window.CatBackLoading?.setButtonLoading(readAll, true, { text: 'Đang xử lý...' });
+            if (!window.CatBackLoading) readAll.disabled = true;
             try {
                 await postHandler('ReadAll', {});
                 listHost.querySelectorAll('.notification-card.is-unread').forEach((card) => card.classList.remove('is-unread'));
@@ -244,7 +254,8 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
             } catch (error) {
                 showToast(error.message);
             } finally {
-                readAll.disabled = false;
+                window.CatBackLoading?.setButtonLoading(readAll, false);
+                if (!window.CatBackLoading) readAll.disabled = false;
             }
             return;
         }
@@ -254,6 +265,7 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
             event.preventDefault();
             if (card.dataset.opening === 'true') return;
             card.dataset.opening = 'true';
+            window.CatBackLoading?.setIconLoading(card, true, 'Đang mở thông báo');
             try {
                 const data = await postHandler('Read', { notificationId: card.dataset.notificationId });
                 card.classList.remove('is-unread');
@@ -261,6 +273,7 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
                 visit(card.href);
             } catch (error) {
                 delete card.dataset.opening;
+                window.CatBackLoading?.setIconLoading(card, false);
                 showToast(error.message);
             }
         }
@@ -269,7 +282,8 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
     loadMoreButton.addEventListener('click', async () => {
         if (isBusy) return;
         isBusy = true;
-        loadMoreButton.disabled = true;
+        window.CatBackLoading?.setButtonLoading(loadMoreButton, true, { text: 'Đang tải thêm...' });
+        if (!window.CatBackLoading) loadMoreButton.disabled = true;
         try {
             const currentCount = listHost.querySelectorAll('[data-notification-id]').length;
             const data = await getNotifications(currentCount);
@@ -282,7 +296,8 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
             showToast(error.message);
         } finally {
             isBusy = false;
-            loadMoreButton.disabled = false;
+            window.CatBackLoading?.setButtonLoading(loadMoreButton, false);
+            if (!window.CatBackLoading) loadMoreButton.disabled = false;
         }
     }, { signal });
 
@@ -295,12 +310,18 @@ window.CatBackSpa.mount('notifications', ({ signal, visit, back }) => {
         filterSheet.querySelectorAll('[data-sheet-category]').forEach((button) => button.classList.remove('is-active'));
         option.classList.add('is-active');
     }, { signal });
-    document.querySelector('[data-apply-notification-filter]').addEventListener('click', async () => {
+    document.querySelector('[data-apply-notification-filter]').addEventListener('click', async (event) => {
+        const applyButton = event.currentTarget;
         category = filterSheet.querySelector('[data-sheet-category].is-active')?.dataset.sheetCategory || '';
         unreadOnly = unreadInput.checked;
         closeFilter();
         syncFilters();
-        await reloadList();
+        window.CatBackLoading?.setButtonLoading(applyButton, true, { text: 'Đang áp dụng...' });
+        try {
+            await reloadList();
+        } finally {
+            window.CatBackLoading?.setButtonLoading(applyButton, false);
+        }
     }, { signal });
     syncFilters();
     return closeFilter;

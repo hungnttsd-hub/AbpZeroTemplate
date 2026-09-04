@@ -59,70 +59,26 @@
         }
         else
         {
-            <div class="cb-order-list">
-                @foreach (var order in Model.Orders.Items)
-                {
-                    var firstItem = order.Items.FirstOrDefault();
-                    var productName = string.IsNullOrWhiteSpace(firstItem?.ProductName) ? "Sản phẩm Shopee" : firstItem.ProductName;
-                    var statusClass = CustomerOrderUi.GetStatusClass(order.Status);
-                    <article class="cb-order-card @(Model.IsAdminOrderView ? "cb-order-card-admin" : null)">
-                        <div class="cb-order-card-top">
-                            <div class="cb-order-product-image">
-                                @if (!string.IsNullOrWhiteSpace(firstItem?.ImageUrl ?? order.ProductImageUrl))
-                                {
-                                    <img src="@(firstItem?.ImageUrl ?? order.ProductImageUrl)" alt="Ảnh @productName" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false" />
-                                    <span hidden><img src="~/orders-icons/store.svg" alt="" /></span>
-                                }
-                                else
-                                {
-                                    <span><img src="~/orders-icons/store.svg" alt="" /></span>
-                                }
-                            </div>
-                            <div class="cb-order-product-copy">
-                                <h2>@productName</h2>
-                                <p><img src="~/orders-icons/store.svg" alt="" />Sản phẩm từ Shopee</p>
-                                <time datetime="@order.PurchaseTime.ToString("O")"><img src="~/orders-icons/clock.svg" alt="" />@CustomerOrderUi.FormatDate(order.PurchaseTime)</time>
-                                <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
-                            </div>
-                        </div>
-                        @if (Model.IsAdminOrderView)
-                        {
-                            <div class="cb-order-user">
-                                <span>Người nhận</span>
-                                <strong>@(order.Recipients.Count == 0
-                                    ? "Chưa xác định"
-                                    : string.Join(" · ", order.Recipients.Select(x =>
-                                        $"{x.UserEmail ?? x.UserId.ToString()} (+{CustomerOrderUi.FormatMoney(x.SettledUserCommission ?? x.ExpectedUserCommission)})")))</strong>
-                                @if (order.UnmatchedAttributionCount > 0)
-                                {
-                                    <small>@order.UnmatchedAttributionCount token chưa ghép hoặc đang xung đột</small>
-                                }
-                            </div>
-                        }
-                        <dl class="cb-order-values">
-                            <div>
-                                <dt>Số tiền đơn hàng</dt>
-                                <dd>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</dd>
-                            </div>
-                            <div>
-                                <dt>@(CustomerOrderUi.IsConfirmed(order.Status) ? "Bạn nhận được" : "Hoàn tiền dự kiến")</dt>
-                                <dd class="cb-cashback-value">+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</dd>
-                            </div>
-                            <div>
-                                <dt>Mã đơn hàng</dt>
-                                <dd class="cb-order-code">
-                                    <span>@order.ExternalOrderId</span>
-                                    <button type="button" data-copy-order-code="@order.ExternalOrderId" aria-label="Sao chép mã đơn hàng @order.ExternalOrderId">
-                                        <img src="~/orders-icons/copy.svg" alt="" />
-                                    </button>
-                                </dd>
-                            </div>
-                        </dl>
-                        <a class="cb-order-detail-link" href="/Orders/@order.Id?returnUrl=@Uri.EscapeDataString(Model.ReturnUrl)">
-                            <span>Xem chi tiết</span><img src="~/orders-icons/chevron-right.svg" alt="" />
-                        </a>
-                    </article>
-                }
+            <div class="cb-order-list" id="order-list">
+                <partial name="/Pages/Shared/_OrderCards.cshtml" model="Model" />
+            </div>
+            <div class="catback-infinite-loader@(Model.HasMore ? "" : " is-complete")" data-infinite-scroll
+                 data-list-selector="#order-list"
+                 data-item-selector=".cb-order-card"
+                 data-url="@Model.MoreUrl"
+                 data-next-skip="@Model.Orders.Items.Count"
+                 data-page-size="@OrdersModel.PageSize"
+                 data-total-count="@Model.Orders.TotalCount"
+                 data-item-name="đơn hàng"
+                 data-loading-message="Đang tải thêm đơn hàng..."
+                 data-has-more="@Model.HasMore.ToString().ToLowerInvariant()"
+                 role="status"
+                 aria-live="polite">
+                <span class="catback-chat-loader" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </span>
+                <span data-loader-message>@(Model.HasMore ? "Kéo xuống để tải thêm đơn hàng..." : $"Đã hiển thị tất cả {Model.Orders.TotalCount} đơn hàng.")</span>
+                <button type="button" data-loader-retry hidden>Tải lại</button>
             </div>
         }
 
@@ -136,4 +92,5 @@
 
 @section Scripts {
     <script src="~/orders.js" asp-append-version="true"></script>
+    <script src="~/infinite-scroll.js" asp-append-version="true"></script>
 }

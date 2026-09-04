@@ -76,6 +76,50 @@
   margin-bottom: 22px;
 }
 
+.links-page-dashboard {
+  width: min(100%, 960px);
+  margin-top: 28px;
+}
+
+.links-page-grid { display: block; }
+.links-page-dashboard .dashboard-create-card { width: 100%; }
+.links-page-dashboard .dashboard-links { margin-top: 24px; }
+.cb-links-hero { margin-bottom: 24px; }
+
+.dashboard-view-all-links {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 11px 18px;
+  border: 1px solid #8ec8cb;
+  border-radius: 16px;
+  color: #087c89;
+  background: #f2fbfa;
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.dashboard-view-all-links:hover {
+  border-color: #0b9098;
+  color: #075f68;
+  background: #e5f7f6;
+  box-shadow: 0 7px 17px rgba(6, 142, 148, .12);
+  transform: translateY(-1px);
+}
+
+.dashboard-view-all-links:focus-visible {
+  outline: 3px solid rgba(6, 142, 148, .2);
+  outline-offset: 2px;
+}
+
+.dashboard-view-all-links span:last-child { font-size: 19px; }
+
 .catback-link-page .page-heading .eyebrow {
   color: #087c89;
   font-size: 11px;
@@ -346,6 +390,31 @@ body.has-link-action-sheet { overflow: hidden; }
 .dashboard-link-empty-actions > a span { font-size: 22px; }
 
 @media (max-width: 767px) {
+  body.catback-links-shell { background: #f3f8fa; }
+
+  body.catback-links-shell > .site-header { display: none !important; }
+
+  .links-page-dashboard {
+    width: 100%;
+    margin: 0 auto 24px;
+    padding-inline: 10px;
+  }
+
+  .cb-links-hero {
+    margin: 0 -10px 18px;
+    padding-top: max(22px, env(safe-area-inset-top));
+    border-radius: 0 0 30px 30px;
+  }
+
+  .links-page-dashboard .dashboard-links { margin-top: 18px; }
+
+  .dashboard-view-all-links {
+    min-height: 44px;
+    margin-top: 13px;
+    border-radius: 13px;
+    font-size: 11px;
+  }
+
   .catback-link-page .page-heading {
     align-items: flex-start;
     gap: 12px;

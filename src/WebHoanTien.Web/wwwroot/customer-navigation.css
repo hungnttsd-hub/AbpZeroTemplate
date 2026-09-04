@@ -102,7 +102,7 @@
     bottom: 0;
     left: 0;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     min-height: 65px;
     padding: 6px max(12px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     border-top: 1px solid #efd4df;
@@ -135,6 +135,12 @@
 
   .mobile-bottom-navigation a.is-active { color: #d3427c; }
   .mobile-bottom-navigation a.is-active svg { stroke-width: 2.25; }
+  .mobile-bottom-navigation .mobile-links-navigation.is-active {
+    margin: -1px 2px;
+    padding: 5px 2px;
+    border-radius: 15px;
+    background: #e7f7f6;
+  }
 }
 
 @media (max-width: 360px) {

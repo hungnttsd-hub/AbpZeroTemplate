@@ -292,7 +292,9 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   };
 
   const removeOverflowCards = (list) => {
-    Array.from(list.querySelectorAll('.affiliate-link-card')).slice(5).forEach((card) => {
+    const configuredLimit = Number.parseInt(dashboardLinks?.dataset.createdListLimit || '5', 10);
+    if (!Number.isFinite(configuredLimit) || configuredLimit <= 0) return;
+    Array.from(list.querySelectorAll('.affiliate-link-card')).slice(configuredLimit).forEach((card) => {
       const form = card.querySelector('[data-link-visibility-form]');
       document.getElementById(form?.dataset.actionSheetId)?.remove();
       card.remove();
@@ -303,6 +305,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     if (!dashboardLinks || !link?.id) return;
     const linkId = String(link.id);
     let card = findLinkCard(linkId);
+    const wasRendered = Boolean(card);
     let sheet;
 
     if (card) {
@@ -327,6 +330,14 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     setLinkCardData(card, sheet, link);
     list.prepend(card);
     if (sheet && !sheet.isConnected) dashboardLinks.append(sheet);
+    const loader = dashboardLinks.querySelector('[data-infinite-scroll]');
+    if (loader && !link.isExisting) {
+      const nextSkip = Number.parseInt(loader.dataset.nextSkip || '0', 10) || 0;
+      loader.dataset.nextSkip = String(nextSkip + 1);
+      card.dataset.paginationOffset = 'true';
+    } else if (loader && !wasRendered && link.wasRestored) {
+      card.dataset.paginationOffset = 'false';
+    }
     removeOverflowCards(list);
   };
 
@@ -340,7 +351,10 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const sheet = form.closest('.affiliate-action-sheet') || document.getElementById(form.dataset.actionSheetId);
     const card = findLinkCard(linkId);
 
-    if (submitButton) submitButton.disabled = true;
+    const compactLoading = submitButton?.classList.contains('affiliate-icon-action');
+    if (compactLoading) window.CatBackLoading?.setIconLoading(submitButton, true, 'Đang ẩn link');
+    else if (submitButton) window.CatBackLoading?.setButtonLoading(submitButton, true, { text: 'Đang xử lý...' });
+    if (submitButton && !window.CatBackLoading) submitButton.disabled = true;
     try {
       const response = await fetch(form.action, {
         method: 'POST',
@@ -359,6 +373,11 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
           window.clearTimeout(removalFallback);
           card?.remove();
           sheet?.remove();
+          const loader = dashboardLinks?.querySelector('[data-infinite-scroll]');
+          if (loader && card?.dataset.paginationOffset !== 'false') {
+            const nextSkip = Number.parseInt(loader.dataset.nextSkip || '0', 10) || 0;
+            loader.dataset.nextSkip = String(Math.max(0, nextSkip - 1));
+          }
           renderEmptyLinkState();
         };
         card?.addEventListener('animationend', finishRemoval, { once: true, signal });
@@ -369,7 +388,9 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     } catch (error) {
       showVisibilityError(error.message || 'Không thể cập nhật link lúc này. Vui lòng thử lại.');
     } finally {
-      if (submitButton) submitButton.disabled = false;
+      if (compactLoading) window.CatBackLoading?.setIconLoading(submitButton, false);
+      else if (submitButton) window.CatBackLoading?.setButtonLoading(submitButton, false);
+      if (submitButton && !window.CatBackLoading) submitButton.disabled = false;
     }
   };
 
@@ -391,8 +412,11 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     event.preventDefault();
     if (!createButton || !linkForm.checkValidity() || createButton.disabled) return;
 
-    createButton.disabled = true;
-    createButton.textContent = 'Đang tạo link...';
+    window.CatBackLoading?.setButtonLoading(createButton, true, { text: 'Đang tạo link...' });
+    if (!window.CatBackLoading) {
+      createButton.disabled = true;
+      createButton.textContent = 'Đang tạo link...';
+    }
     try {
       const response = await fetch(linkForm.action, {
         method: 'POST',
@@ -414,8 +438,11 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     } catch (error) {
       showUrlStatus(error.message || 'Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.', 'error');
     } finally {
-      createButton.disabled = false;
-      if (createButtonContent !== undefined) createButton.innerHTML = createButtonContent;
+      window.CatBackLoading?.setButtonLoading(createButton, false);
+      if (!window.CatBackLoading) {
+        createButton.disabled = false;
+        if (createButtonContent !== undefined) createButton.innerHTML = createButtonContent;
+      }
     }
   }, { signal });
 
@@ -458,9 +485,11 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     if (!copyButton || !copyButton.dataset.copyUrl) return;
     const label = copyButton.querySelector('[data-copy-label]') || copyButton.querySelector('span') || copyButton;
     const originalText = label.textContent;
+    window.CatBackLoading?.setIconLoading(copyButton, true, 'Đang sao chép link');
     try {
       const stableUrl = new URL(copyButton.dataset.copyUrl, window.location.origin).href;
       await navigator.clipboard.writeText(stableUrl);
+      window.CatBackLoading?.setIconLoading(copyButton, false);
       label.textContent = 'Đã sao chép link';
       copyButton.classList.add('is-copied');
       copyButton.setAttribute('aria-label', 'Đã sao chép link');
@@ -473,6 +502,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
         copyButton.setAttribute('aria-label', originalText);
       }, 1800);
     } catch {
+      window.CatBackLoading?.setIconLoading(copyButton, false);
       label.textContent = 'Không thể sao chép';
       copyButton.setAttribute('aria-label', 'Không thể sao chép');
     }

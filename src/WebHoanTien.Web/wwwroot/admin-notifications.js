@@ -60,9 +60,14 @@ window.CatBackSpa.mount('admin-notifications', ({ signal }) => {
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const submit = form.querySelector('button[type="submit"]');
-        submit.disabled = true;
+        window.CatBackLoading?.setButtonLoading(submit, true, { text: 'Đang gửi...' });
+        if (!window.CatBackLoading) submit.disabled = true;
         status.classList.remove('is-error');
         status.textContent = 'Đang gửi thông báo…';
+        const endLongTask = window.CatBackLoading?.beginLongTask({
+            title: 'Đang gửi thông báo...',
+            message: 'CatBack đang tạo thông báo cho người nhận.'
+        });
         try {
             const response = await fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' });
             const data = await readResponse(response);
@@ -77,7 +82,9 @@ window.CatBackSpa.mount('admin-notifications', ({ signal }) => {
             status.classList.add('is-error');
             status.textContent = error.message;
         } finally {
-            submit.disabled = false;
+            endLongTask?.();
+            window.CatBackLoading?.setButtonLoading(submit, false);
+            if (!window.CatBackLoading) submit.disabled = false;
         }
     }, { signal });
     syncAudience();

@@ -1,0 +1,72 @@
+[
+  {
+    "file": "00_loading_design_overview.png",
+    "width": 1536,
+    "height": 1024
+  },
+  {
+    "file": "01_page_loading_mascot.png",
+    "width": 495,
+    "height": 405
+  },
+  {
+    "file": "02_page_loading_minimal.png",
+    "width": 460,
+    "height": 405
+  },
+  {
+    "file": "03_page_loading_progress.png",
+    "width": 530,
+    "height": 405
+  },
+  {
+    "file": "04_button_processing.png",
+    "width": 270,
+    "height": 130
+  },
+  {
+    "file": "05_inline_form_loading.png",
+    "width": 280,
+    "height": 130
+  },
+  {
+    "file": "06_content_block_loading.png",
+    "width": 290,
+    "height": 155
+  },
+  {
+    "file": "07_content_overlay_loading.png",
+    "width": 305,
+    "height": 155
+  },
+  {
+    "file": "08_icon_loading.png",
+    "width": 265,
+    "height": 155
+  },
+  {
+    "file": "09_skeleton_list.png",
+    "width": 475,
+    "height": 285
+  },
+  {
+    "file": "10_modal_processing.png",
+    "width": 435,
+    "height": 285
+  },
+  {
+    "file": "11_dot_loading.png",
+    "width": 180,
+    "height": 255
+  },
+  {
+    "file": "12_ring_loading.png",
+    "width": 185,
+    "height": 255
+  },
+  {
+    "file": "13_progress_bar.png",
+    "width": 225,
+    "height": 255
+  }
+]

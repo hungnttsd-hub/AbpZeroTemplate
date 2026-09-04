@@ -27,14 +27,17 @@ window.CatBackSpa.mount('orders', ({ signal }) => {
       return;
     }
 
+    window.CatBackLoading?.setIconLoading(button, true, "Đang sao chép mã đơn hàng");
     try {
       await copyText(orderCode);
+      window.CatBackLoading?.setIconLoading(button, false);
       button.classList.add("is-copied");
       button.setAttribute("aria-label", "Đã sao chép mã đơn hàng");
       window.setTimeout(function () {
         button.classList.remove("is-copied");
       }, 1400);
     } catch {
+      window.CatBackLoading?.setIconLoading(button, false);
       button.classList.remove("is-copied");
     }
   }, { signal });

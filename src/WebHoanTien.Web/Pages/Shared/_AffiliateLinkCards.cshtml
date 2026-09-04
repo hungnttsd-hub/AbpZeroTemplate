@@ -1,0 +1,78 @@
+@model LinksModel
+
+@foreach (var item in Model.Links.Items)
+{
+    var isShop = item.TargetType == AffiliateLinkTargetType.Shop;
+    var isProduct = item.TargetType == AffiliateLinkTargetType.Product;
+    var shopFallback = !string.IsNullOrWhiteSpace(item.ShopId) ? $"Shop #{item.ShopId}" : "Cửa hàng Shopee";
+    var cardTitle = isShop
+        ? !string.IsNullOrWhiteSpace(item.ProductName) ? item.ProductName : shopFallback
+        : isProduct ? item.ProductName ?? "Sản phẩm Shopee" : "Link Shopee";
+    var buyLabel = isShop ? "Vào Shop" : isProduct ? "Mua ngay" : "Mở Shopee";
+    var fallbackImage = isShop ? "/catback/icons/shop-placeholder.svg" : "/catback/icons/shopping-bag.svg";
+    <article class="affiliate-link-card @(isShop ? "is-shop-link" : !isProduct ? "is-legacy-link" : string.Empty) @(item.IsHidden ? "is-hidden" : string.Empty)"
+             data-link-id="@item.Id" data-target-type="@item.TargetType">
+        <div class="affiliate-product-image">
+            @if ((isProduct || isShop) && !string.IsNullOrWhiteSpace(item.ImageUrl))
+            {
+                <img src="@item.ImageUrl" alt="Ảnh @cardTitle" loading="lazy"
+                     onerror="this.onerror=null;this.src='@fallbackImage'" />
+            }
+            else
+            {
+                <span><img src="@(isShop ? "/catback/icons/shop-placeholder.svg" : isProduct ? "/catback/icons/shopping-bag.svg" : "/catback/icons/store.svg")" alt="" /></span>
+            }
+        </div>
+        <div class="affiliate-link-details">
+            <h3>@cardTitle</h3>
+            @if (isProduct)
+            {
+                <p class="affiliate-store">Sản phẩm từ Shopee</p>
+            }
+            else if (isShop)
+            {
+                <span class="affiliate-target-badge">Link cửa hàng</span>
+                <p class="affiliate-link-meta">Mua nhiều sản phẩm trong cùng shop</p>
+            }
+            else
+            {
+                <p class="affiliate-store">Link Shopee</p>
+                <p class="affiliate-link-meta">Link cũ chưa phân loại</p>
+            }
+            @if (item.IsHidden)
+            {
+                <span class="affiliate-hidden-badge">Đã ẩn</span>
+            }
+            @if (isProduct)
+            {
+                @if (item.EstimatedCommission.HasValue)
+                {
+                    <p class="affiliate-estimate">Hoàn lại dự kiến @item.EstimatedCommission.Value.ToString("N0")₫</p>
+                }
+                else
+                {
+                    <p class="affiliate-estimate unavailable">Chưa có ước tính hoa hồng</p>
+                }
+            }
+        </div>
+        <div class="affiliate-link-actions">
+            <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop data-turbo="false" rel="nofollow sponsored noopener">@buyLabel</a>
+            <div class="affiliate-link-secondary-actions">
+                <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="@item.RedirectUrl" aria-label="Sao chép link" title="Sao chép link">
+                    <img src="~/catback/icons/copy-link.svg" alt="" />
+                    <span class="sr-only" data-copy-label>Sao chép link</span>
+                </button>
+                <form method="post" action="/Links?handler=SetHidden" data-link-visibility-form data-link-id="@item.Id" data-turbo="false">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="linkId" value="@item.Id" />
+                    <input type="hidden" name="visibilityAction" value="hide" />
+                    <input type="hidden" name="showHidden" value="false" />
+                    <button class="affiliate-icon-action affiliate-hide-desktop-button" type="submit" aria-label="Ẩn link khỏi danh sách" title="Ẩn link khỏi danh sách">
+                        <img data-visibility-icon src="~/catback/icons/trash.svg" alt="" />
+                        <span class="sr-only" data-visibility-label>Ẩn link khỏi danh sách</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </article>
+}

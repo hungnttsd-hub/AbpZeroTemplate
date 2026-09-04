@@ -146,12 +146,17 @@ window.CatBackSpa.mount('customer-profile', ({ signal }) => {
 
             clearValidation(form);
             const submitButton = form.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton?.textContent || '';
+            const originalButtonHtml = submitButton?.innerHTML || '';
             form.dataset.submitting = 'true';
             form.setAttribute('aria-busy', 'true');
             if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = form.dataset.loadingText || 'Đang lưu...';
+                window.CatBackLoading?.setButtonLoading(submitButton, true, {
+                    text: form.dataset.loadingText || 'Đang lưu...'
+                });
+                if (!window.CatBackLoading) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = form.dataset.loadingText || 'Đang lưu...';
+                }
             }
 
             try {
@@ -185,8 +190,11 @@ window.CatBackSpa.mount('customer-profile', ({ signal }) => {
                 delete form.dataset.submitting;
                 form.removeAttribute('aria-busy');
                 if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalButtonText;
+                    window.CatBackLoading?.setButtonLoading(submitButton, false);
+                    if (!window.CatBackLoading) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonHtml;
+                    }
                 }
             }
         }, { signal });
