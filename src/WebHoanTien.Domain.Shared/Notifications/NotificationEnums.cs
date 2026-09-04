@@ -23,7 +23,8 @@ public enum CustomerNotificationKind
     WithdrawalCancelled = 23,
     PayoutAccountUpdated = 24,
     Promotion = 30,
-    NewUserRegistered = 40
+    NewUserRegistered = 40,
+    WithdrawalRequested = 41
 }
 
 public enum NotificationAudience

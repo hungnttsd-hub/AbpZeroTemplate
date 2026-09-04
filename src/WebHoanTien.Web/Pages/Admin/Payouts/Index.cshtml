@@ -50,6 +50,20 @@
                     <div class="admin-payout-warning">Cảnh báo: hoa hồng xác nhận hiện không đủ bảo chứng. Không thể đánh dấu đã thanh toán.</div>
                 }
 
+                @if (request.Status == WithdrawalRequestStatus.Pending && request.IsBacked)
+                {
+                    <div class="admin-payout-transfer-content">
+                        <div>
+                            <span>Nội dung chuyển khoản</span>
+                            <code>@request.TransferContent</code>
+                        </div>
+                        <button type="button" data-copy-transfer-content="@request.TransferContent" aria-label="Sao chép nội dung chuyển khoản @request.TransferContent">
+                            <i class="far fa-copy" aria-hidden="true"></i>
+                            <span data-copy-transfer-label>Sao chép</span>
+                        </button>
+                    </div>
+                }
+
                 <div class="admin-payout-result" data-payout-result>
                     @if (request.Status == WithdrawalRequestStatus.Paid)
                     {

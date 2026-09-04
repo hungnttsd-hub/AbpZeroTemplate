@@ -42,6 +42,13 @@
 .admin-payout-details dt { color: #677682; }
 .admin-payout-details dd { margin: 0; overflow-wrap: anywhere; font-weight: 700; }
 .admin-payout-warning { margin: 0 22px 16px; padding: 11px 13px; border: 1px solid #e9bf61; border-radius: 12px; background: #fff8e6; color: #825b00; font-size: 12px; font-weight: 700; }
+.admin-payout-transfer-content { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 22px 16px; padding: 13px 14px; border: 1px solid #9fd7d4; border-radius: 14px; background: #effbfa; }
+.admin-payout-transfer-content div { min-width: 0; }
+.admin-payout-transfer-content span { display: block; color: #547078; font-size: 11px; font-weight: 700; }
+.admin-payout-transfer-content code { display: block; margin-top: 3px; overflow-wrap: anywhere; color: #043b55; font-family: inherit; font-size: 15px; font-weight: 900; letter-spacing: .03em; }
+.admin-payout-transfer-content button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; padding: 9px 12px; border: 1px solid #068e94; border-radius: 11px; background: #fff; color: #067980; font-weight: 800; white-space: nowrap; }
+.admin-payout-transfer-content button:hover, .admin-payout-transfer-content button.is-copied { background: #068e94; color: #fff; }
+.admin-payout-transfer-content button span { color: inherit; font-size: 12px; }
 .admin-payout-result { padding: 0 22px 16px; color: #566b78; }
 .admin-payout-result:empty { display: none; }
 .admin-payout-result p { margin: 0; }
@@ -84,6 +91,8 @@
     .admin-payout-details dl + dl { padding: 10px 0 0; border-top: 1px solid #e1eaed; border-left: 0; }
     .admin-payout-details dl div { grid-template-columns: 120px minmax(0,1fr); font-size: 12px; }
     .admin-payout-warning { margin: 0 16px 14px; }
+    .admin-payout-transfer-content { align-items: stretch; margin: 0 16px 14px; }
+    .admin-payout-transfer-content button { align-self: center; }
     .admin-payout-result { padding: 0 16px 14px; font-size: 12px; }
     .admin-payout-actions { grid-template-columns: 1fr; padding: 0 16px 16px; }
     .admin-payout-actions form { grid-template-columns: 1fr; }

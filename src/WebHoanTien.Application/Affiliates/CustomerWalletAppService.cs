@@ -27,6 +27,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
     private readonly WalletBalanceCalculator _balanceCalculator;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly CustomerNotificationManager _notificationManager;
+    private readonly AdminWithdrawalRequestNotifier _adminWithdrawalRequestNotifier;
 
     public CustomerWalletAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
@@ -34,7 +35,8 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         IRepository<WithdrawalRequest, Guid> withdrawals,
         IRepository<WithdrawalPaymentProof, Guid> proofs, IRepository<UserPayoutAccount, Guid> payoutAccounts,
         WalletBalanceCalculator balanceCalculator, IUnitOfWorkManager unitOfWorkManager,
-        CustomerNotificationManager notificationManager)
+        CustomerNotificationManager notificationManager,
+        AdminWithdrawalRequestNotifier adminWithdrawalRequestNotifier)
     {
         _conversions = conversions;
         _orders = orders;
@@ -46,6 +48,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         _balanceCalculator = balanceCalculator;
         _unitOfWorkManager = unitOfWorkManager;
         _notificationManager = notificationManager;
+        _adminWithdrawalRequestNotifier = adminWithdrawalRequestNotifier;
     }
 
     public async Task<CustomerWalletOverviewDto> GetOverviewAsync()
@@ -118,6 +121,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
                 WebHoanTienConsts.WithdrawalFeeAmount);
             await _withdrawals.InsertAsync(request, autoSave: true);
             await _notificationManager.NotifyWithdrawalStatusAsync(request);
+            await _adminWithdrawalRequestNotifier.EnqueueAsync(request.Id);
             await unitOfWork.CompleteAsync();
             return MapWithdrawal(request, false);
         }

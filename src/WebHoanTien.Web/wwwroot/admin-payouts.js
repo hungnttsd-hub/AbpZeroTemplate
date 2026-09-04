@@ -48,6 +48,48 @@ window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
         container.appendChild(line);
     }
 
+    async function copyText(value) {
+        if (navigator.clipboard?.writeText) {
+            try {
+                await navigator.clipboard.writeText(value);
+                return;
+            } catch (_) { }
+        }
+
+        const input = document.createElement("textarea");
+        input.value = value;
+        input.setAttribute("readonly", "");
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        const copied = document.execCommand("copy");
+        input.remove();
+        if (!copied) throw new Error("Không thể sao chép tự động.");
+    }
+
+    document.addEventListener("click", async event => {
+        const button = event.target.closest("[data-copy-transfer-content]");
+        if (!button) return;
+
+        const content = button.dataset.copyTransferContent?.trim();
+        if (!content) return;
+        const label = button.querySelector("[data-copy-transfer-label]");
+        const originalLabel = label?.textContent || "Sao chép";
+        try {
+            await copyText(content);
+            if (label) label.textContent = "Đã sao chép";
+            button.classList.add("is-copied");
+            notify(`Đã sao chép: ${content}`);
+            window.setTimeout(() => {
+                if (label) label.textContent = originalLabel;
+                button.classList.remove("is-copied");
+            }, 1800);
+        } catch (error) {
+            notify(error.message, true);
+        }
+    }, { signal });
+
     document.addEventListener("submit", async event => {
         const form = event.target.closest("[data-admin-pay], [data-admin-reject]");
         if (!form) return;
@@ -106,6 +148,7 @@ window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
                 addResultLine(result, "Lý do", payload.request.rejectionReason);
             }
             item.querySelector("[data-payout-actions]")?.remove();
+            item.querySelector(".admin-payout-transfer-content")?.remove();
             item.querySelector(".admin-payout-warning")?.remove();
             updateSummary(item, nextStatus);
             notify(payload.message);

@@ -182,6 +182,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
             LastModificationTime = request.LastModificationTime, LastModifierId = request.LastModifierId,
             IsDeleted = request.IsDeleted, DeleterId = request.DeleterId, DeletionTime = request.DeletionTime,
             UserId = request.UserId, UserEmail = email, RequestCode = request.RequestCode,
+            TransferContent = WithdrawalTransferContent.Create(request.RequestCode),
             Amount = request.Amount, FeeAmount = request.FeeAmount, NetAmount = request.NetAmount,
             Status = request.Status, BankCode = request.BankCode, BankName = bank?.Name ?? request.BankCode,
             AccountNumber = request.AccountNumber, AccountHolderName = request.AccountHolderName,

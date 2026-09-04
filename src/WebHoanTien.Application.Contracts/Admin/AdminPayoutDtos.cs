@@ -23,6 +23,7 @@ public sealed class AdminPayoutRequestDto : FullAuditedEntityDto<Guid>
     public Guid UserId { get; set; }
     public string UserEmail { get; set; } = string.Empty;
     public string RequestCode { get; set; } = string.Empty;
+    public string TransferContent { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public decimal FeeAmount { get; set; }
     public decimal NetAmount { get; set; }
