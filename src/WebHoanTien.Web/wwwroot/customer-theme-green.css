@@ -466,3 +466,13 @@ textarea { font-family: var(--catback-font-family); }
   .dashboard-cashback-note::before,
   .dashboard-cashback-note::after { animation: none; }
 }
+
+/* iOS Safari zooms the page when a focused form control renders below 16px. */
+@media (max-width: 1024px) {
+  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+  select,
+  textarea,
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}

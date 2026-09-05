@@ -39,7 +39,7 @@ body {
 .dashboard-create-card { padding: 22px 20px 20px; border: 1px solid var(--surface-border-strong); border-radius: var(--surface-radius-lg); background: linear-gradient(125deg, #ecf8ff 0%, #fff 100%); box-shadow: var(--surface-highlight), var(--surface-shadow); }
 .dashboard-create-card h1 { margin: 0 0 6px; font-size: 20px; line-height: 1.2; letter-spacing: -.03em; }
 .dashboard-create-card > p { margin: 0 0 16px; color: #5d778c; font-size: 14px; line-height: 1.5; }
-.dashboard-create-card input { width: 100%; height: 54px; padding: 0 15px; border: 2px solid #abd9f1; border-radius: 15px; outline: none; background: #fff; color: var(--dashboard-ink); font-family: inherit; font-size: 15px; }
+.dashboard-create-card input { width: 100%; height: 54px; padding: 0 15px; border: 2px solid #abd9f1; border-radius: 15px; outline: none; background: #fff; color: var(--dashboard-ink); font-family: inherit; font-size: 16px; }
 .dashboard-create-card input:focus { border-color: var(--dashboard-blue); box-shadow: 0 0 0 4px rgba(76, 166, 216, .14); }
 .dashboard-create-card input::placeholder { color: #85b8d5; }
 .dashboard-create-card .url-status { min-height: 20px; margin: 7px 0 10px; color: var(--dashboard-muted); font-size: 12px; }

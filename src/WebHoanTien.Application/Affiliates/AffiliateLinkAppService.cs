@@ -257,7 +257,8 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         ProductId = x.ProductId, ShopId = x.ShopId, ProductName = x.ProductName,
         ImageUrl = x.ImageUrl, EstimatedCommission = x.EstimatedCommission, ClickCount = x.ClickCount,
         LastClickedAt = x.LastClickedAt, IsHidden = x.IsHidden, HiddenAt = x.HiddenAt,
-        Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken
+        Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken,
+        DirectUrl = x.AffiliateUrl ?? string.Empty
     };
 
     private static bool IsSupportedInputTargetType(AffiliateLinkTargetType targetType) =>
