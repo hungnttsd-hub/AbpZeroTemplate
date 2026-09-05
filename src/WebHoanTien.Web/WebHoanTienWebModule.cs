@@ -445,7 +445,18 @@ public class WebHoanTienWebModule : AbpModule
         }
 
         app.UseCorrelationId();
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = context =>
+            {
+                var path = context.Context.Request.Path.Value;
+                if (string.Equals(path, "/manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(path, "/pwa-launch.html", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Context.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate";
+                }
+            }
+        });
         app.UseRouting();
         app.UseRateLimiter();
         app.UseHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });

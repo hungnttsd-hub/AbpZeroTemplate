@@ -97,6 +97,12 @@
     <meta name="turbo-prefetch" content="false" />
     @if (isHomeActive)
     {
+        <style>
+            html.cb-pwa-launch-pending,
+            html.cb-pwa-launch-pending body {
+                background: #031e45;
+            }
+        </style>
         <script>
             (() => {
                 const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
@@ -121,7 +127,7 @@
         <link rel="preload" href="~/catback-launch-background.webp?v=1" as="image" type="image/webp" />
         <link rel="preload" href="~/catback-mascot-launch-480.webp?v=1" as="image" type="image/webp" />
     }
-    <link rel="manifest" href="~/manifest.webmanifest" asp-append-version="true" />
+    <link rel="manifest" href="~/manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />
     <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png" asp-append-version="true" />
     <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16x16.png" asp-append-version="true" />
