@@ -264,5 +264,10 @@
     if (!event.detail?.success) hidePage();
   });
   document.addEventListener('turbo:load', hidePage);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') hidePage();
+  });
+  window.addEventListener('focus', hidePage);
+  window.addEventListener('pagehide', hidePage);
   window.addEventListener('pageshow', hidePage);
 })();
