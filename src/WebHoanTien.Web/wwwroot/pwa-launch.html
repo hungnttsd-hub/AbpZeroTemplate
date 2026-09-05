@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi" class="cb-pwa-launch-document">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#031e45">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CatBack</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/catback-launch-background.webp?v=1" as="image" type="image/webp">
+  <link rel="preload" href="/catback-mascot-launch-480.webp?v=1" as="image" type="image/webp">
+  <link rel="stylesheet" href="/catback-launch.css?v=1">
+  <noscript><meta http-equiv="refresh" content="0; url=/"></noscript>
+</head>
+<body>
+  <main class="cb-launch-screen" role="status" aria-live="polite" aria-label="CatBack đang khởi động">
+    <img class="cb-launch-background" src="/catback-launch-background.webp?v=1" alt="" fetchpriority="high">
+    <div class="cb-launch-content">
+      <div class="cb-launch-hero">
+        <img class="cb-launch-mascot" src="/catback-mascot-launch-480.webp?v=1" alt="" fetchpriority="high">
+        <h1 class="cb-launch-title">CATBACK</h1>
+        <p class="cb-launch-promise">Hoàn tiền thật – Rút tiền thật</p>
+      </div>
+      <div class="cb-launch-status">
+        <span class="cb-launch-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <p class="cb-launch-message">Đang chuẩn bị cho bạn…</p>
+      </div>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const storageKey = 'catback:pwa-launch-pending';
+      let navigated = false;
+
+      const openApp = () => {
+        if (navigated) return;
+        navigated = true;
+
+        try {
+          window.sessionStorage.setItem(storageKey, '1');
+        } catch {
+          // Continue even when storage is unavailable.
+        }
+
+        window.location.replace('/');
+      };
+
+      const scheduleNavigation = async () => {
+        const images = Array.from(document.images);
+        await Promise.all(images.map((image) => image.decode?.().catch(() => undefined)));
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => window.setTimeout(openApp, 650));
+        });
+      };
+
+      if (document.readyState === 'complete') scheduleNavigation();
+      else window.addEventListener('load', scheduleNavigation, { once: true });
+
+      window.setTimeout(openApp, 2600);
+    })();
+  </script>
+</body>
+</html>

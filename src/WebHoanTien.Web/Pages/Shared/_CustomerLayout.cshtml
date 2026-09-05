@@ -95,7 +95,32 @@
     <meta name="apple-mobile-web-app-title" content="CatBack" />
     <meta name="turbo-cache-control" content="no-cache" />
     <meta name="turbo-prefetch" content="false" />
+    @if (isHomeActive)
+    {
+        <script>
+            (() => {
+                const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                    window.navigator.standalone === true;
+
+                try {
+                    const launchPending = window.sessionStorage.getItem('catback:pwa-launch-pending') === '1';
+                    const launchShown = window.sessionStorage.getItem('catback:pwa-launch-shown:v1') === '1';
+
+                    if (launchPending || (isStandalone && !launchShown)) {
+                        document.documentElement.classList.add('cb-pwa-launch-pending');
+                    }
+                } catch {
+                    if (isStandalone) document.documentElement.classList.add('cb-pwa-launch-pending');
+                }
+            })();
+        </script>
+    }
     <title>@(ViewData["Title"] ?? "CatBack")</title>
+    @if (isHomeActive)
+    {
+        <link rel="preload" href="~/catback-launch-background.webp?v=1" as="image" type="image/webp" />
+        <link rel="preload" href="~/catback-mascot-launch-480.webp?v=1" as="image" type="image/webp" />
+    }
     <link rel="manifest" href="~/manifest.webmanifest" asp-append-version="true" />
     <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />
     <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png" asp-append-version="true" />
@@ -117,6 +142,7 @@
     <link rel="stylesheet" href="~/notifications.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/catback-modal.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/catback-loading.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/catback-launch.css?v=1" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/guide.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-affiliate-overrides.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-notifications.css" asp-append-version="true" data-turbo-track="reload" />
@@ -128,10 +154,15 @@
     <script src="~/libs/@@hotwired/turbo/turbo.es2017-umd.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/catback-modal.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/catback-loading.js" asp-append-version="true" data-turbo-track="reload" defer></script>
+    <script src="~/catback-launch.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/pwa.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/customer-navigation.js" asp-append-version="true" data-turbo-track="reload" defer></script>
 </head>
 <body class="@bodyClass" data-catback-spa-shell>
+@if (isHomeActive)
+{
+    <partial name="/Pages/Shared/_CatBackLaunch.cshtml" />
+}
 <header class="site-header">
     <a class="brand" href="/" aria-label="Về trang chủ"><span class="brand-mark" aria-hidden="true"><img src="~/catback-mascot-reference.png" alt="" /></span></a>
     <nav class="site-navigation" aria-label="Điều hướng chính">
