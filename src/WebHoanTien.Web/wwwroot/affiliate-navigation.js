@@ -32,7 +32,7 @@
     if (externalUrl.protocol !== 'https:' || externalUrl.origin === window.location.origin) return null;
 
     anchor.href = externalUrl.href;
-    anchor.removeAttribute('target');
+    anchor.target = '_blank';
     anchor.dataset.iphoneExternalReady = 'true';
     return 'iphone';
   };
