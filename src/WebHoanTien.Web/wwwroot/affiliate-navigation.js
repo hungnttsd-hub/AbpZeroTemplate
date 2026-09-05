@@ -2,32 +2,39 @@
   'use strict';
 
   const userAgent = window.navigator.userAgent;
+  const isAndroid = /Android/i.test(userAgent);
   const isIPhone = /iPhone/i.test(userAgent);
   const isStandalone = window.navigator.standalone === true;
   const isSafari = /Safari/i.test(userAgent) && !/(CriOS|FxiOS|EdgiOS|OPiOS)/i.test(userAgent);
-  if (!isIPhone || (!isSafari && !isStandalone)) return;
+  const usesIPhoneDirectNavigation = isIPhone && (isSafari || isStandalone);
+  if (!isAndroid && !usesIPhoneDirectNavigation) return;
 
   const selector = 'a[data-iphone-external-url]';
 
   const prepareAnchor = (anchor) => {
-    if (!(anchor instanceof HTMLAnchorElement)) return false;
+    if (!(anchor instanceof HTMLAnchorElement)) return null;
+
+    if (isAndroid) {
+      anchor.removeAttribute('target');
+      return 'android';
+    }
 
     const directUrl = anchor.dataset.iphoneExternalUrl;
-    if (!directUrl) return false;
+    if (!directUrl) return null;
 
     let externalUrl;
     try {
       externalUrl = new URL(directUrl, window.location.origin);
     } catch {
-      return false;
+      return null;
     }
 
-    if (externalUrl.protocol !== 'https:' || externalUrl.origin === window.location.origin) return false;
+    if (externalUrl.protocol !== 'https:' || externalUrl.origin === window.location.origin) return null;
 
     anchor.href = externalUrl.href;
     anchor.removeAttribute('target');
     anchor.dataset.iphoneExternalReady = 'true';
-    return true;
+    return 'iphone';
   };
 
   const prepareWithin = (root) => {
@@ -80,7 +87,7 @@
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
     const anchor = target?.closest(selector);
-    if (!anchor || !prepareAnchor(anchor)) return;
+    if (!anchor || prepareAnchor(anchor) !== 'iphone') return;
 
     trackClick(anchor.dataset.iphoneTrackUrl);
   }, { capture: true });
