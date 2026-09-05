@@ -96,6 +96,7 @@ public class IndexModel : PageModel
                                 ? result.EstimatedCommission.Value.ToString("N0") + "₫"
                                 : null,
                             redirectUrl = result.RedirectUrl,
+                            directUrl = result.DirectUrl,
                             clickCount = result.ClickCount,
                             isExisting = result.IsExisting,
                             wasRestored = result.WasRestored

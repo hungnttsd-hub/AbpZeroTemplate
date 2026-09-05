@@ -2,7 +2,6 @@
   if (window.__catBackNavigationInitialized) return;
   window.__catBackNavigationInitialized = true;
 
-  const desktopViewport = window.matchMedia('(min-width: 768px)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const focusableSelector = [
     'a[href]',
@@ -17,17 +16,6 @@
   let closeTimer;
   let focusTimer;
   let openFrame;
-
-  const updateLinkTargets = () => {
-    const links = document.querySelectorAll('[data-open-in-new-tab-on-desktop]');
-    links.forEach((link) => {
-      if (desktopViewport.matches) {
-        link.target = '_blank';
-      } else {
-        link.removeAttribute('target');
-      }
-    });
-  };
 
   const drawerIsOpen = () => Boolean(
     activeOverlay?.isConnected && !activeOverlay.hidden && activeOverlay.getAttribute('aria-hidden') === 'false'
@@ -155,12 +143,9 @@
     }
   });
 
-  updateLinkTargets();
-  desktopViewport.addEventListener('change', updateLinkTargets);
   document.addEventListener('turbo:before-cache', () => closeAccountNavigation({ restoreFocus: false, immediate: true }));
   document.addEventListener('turbo:before-render', () => closeAccountNavigation({ restoreFocus: false, immediate: true }));
   document.addEventListener('turbo:load', () => {
     resetAccountNavigation();
-    updateLinkTargets();
   });
 })();

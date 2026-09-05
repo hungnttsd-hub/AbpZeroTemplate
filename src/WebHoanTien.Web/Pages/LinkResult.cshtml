@@ -40,7 +40,10 @@
             <p class="muted">Ước tính chưa có; việc này không ảnh hưởng đến link mua hàng.</p>
         }
         <div class="copy-row"><input id="result-url" readonly value="@stableRedirectUrl" /><button class="button button-ghost" type="button" onclick="navigator.clipboard.writeText(document.getElementById('result-url').value)">Sao chép</button></div>
-        <a class="button button-dark button-wide" href="@Model.Tracking.RedirectUrl" data-open-in-new-tab-on-desktop data-turbo="false" rel="nofollow sponsored noopener">@(isShop ? "Vào Shop mua hàng →" : isProduct ? "Mua trên Shopee →" : "Mở Shopee →")</a>
+        <a class="button button-dark button-wide" href="@Model.Tracking.RedirectUrl" target="_blank"
+           data-iphone-external-url="@Model.Tracking.DirectUrl"
+           data-iphone-track-url="@(Model.Tracking.RedirectUrl + "/click")"
+           data-turbo="false" rel="nofollow sponsored noopener">@(isShop ? "Vào Shop mua hàng →" : isProduct ? "Mua trên Shopee →" : "Mở Shopee →")</a>
         <p class="fine-print">Hãy hoàn tất đơn trong cùng phiên sau khi mở link. Shopee quyết định việc ghi nhận và xác thực hoa hồng.</p>
     </div>
     <p class="center"><a href="/Links">Xem các link đã tạo</a> · <a href="/Orders">Đơn của tôi</a></p>

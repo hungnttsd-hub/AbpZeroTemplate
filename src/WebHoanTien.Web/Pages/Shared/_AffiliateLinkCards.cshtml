@@ -56,7 +56,10 @@
             }
         </div>
         <div class="affiliate-link-actions">
-            <a class="affiliate-buy-button" href="@item.RedirectUrl" data-open-in-new-tab-on-desktop data-turbo="false" rel="nofollow sponsored noopener">@buyLabel</a>
+            <a class="affiliate-buy-button" href="@item.RedirectUrl" target="_blank"
+               data-iphone-external-url="@item.DirectUrl"
+               data-iphone-track-url="@(item.RedirectUrl + "/click")"
+               data-turbo="false" rel="nofollow sponsored noopener">@buyLabel</a>
             <div class="affiliate-link-secondary-actions">
                 <button class="affiliate-icon-action affiliate-copy-button" type="button" data-copy-url="@item.RedirectUrl" aria-label="Sao chép link" title="Sao chép link">
                     <img src="~/catback/icons/copy-link.svg" alt="" />

@@ -53,6 +53,7 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
     public DateTime? HiddenAt { get; set; }
     public AffiliateTrackingStatus Status { get; set; }
     public string RedirectUrl { get; set; } = string.Empty;
+    public string DirectUrl { get; set; } = string.Empty;
 }
 
 public sealed class AffiliateTrackingListInput : PagedAndSortedResultRequestDto

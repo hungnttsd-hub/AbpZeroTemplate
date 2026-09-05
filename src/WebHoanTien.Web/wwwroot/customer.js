@@ -196,8 +196,9 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     if (buyButton) {
       buyButton.href = link.redirectUrl;
       buyButton.textContent = isShop ? 'Vào Shop' : 'Mua ngay';
-      if (window.matchMedia('(min-width: 768px)').matches) buyButton.target = '_blank';
-      else buyButton.removeAttribute('target');
+      buyButton.target = '_blank';
+      buyButton.dataset.iphoneExternalUrl = link.directUrl || '';
+      buyButton.dataset.iphoneTrackUrl = link.redirectUrl ? `${link.redirectUrl}/click` : '';
     }
 
     if (sheet) {
@@ -285,7 +286,9 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const buyButton = result?.querySelector('.affiliate-inline-buy-button');
     if (buyButton) {
       buyButton.href = link.redirectUrl;
-      if (window.matchMedia('(min-width: 768px)').matches) buyButton.target = '_blank';
+      buyButton.target = '_blank';
+      buyButton.dataset.iphoneExternalUrl = link.directUrl || '';
+      buyButton.dataset.iphoneTrackUrl = link.redirectUrl ? `${link.redirectUrl}/click` : '';
     }
     linkForm.insertBefore(fragment, createButton);
     if (createButton) createButton.hidden = true;

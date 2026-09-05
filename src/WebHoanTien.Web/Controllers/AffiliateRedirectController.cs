@@ -42,10 +42,32 @@ public class AffiliateRedirectController : Controller
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> GoAsync(string trackingToken)
     {
-        var tracking = (await _trackings.GetListAsync(x => x.TrackingToken == trackingToken && x.Status == AffiliateTrackingStatus.Active)).FirstOrDefault();
+        var navigation = await ResolveNavigationAsync(trackingToken);
+        if (navigation.ErrorResult is not null) return navigation.ErrorResult;
+
+        await RegisterClickAsync(navigation.Tracking!, navigation.AffiliateId!);
+        return Redirect(navigation.AffiliateUrl!);
+    }
+
+    [HttpPost("/go/{trackingToken}/click")]
+    [IgnoreAntiforgeryToken]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> TrackAsync(string trackingToken)
+    {
+        var navigation = await ResolveNavigationAsync(trackingToken);
+        if (navigation.ErrorResult is not null) return navigation.ErrorResult;
+
+        await RegisterClickAsync(navigation.Tracking!, navigation.AffiliateId!);
+        return NoContent();
+    }
+
+    private async Task<AffiliateNavigation> ResolveNavigationAsync(string trackingToken)
+    {
+        var tracking = (await _trackings.GetListAsync(x => x.TrackingToken == trackingToken &&
+            x.Status == AffiliateTrackingStatus.Active)).FirstOrDefault();
         if (tracking is null || tracking.Platform != AffiliatePlatform.Shopee ||
             !_normalizer.TryNormalize(tracking.NormalizedUrl, out var normalizedUrl, out _))
-            return NotFound();
+            return AffiliateNavigation.Failed(NotFound());
 
         ResolvedAffiliateId resolvedAffiliateId;
         try
@@ -54,17 +76,30 @@ public class AffiliateRedirectController : Controller
         }
         catch (Volo.Abp.UserFriendlyException exception)
         {
-            return StatusCode(503, exception.Message);
+            return AffiliateNavigation.Failed(StatusCode(503, exception.Message));
         }
 
-        var affiliateUrl = _linkBuilder.Build(normalizedUrl, tracking.TrackingToken,
-            resolvedAffiliateId.AffiliateId);
-        var click = new AffiliateClick(_guidGenerator.Create(), tracking.Id, _currentUser.Id, _clock.Now,
+        return AffiliateNavigation.Succeeded(tracking, resolvedAffiliateId,
+            _linkBuilder.Build(normalizedUrl, tracking.TrackingToken, resolvedAffiliateId.AffiliateId));
+    }
+
+    private async Task RegisterClickAsync(AffiliateTracking tracking, ResolvedAffiliateId resolvedAffiliateId)
+    {
+        var clickedAt = _clock.Now;
+        var click = new AffiliateClick(_guidGenerator.Create(), tracking.Id, _currentUser.Id, clickedAt,
             HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString(),
             Request.Headers.Referer.ToString(), resolvedAffiliateId.AffiliateId, resolvedAffiliateId.OverrideId);
-        tracking.RegisterClick(_clock.Now);
+        tracking.RegisterClick(clickedAt);
         await _clicks.InsertAsync(click);
         await _trackings.UpdateAsync(tracking, autoSave: true);
-        return Redirect(affiliateUrl);
+    }
+
+    private sealed record AffiliateNavigation(AffiliateTracking? Tracking, ResolvedAffiliateId? AffiliateId,
+        string? AffiliateUrl, IActionResult? ErrorResult)
+    {
+        public static AffiliateNavigation Succeeded(AffiliateTracking tracking, ResolvedAffiliateId affiliateId,
+            string affiliateUrl) => new(tracking, affiliateId, affiliateUrl, null);
+
+        public static AffiliateNavigation Failed(IActionResult errorResult) => new(null, null, null, errorResult);
     }
 }
