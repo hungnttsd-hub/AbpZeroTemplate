@@ -65,16 +65,13 @@ public class ShopeeSettlementStagingService : ITransientDependency
         var bytes = buffer.ToArray();
         if (bytes.Length == 0) throw Invalid("File đối soát đang trống.");
         var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-        var existingBatch = await _batches.FindAsync(batch => batch.ContentHash == hash,
-            cancellationToken: cancellationToken);
-        if (existingBatch is not null)
-            return ToResult(existingBatch, isDuplicate: true);
 
         var normalized = await ParseAsync(bytes, reportFileName, hash, source, cancellationToken);
         var existingBillCount = 0;
         Guid? firstExistingBatchId = null;
         var newBills = new List<NormalizedBill>();
         var updatedBills = new List<UpdatedBill>();
+        var resultRows = new List<ShopeeSettlementRecord>();
         foreach (var bill in normalized)
         {
             var existingBill = await _bills.FindAsync(value => value.SourceAffiliateId == bill.SourceAffiliateId &&
@@ -87,6 +84,7 @@ public class ShopeeSettlementStagingService : ITransientDependency
 
             var existingRows = await _records.GetListAsync(record => record.BillId == existingBill.Id,
                 cancellationToken: cancellationToken);
+            resultRows.AddRange(existingRows);
             firstExistingBatchId ??= existingBill.BatchId;
             if (SameBill(existingBill, existingRows, bill))
             {
@@ -112,11 +110,8 @@ public class ShopeeSettlementStagingService : ITransientDependency
 
         if (newBills.Count == 0 && updatedBills.Count == 0)
         {
-            var duplicateBatch = await _batches.GetAsync(firstExistingBatchId!.Value,
-                cancellationToken: cancellationToken);
-            var duplicateResult = ToResult(duplicateBatch, isDuplicate: true);
-            duplicateResult.ImportedRowCount = 0;
-            duplicateResult.ValidationCount = normalized.Count;
+            var duplicateResult = ToResult(firstExistingBatchId!.Value, resultRows, normalized.Count,
+                isDuplicate: true);
             duplicateResult.AlreadyImportedValidationCount = existingBillCount;
             return duplicateResult;
         }
@@ -197,6 +192,7 @@ public class ShopeeSettlementStagingService : ITransientDependency
                     inputRow.AllocatedTax, inputRow.ActualPaidCommission);
                 Classify(record, inputBill, inputRow, ordersByExternalId, conversions, attributionSummaries);
                 records.Add(record);
+                resultRows.Add(record);
             }
         }
 
@@ -234,8 +230,7 @@ public class ShopeeSettlementStagingService : ITransientDependency
             UpdateBatch(batch!, newBills.Count, records);
             await _batches.UpdateAsync(batch!, autoSave: false, cancellationToken: cancellationToken);
         }
-        var result = ToResult(batch!, isDuplicate: false);
-        result.ValidationCount = normalized.Count;
+        var result = ToResult(batch!.Id, resultRows, normalized.Count, isDuplicate: false);
         result.AlreadyImportedValidationCount = existingBillCount;
         result.UpdatedValidationCount = updatedBills.Count;
         return result;
@@ -287,6 +282,8 @@ public class ShopeeSettlementStagingService : ITransientDependency
         IReadOnlyDictionary<Guid, AffiliateConversion> conversions,
         IReadOnlyDictionary<Guid, AttributionSummary> attributionSummaries)
     {
+        if (record.Status == ShopeeSettlementRecordStatus.Approved) return;
+
         ordersByExternalId.TryGetValue(row.ExternalOrderId, out var matches);
         if (matches is null || matches.Count == 0)
         {
@@ -373,17 +370,16 @@ public class ShopeeSettlementStagingService : ITransientDependency
         var rowsByOrder = existingRows.ToDictionary(row => row.ExternalOrderId, StringComparer.Ordinal);
         return inputBill.Rows.All(inputRow =>
             rowsByOrder.TryGetValue(inputRow.ExternalOrderId, out var existingRow) &&
-            existingRow.EligibleCommission == inputRow.EligibleCommission &&
-            existingRow.AllocatedServiceFee == inputRow.AllocatedServiceFee &&
-            existingRow.AllocatedTax == inputRow.AllocatedTax &&
-            existingRow.ActualPaidCommission == inputRow.ActualPaidCommission);
+            (existingRow.Status == ShopeeSettlementRecordStatus.Approved ||
+             existingRow.EligibleCommission == inputRow.EligibleCommission &&
+             existingRow.AllocatedServiceFee == inputRow.AllocatedServiceFee &&
+             existingRow.AllocatedTax == inputRow.AllocatedTax &&
+             existingRow.ActualPaidCommission == inputRow.ActualPaidCommission));
     }
 
     private static void EnsureCanUpdate(ShopeeSettlementBill existingBill,
         IReadOnlyCollection<ShopeeSettlementRecord> existingRows, NormalizedBill inputBill)
     {
-        if (existingRows.Any(row => row.Status == ShopeeSettlementRecordStatus.Approved))
-            throw Invalid($"Bảng kê {inputBill.ValidationId} đã được admin duyệt nên không thể cập nhật metadata.");
         var existingOrderIds = existingRows.Select(row => row.ExternalOrderId).ToHashSet(StringComparer.Ordinal);
         var inputOrderIds = inputBill.Rows.Select(row => row.ExternalOrderId).ToHashSet(StringComparer.Ordinal);
         if (existingBill.RecordCount != inputBill.Rows.Count || existingRows.Count != inputBill.Rows.Count ||
@@ -409,17 +405,21 @@ public class ShopeeSettlementStagingService : ITransientDependency
         return value <= upperBound + tolerance;
     }
 
-    private static ShopeeSettlementImportResultDto ToResult(ShopeeSettlementBatch batch, bool isDuplicate) => new()
+    private static ShopeeSettlementImportResultDto ToResult(Guid batchId,
+        IReadOnlyCollection<ShopeeSettlementRecord> records, int validationCount, bool isDuplicate) => new()
     {
-        BatchId = batch.Id,
-        ImportedRowCount = batch.RecordCount,
-        ValidationCount = batch.BillCount,
-        PendingApprovalCount = batch.PendingCount,
-        ApprovedCount = batch.ApprovedCount,
-        AlreadySettledCount = batch.AlreadySettledCount,
-        UnmatchedCount = batch.UnmatchedCount,
-        ErrorCount = batch.InvalidCount,
-        WaitingPaymentCount = batch.WaitingPaymentCount,
+        BatchId = batchId,
+        ImportedRowCount = records.Count,
+        ValidationCount = validationCount,
+        PendingApprovalCount = records.Count(record =>
+            record.Status == ShopeeSettlementRecordStatus.PendingApproval),
+        ApprovedCount = records.Count(record => record.Status == ShopeeSettlementRecordStatus.Approved),
+        AlreadySettledCount = records.Count(record =>
+            record.Status == ShopeeSettlementRecordStatus.AlreadySettled),
+        UnmatchedCount = records.Count(record => record.Status == ShopeeSettlementRecordStatus.Unmatched),
+        ErrorCount = records.Count(record => record.Status == ShopeeSettlementRecordStatus.Invalid),
+        WaitingPaymentCount = records.Count(record =>
+            record.Status == ShopeeSettlementRecordStatus.AwaitingShopeePayment),
         IsDuplicate = isDuplicate
     };
 

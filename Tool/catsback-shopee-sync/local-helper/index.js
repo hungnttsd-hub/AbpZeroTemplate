@@ -538,9 +538,12 @@ function summarizeSettlementImport(parsed, rawText) {
   if (parsed && typeof parsed === "object") {
     const parts = [];
     const labels = [
+      ["importedRowCount", "dòng xử lý"],
       ["validationCount", "bảng kê"],
+      ["alreadyImportedValidationCount", "bảng kê đã có"],
       ["updatedValidationCount", "bảng kê cập nhật"],
       ["pendingApprovalCount", "chờ duyệt"],
+      ["approvedCount", "đã duyệt (bỏ qua)"],
       ["waitingPaymentCount", "chờ Shopee thanh toán"],
       ["alreadySettledCount", "đã đối soát"],
       ["unmatchedCount", "không khớp"],
@@ -549,7 +552,7 @@ function summarizeSettlementImport(parsed, rawText) {
     for (const [key, label] of labels) {
       if (Object.prototype.hasOwnProperty.call(parsed, key)) parts.push(`${label}: ${parsed[key]}`);
     }
-    if (parsed.isDuplicate === true) parts.push("file đã import trước đó");
+    if (parsed.isDuplicate === true) parts.push("không có dữ liệu mới cần cập nhật");
     if (parts.length) return parts.join(" · ");
   }
   return String(rawText || "").replace(/\s+/g, " ").slice(0, 500);

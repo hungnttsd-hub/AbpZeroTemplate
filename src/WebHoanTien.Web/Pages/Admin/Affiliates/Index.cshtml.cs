@@ -89,11 +89,13 @@ public class IndexModel : PageModel
 
         await using var stream = SettlementReport.OpenReadStream();
         var result = await _settlementImports.ImportAsync(stream, SettlementReport.FileName);
-        TempData["SettlementMessage"] = result.IsDuplicate
-            ? "File hoặc bảng kê này đã được import trước đó."
-            : $"Đã xử lý bảng kê: {result.PendingApprovalCount} dòng có thể duyệt, " +
-              $"{result.WaitingPaymentCount} đang chờ Shopee thanh toán, {result.UpdatedValidationCount} bảng kê được cập nhật, " +
-              $"{result.UnmatchedCount} không khớp, {result.AlreadySettledCount} đã ghi nhận, {result.ErrorCount} cần kiểm tra.";
+        var duplicateNote = result.IsDuplicate ? " Không có dữ liệu mới cần cập nhật." : string.Empty;
+        TempData["SettlementMessage"] =
+            $"Đã xử lý {result.ImportedRowCount} dòng thuộc {result.ValidationCount} bảng kê: " +
+            $"{result.PendingApprovalCount} dòng có thể duyệt, {result.ApprovedCount} đã duyệt (bỏ qua), " +
+            $"{result.WaitingPaymentCount} đang chờ Shopee thanh toán, {result.UpdatedValidationCount} bảng kê được cập nhật, " +
+            $"{result.UnmatchedCount} không khớp, {result.AlreadySettledCount} đã ghi nhận, {result.ErrorCount} cần kiểm tra." +
+            duplicateNote;
         return RedirectToPage();
     }
 
