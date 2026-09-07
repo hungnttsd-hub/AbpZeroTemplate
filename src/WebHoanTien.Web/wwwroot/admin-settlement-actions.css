@@ -15,6 +15,35 @@
     color: #06767c;
 }
 
+.admin-settlement-workspace,
+.admin-settlement-workspace > *,
+.admin-settlement-batches,
+.admin-settlement-batch,
+.admin-settlement-detail,
+.admin-settlement-detail > header > div {
+    min-width: 0;
+}
+
+.admin-settlement-batch > strong {
+    display: block;
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-settlement-detail > header h2,
+.admin-settlement-detail > header p,
+.admin-settlement-record > header > div:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-settlement-record {
+    min-width: 0;
+    overflow: hidden;
+}
+
 .admin-settlement-batch > em.waitingforshopee,
 .admin-settlement-status.awaitingshopeepayment {
     background: #fff2c8;

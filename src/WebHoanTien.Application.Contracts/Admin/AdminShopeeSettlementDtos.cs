@@ -16,6 +16,7 @@ public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRe
 
 public sealed class AdminShopeeSettlementSummaryDto
 {
+    public int TotalCount { get; set; }
     public int PendingCount { get; set; }
     public decimal PendingAmount { get; set; }
     public int ApprovedCount { get; set; }
@@ -123,6 +124,8 @@ public sealed class AdminShopeeSettlementRefreshResultDto
 public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
 {
     Task<AdminShopeeSettlementPageDto> GetListAsync(AdminShopeeSettlementBatchListInput input);
+    Task<PagedResultDto<AdminShopeeSettlementRecordDto>> GetRecordsAsync(
+        AdminShopeeSettlementBatchListInput input, int skipCount = 0, int maxResultCount = 50);
     Task<AdminShopeeSettlementBatchDetailsDto> GetAsync(Guid batchId, int skipCount = 0,
         int maxResultCount = 50);
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId);

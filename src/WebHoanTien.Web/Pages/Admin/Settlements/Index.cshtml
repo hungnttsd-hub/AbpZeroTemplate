@@ -18,17 +18,25 @@
 
     <form method="get" class="admin-settlement-filters">
         <label><span>Tìm batch</span><input asp-for="Filter" placeholder="Tên file hoặc SHA-256" /></label>
-        <label><span>Trạng thái</span><select asp-for="Status"><option value="">Tất cả</option><option value="WaitingForShopee">Chờ Shopee thanh toán</option><option value="PendingApproval">Chờ duyệt</option><option value="PartiallyApproved">Đã duyệt một phần</option><option value="Approved">Đã duyệt</option><option value="CompletedWithIssues">Có cảnh báo</option></select></label>
+        <label><span>Trạng thái batch</span><select asp-for="Status"><option value="">Tất cả</option><option value="WaitingForShopee">Chờ Shopee thanh toán</option><option value="PendingApproval">Chờ duyệt</option><option value="PartiallyApproved">Đã duyệt một phần</option><option value="Approved">Đã duyệt</option><option value="CompletedWithIssues">Có cảnh báo</option></select></label>
         <button type="submit">Lọc dữ liệu</button><a href="/Admin/Settlements">Xóa lọc</a>
     </form>
 
     <div class="admin-settlement-workspace">
         <aside class="admin-settlement-batches" aria-label="Danh sách file đối soát">
+            @if (Model.Data.Summary.TotalCount > 0)
+            {
+                <a class="admin-settlement-batch @(Model.AllRecords ? "is-active" : null)" asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-AllRecords="true">
+                    <span>Tổng hợp các batch đang lọc</span><strong>Tất cả đơn đối soát</strong>
+                    <small>@Model.Data.Summary.TotalCount đơn · @Model.Data.Summary.PendingCount chờ duyệt</small>
+                    <em>Tất cả trạng thái</em>
+                </a>
+            }
             @if (Model.Data.Batches.Items.Count == 0) { <div class="admin-settlement-empty"><strong>Chưa có dữ liệu đối soát</strong><p>Dùng tool hoặc form import thủ công để tạo batch chờ duyệt.</p></div> }
             @foreach (var batch in Model.Data.Batches.Items)
             {
                 <a class="admin-settlement-batch @(Model.BatchId == batch.Id ? "is-active" : null)" asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-PageNumber="@Model.PageNumber" asp-route-BatchId="@batch.Id">
-                    <span>@SettlementPageUi.Date(batch.CreationTime)</span><strong>@batch.OriginalFileName</strong>
+                    <span>@SettlementPageUi.Date(batch.CreationTime)</span><strong title="@batch.OriginalFileName">@batch.OriginalFileName</strong>
                     <small>@batch.BillCount bảng kê · @batch.RecordCount đơn</small>
                     <em class="@SettlementPageUi.StatusClass(batch.Status)">@SettlementPageUi.BatchLabel(batch.Status)</em>
                 </a>
@@ -39,41 +47,53 @@
             }
         </aside>
 
-        @if (Model.Details is not null)
+        @{
+            var displayedRecords = Model.AllRecords ? Model.Records : Model.Details?.Records;
+            var selectedBatch = Model.Details?.Batch;
+        }
+        @if (displayedRecords is not null)
         {
-            var batch = Model.Details.Batch;
-            var reviewableCount = batch.RecordCount - batch.ApprovedCount - batch.AlreadySettledCount;
-            var reviewableAmount = Math.Max(0m, batch.TotalPaidCommission - batch.ApprovedPaidCommission);
-            <main class="admin-settlement-detail" data-settlement-batch="@batch.Id">
-                <header>
-                    <div><span>Batch @batch.Id.ToString("N")[..8]</span><h2>@batch.OriginalFileName</h2><p>@batch.BillCount validation_id · tổng giá trị đối soát @SettlementPageUi.Money(batch.TotalPaidCommission)</p></div>
-                    <div class="admin-settlement-actions">
-                        @if (batch.UnmatchedCount + batch.InvalidCount > 0)
-                        {
-                            <form method="post" asp-page-handler="RefreshMatches" data-refresh-matches>
-                                @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@batch.Id" />
-                                <button type="submit" class="secondary">Đối chiếu lại</button>
-                            </form>
-                        }
-                        @if (reviewableCount > 0)
-                        {
-                            <form method="post" asp-page-handler="ApproveAll" data-approve-all data-count="@reviewableCount" data-amount="@reviewableAmount">
-                                @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@batch.Id" />
-                                <button type="submit">Duyệt tất cả (@reviewableCount)</button>
-                            </form>
-                        }
+            <main class="admin-settlement-detail" data-settlement-batch="@selectedBatch?.Id">
+                @if (Model.AllRecords)
+                {
+                    <header>
+                        <div><span>TỔNG HỢP CÁC BATCH ĐANG LỌC</span><h2>Tất cả đơn đối soát</h2><p>@displayedRecords.TotalCount đơn ở mọi trạng thái; đơn chờ duyệt được xếp lên đầu.</p></div>
+                    </header>
+                }
+                else if (selectedBatch is not null)
+                {
+                    var reviewableCount = selectedBatch.RecordCount - selectedBatch.ApprovedCount - selectedBatch.AlreadySettledCount;
+                    var reviewableAmount = Math.Max(0m, selectedBatch.TotalPaidCommission - selectedBatch.ApprovedPaidCommission);
+                    <header>
+                        <div><span>Batch @selectedBatch.Id.ToString("N")[..8]</span><h2>@selectedBatch.OriginalFileName</h2><p>@selectedBatch.BillCount validation_id · tổng giá trị đối soát @SettlementPageUi.Money(selectedBatch.TotalPaidCommission)</p></div>
+                        <div class="admin-settlement-actions">
+                            @if (selectedBatch.UnmatchedCount + selectedBatch.InvalidCount > 0)
+                            {
+                                <form method="post" asp-page-handler="RefreshMatches" data-refresh-matches>
+                                    @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@selectedBatch.Id" />
+                                    <button type="submit" class="secondary">Đối chiếu lại</button>
+                                </form>
+                            }
+                            @if (reviewableCount > 0)
+                            {
+                                <form method="post" asp-page-handler="ApproveAll" data-approve-all data-count="@reviewableCount" data-amount="@reviewableAmount">
+                                    @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@selectedBatch.Id" />
+                                    <button type="submit">Duyệt tất cả (@reviewableCount)</button>
+                                </form>
+                            }
+                        </div>
+                    </header>
+                    <div class="admin-settlement-batch-summary">
+                        <span>Chờ duyệt <b data-batch-pending-count>@selectedBatch.PendingCount</b></span>
+                        <span>Đã duyệt <b data-batch-approved-count>@selectedBatch.ApprovedCount</b></span>
+                        <span>Không khớp <b>@selectedBatch.UnmatchedCount</b></span>
+                        <span>Lỗi trạng thái <b>@selectedBatch.InvalidCount</b></span>
+                        <span>Chờ Shopee thanh toán <b>@selectedBatch.WaitingPaymentCount</b></span>
                     </div>
-                </header>
-                <div class="admin-settlement-batch-summary">
-                    <span>Chờ duyệt <b data-batch-pending-count>@batch.PendingCount</b></span>
-                    <span>Đã duyệt <b data-batch-approved-count>@batch.ApprovedCount</b></span>
-                    <span>Không khớp <b>@batch.UnmatchedCount</b></span>
-                    <span>Lỗi trạng thái <b>@batch.InvalidCount</b></span>
-                    <span>Chờ Shopee thanh toán <b>@batch.WaitingPaymentCount</b></span>
-                </div>
+                }
 
                 <div class="admin-settlement-records">
-                    @foreach (var record in Model.Details.Records.Items)
+                    @foreach (var record in displayedRecords.Items)
                     {
                         var productNamesTitle = string.Join(" · ", record.ProductNames);
                         <article class="admin-settlement-record" data-settlement-record="@record.Id" data-status="@record.Status.ToString().ToLowerInvariant()" data-paid="@record.ActualPaidCommission">
@@ -118,7 +138,9 @@
                             @if (!string.IsNullOrWhiteSpace(record.Issue)) { <p class="admin-settlement-warning">@record.Issue</p> }
                             @if (record.AffiliateOrderId.HasValue)
                             {
-                                var returnUrl = $"/Admin/Settlements?BatchId={batch.Id}&RecordPageNumber={Model.RecordPageNumber}";
+                                var returnUrl = Model.AllRecords
+                                    ? $"/Admin/Settlements?AllRecords=true&RecordPageNumber={Model.RecordPageNumber}"
+                                    : $"/Admin/Settlements?BatchId={record.BatchId}&RecordPageNumber={Model.RecordPageNumber}";
                                 <a class="button button-ghost" href="/Orders/@record.AffiliateOrderId.Value?returnUrl=@Uri.EscapeDataString(returnUrl)">Xem sản phẩm và token</a>
                             }
                             @if (record.Status is not ShopeeSettlementRecordStatus.Approved and not ShopeeSettlementRecordStatus.AlreadySettled)
@@ -133,7 +155,14 @@
                 </div>
                 @if (Model.TotalRecordPages > 1)
                 {
-                    <nav class="admin-settlement-pagination record-pages"><a asp-page="/Admin/Settlements/Index" asp-route-BatchId="@batch.Id" asp-route-RecordPageNumber="@(Math.Max(1, Model.RecordPageNumber - 1))">‹ Trước</a><b>@Model.RecordPageNumber/@Model.TotalRecordPages</b><a asp-page="/Admin/Settlements/Index" asp-route-BatchId="@batch.Id" asp-route-RecordPageNumber="@(Math.Min(Model.TotalRecordPages, Model.RecordPageNumber + 1))">Sau ›</a></nav>
+                    @if (Model.AllRecords)
+                    {
+                        <nav class="admin-settlement-pagination record-pages"><a asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-AllRecords="true" asp-route-RecordPageNumber="@(Math.Max(1, Model.RecordPageNumber - 1))">‹ Trước</a><b>@Model.RecordPageNumber/@Model.TotalRecordPages</b><a asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-AllRecords="true" asp-route-RecordPageNumber="@(Math.Min(Model.TotalRecordPages, Model.RecordPageNumber + 1))">Sau ›</a></nav>
+                    }
+                    else if (selectedBatch is not null)
+                    {
+                        <nav class="admin-settlement-pagination record-pages"><a asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-PageNumber="@Model.PageNumber" asp-route-BatchId="@selectedBatch.Id" asp-route-RecordPageNumber="@(Math.Max(1, Model.RecordPageNumber - 1))">‹ Trước</a><b>@Model.RecordPageNumber/@Model.TotalRecordPages</b><a asp-page="/Admin/Settlements/Index" asp-route-Filter="@Model.Filter" asp-route-Status="@Model.Status" asp-route-PageNumber="@Model.PageNumber" asp-route-BatchId="@selectedBatch.Id" asp-route-RecordPageNumber="@(Math.Min(Model.TotalRecordPages, Model.RecordPageNumber + 1))">Sau ›</a></nav>
+                    }
                 }
             </main>
         }

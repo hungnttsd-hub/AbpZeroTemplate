@@ -64,11 +64,12 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         var totalCount = await AsyncExecuter.CountAsync(query);
         var rows = await AsyncExecuter.ToListAsync(query.OrderByDescending(batch => batch.CreationTime)
             .Skip(input.SkipCount).Take(input.MaxResultCount));
-        var all = await _batches.GetListAsync();
+        var all = await AsyncExecuter.ToListAsync(query);
         return new AdminShopeeSettlementPageDto
         {
             Summary = new AdminShopeeSettlementSummaryDto
             {
+                TotalCount = all.Sum(batch => batch.RecordCount),
                 PendingCount = all.Sum(batch => batch.PendingCount),
                 PendingAmount = all.Sum(batch => batch.PendingPaidCommission),
                 ApprovedCount = all.Sum(batch => batch.ApprovedCount),
@@ -126,6 +127,61 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                         attributionsByOrder, users))
                     .ToList())
         };
+    }
+
+    public async Task<PagedResultDto<AdminShopeeSettlementRecordDto>> GetRecordsAsync(
+        AdminShopeeSettlementBatchListInput input, int skipCount = 0, int maxResultCount = 50)
+    {
+        var batches = await _batches.GetQueryableAsync();
+        if (!string.IsNullOrWhiteSpace(input.Filter))
+        {
+            var filter = input.Filter.Trim();
+            batches = batches.Where(batch => batch.OriginalFileName.Contains(filter) ||
+                batch.ContentHash.Contains(filter));
+        }
+        if (input.Status.HasValue) batches = batches.Where(batch => batch.Status == input.Status);
+        var records = await _records.GetQueryableAsync();
+        var query = from record in records
+            join batch in batches on record.BatchId equals batch.Id
+            select record;
+        var count = await AsyncExecuter.CountAsync(query);
+        var rows = await AsyncExecuter.ToListAsync(query
+            .OrderBy(record => record.Status == ShopeeSettlementRecordStatus.PendingApproval ? 0 : 1)
+            .ThenByDescending(record => record.CreationTime)
+            .ThenBy(record => record.ExternalOrderId).Skip(Math.Max(0, skipCount))
+            .Take(Math.Clamp(maxResultCount, 1, 200)));
+        var billIds = rows.Select(row => row.BillId).Distinct().ToList();
+        var bills = billIds.Count == 0
+            ? new Dictionary<Guid, ShopeeSettlementBill>()
+            : (await _bills.GetListAsync(bill => billIds.Contains(bill.Id))).ToDictionary(bill => bill.Id);
+        var orderIds = rows.Where(row => row.AffiliateOrderId.HasValue)
+            .Select(row => row.AffiliateOrderId!.Value).Distinct().ToList();
+        var detailItems = orderIds.Count == 0 ? new List<AffiliateOrderItem>() :
+            await _items.GetListAsync(item => orderIds.Contains(item.OrderId));
+        var productNamesByOrder = detailItems
+            .Where(item => !string.IsNullOrWhiteSpace(item.ProductName))
+            .GroupBy(item => item.OrderId)
+            .ToDictionary(group => group.Key, group => group.Select(item => item.ProductName!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList());
+        var detailItemIds = detailItems.Select(item => item.Id).ToList();
+        var detailAttributions = detailItemIds.Count == 0 ? new List<AffiliateOrderItemAttribution>() :
+            await _attributions.GetListAsync(attribution => detailItemIds.Contains(attribution.OrderItemId));
+        var orderByItem = detailItems.ToDictionary(item => item.Id, item => item.OrderId);
+        var attributionsByOrder = detailAttributions.Where(attribution =>
+                orderByItem.ContainsKey(attribution.OrderItemId))
+            .GroupBy(attribution => orderByItem[attribution.OrderItemId])
+            .ToDictionary(group => group.Key, group => group.ToList());
+        var userIds = detailAttributions.Where(attribution => attribution.UserId.HasValue)
+            .Select(attribution => attribution.UserId!.Value)
+            .Concat(rows.Where(row => row.UserId.HasValue).Select(row => row.UserId!.Value))
+            .Distinct().ToList();
+        var users = userIds.Count == 0
+            ? new Dictionary<Guid, IdentityUser>()
+            : (await _users.GetListAsync(user => userIds.Contains(user.Id))).ToDictionary(user => user.Id);
+        return new PagedResultDto<AdminShopeeSettlementRecordDto>(count,
+            rows.Select(row => MapRecord(row, bills[row.BillId], productNamesByOrder,
+                attributionsByOrder, users)).ToList());
     }
 
     [UnitOfWork]

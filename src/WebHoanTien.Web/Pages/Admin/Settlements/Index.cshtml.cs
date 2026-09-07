@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Volo.Abp;
+using Volo.Abp.Application.Dtos;
 using WebHoanTien.Admin;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Permissions;
@@ -21,14 +22,18 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)] public ShopeeSettlementBatchStatus? Status { get; set; }
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     [BindProperty(SupportsGet = true)] public Guid? BatchId { get; set; }
+    [BindProperty(SupportsGet = true)] public bool AllRecords { get; set; }
     [BindProperty(SupportsGet = true)] public int RecordPageNumber { get; set; } = 1;
 
     public AdminShopeeSettlementPageDto Data { get; private set; } = new();
     public AdminShopeeSettlementBatchDetailsDto? Details { get; private set; }
+    public PagedResultDto<AdminShopeeSettlementRecordDto>? Records { get; private set; }
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(Data.Batches.TotalCount / (double)BatchPageSize));
-    public int TotalRecordPages => Details is null
+    public int TotalRecordPages => Details is null && Records is null
         ? 1
-        : Math.Max(1, (int)Math.Ceiling(Details.Records.TotalCount / (double)RecordPageSize));
+        : Math.Max(1, (int)Math.Ceiling((AllRecords
+            ? Records!.TotalCount
+            : Details!.Records.TotalCount) / (double)RecordPageSize));
 
     public IndexModel(IAdminShopeeSettlementApprovalAppService settlements) => _settlements = settlements;
 
@@ -36,15 +41,22 @@ public class IndexModel : PageModel
     {
         PageNumber = Math.Max(1, PageNumber);
         RecordPageNumber = Math.Max(1, RecordPageNumber);
-        Data = await _settlements.GetListAsync(new AdminShopeeSettlementBatchListInput
+        var input = new AdminShopeeSettlementBatchListInput
         {
             Filter = Filter,
             Status = Status,
             SkipCount = (PageNumber - 1) * BatchPageSize,
             MaxResultCount = BatchPageSize
-        });
-        BatchId ??= Data.Batches.Items.Count > 0 ? Data.Batches.Items[0].Id : null;
-        if (BatchId.HasValue)
+        };
+        Data = await _settlements.GetListAsync(input);
+        if (AllRecords || !BatchId.HasValue)
+        {
+            AllRecords = true;
+            BatchId = null;
+            Records = await _settlements.GetRecordsAsync(input,
+                (RecordPageNumber - 1) * RecordPageSize, RecordPageSize);
+        }
+        if (!AllRecords && BatchId.HasValue)
             Details = await _settlements.GetAsync(BatchId.Value,
                 (RecordPageNumber - 1) * RecordPageSize, RecordPageSize);
     }
