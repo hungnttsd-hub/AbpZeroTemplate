@@ -16,6 +16,19 @@
         <article class="issues"><span>Chưa thể duyệt</span><strong>@Model.Data.Summary.IssueCount</strong><small>Chờ Shopee, không khớp hoặc sai trạng thái</small></article>
     </div>
 
+    <section class="admin-settlement-finance-report" aria-labelledby="settlement-finance-title">
+        <header>
+            <div><span>BÁO CÁO PHÂN BỔ HOA HỒNG</span><h2 id="settlement-finance-title">Thống kê theo bộ lọc</h2></div>
+            <p>Tính trên các đơn chờ duyệt và đã duyệt. Đơn đã duyệt dùng số tiền đã chốt; đơn chờ duyệt dùng số dự kiến.</p>
+        </header>
+        <div>
+            <article class="orders"><span>Số lượng đơn hàng</span><strong>@Model.Data.Summary.CommissionOrderCount</strong><small>Đơn tham gia tính hoa hồng</small></article>
+            <article class="actual"><span>Hoa hồng thực nhận</span><strong>@SettlementPageUi.Money(Model.Data.Summary.TotalActualCommission)</strong><small>Tổng tiền dùng để phân bổ</small></article>
+            <article class="user"><span>User nhận</span><strong>@SettlementPageUi.Money(Model.Data.Summary.TotalUserCommission)</strong><small>Đã nhận hoặc dự kiến nhận</small></article>
+            <article class="admin"><span>Admin nhận</span><strong>@SettlementPageUi.Money(Model.Data.Summary.TotalAdminCommission)</strong><small>Thực nhận trừ phần user</small></article>
+        </div>
+    </section>
+
     <form method="get" class="admin-settlement-filters">
         <label><span>Tìm batch</span><input asp-for="Filter" placeholder="Tên file hoặc SHA-256" /></label>
         <label><span>Trạng thái batch</span><select asp-for="Status"><option value="">Tất cả</option><option value="WaitingForShopee">Chờ Shopee thanh toán</option><option value="PendingApproval">Chờ duyệt</option><option value="PartiallyApproved">Đã duyệt một phần</option><option value="Approved">Đã duyệt</option><option value="CompletedWithIssues">Có cảnh báo</option></select></label>

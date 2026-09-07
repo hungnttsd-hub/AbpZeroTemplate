@@ -44,6 +44,80 @@
     overflow: hidden;
 }
 
+.admin-settlement-finance-report {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid #d5e2e6;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 24px rgba(3, 30, 69, .05);
+}
+
+.admin-settlement-finance-report > header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 14px;
+}
+
+.admin-settlement-finance-report > header span {
+    color: #068e94;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+
+.admin-settlement-finance-report > header h2 {
+    margin: 3px 0 0;
+    font-size: 18px;
+}
+
+.admin-settlement-finance-report > header p {
+    max-width: 610px;
+    margin: 0;
+    color: #687986;
+    font-size: 11px;
+    text-align: right;
+}
+
+.admin-settlement-finance-report > div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.admin-settlement-finance-report article {
+    min-width: 0;
+    padding: 13px 14px;
+    border-radius: 13px;
+    background: #f5f9fa;
+}
+
+.admin-settlement-finance-report article span,
+.admin-settlement-finance-report article strong,
+.admin-settlement-finance-report article small {
+    display: block;
+}
+
+.admin-settlement-finance-report article span,
+.admin-settlement-finance-report article small {
+    color: #687986;
+    font-size: 10px;
+}
+
+.admin-settlement-finance-report article strong {
+    overflow-wrap: anywhere;
+    margin: 5px 0 3px;
+    color: #031e45;
+    font-size: 20px;
+}
+
+.admin-settlement-finance-report .orders { border-top: 3px solid #315066; }
+.admin-settlement-finance-report .actual { border-top: 3px solid #075b81; }
+.admin-settlement-finance-report .user { border-top: 3px solid #068e94; }
+.admin-settlement-finance-report .admin { border-top: 3px solid #f8b722; }
+
 .admin-settlement-batch > em.waitingforshopee,
 .admin-settlement-status.awaitingshopeepayment {
     background: #fff2c8;
@@ -144,5 +218,19 @@
     .admin-settlement-context > div + div {
         border-top: 1px solid #e2ebee;
         border-left: 0;
+    }
+
+    .admin-settlement-finance-report > header {
+        align-items: start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .admin-settlement-finance-report > header p {
+        text-align: left;
+    }
+
+    .admin-settlement-finance-report > div {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

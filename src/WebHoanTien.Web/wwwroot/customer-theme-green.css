@@ -340,16 +340,19 @@ textarea { font-family: var(--catback-font-family); }
   body:has(.customer-dashboard) .site-header .site-navigation { display: none; }
   body:has(.customer-dashboard) .site-header .header-actions { margin: 0; pointer-events: auto; }
   body:has(.customer-dashboard) .login-button {
-    width: 38px;
+    width: auto;
+    min-width: 86px;
     min-height: 38px;
-    padding: 0;
-    border-radius: 50%;
-    font-size: 0;
+    padding: 0 13px;
+    border-radius: 999px;
+    background: rgba(252, 252, 253, .16);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, .16);
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
   }
   body:has(.customer-dashboard) .login-button::after {
-    content: "↗";
-    font-size: 16px;
-    font-weight: 800;
+    content: none;
   }
 
   .site-header .brand-mark { width: 44px; height: 44px; }
@@ -360,7 +363,7 @@ textarea { font-family: var(--catback-font-family); }
     grid-template-columns: clamp(72px, 23vw, 92px) minmax(0, 1fr);
     justify-content: stretch;
     gap: clamp(7px, 2vw, 10px);
-    padding-right: calc(clamp(90px, 25vw, 104px) + env(safe-area-inset-right));
+    padding-right: calc(clamp(102px, 28vw, 112px) + env(safe-area-inset-right));
   }
   .dashboard-hero-copy > div { width: 100%; min-width: 0; }
   .dashboard-hero-mascot { width: 100%; height: auto; aspect-ratio: 1; min-width: 0; flex-basis: auto; }
@@ -430,7 +433,7 @@ textarea { font-family: var(--catback-font-family); }
   .dashboard-hero-copy {
     grid-template-columns: clamp(66px, 21vw, 80px) minmax(0, 1fr);
     gap: 7px;
-    padding-right: calc(86px + env(safe-area-inset-right));
+    padding-right: calc(98px + env(safe-area-inset-right));
   }
   .dashboard-hero-copy h1 { font-size: clamp(12.5px, 4vw, 14.5px); letter-spacing: -.035em; }
   .dashboard-trust-badge { padding: 5px 7px; font-size: clamp(7.5px, 2.25vw, 8.5px); }
@@ -452,8 +455,9 @@ textarea { font-family: var(--catback-font-family); }
   .dashboard-hero-copy {
     grid-template-columns: clamp(62px, 21vw, 72px) minmax(0, 1fr);
     gap: 6px;
-    padding-right: calc(80px + env(safe-area-inset-right));
+    padding-right: calc(90px + env(safe-area-inset-right));
   }
+  body:has(.customer-dashboard) .login-button { min-width: 78px; padding-right: 10px; padding-left: 10px; }
   .dashboard-hero-copy h1 { font-size: clamp(12px, 3.9vw, 13px); }
   .dashboard-trust-badge { min-height: 27px; padding: 4px 6px; font-size: 7.5px; }
 }

@@ -65,17 +65,22 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         var rows = await AsyncExecuter.ToListAsync(query.OrderByDescending(batch => batch.CreationTime)
             .Skip(input.SkipCount).Take(input.MaxResultCount));
         var all = await AsyncExecuter.ToListAsync(query);
+        var financial = await BuildFinancialSummaryAsync(query);
         return new AdminShopeeSettlementPageDto
         {
             Summary = new AdminShopeeSettlementSummaryDto
             {
                 TotalCount = all.Sum(batch => batch.RecordCount),
+                CommissionOrderCount = financial.OrderCount,
                 PendingCount = all.Sum(batch => batch.PendingCount),
                 PendingAmount = all.Sum(batch => batch.PendingPaidCommission),
                 ApprovedCount = all.Sum(batch => batch.ApprovedCount),
                 ApprovedAmount = all.Sum(batch => batch.ApprovedPaidCommission),
                 IssueCount = all.Sum(batch => batch.UnmatchedCount + batch.AlreadySettledCount +
-                    batch.InvalidCount + batch.WaitingPaymentCount)
+                    batch.InvalidCount + batch.WaitingPaymentCount),
+                TotalActualCommission = financial.ActualCommission,
+                TotalUserCommission = financial.UserCommission,
+                TotalAdminCommission = financial.AdminCommission
             },
             Batches = new PagedResultDto<AdminShopeeSettlementBatchDto>(totalCount,
                 rows.Select(MapBatch).ToList())
@@ -672,6 +677,9 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
 
     private sealed record SettlementRecipient(Guid UserId, decimal UserCommission);
 
+    private sealed record SettlementFinancialSummary(int OrderCount, decimal ActualCommission,
+        decimal UserCommission, decimal AdminCommission);
+
     private sealed record SettlementAllocationPlan(List<SettlementAllocation> Allocations,
         List<SettlementRecipient> Recipients, int UnmatchedCount);
 
@@ -689,6 +697,44 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             .Where(x => orderByItem.ContainsKey(x.OrderItemId))
             .GroupBy(x => orderByItem[x.OrderItemId])
             .ToDictionary(group => group.Key, group => group.ToList());
+    }
+
+    private async Task<SettlementFinancialSummary> BuildFinancialSummaryAsync(
+        IQueryable<ShopeeSettlementBatch> batches)
+    {
+        var records = await _records.GetQueryableAsync();
+        var eligibleQuery = from record in records
+            join batch in batches on record.BatchId equals batch.Id
+            where record.Status == ShopeeSettlementRecordStatus.PendingApproval ||
+                  record.Status == ShopeeSettlementRecordStatus.Approved
+            select record;
+        var eligible = await AsyncExecuter.ToListAsync(eligibleQuery);
+        if (eligible.Count == 0) return new SettlementFinancialSummary(0, 0m, 0m, 0m);
+
+        var billIds = eligible.Select(record => record.BillId).Distinct().ToList();
+        var bills = (await _bills.GetListAsync(bill => billIds.Contains(bill.Id)))
+            .ToDictionary(bill => bill.Id);
+        var orderIds = eligible.Where(record => record.AffiliateOrderId.HasValue)
+            .Select(record => record.AffiliateOrderId!.Value).Distinct().ToList();
+        var attributionsByOrder = await LoadAttributionsByOrderAsync(orderIds);
+        decimal actualCommission = 0m;
+        decimal userCommission = 0m;
+        foreach (var record in eligible)
+        {
+            var paidCommission = EffectivePaidCommission(record, bills[record.BillId]);
+            var recordUserCommission = record.Status == ShopeeSettlementRecordStatus.Approved
+                ? record.ApprovedUserCommission
+                : record.AffiliateOrderId.HasValue
+                    ? BuildAllocationPlan(paidCommission, attributionsByOrder.GetValueOrDefault(
+                        record.AffiliateOrderId.Value, new List<AffiliateOrderItemAttribution>()))
+                        ?.Recipients.Sum(recipient => recipient.UserCommission) ?? 0m
+                    : 0m;
+            actualCommission += paidCommission;
+            userCommission += Math.Min(paidCommission, Math.Max(0m, recordUserCommission));
+        }
+
+        return new SettlementFinancialSummary(eligible.Count, actualCommission, userCommission,
+            Math.Max(0m, actualCommission - userCommission));
     }
 
     private SettlementAllocationPlan? BuildAllocationPlan(decimal actualPaidCommission,

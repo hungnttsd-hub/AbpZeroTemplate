@@ -17,11 +17,15 @@ public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRe
 public sealed class AdminShopeeSettlementSummaryDto
 {
     public int TotalCount { get; set; }
+    public int CommissionOrderCount { get; set; }
     public int PendingCount { get; set; }
     public decimal PendingAmount { get; set; }
     public int ApprovedCount { get; set; }
     public decimal ApprovedAmount { get; set; }
     public int IssueCount { get; set; }
+    public decimal TotalActualCommission { get; set; }
+    public decimal TotalUserCommission { get; set; }
+    public decimal TotalAdminCommission { get; set; }
 }
 
 public sealed class AdminShopeeSettlementBatchDto : CreationAuditedEntityDto<Guid>
