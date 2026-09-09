@@ -1,4 +1,4 @@
-# Settlement sync specification v0.7.4
+# Settlement sync specification v0.7.6
 
 ## Boundary
 
@@ -11,13 +11,15 @@
 
 - Chỉ một luồng conversion/settlement được chạy tại một thời điểm.
 - Các request chi tiết Shopee chạy tuần tự và nghỉ ngẫu nhiên 1,8–3,2 giây sau khi request trước hoàn tất.
-- GET gặp `408`, `425`, `429` hoặc `5xx` được retry tối đa ba lần bằng exponential backoff; `Retry-After` được ưu tiên nếu Shopee gửi về và `429` luôn chờ tối thiểu 30 giây.
+- Request đọc dữ liệu gặp `408`, `425`, `429` hoặc `5xx` được retry tối đa ba lần bằng exponential backoff; `Retry-After` được ưu tiên nếu Shopee gửi về và `429` luôn chờ tối thiểu 30 giây.
 
 ## Collection and admin approval
 
 Mọi bill có `validation_id` hợp lệ trong response `billing_list` đều được đưa vào báo cáo. Các mã trạng thái, `payout_id` và `payment_completed_time` được giữ nguyên để admin tham khảo; quyền quyết định duyệt không bị khóa theo trạng thái Shopee.
 
 Bill có adjustment, clawback, bonus settlement, PPP hoặc cumulative payment vẫn được lưu và hiển thị cảnh báo. Quá trình tổng hợp vẫn fail closed nếu trang conversion thiếu/trùng `checkout_id`, tổng nguồn lệch quá `max(1 VND, 0.01%)`, hoặc số checkout vượt 10.000. Mỗi order bắt buộc có `order_sn`.
+
+Bill đã có `payout_id` được đối chiếu thêm bằng GraphQL `payoutDetail`. Tool fail closed nếu `payout_id`, affiliate, validation, tổng sau phí dịch vụ (`billCommissionAmount`), tổng thuế và tổng thực nhận do Shopee trả về không cân bằng. Không suy ra thuế từ `payable_total_commission_amount = 0` của bill Pending.
 
 ## Mapping
 
@@ -28,11 +30,13 @@ Bill có adjustment, clawback, bonus settlement, PPP hoặc cumulative payment v
 - Tổng authoritative của bill:
   - eligible: `eligible_total_commission_amount`
   - sau phí dịch vụ: `bill_commission_amount`
-  - thực trả sau thuế: `payable_total_commission_amount` khi Shopee đã hoàn tất thanh toán; với bill Pending dùng `bill_commission_amount` làm giá trị đối soát và thuế bằng 0
-- Phí dịch vụ và thuế được phân bổ riêng, theo tỷ trọng đơn và làm tròn 4 chữ số thập phân với residual deterministic.
+  - bill đã thanh toán: thực trả sau thuế lấy từ `payable_total_commission_amount`
+  - bill Pending đã có `payout_id`: tổng thuế và thực nhận lấy từ `paymentPayout.taxTotalAmount` và `paymentPayout.totalPaymentAmount` của `payoutDetail`
+  - bill chưa có `payout_id`: chưa có thuế kỳ thanh toán để phân bổ, nên thuế bằng 0
+- Tổng thuế được phân bổ deterministic cho các validation trong cùng `payout_id` theo `eligibleTotalCommissionAmount`, rồi phân bổ xuống order theo số tiền sau phí. Phí dịch vụ và thuế đều làm tròn 4 chữ số thập phân và giữ residual để tổng cuối cùng khớp tuyệt đối với Shopee.
 
 ## Canonical CSV columns
 
 `schema_version, source_affiliate_id, validation_id, payout_id, payment_completed_at_utc, order_completed_from_utc, order_completed_to_utc, payment_status, validation_payout_status, overall_validation_status, bill_validation_status, settlement_cycle, has_adjustment, has_clawback, is_cumulative, has_bonus, has_ppp, bill_eligible_commission, bill_after_service_fee, bill_paid_commission, order_id, order_eligible_commission, allocated_service_fee, allocated_tax, actual_paid_commission`
 
-Một file có thể chứa nhiều validation. Mỗi validation tự cân bằng các tổng của nó; không dùng tổng chung làm denominator.
+Một file có thể chứa nhiều validation. Phí dịch vụ tự cân bằng trong từng validation; thuế của bill Pending cân bằng ở cấp `payout_id` trước rồi mới được chia xuống validation và order.

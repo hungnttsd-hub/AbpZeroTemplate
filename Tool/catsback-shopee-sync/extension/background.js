@@ -933,9 +933,29 @@ async function collectShopeeSettlementRowsInPage() {
   const RATE_LIMIT_BACKOFF_BASE_MS = 30000;
   const RETRY_BACKOFF_MAX_MS = 60000;
   const RETRY_AFTER_MAX_MS = 10 * 60 * 1000;
+  const PAYOUT_DETAIL_QUERY = `
+    query PayoutDetailQuery($payoutId: String) {
+      payoutDetail(payoutId: $payoutId) {
+        paymentPayout {
+          affiliateId
+          payoutId
+          taxTotalAmount
+          totalPaymentAmount
+        }
+        payoutValidationInfo {
+          billCommissionAmount
+          validation {
+            validationId
+            eligibleTotalCommissionAmount
+          }
+        }
+      }
+    }
+  `;
   let nextShopeeRequestAt = 0;
   let shopeeRequestCount = 0;
   let shopeeRetryCount = 0;
+  let shopeeCsrfToken = "";
 
   try {
     if (location.hostname !== "affiliate.shopee.vn") {
@@ -971,6 +991,7 @@ async function collectShopeeSettlementRowsInPage() {
     const validationSummaries = [...validations.values()].sort((left, right) =>
       summaryTimestamp(left) - summaryTimestamp(right));
     const rows = [];
+    const payoutTaxAllocations = new Map();
 
     for (const summary of validationSummaries) {
       const validationId = String(summary.validation_id);
@@ -1019,11 +1040,7 @@ async function collectShopeeSettlementRowsInPage() {
       const afterServiceRaw = moneyRaw(bill.bill_commission_amount, "bill_commission_amount");
       const providerPaidRaw = moneyRaw(bill.payable_total_commission_amount, "payable_total_commission_amount");
       const providerPaymentCompleted = paymentStatus === 4 && validationPayoutStatus === 2 && paidAt !== null;
-      // Shopee trả payable_total_commission_amount = 0 khi bill còn Pending. Số 0 đó chưa phải
-      // tiền sau thuế, vì vậy không được biến toàn bộ bill_commission_amount thành thuế.
-      const taxRaw = providerPaymentCompleted ? afterServiceRaw - providerPaidRaw : 0;
-      const settlementRaw = afterServiceRaw - taxRaw;
-      if (eligibleRaw < afterServiceRaw || taxRaw < 0 || settlementRaw < 0) {
+      if (eligibleRaw < afterServiceRaw || (providerPaymentCompleted && providerPaidRaw > afterServiceRaw)) {
         throw new Error(`Bảng kê ${validationId}: tổng tiền sau phí hoặc sau thuế không hợp lệ.`);
       }
 
@@ -1043,11 +1060,26 @@ async function collectShopeeSettlementRowsInPage() {
 
       const eligibleUnits = rawToOutputUnits(eligibleRaw);
       const afterServiceUnits = rawToOutputUnits(afterServiceRaw);
-      const paidUnits = rawToOutputUnits(settlementRaw);
+      let validationTaxUnits = 0;
+      if (providerPaymentCompleted) {
+        validationTaxUnits = afterServiceUnits - rawToOutputUnits(providerPaidRaw);
+      } else if (payoutId) {
+        validationTaxUnits = await getPayoutTaxUnits(
+          payoutId,
+          validationId,
+          sourceAffiliateId,
+          eligibleRaw,
+          payoutTaxAllocations
+        );
+      }
+      if (validationTaxUnits < 0 || validationTaxUnits > afterServiceUnits) {
+        throw new Error(`Bảng kê ${validationId}: thuế phân bổ từ kỳ thanh toán không hợp lệ.`);
+      }
+      const paidUnits = afterServiceUnits - validationTaxUnits;
       const orderEligibleUnits = allocateUnits(eligibleUnits, orderWeights.map(order => order.weightRaw));
       const feeUnits = allocateUnits(eligibleUnits - afterServiceUnits, orderEligibleUnits, orderEligibleUnits);
       const afterFeeCapacities = orderEligibleUnits.map((value, index) => value - feeUnits[index]);
-      const taxUnits = allocateUnits(afterServiceUnits - paidUnits, afterFeeCapacities, afterFeeCapacities);
+      const taxUnits = allocateUnits(validationTaxUnits, afterFeeCapacities, afterFeeCapacities);
 
       for (let index = 0; index < orderWeights.length; index++) {
         const orderEligible = orderEligibleUnits[index];
@@ -1153,9 +1185,124 @@ async function collectShopeeSettlementRowsInPage() {
     return Number.isFinite(number) && Number.isSafeInteger(number) ? number : null;
   }
 
+  async function getPayoutTaxUnits(payoutId, validationId, sourceAffiliateId, eligibleRaw, cache) {
+    let allocation = cache.get(payoutId);
+    if (!allocation) {
+      const payload = await apiPostGraphql("payoutDetail", PAYOUT_DETAIL_QUERY, { payoutId });
+      const detail = payload?.data?.payoutDetail;
+      const paymentPayout = detail?.paymentPayout;
+      const payoutValidationInfo = detail?.payoutValidationInfo;
+      if (!paymentPayout || !payoutValidationInfo) {
+        throw new Error(`Kỳ thanh toán ${payoutId}: Shopee không trả về chi tiết thuế.`);
+      }
+      if (String(paymentPayout.payoutId ?? "").trim() !== payoutId) {
+        throw new Error(`Kỳ thanh toán ${payoutId}: Shopee trả về sai payout_id.`);
+      }
+      const payoutAffiliateId = String(paymentPayout.affiliateId ?? "").trim();
+      if (payoutAffiliateId && payoutAffiliateId !== sourceAffiliateId) {
+        throw new Error(`Kỳ thanh toán ${payoutId}: affiliate_id không khớp bảng kê.`);
+      }
+
+      const validationItems = Array.isArray(payoutValidationInfo.validation)
+        ? payoutValidationInfo.validation
+        : [];
+      if (validationItems.length === 0) {
+        throw new Error(`Kỳ thanh toán ${payoutId}: không có danh sách bảng kê để phân bổ thuế.`);
+      }
+      const seenValidationIds = new Set();
+      const entries = validationItems.map(item => {
+        const id = String(item?.validationId ?? "").trim();
+        if (!/^\d+$/.test(id) || seenValidationIds.has(id)) {
+          throw new Error(`Kỳ thanh toán ${payoutId}: validation_id thiếu hoặc bị trùng.`);
+        }
+        seenValidationIds.add(id);
+        return {
+          validationId: id,
+          eligibleRaw: moneyRaw(
+            item?.eligibleTotalCommissionAmount,
+            `Kỳ thanh toán ${payoutId}: eligibleTotalCommissionAmount`
+          )
+        };
+      }).sort((left, right) => left.validationId.localeCompare(right.validationId, "en"));
+
+      const payoutTaxUnits = rawToOutputUnits(
+        moneyRaw(paymentPayout.taxTotalAmount, `Kỳ thanh toán ${payoutId}: taxTotalAmount`)
+      );
+      const payoutBeforeTaxUnits = rawToOutputUnits(
+        moneyRaw(payoutValidationInfo.billCommissionAmount, `Kỳ thanh toán ${payoutId}: billCommissionAmount`)
+      );
+      const payoutPaidUnits = rawToOutputUnits(
+        moneyRaw(paymentPayout.totalPaymentAmount, `Kỳ thanh toán ${payoutId}: totalPaymentAmount`)
+      );
+      if (payoutBeforeTaxUnits - payoutTaxUnits !== payoutPaidUnits) {
+        throw new Error(
+          `Kỳ thanh toán ${payoutId}: tổng sau phí ${formatUnits(payoutBeforeTaxUnits)}, ` +
+          `thuế ${formatUnits(payoutTaxUnits)}, thực nhận ${formatUnits(payoutPaidUnits)} không cân bằng.`
+        );
+      }
+
+      const allocated = allocateUnits(
+        payoutTaxUnits,
+        entries.map(entry => entry.eligibleRaw),
+        entries.map(entry => rawToOutputUnits(entry.eligibleRaw))
+      );
+      allocation = new Map(entries.map((entry, index) => [entry.validationId, {
+        eligibleRaw: entry.eligibleRaw,
+        taxUnits: allocated[index]
+      }]));
+      cache.set(payoutId, allocation);
+    }
+
+    const validationAllocation = allocation.get(validationId);
+    if (!validationAllocation) {
+      throw new Error(`Kỳ thanh toán ${payoutId}: không chứa bảng kê ${validationId}.`);
+    }
+    const tolerance = Math.max(MONEY_SCALE, Math.abs(eligibleRaw) * 0.0001);
+    if (Math.abs(validationAllocation.eligibleRaw - eligibleRaw) > tolerance) {
+      throw new Error(`Bảng kê ${validationId}: tổng hợp lệ không khớp chi tiết kỳ thanh toán ${payoutId}.`);
+    }
+    return validationAllocation.taxUnits;
+  }
+
   async function apiGet(path, query) {
     const url = new URL(path, location.origin);
     for (const [key, value] of Object.entries(query || {})) url.searchParams.set(key, value);
+    const payload = await requestJson(url, path, {
+      method: "GET",
+      headers: { Accept: "application/json, text/plain, */*" }
+    });
+    if (Number(payload?.code ?? -1) !== 0) {
+      throw new Error(`Shopee API ${path} lỗi: ${String(payload?.msg || payload?.message || payload?.code || "unknown")}`);
+    }
+    return payload;
+  }
+
+  async function apiPostGraphql(queryName, query, variables) {
+    const url = new URL("/api/v3/gql", location.origin);
+    url.searchParams.set("q", queryName);
+    const headers = {
+      Accept: "application/json, text/plain, */*",
+      "Content-Type": "application/json",
+      "Affiliate-Program-Type": "1"
+    };
+    if (shopeeCsrfToken) headers["CSRF-token"] = shopeeCsrfToken;
+    const payload = await requestJson(url, `GraphQL ${queryName}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        operationName: "PayoutDetailQuery",
+        query,
+        variables
+      })
+    });
+    const graphError = Array.isArray(payload?.errors) ? payload.errors[0] : null;
+    if (graphError || !payload?.data) {
+      throw new Error(`Shopee GraphQL ${queryName} lỗi: ${String(graphError?.message || "không có dữ liệu")}`);
+    }
+    return payload;
+  }
+
+  async function requestJson(url, apiName, requestOptions) {
     let lastFailure = "";
 
     for (let attempt = 0; attempt < REQUEST_MAX_ATTEMPTS; attempt++) {
@@ -1164,16 +1311,15 @@ async function collectShopeeSettlementRowsInPage() {
       try {
         shopeeRequestCount += 1;
         response = await fetch(url.toString(), {
-          method: "GET",
           credentials: "include",
-          headers: { Accept: "application/json, text/plain, */*" },
-          cache: "no-store"
+          cache: "no-store",
+          ...requestOptions
         });
       } catch (error) {
         lastFailure = error?.message || String(error);
         scheduleNextShopeeRequest();
         if (attempt + 1 >= REQUEST_MAX_ATTEMPTS) {
-          throw new Error(`Shopee API ${path} không kết nối được sau ${REQUEST_MAX_ATTEMPTS} lần: ${lastFailure}`);
+          throw new Error(`Shopee API ${apiName} không kết nối được sau ${REQUEST_MAX_ATTEMPTS} lần: ${lastFailure}`);
         }
         shopeeRetryCount += 1;
         postponeNextShopeeRequest(retryBackoffMs(attempt));
@@ -1187,20 +1333,20 @@ async function collectShopeeSettlementRowsInPage() {
         postponeNextShopeeRequest(Math.max(retryAfter, retryBackoffMs(attempt, response.status)));
         continue;
       }
-      if (!response.ok) throw new Error(`Shopee API ${path} trả về HTTP ${response.status}.`);
+      if (!response.ok) throw new Error(`Shopee API ${apiName} trả về HTTP ${response.status}.`);
+
+      const csrfToken = response.headers.get("csrf-token");
+      if (csrfToken) shopeeCsrfToken = csrfToken;
 
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.toLowerCase().includes("json")) {
         throw new Error("Phiên đăng nhập Shopee đã hết hạn. Hãy đăng nhập lại rồi chạy lại tool.");
       }
       const payload = await response.json();
-      if (Number(payload?.code ?? -1) !== 0) {
-        throw new Error(`Shopee API ${path} lỗi: ${String(payload?.msg || payload?.message || payload?.code || "unknown")}`);
-      }
       return payload;
     }
 
-    throw new Error(`Shopee API ${path} thất bại: ${lastFailure || "unknown"}.`);
+    throw new Error(`Shopee API ${apiName} thất bại: ${lastFailure || "unknown"}.`);
   }
 
   async function waitForShopeeRequestSlot() {
