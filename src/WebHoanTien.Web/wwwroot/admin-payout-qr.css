@@ -1,0 +1,13 @@
+.admin-payout-qr { margin: 18px 0; padding: 18px; border: 1px solid #d5e4ec; border-radius: 16px; background: #f7fbfc; }
+.admin-payout-qr h3 { margin: 0 0 16px; font-size: 14px; color: #006d77; }
+.admin-payout-qr-body { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 24px; align-items: center; }
+.admin-payout-qr-image { text-align: center; min-width: 0; }
+.admin-payout-qr-image img { width: 260px; max-width: 100%; height: auto; background: white; }
+.admin-payout-qr-image [hidden] { display: none; }
+.admin-payout-qr p { font-size: 13px; }
+.admin-payout-qr dl { margin: 0; }
+.admin-payout-qr dt { margin-top: 10px; font-size: 12px; color: #65798b; }
+.admin-payout-qr dd { margin: 4px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+.admin-payout-qr .admin-payout-transfer-content { flex-wrap: wrap; }
+.admin-payout-qr code { overflow-wrap: anywhere; white-space: normal; }
+@media (max-width: 600px) { .admin-payout-qr-body { grid-template-columns: minmax(0, 1fr); gap: 12px; } .admin-payout-qr { padding: 14px; } }

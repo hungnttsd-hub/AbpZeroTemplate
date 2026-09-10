@@ -2,6 +2,25 @@ window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
     const money = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
     const toast = document.querySelector("[data-admin-payout-toast]");
 
+    document.querySelectorAll('[data-payout-qr] img[data-qr-src]').forEach(image => {
+        const status = image.closest('[data-payout-qr]').querySelector('[data-qr-status]');
+        let finished = false;
+        const finish = success => {
+            if (finished || signal.aborted) return;
+            finished = true;
+            window.clearTimeout(timer);
+            image.hidden = !success;
+            status.hidden = success;
+            if (!success) status.textContent = 'Không thể tải mã QR. Bạn vẫn có thể chuyển khoản thủ công.';
+        };
+        const timer = window.setTimeout(() => finish(false), 20000);
+        image.addEventListener('load', () => finish(image.naturalWidth > 0), { signal });
+        image.addEventListener('error', () => finish(false), { signal });
+        signal.addEventListener('abort', () => window.clearTimeout(timer), { once: true });
+        if (image.getAttribute('src') !== image.dataset.qrSrc) image.src = image.dataset.qrSrc;
+        if (image.complete && image.getAttribute('src')) finish(image.naturalWidth > 0);
+    });
+
     function notify(message, error) {
         if (!toast) return;
         toast.textContent = message;
@@ -148,6 +167,7 @@ window.CatBackSpa.mount('admin-payouts', ({ signal }) => {
                 addResultLine(result, "Lý do", payload.request.rejectionReason);
             }
             item.querySelector("[data-payout-actions]")?.remove();
+            item.querySelector("[data-payout-qr]")?.remove();
             item.querySelector(".admin-payout-transfer-content")?.remove();
             item.querySelector(".admin-payout-warning")?.remove();
             updateSummary(item, nextStatus);
