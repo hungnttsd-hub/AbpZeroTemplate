@@ -1033,14 +1033,15 @@ async function collectShopeeSettlementRowsInPage() {
         `Bảng kê ${validationId}: thiếu ngày bắt đầu hoàn thành đơn.`);
       const completedTo = positiveTimestamp(bill.order_completed_period_end_time,
         `Bảng kê ${validationId}: thiếu ngày kết thúc hoàn thành đơn.`);
-      const paidAt = optionalPositiveTimestamp(summary.payment_completed_time ?? bill.payment_completed_time);
+      // The freshly fetched detail takes precedence, including an explicit zero (pending).
+      const paidAt = optionalPositiveTimestamp(bill.payment_completed_time ?? summary.payment_completed_time);
       if (completedTo < completedFrom) throw new Error(`Bảng kê ${validationId}: khoảng ngày hoàn thành đơn không hợp lệ.`);
 
       const eligibleRaw = moneyRaw(bill.eligible_total_commission_amount, "eligible_total_commission_amount");
       const afterServiceRaw = moneyRaw(bill.bill_commission_amount, "bill_commission_amount");
       const providerPaidRaw = moneyRaw(bill.payable_total_commission_amount, "payable_total_commission_amount");
-      const providerPaymentCompleted = paymentStatus === 4 && validationPayoutStatus === 2 && paidAt !== null;
-      if (eligibleRaw < afterServiceRaw || (providerPaymentCompleted && providerPaidRaw > afterServiceRaw)) {
+      const providerPaymentCompleted = paidAt !== null;
+      if (eligibleRaw < afterServiceRaw || (!payoutId && providerPaymentCompleted && providerPaidRaw > afterServiceRaw)) {
         throw new Error(`Bảng kê ${validationId}: tổng tiền sau phí hoặc sau thuế không hợp lệ.`);
       }
 
@@ -1061,9 +1062,9 @@ async function collectShopeeSettlementRowsInPage() {
       const eligibleUnits = rawToOutputUnits(eligibleRaw);
       const afterServiceUnits = rawToOutputUnits(afterServiceRaw);
       let validationTaxUnits = 0;
-      if (providerPaymentCompleted) {
-        validationTaxUnits = afterServiceUnits - rawToOutputUnits(providerPaidRaw);
-      } else if (payoutId) {
+      // Daily bills can retain a zero payable amount even after payment. Keep using
+      // the reconciled payout tax allocation independently of payment status.
+      if (payoutId) {
         validationTaxUnits = await getPayoutTaxUnits(
           payoutId,
           validationId,
@@ -1071,6 +1072,8 @@ async function collectShopeeSettlementRowsInPage() {
           eligibleRaw,
           payoutTaxAllocations
         );
+      } else if (providerPaymentCompleted) {
+        validationTaxUnits = afterServiceUnits - rawToOutputUnits(providerPaidRaw);
       }
       if (validationTaxUnits < 0 || validationTaxUnits > afterServiceUnits) {
         throw new Error(`Bảng kê ${validationId}: thuế phân bổ từ kỳ thanh toán không hợp lệ.`);
@@ -1532,6 +1535,10 @@ async function collectShopeeSettlementRowsInPage() {
 
   function optionalPositiveTimestamp(value) {
     const number = rawNumber(value ?? 0, "timestamp");
+    if (number < 0 || !Number.isSafeInteger(number) ||
+        !Number.isFinite(new Date(number * 1000).getTime())) {
+      throw new Error("Thời gian thanh toán Shopee không hợp lệ. Không tạo báo cáo.");
+    }
     return number > 0 ? number : null;
   }
 

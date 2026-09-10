@@ -29,9 +29,9 @@ public class ShopeeSettlementBill : CreationAuditedAggregateRoot<Guid>
     public bool IsCumulative { get; private set; }
     public bool HasBonus { get; private set; }
     public bool HasPpp { get; private set; }
-    public bool IsShopeePaid => PaymentStatus == 4 && ValidationPayoutStatus == 2 &&
-        !string.IsNullOrWhiteSpace(PayoutId) && PaidAt.HasValue &&
-        !HasAdjustment && !HasClawback && !IsCumulative && !HasBonus && !HasPpp;
+    // Raw bill status codes also describe payout creation, not payment completion.
+    // Adjustments and approval eligibility are separate from Shopee's payment state.
+    public bool IsShopeePaid => PaidAt.HasValue && PaidAt.Value > DateTime.UnixEpoch;
 
     protected ShopeeSettlementBill() { }
 

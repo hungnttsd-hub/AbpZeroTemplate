@@ -1,4 +1,4 @@
-# Settlement sync specification v0.7.6
+# Settlement sync specification v0.7.7
 
 ## Boundary
 
@@ -24,15 +24,16 @@ Bill đã có `payout_id` được đối chiếu thêm bằng GraphQL `payoutDe
 ## Mapping
 
 - `validation_id` lấy từ `billing_list`, sau đó dùng làm query của `billing_detail`.
+- Thanh toán được xác định bằng `payment_completed_time` hợp lệ > 0; 0/trống là chờ xử lý. Ưu tiên detail vừa lấy, fallback list khi detail không có trường. Không dùng mã `payment_status`/`validation_payout_status` hay các cờ điều chỉnh để suy ra đã trả. Lỗi request/ngày không hợp lệ phải dừng tổng hợp.
 - Danh sách đơn lấy từ `validation_detail/v2` bằng khoảng `order_completed_period_start_time/end_time` của bill và đối chiếu `affiliate_id`.
 - Mã đơn ưu tiên `order_sn`, fallback `order_id`.
 - Hoa hồng checkout lấy từ `affiliate_net_commission` và phân bổ cho các order theo tổng `item_commission + capped_brand_commission`.
 - Tổng authoritative của bill:
   - eligible: `eligible_total_commission_amount`
   - sau phí dịch vụ: `bill_commission_amount`
-  - bill đã thanh toán: thực trả sau thuế lấy từ `payable_total_commission_amount`
-  - bill Pending đã có `payout_id`: tổng thuế và thực nhận lấy từ `paymentPayout.taxTotalAmount` và `paymentPayout.totalPaymentAmount` của `payoutDetail`
-  - bill chưa có `payout_id`: chưa có thuế kỳ thanh toán để phân bổ, nên thuế bằng 0
+  - bill đã có `payout_id`, dù đã trả hay đang xử lý: tổng thuế và thực nhận lấy từ `paymentPayout.taxTotalAmount` và `paymentPayout.totalPaymentAmount` của `payoutDetail`
+  - bill đã thanh toán chưa có `payout_id` (luồng cũ): thực trả sau thuế lấy từ `payable_total_commission_amount`
+  - bill chưa thanh toán và chưa có `payout_id`: chưa có thuế kỳ thanh toán để phân bổ, nên thuế bằng 0
 - Tổng thuế được phân bổ deterministic cho các validation trong cùng `payout_id` theo `eligibleTotalCommissionAmount`, rồi phân bổ xuống order theo số tiền sau phí. Phí dịch vụ và thuế đều làm tròn 4 chữ số thập phân và giữ residual để tổng cuối cùng khớp tuyệt đối với Shopee.
 
 ## Canonical CSV columns

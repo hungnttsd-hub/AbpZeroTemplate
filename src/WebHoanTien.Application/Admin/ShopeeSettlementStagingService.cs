@@ -380,6 +380,9 @@ public class ShopeeSettlementStagingService : ITransientDependency
     private static void EnsureCanUpdate(ShopeeSettlementBill existingBill,
         IReadOnlyCollection<ShopeeSettlementRecord> existingRows, NormalizedBill inputBill)
     {
+        if (existingBill.IsShopeePaid &&
+            (!inputBill.PaidAt.HasValue || inputBill.PaidAt.Value <= DateTime.UnixEpoch))
+            throw Invalid($"Bảng kê {inputBill.ValidationId} đã có thời gian thanh toán. File mới thiếu thời gian này; hãy tổng hợp lại từ Shopee.");
         var existingOrderIds = existingRows.Select(row => row.ExternalOrderId).ToHashSet(StringComparer.Ordinal);
         var inputOrderIds = inputBill.Rows.Select(row => row.ExternalOrderId).ToHashSet(StringComparer.Ordinal);
         if (existingBill.RecordCount != inputBill.Rows.Count || existingRows.Count != inputBill.Rows.Count ||

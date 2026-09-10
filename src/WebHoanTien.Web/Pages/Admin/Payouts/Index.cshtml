@@ -2,6 +2,7 @@
 @using WebHoanTien.Affiliates
 @using WebHoanTien.Web.Pages.Admin.Payouts
 @model WebHoanTien.Web.Pages.Admin.Payouts.IndexModel
+@inject WebHoanTien.Web.Payments.VietQrService VietQr
 @{
     ViewData["Title"] = "Thanh toán hoàn tiền";
 }
@@ -52,16 +53,43 @@
 
                 @if (request.Status == WithdrawalRequestStatus.Pending && request.IsBacked)
                 {
+                    var qr = VietQr.Generate(request.BankCode, request.AccountNumber, request.NetAmount, request.RequestCode);
+                    <section class="admin-payout-qr" data-payout-qr aria-label="Quét QR chuyển khoản">
+                        <h3>QUÉT QR CHUYỂN KHOẢN</h3>
+                        <div class="admin-payout-qr-body">
+                            <div class="admin-payout-qr-image">
+                                @if (qr.ImageUrl is not null)
+                                {
+                                    <p data-qr-status role="status">Đang tạo mã QR...</p>
+                                    <img data-qr-src="@qr.ImageUrl" alt="VietQR chuyển khoản cho yêu cầu @request.RequestCode" width="260" height="260" referrerpolicy="no-referrer" hidden />
+                                    <noscript>Bật JavaScript để tải QR. Bạn vẫn có thể chuyển khoản thủ công.</noscript>
+                                }
+                                else
+                                {
+                                    <p role="status">@qr.Error</p>
+                                }
+                            </div>
+                            <div>
+                                <p>Quét bằng ứng dụng ngân hàng</p>
+                                <dl>
+                                    <dt>Ngân hàng</dt><dd>@request.BankName</dd>
+                                    <dt>Số tài khoản</dt><dd>@request.AccountNumber</dd>
+                                    <dt>Chủ tài khoản</dt><dd>@request.AccountHolderName</dd>
+                                    <dt>Số tiền</dt><dd>@PayoutPageUi.FormatMoney(request.NetAmount)</dd>
+                                </dl>
                     <div class="admin-payout-transfer-content">
                         <div>
                             <span>Nội dung chuyển khoản</span>
-                            <code>@request.TransferContent</code>
+                            <code>@qr.TransferContent</code>
                         </div>
-                        <button type="button" data-copy-transfer-content="@request.TransferContent" aria-label="Sao chép nội dung chuyển khoản @request.TransferContent">
+                        <button type="button" data-copy-transfer-content="@qr.TransferContent" aria-label="Sao chép nội dung chuyển khoản @qr.TransferContent">
                             <i class="far fa-copy" aria-hidden="true"></i>
                             <span data-copy-transfer-label>Sao chép</span>
                         </button>
                     </div>
+                            </div>
+                        </div>
+                    </section>
                 }
 
                 <div class="admin-payout-result" data-payout-result>
@@ -125,3 +153,4 @@
 
 <div class="admin-payout-toast" data-admin-payout-toast hidden></div>
 <script src="~/admin-payouts.js" asp-append-version="true"></script>
+<link rel="stylesheet" href="~/admin-payout-qr.css" asp-append-version="true" />

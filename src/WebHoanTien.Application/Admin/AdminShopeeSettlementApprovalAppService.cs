@@ -757,7 +757,10 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             var ordered = userRows.OrderBy(x => keyById[x.Id], StringComparer.Ordinal).ToList();
             var userNet = ordered.Sum(x => settledNet[keyById[x.Id]]);
             var rate = ordered.Select(x => x.UserShareRate).FirstOrDefault();
-            var target = _calculator.CalculateUserCommission(userNet, rate);
+            // Wallet credits use whole VND. Rounding a 100% share upward must
+            // not exceed this recipient's actual proceeds (e.g. 74260.7358).
+            var target = Math.Min(_calculator.CalculateUserCommission(userNet, rate),
+                decimal.Floor(userNet));
             foreach (var allocation in _calculator.AllocateAmount(target,
                          ordered.Select(x => new AmountAllocationInput(keyById[x.Id],
                              settledNet[keyById[x.Id]])), 0))

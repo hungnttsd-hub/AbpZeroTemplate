@@ -75,8 +75,22 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
     const statusBox = withdrawForm.querySelector("[data-withdraw-status]");
     const summary = withdrawForm.querySelector("[data-withdraw-summary]");
     const net = withdrawForm.querySelector("[data-withdraw-net]");
-    const available = Number(withdrawForm.dataset.available) || 0;
+    let available = Number(withdrawForm.dataset.available) || 0;
     const fee = Number(withdrawForm.dataset.fee) || 0;
+    let pending = Boolean(withdrawForm.querySelector('[data-pending-withdrawal]'));
+    let sending = false;
+
+    function renderPending() {
+        input.disabled = pending;
+        withdrawForm.querySelectorAll('.wallet-quick-amounts button').forEach(button => {
+            button.disabled = pending;
+        });
+        if (pending) {
+            setAmount(0);
+            submit.disabled = true;
+            submit.textContent = 'Yêu cầu rút tiền';
+        }
+    }
 
     function currentAmount() {
         return Number((input.value || "").replace(/[^0-9]/g, "")) || 0;
@@ -109,6 +123,7 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
 
     withdrawForm.addEventListener("submit", async event => {
         event.preventDefault();
+        if (pending || sending || submit.disabled) return;
         const amount = currentAmount();
         if (amount < 10000) {
             errorBox.textContent = "Số tiền rút tối thiểu là 10.000đ.";
@@ -123,6 +138,8 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
             return;
         }
 
+        sending = true;
+        let successMessage = null;
         window.CatBackLoading?.setButtonLoading(submit, true, { text: "Đang gửi yêu cầu..." });
         if (!window.CatBackLoading) {
             submit.disabled = true;
@@ -141,13 +158,22 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
                 credentials: "same-origin"
             }));
             updateBalance(payload.availableBalance);
+            available = Number(payload.availableBalance) || 0;
             withdrawForm.dataset.available = payload.availableBalance;
-            input.disabled = true;
-            withdrawForm.querySelectorAll(".wallet-quick-amounts button").forEach(button => { button.disabled = true; });
+            pending = true;
             window.CatBackLoading?.setButtonLoading(submit, false);
-            submit.textContent = "Yêu cầu đang chờ xử lý";
-            submit.disabled = true;
-            statusBox.textContent = payload.message;
+            renderPending();
+            statusBox.textContent = '';
+            const pendingBox = document.createElement('div');
+            pendingBox.className = 'wallet-existing-request';
+            pendingBox.setAttribute('data-pending-withdrawal', '');
+            const pendingLabel = document.createElement('strong');
+            pendingLabel.textContent = `Bạn đang có yêu cầu ${payload.request.requestCode} chờ xử lý.`;
+            const pendingLink = document.createElement('a');
+            pendingLink.href = '/Wallet';
+            pendingLink.textContent = 'Xem và hủy yêu cầu';
+            pendingBox.append(pendingLabel, pendingLink);
+            submit.before(pendingBox);
             const history = document.querySelector(".wallet-withdrawal-history");
             if (history) {
                 const empty = history.querySelector(".wallet-history-empty");
@@ -155,9 +181,15 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
                 const item = document.createElement("article");
                 item.dataset.walletRequest = payload.request.id;
                 item.innerHTML = `<div><strong>${payload.request.requestCode}</strong><small>Vừa gửi</small></div><div><b>${formatMoney(payload.request.amount)}</b><span class="wallet-status pending" data-wallet-status>Đang xử lý</span></div>`;
-                history.appendChild(item);
+                // Match the server's newest-first withdrawal history, keeping its heading first.
+                const firstRequest = history.querySelector('[data-wallet-request]');
+                if (firstRequest) history.insertBefore(item, firstRequest);
+                else history.appendChild(item);
+                history.querySelectorAll('[data-wallet-request]').forEach((request, index) => {
+                    if (index >= 5) request.remove();
+                });
             }
-            showToast(payload.message || "Đã gửi yêu cầu rút tiền.");
+            successMessage = payload.message || 'Đã gửi yêu cầu rút tiền.';
         } catch (error) {
             window.CatBackLoading?.setButtonLoading(submit, false);
             if (!window.CatBackLoading) {
@@ -168,10 +200,20 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
             errorBox.textContent = error.message;
             errorBox.hidden = false;
             showToast(error.message, true);
+            if (pending) renderPending();
         } finally {
+            sending = false;
             endLongTask?.();
+        }
+        if (successMessage && !signal.aborted) {
+            await window.CatsBackModal.success({
+                title: 'Gửi yêu cầu rút tiền thành công',
+                message: successMessage,
+                confirmText: 'Đã hiểu'
+            });
         }
     }, { signal });
 
     renderAmount();
+    renderPending();
 });
