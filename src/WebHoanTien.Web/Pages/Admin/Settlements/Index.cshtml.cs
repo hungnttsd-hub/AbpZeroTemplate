@@ -153,12 +153,7 @@ public static class SettlementPageUi
         ? $"Shopee trả {Date(value.Value)}"
         : "Shopee chưa ghi nhận thời gian thanh toán";
     public static string Code(int? value) => value?.ToString() ?? "-";
-    public static string ShopeePaymentLabel(int status) => status switch
-    {
-        4 => "Đã thanh toán (4)",
-        8 => "Chờ thanh toán (8)",
-        _ => $"Mã trạng thái {status}"
-    };
+    public static string ShopeePaymentLabel(bool isPaid) => isPaid ? "Đã thanh toán" : "Chờ xử lý";
 
     public static string BatchLabel(ShopeeSettlementBatchStatus status) => status switch
     {

@@ -1,6 +1,13 @@
-# CatsBack Shopee Sync v0.7.6
+# CatsBack Shopee Sync v0.7.7
 
 Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
+
+## Cập nhật trạng thái thanh toán v0.7.7
+
+- Dùng `payment_completed_time`: ngày hợp lệ lớn hơn 0 là **Đã thanh toán**, 0 hoặc trống là **Chờ xử lý**. Ưu tiên dữ liệu `billing_detail` vừa lấy; chỉ fallback sang `billing_list` khi detail thiếu trường. Không quét thêm trang `payout_record`.
+- Giữ nguyên mã trạng thái thô để tra cứu; mã 8 có thể xuất hiện ở cả kỳ đã trả và chưa trả. Adjustment/clawback và quyền duyệt admin độc lập với trạng thái thanh toán.
+- Thuế vẫn đối chiếu qua `payoutDetail` khi có `payout_id`, kể cả đã thanh toán; không suy ra thuế từ số payable bằng 0 của bảng kê ngày. Lỗi API/ngày không hợp lệ dừng tổng hợp, không upload báo cáo một phần.
+- Reload extension tại `chrome://extensions` và cập nhật backend/web cùng bản này. Các dòng đã lưu ngày thanh toán sẽ đổi nhãn Shopee ngay khi web được cập nhật. Với bản ghi cũ còn ở trạng thái hàng chờ, import lại CSV mới nhất để phân loại lại; import không cộng ví. File cũ thiếu ngày không được ghi đè bảng kê đã thanh toán.
 
 ## Đối soát thanh toán
 

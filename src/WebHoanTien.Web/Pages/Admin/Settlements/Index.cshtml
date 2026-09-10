@@ -114,7 +114,7 @@
                                 <div><code>@record.ExternalOrderId</code><small>Validation @record.ValidationId · @SettlementPageUi.PaymentTime(record.PaidAt)</small></div>
                                 <div class="admin-settlement-statuses">
                                     <span class="admin-settlement-status @SettlementPageUi.StatusClass(record.Status)" data-record-status>@SettlementPageUi.RecordLabel(record.Status)</span>
-                                    <span class="admin-settlement-shopee-status @(record.IsShopeePaid ? "paid" : "waiting")">Shopee: @SettlementPageUi.ShopeePaymentLabel(record.PaymentStatus)</span>
+                                    <span class="admin-settlement-shopee-status @(record.IsShopeePaid ? "paid" : "waiting")">Shopee: @SettlementPageUi.ShopeePaymentLabel(record.IsShopeePaid)</span>
                                 </div>
                             </header>
                             <div class="admin-settlement-context">
