@@ -1,3 +1,4 @@
+using WebHoanTien.IdentityExtensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ public class GoogleAccountLinkController : Controller
         if (info is null) return Redirect("/Account/Manage?googleLink=failed");
         var user = await _userManager.GetByIdAsync(_currentUser.GetId());
         var externalEmail = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-        if (string.IsNullOrWhiteSpace(externalEmail) || !string.Equals(externalEmail, user.Email, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(externalEmail) || !string.Equals(externalEmail, user.GetLoginEmail(), StringComparison.OrdinalIgnoreCase))
             return Redirect("/Account/Manage?googleLink=email-mismatch");
         var owner = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
         if (owner is not null && owner.Id != user.Id) return Redirect("/Account/Manage?googleLink=already-used");

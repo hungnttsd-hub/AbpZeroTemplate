@@ -155,6 +155,10 @@ public interface IAffiliateOrderAppService : IApplicationService
 
 public sealed class CustomerProfileDto
 {
+    public WebHoanTien.IdentityExtensions.AccountType AccountType { get; set; } = WebHoanTien.IdentityExtensions.AccountType.Registered;
+    public string Username { get; set; } = "";
+    public string? LoginEmail { get; set; }
+    public bool UpgradePending { get; set; }
     public Guid UserId { get; set; }
     public string Email { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;

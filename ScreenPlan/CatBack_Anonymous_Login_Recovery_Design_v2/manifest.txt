@@ -1,0 +1,14 @@
+CatBack Anonymous Login + Recovery Design Package v2
+
+Files:
+- README_CODEX.md
+- PROMPT_FOR_CODEX.md
+- SCREEN_FLOW.md
+- screens/01_login_choice_v2.png
+- screens/02_anonymous_intro.png
+- screens/03_anonymous_success_recovery_code.png
+- screens/04_restore_with_recovery_code.png
+- screens/05_anonymous_profile.png
+- screens/06_register_upgrade.png
+- screens/07_withdraw_requires_registration_modal.png
+- spec.md

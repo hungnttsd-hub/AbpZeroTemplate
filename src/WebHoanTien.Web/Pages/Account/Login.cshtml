@@ -41,8 +41,8 @@
             <form method="post" class="form-stack">
                 <input asp-for="LinkExternalLogin" type="hidden" />
                 <div class="field">
-                    <label asp-for="LoginInput.UserNameOrEmailAddress">Email</label>
-                    <input asp-for="LoginInput.UserNameOrEmailAddress" type="email" autocomplete="email" placeholder="ban@example.com" autofocus />
+                    <label asp-for="LoginInput.UserNameOrEmailAddress">Username hoặc email đăng nhập</label>
+                    <input asp-for="LoginInput.UserNameOrEmailAddress" type="text" autocomplete="username" placeholder="Username hoặc email đăng nhập" autofocus />
                     <span asp-validation-for="LoginInput.UserNameOrEmailAddress" class="field-error"></span>
                 </div>
                 <div class="field">

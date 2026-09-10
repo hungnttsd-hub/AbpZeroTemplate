@@ -30,6 +30,11 @@ public class WebHoanTienAccountAppService : AccountAppService
 
     public override async Task<IdentityUserDto> RegisterAsync(RegisterDto input)
     {
+        if (CurrentUser.IsAuthenticated)
+            throw new UserFriendlyException("Hãy dùng luồng nâng cấp cho tài khoản đang đăng nhập.");
+        input.ExtraProperties.Remove(CatBackAccountProperties.Type);
+        input.ExtraProperties.Remove(CatBackAccountProperties.LoginEmail);
+        input.ExtraProperties.Remove(CatBackAccountProperties.NormalizedLoginEmail);
         var registeredUser = await base.RegisterAsync(input);
         await _adminRegistrationNotifier.EnqueueAsync(
             registeredUser.Id,

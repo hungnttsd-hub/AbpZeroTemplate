@@ -134,7 +134,7 @@ public class IndexModel : PageModel
             HttpOnly = true, Secure = Request.IsHttps, SameSite = SameSiteMode.Lax, MaxAge = TimeSpan.FromMinutes(20), IsEssential = true
         });
         await _cache.SetStringAsync("affiliate:pending:" + nonce, "1", new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20) });
-        const string loginUrl = "/Account/Login?returnUrl=%2FPendingAffiliate";
+        const string loginUrl = "/Account/Choice?returnUrl=%2FPendingAffiliate";
         return IsAjaxRequest()
             ? new JsonResult(new { success = true, requiresLogin = true, redirectUrl = loginUrl })
             : Redirect(loginUrl);

@@ -1,0 +1,18 @@
+@page
+@model WebHoanTien.Web.Pages.Account.AccountFlowModel
+@{ Layout = "/Pages/Shared/_CustomerLayout.cshtml"; ViewData["Title"] = "Tài khoản ẩn danh"; }
+<section class="cb-account-shell"><a class="cb-account-back" href="@Model.WithReturn("/Account/Choice")">‹ Quay lại</a><div class="cb-account-card">
+    <span class="eyebrow">Trải nghiệm nhanh</span><h1>Dùng tài khoản ẩn danh</h1><p class="cb-account-lead">CatBack lưu link, đơn hàng và cashback theo tài khoản của bạn trên hệ thống.</p>
+    <div class="cb-account-option"><span class="cb-account-icon cb-account-icon-gold"><i class="fa-solid fa-user-secret" aria-hidden="true"></i></span><span><strong>Không cần đăng ký ngay</strong><small>Bắt đầu mà chưa cần email hoặc mật khẩu.</small></span></div>
+    <div class="cb-account-option"><span class="cb-account-icon"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i></span><span><strong>Ghi nhớ trên thiết bị này</strong><small>Thiết bị lưu thông tin để bạn dùng lại tài khoản.</small></span></div>
+    <div class="cb-account-option"><span class="cb-account-icon cb-account-icon-blue"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span><span><strong>Có mã khôi phục để dùng lại sau này</strong><small>Lấy lại tài khoản khi đổi máy hoặc mất phiên.</small></span></div>
+    <div class="cb-account-warning">Nếu xóa dữ liệu trình duyệt, bạn cần mã khôi phục để lấy lại tài khoản. Tài khoản ẩn danh chưa được rút tiền.</div>
+    <form method="post" action="/api/account/anonymous" data-account-api="/api/account/anonymous" data-turbo="false">
+        @Html.AntiForgeryToken()<input type="hidden" name="returnUrl" value="@Model.SafeReturnUrl" /><input type="hidden" name="acceptedTerms" value="true" />
+        <p class="cb-account-legal">Bấm nút bên dưới nghĩa là bạn đồng ý với <a href="/Legal/Terms" target="_blank">Điều khoản</a> và <a href="/Legal/Privacy" target="_blank">Chính sách riêng tư</a>.</p>
+        <p data-account-status role="status" hidden></p>
+        <button class="button cb-account-primary" disabled="@(!Model.CreationEnabled && !Model.Remembered)">@(Model.Remembered ? "Dùng lại tài khoản ẩn danh" : "Tạo tài khoản ẩn danh")</button>
+        @if (!Model.CreationEnabled && !Model.Remembered) { <p>Tạo tài khoản ẩn danh đang tạm dừng. Bạn vẫn có thể <a href="@Model.WithReturn("/Account/Recovery")">khôi phục bằng mã</a>.</p> }
+    </form>
+    <a class="cb-account-footer-link" href="@Model.WithReturn("/Account/Register")">Tôi muốn đăng ký tài khoản</a>
+</div></section>

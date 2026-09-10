@@ -17,11 +17,16 @@ using Volo.Abp.Identity;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Settings;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
+using WebHoanTien.IdentityExtensions;
+using Volo.Abp.Users;
+using Volo.Abp.Auditing;
 
 namespace WebHoanTien.Web.Pages.Account;
 
+[DisableAuditing]
 public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
 {
+    private readonly IAccountIdentityStore _accounts;
     [BindProperty(SupportsGet = true)]
     public bool LinkExternalLogin { get; set; }
 
@@ -41,9 +46,10 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         IAuthenticationSchemeProvider schemeProvider,
         IOptions<AbpAccountOptions> accountOptions,
         IOptions<IdentityOptions> identityOptions,
-        IdentityDynamicClaimsPrincipalContributorCache identityDynamicClaimsPrincipalContributorCache)
+        IdentityDynamicClaimsPrincipalContributorCache identityDynamicClaimsPrincipalContributorCache, IAccountIdentityStore accounts)
         : base(schemeProvider, accountOptions, identityOptions, identityDynamicClaimsPrincipalContributorCache)
     {
+        _accounts = accounts;
     }
 
     public override async Task<IActionResult> OnGetExternalLoginCallbackAsync(
@@ -51,6 +57,8 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         string returnUrlHash = "",
         string? remoteError = null)
     {
+        if (CurrentUser.IsAuthenticated && (await UserManager.GetByIdAsync(CurrentUser.GetId())).IsAnonymous())
+            return Redirect("/Account/Upgrade");
         if (!string.IsNullOrWhiteSpace(remoteError))
         {
             Logger.LogWarning("External login callback error: {RemoteError}", remoteError);
@@ -97,7 +105,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         // IdentityUser.Email is an editable contact address for local accounts.
         // Google may only auto-link when its verified email matches the immutable
         // login email stored in UserName.
-        var localUser = externalEmail is null ? null : await UserManager.FindByNameAsync(externalEmail);
+        var localUser = externalEmail is null ? null : await _accounts.FindByLoginEmailAsync(externalEmail);
         if (localUser is null)
         {
             return RedirectToPage("./Register", new
@@ -113,6 +121,8 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
             && string.Equals(loginInfo.Principal.FindFirst("google_email_verified")?.Value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
         if (isVerifiedGoogleEmail)
         {
+            if (!localUser.IsActive || localUser.IsAnonymous() || await UserManager.IsLockedOutAsync(localUser))
+                return await LinkErrorPageAsync("Tài khoản chưa được phép đăng nhập.");
             var existingOwner = await UserManager.FindByLoginAsync(loginInfo.LoginProvider, loginInfo.ProviderKey);
             if (existingOwner is not null && existingOwner.Id != localUser.Id)
             {
@@ -152,6 +162,14 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
 
     public override async Task<IActionResult> OnPostAsync(string action)
     {
+        if (CurrentUser.IsAuthenticated && (await UserManager.GetByIdAsync(CurrentUser.GetId())).IsAnonymous())
+            return Redirect("/Account/Upgrade");
+        if (!string.IsNullOrWhiteSpace(LoginInput.UserNameOrEmailAddress) && LoginInput.UserNameOrEmailAddress.Contains('@'))
+        {
+            var loginUser = await _accounts.FindByLoginEmailAsync(LoginInput.UserNameOrEmailAddress) ?? await UserManager.FindByNameAsync(LoginInput.UserNameOrEmailAddress);
+            if (loginUser == null) return await LinkErrorPageAsync("Thông tin đăng nhập không hợp lệ.");
+            LoginInput.UserNameOrEmailAddress = loginUser.UserName;
+        }
         ExternalLoginInfo? pendingLogin = null;
         IdentityUser? localUser = null;
 
@@ -167,7 +185,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
                         await UserManager.FindByEmailAsync(LoginInput.UserNameOrEmailAddress);
             var externalEmail = GetExternalEmail(pendingLogin);
             if (localUser is null || externalEmail is null ||
-                !string.Equals(localUser.UserName, externalEmail, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(localUser.GetLoginEmail(), externalEmail, StringComparison.OrdinalIgnoreCase))
             {
                 return await LinkErrorPageAsync("Hãy đăng nhập đúng tài khoản local có email đăng nhập trùng với Google.");
             }

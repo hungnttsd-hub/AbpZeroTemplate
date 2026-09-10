@@ -10,6 +10,8 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Uow;
 using Volo.Abp.Users;
 using WebHoanTien.Notifications;
+using WebHoanTien.IdentityExtensions;
+using Volo.Abp.Identity;
 
 namespace WebHoanTien.Affiliates;
 
@@ -28,6 +30,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly CustomerNotificationManager _notificationManager;
     private readonly AdminWithdrawalRequestNotifier _adminWithdrawalRequestNotifier;
+    private readonly IdentityUserManager _users;
 
     public CustomerWalletAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
@@ -36,7 +39,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         IRepository<WithdrawalPaymentProof, Guid> proofs, IRepository<UserPayoutAccount, Guid> payoutAccounts,
         WalletBalanceCalculator balanceCalculator, IUnitOfWorkManager unitOfWorkManager,
         CustomerNotificationManager notificationManager,
-        AdminWithdrawalRequestNotifier adminWithdrawalRequestNotifier)
+        AdminWithdrawalRequestNotifier adminWithdrawalRequestNotifier, IdentityUserManager users)
     {
         _conversions = conversions;
         _orders = orders;
@@ -49,6 +52,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         _unitOfWorkManager = unitOfWorkManager;
         _notificationManager = notificationManager;
         _adminWithdrawalRequestNotifier = adminWithdrawalRequestNotifier;
+        _users = users;
     }
 
     public async Task<CustomerWalletOverviewDto> GetOverviewAsync()
@@ -101,6 +105,8 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
                 IsTransactional = true,
                 IsolationLevel = IsolationLevel.Serializable
             }, requiresNew: true);
+            if ((await _users.GetByIdAsync(CurrentUser.GetId())).IsAnonymous())
+                throw new BusinessException(CatBackAccountProperties.RegistrationRequired);
             var amount = input.Amount;
             if (amount != decimal.Truncate(amount)) throw new UserFriendlyException("Số tiền rút phải là số nguyên đồng.");
             if (amount < WebHoanTienConsts.MinimumWithdrawalAmount)
@@ -161,10 +167,13 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         IReadOnlyCollection<WithdrawalRequest> withdrawals, HashSet<Guid> proofRequestIds)
     {
         var balance = await _balanceCalculator.GetAsync(userId);
+        var accountType = (await _users.GetByIdAsync(userId)).GetAccountType();
         var pending = withdrawals.OrderByDescending(x => x.CreationTime)
             .FirstOrDefault(x => x.Status == WithdrawalRequestStatus.Pending);
         return new CustomerWalletOverviewDto
         {
+            AccountType = accountType,
+            WithdrawalBlockedReason = accountType == AccountType.Anonymous ? CatBackAccountProperties.RegistrationRequired : null,
             AvailableBalance = balance.AvailableBalance,
             TotalRecordedAmount = balance.ConfirmedAmount,
             PendingCommissionAmount = balance.PendingAmount,

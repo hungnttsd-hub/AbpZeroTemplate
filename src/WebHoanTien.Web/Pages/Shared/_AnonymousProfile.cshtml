@@ -1,0 +1,14 @@
+@model WebHoanTien.Affiliates.CustomerProfileDto
+<section class="cb-account-shell" data-anonymous-profile><div class="cb-account-card">
+    <div class="cb-account-profile-heading"><span class="cb-account-icon"><i class="fa-solid fa-user-secret" aria-hidden="true"></i></span><div><h1>@Model.Username</h1><span class="cb-account-badge">Tài khoản ẩn danh</span><p>Bạn đang dùng CatBack mà không cần đăng ký.</p></div></div>
+    <div class="cb-account-upgrade-banner"><h2>Đăng ký để rút tiền</h2><p>Nâng cấp thành tài khoản chính thức. Dữ liệu và số dư vẫn được giữ nguyên.</p><a class="button cb-account-gold" href="/Account/Upgrade">Đăng ký tài khoản</a></div>
+    <details class="cb-account-profile-row"><summary><i class="fa-solid fa-pen" aria-hidden="true"></i> Đổi username</summary>
+        <form method="post" action="/api/account/anonymous/username" data-account-api="/api/account/anonymous/username" data-account-method="PUT" data-turbo="false">@Html.AntiForgeryToken()<div class="field"><label for="anonymous-username">Username mới</label><input id="anonymous-username" name="username" value="@Model.Username" required maxlength="256" /></div><p data-account-status role="status" hidden></p><button class="button cb-account-primary">Lưu username</button></form>
+    </details>
+    <a class="cb-account-profile-row" href="/Account/AnonymousSuccess?returnUrl=%2FAccount%2FProfile"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Mã khôi phục<small>Dùng để đăng nhập lại nếu bị đăng xuất</small></span><span aria-hidden="true">›</span></a>
+    <details class="cb-account-profile-row" data-device-details><summary><i class="fa-solid fa-laptop" aria-hidden="true"></i> Thiết bị hiện tại</summary><p data-device-status>Đang tải thông tin thiết bị…</p></details>
+    <a class="cb-account-profile-row" href="mailto:support@webhoantien.com"><i class="fa-regular fa-circle-question" aria-hidden="true"></i> Trợ giúp <span aria-hidden="true">›</span></a>
+    <a class="button cb-account-secondary" href="@Url.Page("/Account/Logout", new { returnUrl = "/Account/Choice" })" data-turbo="false">Đăng xuất</a>
+    <button type="button" class="cb-account-forget" data-device-forget><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Đăng xuất và quên thiết bị này</button>
+    <p data-forget-status role="status" hidden></p>
+</div></section>

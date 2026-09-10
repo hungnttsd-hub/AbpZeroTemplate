@@ -16,6 +16,8 @@ window.CatBackSpa.mount('wallet', ({ signal }) => {
         let payload = {};
         try { payload = await response.json(); } catch (_) { }
         if (response.ok && payload.success !== false) return payload;
+        if ((payload.code || payload.error?.code) === 'CatBack:RegistrationRequired')
+            document.dispatchEvent(new CustomEvent('catback:registration-required'));
         const error = payload.error?.message || payload.error || payload.message || "Không thể xử lý yêu cầu. Vui lòng thử lại.";
         throw new Error(typeof error === "string" ? error : "Không thể xử lý yêu cầu.");
     }

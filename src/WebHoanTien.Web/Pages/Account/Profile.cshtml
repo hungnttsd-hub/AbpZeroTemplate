@@ -5,6 +5,7 @@
     ViewData["Title"] = "Tài khoản của tôi";
 }
 
+@if (Model.Profile.AccountType == WebHoanTien.IdentityExtensions.AccountType.Anonymous) { <partial name="/Pages/Shared/_AnonymousProfile.cshtml" model="Model.Profile" /> } else {
 <section class="profile-shell">
     <header class="profile-heading">
         @if (!string.IsNullOrWhiteSpace(Model.Profile.AvatarUrl))
@@ -129,6 +130,7 @@
         </aside>
     </div>
 </section>
+}
 
 @section Scripts {
     <script src="~/customer-profile.js" asp-append-version="true"></script>

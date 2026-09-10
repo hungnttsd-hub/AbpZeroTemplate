@@ -1,0 +1,13 @@
+@page
+@model WebHoanTien.Web.Pages.Account.AccountFlowModel
+@{ Layout = "/Pages/Shared/_CustomerLayout.cshtml"; ViewData["Title"] = "Khôi phục tài khoản"; }
+<section class="cb-account-shell"><a class="cb-account-back" href="@Model.WithReturn("/Account/Choice")">‹ Quay lại</a><div class="cb-account-card">
+    <span class="eyebrow">Khôi phục tài khoản</span><h1>Dùng mã khôi phục</h1><p class="cb-account-lead">Nhập mã để đăng nhập lại tài khoản ẩn danh của bạn.</p>
+    <form method="post" action="/api/account/anonymous/recover" class="form-stack" data-account-api="/api/account/anonymous/recover" data-turbo="false">@Html.AntiForgeryToken()<input type="hidden" name="returnUrl" value="@Model.SafeReturnUrl" />
+        <div class="field"><label for="recovery-code">Mã khôi phục</label><input id="recovery-code" name="recoveryCode" required maxlength="128" placeholder="CB-…" autocomplete="off" autocapitalize="characters" spellcheck="false" /></div>
+        <p data-account-status role="status" hidden></p><button class="button cb-account-primary">Khôi phục tài khoản</button>
+    </form><div class="cb-account-divider">hoặc</div><partial name="/Pages/Shared/_AccountGoogle.cshtml" model="Model.SafeReturnUrl" />
+    <a class="cb-account-footer-link" href="@Model.WithReturn("/Account/Register")">Tôi muốn đăng ký tài khoản</a>
+    <div class="cb-account-info"><span><strong>Không tìm thấy mã?</strong><br />Nếu còn ghi nhớ thiết bị này, hãy chọn <a href="@Model.WithReturn("/Account/Anonymous")">dùng lại tài khoản ẩn danh</a>. Khi mất cả mã và dữ liệu thiết bị, CatBack không bảo đảm khôi phục được tài khoản.</span></div>
+</div></section>
+@section Scripts { <script src="~/google-identity.js" asp-append-version="true" defer></script> }

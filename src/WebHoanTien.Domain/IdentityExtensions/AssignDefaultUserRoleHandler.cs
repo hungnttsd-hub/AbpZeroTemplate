@@ -15,11 +15,6 @@ public class AssignDefaultUserRoleHandler : ILocalEventHandler<EntityCreatedEven
 
     public async Task HandleEventAsync(EntityCreatedEventData<IdentityUser> eventData)
     {
-        if (!string.Equals(eventData.Entity.UserName, "admin", System.StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(eventData.Entity.Email) &&
-            !string.Equals(eventData.Entity.UserName, eventData.Entity.Email, System.StringComparison.OrdinalIgnoreCase))
-            await _userManager.SetUserNameAsync(eventData.Entity, eventData.Entity.Email);
-
         if (await _roleManager.RoleExistsAsync("User") &&
             !await _userManager.IsInRoleAsync(eventData.Entity, "admin") &&
             !await _userManager.IsInRoleAsync(eventData.Entity, "User"))

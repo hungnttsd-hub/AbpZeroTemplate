@@ -1,3 +1,4 @@
+using WebHoanTien.IdentityExtensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -21,6 +22,7 @@ public class ProfileModel : PageModel
     private readonly ICustomerProfileAppService _customerProfileAppService;
     private readonly ICustomerNotificationAppService _customerNotificationAppService;
     private readonly IdentityUserManager _userManager;
+    private readonly IAccountIdentityStore _accounts;
     private readonly ICurrentUser _currentUser;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
 
@@ -56,11 +58,11 @@ public class ProfileModel : PageModel
         ICustomerNotificationAppService customerNotificationAppService,
         IdentityUserManager userManager,
         ICurrentUser currentUser,
-        IUnitOfWorkManager unitOfWorkManager)
+        IUnitOfWorkManager unitOfWorkManager, IAccountIdentityStore accounts)
     {
         _customerProfileAppService = customerProfileAppService;
         _customerNotificationAppService = customerNotificationAppService;
-        _userManager = userManager;
+        _userManager = userManager; _accounts = accounts;
         _currentUser = currentUser;
         _unitOfWorkManager = unitOfWorkManager;
     }
@@ -118,7 +120,7 @@ public class ProfileModel : PageModel
 
         // A reset address must identify one account only. Do not allow a contact email
         // to collide with another account's login email or contact email.
-        var userByLoginEmail = await _userManager.FindByNameAsync(contactEmail);
+        var userByLoginEmail = await _accounts.FindByLoginEmailAsync(contactEmail);
         if (userByLoginEmail is not null && userByLoginEmail.Id != user.Id)
         {
             ModelState.AddModelError(nameof(ContactEmail), "Email này đang được sử dụng bởi một tài khoản khác.");
@@ -260,9 +262,9 @@ public class ProfileModel : PageModel
         var user = await _userManager.GetByIdAsync(_currentUser.GetId());
         CanChangePassword = await _userManager.HasPasswordAsync(user);
         CanEditContactEmail = CanChangePassword && !Profile.HasGoogleLogin;
-        LoginEmail = string.IsNullOrWhiteSpace(user.UserName)
+        LoginEmail = string.IsNullOrWhiteSpace(user.GetLoginEmail())
             ? user.Email ?? string.Empty
-            : user.UserName;
+            : user.GetLoginEmail()!;
 
         if (populateContactEmail && CanEditContactEmail)
         {

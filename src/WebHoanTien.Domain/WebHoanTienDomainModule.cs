@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+using WebHoanTien.IdentityExtensions;
 using System;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
@@ -30,6 +33,7 @@ public class WebHoanTienDomainModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.AddTransient<Microsoft.AspNetCore.Identity.IUserValidator<Volo.Abp.Identity.IdentityUser>, CatBackUserValidator>();
         Configure<AbpClockOptions>(options => options.Kind = DateTimeKind.Utc);
         Configure<AbpLocalizationOptions>(options =>
         {

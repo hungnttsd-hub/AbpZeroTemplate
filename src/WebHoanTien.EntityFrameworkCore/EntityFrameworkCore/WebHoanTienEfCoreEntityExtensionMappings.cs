@@ -16,6 +16,10 @@ public static class WebHoanTienEfCoreEntityExtensionMappings
 
         OneTimeRunner.Run(() =>
         {
+            ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUser, int>("AccountType", p => p.DefaultValue = 1);
+            ObjectExtensionManager.Instance.MapEfCoreProperty<IdentityUser, int>("AccountType", (_, p) => p.HasDefaultValue(1).ValueGeneratedNever());
+            ObjectExtensionManager.Instance.MapEfCoreProperty<IdentityUser, string>("LoginEmail", (_, p) => p.HasMaxLength(256));
+            ObjectExtensionManager.Instance.MapEfCoreProperty<IdentityUser, string>("NormalizedLoginEmail", (_, p) => p.HasMaxLength(256));
                 /* You can configure extra properties for the
                  * entities defined in the modules used by your application.
                  *

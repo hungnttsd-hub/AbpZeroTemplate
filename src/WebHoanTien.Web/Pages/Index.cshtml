@@ -145,7 +145,7 @@
 
                 @if (User.Identity?.IsAuthenticated != true)
                 {
-                    <div class="dashboard-empty"><h3>Đăng nhập để lưu link</h3><p>Link mua hàng sẽ xuất hiện tại đây sau khi bạn đăng nhập.</p><a class="dashboard-text-link" href="/Account/Login">Đăng nhập</a></div>
+                    <div class="dashboard-empty"><h3>Đăng nhập để lưu link</h3><p>Link mua hàng sẽ xuất hiện tại đây sau khi bạn đăng nhập.</p><a class="dashboard-text-link" href="/Account/Choice">Đăng nhập</a></div>
                 }
                 else if (Model.RecentLinks.Items.Count == 0)
                 {

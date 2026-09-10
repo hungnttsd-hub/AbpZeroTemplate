@@ -21,14 +21,17 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
     private readonly IRepository<UserLegalConsent, Guid> _consents;
     private readonly IRepository<UserPayoutAccount, Guid> _payoutAccounts;
     private readonly CustomerNotificationManager _notificationManager;
+    private readonly IRepository<PendingAccountUpgrade, Guid> _pendingUpgrades;
 
     public CustomerProfileAppService(IIdentityUserRepository users, IRepository<UserLegalConsent, Guid> consents,
-        IRepository<UserPayoutAccount, Guid> payoutAccounts, CustomerNotificationManager notificationManager)
+        IRepository<UserPayoutAccount, Guid> payoutAccounts, CustomerNotificationManager notificationManager,
+        IRepository<PendingAccountUpgrade, Guid> pendingUpgrades)
     {
         _users = users;
         _consents = consents;
         _payoutAccounts = payoutAccounts;
         _notificationManager = notificationManager;
+        _pendingUpgrades = pendingUpgrades;
     }
 
     public async Task<CustomerProfileDto> GetAsync()
@@ -42,6 +45,10 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
         displayName = ShortenDisplayName(displayName);
         return new CustomerProfileDto
         {
+            AccountType = user.GetAccountType(),
+            Username = user.UserName,
+            LoginEmail = user.GetLoginEmail(),
+            UpgradePending = user.IsAnonymous() && await _pendingUpgrades.AnyAsync(x => x.UserId == user.Id && x.RevokedAt == null),
             UserId = user.Id,
             Email = user.Email ?? string.Empty,
             DisplayName = displayName,

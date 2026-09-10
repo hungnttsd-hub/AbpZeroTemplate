@@ -1,3 +1,4 @@
+using WebHoanTien.IdentityExtensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,6 +30,7 @@ public class ForgotPasswordModel : PageModel
         "Nếu email khớp với email đăng nhập hoặc email liên hệ của tài khoản đăng ký trực tiếp trên CatBack, mật khẩu mới sẽ được gửi tới email bạn vừa nhập. Vui lòng kiểm tra cả Hộp thư đến và Spam.";
 
     private readonly IdentityUserManager _userManager;
+    private readonly IAccountIdentityStore _accounts;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForgotPasswordModel> _logger;
 
@@ -43,9 +45,9 @@ public class ForgotPasswordModel : PageModel
     public ForgotPasswordModel(
         IdentityUserManager userManager,
         IConfiguration configuration,
-        ILogger<ForgotPasswordModel> logger)
+        ILogger<ForgotPasswordModel> logger, IAccountIdentityStore accounts)
     {
-        _userManager = userManager;
+        _userManager = userManager; _accounts = accounts;
         _configuration = configuration;
         _logger = logger;
     }
@@ -65,7 +67,7 @@ public class ForgotPasswordModel : PageModel
 
         // UserName is the login email. IdentityUser.Email is the editable contact email.
         // Both can be used to request a password reset, but they must resolve to one user.
-        var userByLoginEmail = await _userManager.FindByNameAsync(recipient);
+        var userByLoginEmail = await _accounts.FindByLoginEmailAsync(recipient);
         var userByContactEmail = await _userManager.FindByEmailAsync(recipient);
 
         if (userByLoginEmail is not null &&
@@ -80,7 +82,7 @@ public class ForgotPasswordModel : PageModel
         var user = userByLoginEmail ?? userByContactEmail;
 
         // Do not reveal whether an account exists or whether it is Google-only.
-        if (user is null || !await _userManager.HasPasswordAsync(user))
+        if (user is null || user.IsAnonymous() || !await _userManager.HasPasswordAsync(user))
         {
             return RedirectWithGenericStatus();
         }

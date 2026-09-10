@@ -76,7 +76,8 @@ public enum LegalConsentMethod
 {
     EmailRegistration = 1,
     GoogleRegistration = 2,
-    AccountPrompt = 3
+    AccountPrompt = 3,
+    AnonymousRegistration = 4
 }
 
 public enum WithdrawalRequestStatus

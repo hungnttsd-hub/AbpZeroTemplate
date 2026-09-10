@@ -14,6 +14,7 @@ using Volo.Abp.SettingManagement;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Notifications;
+using WebHoanTien.IdentityExtensions;
 
 namespace WebHoanTien.EntityFrameworkCore;
 
@@ -27,6 +28,9 @@ public class WebHoanTienDbContext :
     IDataProtectionKeyContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+    public DbSet<AnonymousRecovery> AnonymousRecoveries { get; set; } = null!;
+    public DbSet<AnonymousDevice> AnonymousDevices { get; set; } = null!;
+    public DbSet<PendingAccountUpgrade> PendingAccountUpgrades { get; set; } = null!;
     public DbSet<IdentityUser> Users { get; set; } = null!;
     public DbSet<IdentityRole> Roles { get; set; } = null!;
     public DbSet<IdentityClaimType> ClaimTypes { get; set; } = null!;
@@ -75,5 +79,6 @@ public class WebHoanTienDbContext :
         builder.ConfigureFeatureManagement();
         builder.ConfigureAffiliate();
         builder.ConfigureNotifications();
+        builder.ConfigureAnonymousAccounts();
     }
 }

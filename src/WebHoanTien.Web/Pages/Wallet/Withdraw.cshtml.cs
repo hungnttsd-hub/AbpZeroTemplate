@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Volo.Abp;
 using WebHoanTien.Affiliates;
+using Volo.Abp.Identity;
+using Volo.Abp.Users;
+using WebHoanTien.IdentityExtensions;
 
 namespace WebHoanTien.Web.Pages.Wallet;
 
@@ -19,7 +22,13 @@ public class WithdrawModel : PageModel
 
     public WithdrawModel(ICustomerWalletAppService wallet) => _wallet = wallet;
 
-    public async Task OnGetAsync() => Preparation = await _wallet.GetWithdrawalPreparationAsync();
+    public async Task<IActionResult> OnGetAsync()
+    {
+        Preparation = await _wallet.GetWithdrawalPreparationAsync();
+        if (Preparation.Wallet.AccountType == AccountType.Anonymous)
+            return Redirect("/Wallet?registrationRequired=true");
+        return Page();
+    }
 
     public async Task<IActionResult> OnPostCreateAsync()
     {
@@ -44,7 +53,7 @@ public class WithdrawModel : PageModel
         }
         catch (BusinessException exception)
         {
-            return BadRequest(new { success = false, error = WalletPageUi.ErrorMessage(exception) });
+            return BadRequest(new { success = false, code = exception.Code, error = exception.Code == CatBackAccountProperties.RegistrationRequired ? "Bạn cần đăng ký tài khoản để rút tiền." : WalletPageUi.ErrorMessage(exception) });
         }
     }
 }

@@ -1,0 +1,18 @@
+@model string
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    var clientId = Configuration["Authentication:Google:ClientId"];
+    var upgradeId = ViewData["UpgradeUserId"]?.ToString();
+}
+<div class="google-identity-login" data-google-identity data-client-id="@clientId" data-return-url="@Model">
+    <form action="/account/google/identity/login" method="post" data-google-identity-form data-turbo="false">
+        @Html.AntiForgeryToken()
+        @if (!string.IsNullOrEmpty(upgradeId)) { <input type="hidden" name="upgradeUserId" value="@upgradeId" /> }
+    </form>
+    <button type="button" class="cb-account-option cb-account-google" data-google-identity-button disabled="@(string.IsNullOrEmpty(clientId))">
+        <span class="cb-account-icon cb-account-icon-blue" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="#4285f4" d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5a4.7 4.7 0 0 1-2 3.1v2.5h3.2c1.9-1.8 3.1-4.3 3.1-7.4Z"/><path fill="#34a853" d="M12 22c2.7 0 5-.9 6.7-2.4l-3.2-2.5c-.9.6-2 .9-3.5.9-2.7 0-5-1.8-5.8-4.3H2.9v2.6A10 10 0 0 0 12 22Z"/><path fill="#fbbc05" d="M6.2 13.8a6 6 0 0 1 0-3.6V7.6H2.9a10 10 0 0 0 0 8.8l3.3-2.6Z"/><path fill="#ea4335" d="M12 6c1.5 0 2.8.5 3.9 1.5l2.9-2.8A9.6 9.6 0 0 0 12 2a10 10 0 0 0-9.1 5.6l3.3 2.6A6.1 6.1 0 0 1 12 6Z"/></svg></span>
+        <span><strong>Đăng nhập với Google</strong><small>Tiếp tục bằng tài khoản Google của bạn.</small></span><span aria-hidden="true">›</span>
+    </button>
+    <p data-google-identity-status role="status" hidden></p>
+    <p class="cb-account-legal">Bằng việc tiếp tục với Google, bạn đồng ý với <a href="/Legal/Terms" target="_blank">Điều khoản</a> và <a href="/Legal/Privacy" target="_blank">Chính sách riêng tư</a>.</p>
+</div>

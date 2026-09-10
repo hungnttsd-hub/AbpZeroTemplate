@@ -85,6 +85,7 @@
 <!doctype html>
 <html lang="vi">
 <head>
+    @if (isAuthenticated || isAccountActive) { <meta name="turbo-cache-control" content="no-cache" /> }
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="CatBack giúp tạo link mua sắm Shopee và theo dõi phần hoàn tiền được chia sẻ." />
@@ -93,7 +94,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="CatBack" />
-    <meta name="turbo-cache-control" content="no-cache" />
+    @if (isAuthenticated || isAccountActive) { <meta name="turbo-cache-control" content="no-cache" /> }
     <meta name="turbo-prefetch" content="false" />
     @if (isHomeActive)
     {
@@ -155,6 +156,8 @@
     <link rel="stylesheet" href="~/admin-payouts.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-settlements.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-settlement-actions.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/catback-account.css" asp-append-version="true" data-turbo-track="reload" />
+    <script src="~/catback-account.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <link rel="stylesheet" href="~/catback-spa.css" asp-append-version="true" data-turbo-track="reload" />
     <script src="~/catback-spa.js" asp-append-version="true" data-turbo-track="reload"></script>
     <script src="~/libs/@@hotwired/turbo/turbo.es2017-umd.js" asp-append-version="true" data-turbo-track="reload" defer></script>
@@ -180,7 +183,7 @@
         }
         else
         {
-            <a class="site-nav-link orders-navigation-link" href="/Account/Login?returnUrl=%2FOrders">Đơn hàng</a>
+            <a class="site-nav-link orders-navigation-link" href="/Account/Choice?returnUrl=%2FOrders">Đơn hàng</a>
         }
     </nav>
     <div class="header-actions">
@@ -201,7 +204,7 @@
         }
         else
         {
-            <a class="button button-ghost login-button" href="/Account/Login">Đăng nhập</a>
+            <a class="button button-ghost login-button" href="/Account/Choice">Đăng nhập</a>
         }
     </div>
 </header>
@@ -322,6 +325,8 @@
     </div>
 }
 <partial name="/Pages/Shared/_CatBackLoading.cshtml" />
+<form hidden aria-hidden="true">@Html.AntiForgeryToken()</form>
+@if (Context.Items["CatBackAnonymous"] is true) { <partial name="/Pages/Shared/_AnonymousWithdrawalModal.cshtml" /> }
 <main id="main-content" tabindex="-1">@RenderBody()</main>
 @if (isAuthenticated)
 {

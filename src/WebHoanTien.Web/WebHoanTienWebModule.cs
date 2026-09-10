@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using WebHoanTien.IdentityExtensions;
+using System.Linq;
 using System;
 using System.IO;
 using System.Threading.RateLimiting;
@@ -156,10 +159,37 @@ public class WebHoanTienWebModule : AbpModule
             options => options.UseNpgsqlConnection(connectionString),
             new PostgreSqlStorageOptions { SchemaName = WebHoanTienConsts.HangfireDbSchema }));
 
-        context.Services.AddDataProtection()
+        var dataProtection = context.Services.AddDataProtection()
             .SetApplicationName(configuration["DataProtection:ApplicationName"] ?? "CatsBack")
             .PersistKeysToDbContext<WebHoanTienDbContext>();
+        var protectionCertificate = configuration["DataProtection:CertificateThumbprint"];
+        if (!string.IsNullOrWhiteSpace(protectionCertificate))
+        {
+            var certificates = (protectionCertificate + ";" + configuration["DataProtection:PreviousCertificateThumbprints"])
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(RecoveryCodeProtector.FindCertificate).ToArray();
+            dataProtection.ProtectKeysWithCertificate(certificates[0]).UnprotectKeysWithAnyCertificate(certificates);
+        }
+        else if (!hostingEnvironment.IsDevelopment() && configuration.GetValue("Authentication:Anonymous:Enabled", false))
+            throw new AbpException("Configure DataProtection:CertificateThumbprint before enabling anonymous accounts in production.");
 
+        context.Services.RemoveAll<Microsoft.AspNetCore.Identity.IUserValidator<Volo.Abp.Identity.IdentityUser>>();
+        context.Services.AddTransient<Microsoft.AspNetCore.Identity.IUserValidator<Volo.Abp.Identity.IdentityUser>, CatBackUserValidator>();
+        context.Services.AddScoped<Microsoft.AspNetCore.Identity.SignInManager<Volo.Abp.Identity.IdentityUser>, CatBackSignInManager>();
+        context.Services.AddScoped<Volo.Abp.Identity.AspNetCore.AbpSignInManager, CatBackSignInManager>();
+        context.Services.Configure<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions>(options =>
+        {
+            options.OnRefreshingPrincipal = context =>
+            {
+                foreach (var type in new[] { CatBackAccountProperties.AnonymousClaim, CatBackAccountProperties.CredentialClaim })
+                {
+                    var claim = context.CurrentPrincipal?.FindFirst(type);
+                    if (claim != null && context.NewPrincipal?.Identity is System.Security.Claims.ClaimsIdentity identity)
+                        identity.AddClaim(claim);
+                }
+                return System.Threading.Tasks.Task.CompletedTask;
+            };
+        });
         ConfigureAuthentication(context, hostingEnvironment, configuration);
         ConfigureShopeeAutomation(context.Services, configuration);
         context.Services.AddHealthChecks()
@@ -183,6 +213,7 @@ public class WebHoanTienWebModule : AbpModule
         var cookieExpireDays = Math.Clamp(configuration.GetValue("Authentication:Cookie:ExpireDays", 30), 1, 365);
         context.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
         {
+            options.LoginPath = "/Account/Choice";
             options.ExpireTimeSpan = TimeSpan.FromDays(cookieExpireDays);
             options.SlidingExpiration = configuration.GetValue("Authentication:Cookie:SlidingExpiration", true);
             options.Cookie.HttpOnly = true;
@@ -465,6 +496,7 @@ public class WebHoanTienWebModule : AbpModule
         app.UseAbpOpenIddictValidation();
 
         app.UseUnitOfWork();
+        app.UseMiddleware<AnonymousAccountSecurityMiddleware>();
         app.UseMiddleware<LegalConsentMiddleware>();
         app.UseDynamicClaims();
         app.UseAuthorization();

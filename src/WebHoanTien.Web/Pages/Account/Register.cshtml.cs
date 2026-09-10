@@ -1,3 +1,4 @@
+using Volo.Abp.Users;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -35,6 +36,19 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
     [BindProperty]
     public bool AcceptedTerms { get; set; }
 
+    [BindProperty, Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
+    public string ConfirmPassword { get; set; } = "";
+
+    public override async Task<IActionResult> OnGetAsync()
+    {
+        if (CurrentUser.IsAuthenticated)
+        {
+            var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
+            return user.IsAnonymous() ? Redirect("/Account/Upgrade?returnUrl=" + Uri.EscapeDataString(ReturnUrl ?? "/")) : Redirect("/Account/Profile");
+        }
+        return await base.OnGetAsync();
+    }
+
     public RegisterModel(
         IAccountAppService accountAppService,
         IAuthenticationSchemeProvider schemeProvider,
@@ -56,16 +70,19 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
 
     public override async Task<IActionResult> OnPostAsync()
     {
+        if (CurrentUser.IsAuthenticated) return Redirect("/Account/Upgrade");
         if (IsExternalLogin)
         {
             ModelState.Remove("Input.Password");
+            ModelState.Remove(nameof(ConfirmPassword));
         }
+        else if (Input?.Password != ConfirmPassword)
+            ModelState.AddModelError(nameof(ConfirmPassword), "Mật khẩu xác nhận không khớp.");
 
         if (Input is not null && !string.IsNullOrWhiteSpace(Input.EmailAddress))
         {
             Input.EmailAddress = Input.EmailAddress.Trim();
-            Input.UserName = Input.EmailAddress;
-            ModelState.Remove("Input.UserName");
+            Input.UserName = Input.UserName?.Trim();
         }
 
         if (!AcceptedTerms)

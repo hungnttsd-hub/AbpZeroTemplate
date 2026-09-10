@@ -58,7 +58,9 @@ public class LegalConsentMiddleware
     }
 
     private static bool IsExempt(PathString path) =>
-        path.StartsWithSegments("/Legal") || path.StartsWithSegments("/Account/InitialPassword") ||
+        path.StartsWithSegments("/Account/AnonymousSuccess") || path.StartsWithSegments("/Account/Recovery") ||
+        path.StartsWithSegments("/Account/UpgradeConfirmation") || path.StartsWithSegments("/api/account/device/current") ||
+        path.StartsWithSegments("/api/account/anonymous") || path.StartsWithSegments("/Legal") || path.StartsWithSegments("/Account/InitialPassword") ||
         path.StartsWithSegments("/Account/Logout") ||
         path.StartsWithSegments("/signin-google") || path.StartsWithSegments("/health") ||
         path.StartsWithSegments("/Abp") || path.StartsWithSegments("/libs") ||

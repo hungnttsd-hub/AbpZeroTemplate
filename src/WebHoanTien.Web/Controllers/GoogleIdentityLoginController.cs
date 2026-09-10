@@ -22,11 +22,15 @@ using Volo.Abp.Timing;
 using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
 using WebHoanTien.IdentityExtensions;
+using WebHoanTien.Web.IdentityExtensions;
+using Volo.Abp.Auditing;
+using Volo.Abp.Users;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
 
 namespace WebHoanTien.Web.Controllers;
 
 [AllowAnonymous]
+[DisableAuditing]
 [Route("account/google/identity")]
 public class GoogleIdentityLoginController : AbpController
 {
@@ -39,6 +43,9 @@ public class GoogleIdentityLoginController : AbpController
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AdminNewUserRegistrationNotifier _adminRegistrationNotifier;
     private readonly string _clientId;
+    private readonly IAccountIdentityStore _accounts;
+    private readonly AnonymousAccountSession _anonymousSession;
+    private readonly IUnitOfWorkManager _uow;
     private readonly string _clientSecret;
     private readonly ILogger<GoogleIdentityLoginController> _logger;
 
@@ -52,7 +59,8 @@ public class GoogleIdentityLoginController : AbpController
         IHttpClientFactory httpClientFactory,
         AdminNewUserRegistrationNotifier adminRegistrationNotifier,
         IConfiguration configuration,
-        ILogger<GoogleIdentityLoginController> logger)
+        ILogger<GoogleIdentityLoginController> logger, IAccountIdentityStore accounts,
+        AnonymousAccountSession anonymousSession, IUnitOfWorkManager uow)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -63,6 +71,7 @@ public class GoogleIdentityLoginController : AbpController
         _httpClientFactory = httpClientFactory;
         _adminRegistrationNotifier = adminRegistrationNotifier;
         _logger = logger;
+        _accounts = accounts; _anonymousSession = anonymousSession; _uow = uow;
         _clientId = configuration["Authentication:Google:ClientId"]
             ?? throw new AbpException("Authentication:Google:ClientId chưa được cấu hình.");
         _clientSecret = configuration["Authentication:Google:ClientSecret"]
@@ -71,13 +80,14 @@ public class GoogleIdentityLoginController : AbpController
 
     [HttpPost("login")]
     [ValidateAntiForgeryToken]
-    [UnitOfWork]
+    [UnitOfWork(IsDisabled = true)]
     public async Task<IActionResult> LoginAsync(
         [FromForm] string? credential = null,
         [FromForm] string? code = null,
         [FromForm] string? redirectUri = null,
         [FromForm] bool acceptedTerms = false,
-        [FromForm] string? returnUrl = null)
+        [FromForm] string? returnUrl = null,
+        [FromForm] Guid? upgradeUserId = null)
     {
         if (string.IsNullOrWhiteSpace(credential) && !string.IsNullOrWhiteSpace(code))
         {
@@ -111,9 +121,9 @@ public class GoogleIdentityLoginController : AbpController
                 Audience = new[] { _clientId }
             });
         }
-        catch (InvalidJwtException exception)
+        catch (InvalidJwtException)
         {
-            _logger.LogWarning(exception, "Google Identity Services returned an invalid ID token");
+            _logger.LogWarning("Google Identity Services returned an invalid ID token");
             return Unauthorized(new { message = "Phiên xác minh Google không hợp lệ hoặc đã hết hạn." });
         }
 
@@ -123,13 +133,34 @@ public class GoogleIdentityLoginController : AbpController
         }
 
         var email = payload.Email.Trim();
+        if (upgradeUserId.HasValue || (CurrentUser.IsAuthenticated && (await _userManager.GetByIdAsync(CurrentUser.GetId())).IsAnonymous()))
+        {
+            if (!CurrentUser.IsAuthenticated || upgradeUserId != CurrentUser.GetId())
+                return Conflict(new { message = "Phiên nâng cấp đã thay đổi. Vui lòng tải lại trang." });
+            if (!acceptedTerms) return BadRequest(new { message = "Bạn cần đồng ý với điều khoản trước khi nâng cấp." });
+            try
+            {
+                var upgraded = await _anonymousSession.TransactionAsync(() => _anonymousSession.Accounts.UpgradeGoogleAsync(
+                    CurrentUser.GetId(), email, payload.Subject, payload.Picture));
+                await _anonymousSession.SignInAsync(upgraded);
+                return Ok(new { redirectUrl = GetSafeReturnUrl(returnUrl) });
+            }
+            catch (UserFriendlyException ex) { return Conflict(new { message = ex.Message }); }
+        }
+        using var transaction = _uow.Begin(requiresNew: true, isTransactional: true);
+        await _accounts.LockAsync("google:" + payload.Subject);
         var user = await _userManager.FindByLoginAsync(GoogleDefaults.AuthenticationScheme, payload.Subject)
-            ?? await _userManager.FindByEmailAsync(email);
+            ?? await _accounts.FindByLoginEmailAsync(email);
         var isNewUser = user is null;
 
         if (user is null)
         {
+            if (!acceptedTerms) return BadRequest(new { message = "Bạn cần đồng ý với điều khoản trước khi đăng ký." });
+            var contactOwner = await _userManager.FindByEmailAsync(email);
+            if (contactOwner != null) return Conflict(new { message = "Email Google trùng email liên hệ của tài khoản khác. Hãy đăng nhập tài khoản đó để kiểm tra." });
             user = new IdentityUser(_guidGenerator.Create(), email, email);
+            user.SetProperty(CatBackAccountProperties.Type, 1);
+            user.SetLoginEmail(email);
             user.SetEmailConfirmed(true);
             var createResult = await _userManager.CreateAsync(user);
             if (!createResult.Succeeded)
@@ -140,7 +171,9 @@ public class GoogleIdentityLoginController : AbpController
             }
         }
 
-        if (!user.EmailConfirmed && string.Equals(user.Email, email, StringComparison.OrdinalIgnoreCase))
+        if (user.IsAnonymous()) return Conflict(new { message = "Vui lòng dùng luồng nâng cấp tài khoản." });
+        if (!user.IsActive) return Unauthorized(new { message = "Tài khoản chưa được phép đăng nhập." });
+        if (!user.EmailConfirmed && string.Equals(user.GetLoginEmail(), email, StringComparison.OrdinalIgnoreCase))
         {
             user.SetEmailConfirmed(true);
             var confirmEmailResult = await _userManager.UpdateAsync(user);
@@ -204,6 +237,7 @@ public class GoogleIdentityLoginController : AbpController
             await _adminRegistrationNotifier.EnqueueAsync(user.Id, UserSelfRegistrationMethod.Google);
         }
 
+        await transaction.CompleteAsync();
         await _dynamicClaimsCache.ClearAsync(user.Id, user.TenantId);
         await _signInManager.SignInAsync(user, isPersistent: true);
 

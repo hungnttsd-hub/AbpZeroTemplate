@@ -9,6 +9,8 @@ namespace WebHoanTien.Affiliates;
 
 public sealed class CustomerWalletOverviewDto
 {
+    public WebHoanTien.IdentityExtensions.AccountType AccountType { get; set; } = WebHoanTien.IdentityExtensions.AccountType.Registered;
+    public string? WithdrawalBlockedReason { get; set; }
     public decimal AvailableBalance { get; set; }
     public decimal TotalRecordedAmount { get; set; }
     public decimal PendingCommissionAmount { get; set; }

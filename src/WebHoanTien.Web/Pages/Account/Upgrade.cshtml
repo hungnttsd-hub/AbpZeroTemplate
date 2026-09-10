@@ -1,0 +1,18 @@
+@page
+@model WebHoanTien.Web.Pages.Account.AccountFlowModel
+@{ Layout = "/Pages/Shared/_CustomerLayout.cshtml"; ViewData["Title"] = "Nâng cấp tài khoản"; ViewData["UpgradeUserId"] = Model.UserId; }
+<section class="cb-account-shell"><a class="cb-account-back" href="/Account/Profile">‹ Quay lại</a><div class="cb-account-card">
+    <span class="eyebrow">Bảo vệ tài khoản của bạn</span><h1>Đăng ký</h1><p class="cb-account-lead">Nâng cấp tài khoản chính thức để bảo vệ dữ liệu và rút tiền hoàn.</p>
+    <form method="post" action="/api/account/upgrade" class="form-stack" data-account-api="/api/account/upgrade" data-turbo="false">@Html.AntiForgeryToken()<input type="hidden" name="returnUrl" value="@Model.SafeReturnUrl" />
+        <div class="field"><label for="upgrade-username">Username</label><input id="upgrade-username" name="username" value="@Model.Username" required maxlength="256" autocomplete="username" /></div>
+        <div class="field"><label for="upgrade-email">Email đăng nhập</label><input id="upgrade-email" name="email" type="email" required maxlength="256" autocomplete="email" /></div>
+        <div class="field"><label for="upgrade-password">Mật khẩu</label><div class="password-input-shell"><input id="upgrade-password" name="password" type="password" required maxlength="128" autocomplete="new-password" /><button type="button" class="password-visibility-toggle" data-password-toggle aria-controls="upgrade-password" aria-label="Hiện mật khẩu"><span class="password-visibility-icon" aria-hidden="true"></span></button></div></div>
+        <div class="field"><label for="upgrade-confirm">Xác nhận mật khẩu</label><div class="password-input-shell"><input id="upgrade-confirm" name="confirmPassword" type="password" required maxlength="128" autocomplete="new-password" /><button type="button" class="password-visibility-toggle" data-password-toggle aria-controls="upgrade-confirm" aria-label="Hiện mật khẩu"><span class="password-visibility-icon" aria-hidden="true"></span></button></div></div>
+        <label class="check-row"><input type="checkbox" name="acceptedTerms" required /> <span>Tôi đồng ý với <a href="/Legal/Terms" target="_blank">Điều khoản</a> và <a href="/Legal/Privacy" target="_blank">Chính sách riêng tư</a>.</span></label>
+        <p data-account-status role="status" hidden></p><button class="button cb-account-primary">Đăng ký tài khoản</button>
+    </form>
+    <div class="cb-account-info"><span><strong>Bạn đang nâng cấp từ tài khoản ẩn danh</strong><br />Link đã tạo, đơn hàng và số dư hiện tại được giữ nguyên sau khi đăng ký.</span></div>
+    <div data-upgrade-pending hidden="@(!Model.UpgradePending)"><p>Đang chờ xác minh email. Bạn vẫn có thể dùng tài khoản ẩn danh.</p><button type="button" data-upgrade-resend>Gửi lại email xác minh</button><p data-resend-status role="status"></p></div>
+    <div class="cb-account-divider">hoặc</div><partial name="/Pages/Shared/_AccountGoogle.cshtml" model="Model.SafeReturnUrl" />
+</div></section>
+@section Scripts { <script src="~/google-identity.js" asp-append-version="true" defer></script> }

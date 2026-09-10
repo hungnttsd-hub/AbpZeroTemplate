@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Volo.Abp.Identity;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
+using WebHoanTien.IdentityExtensions;
+using Volo.Abp.Auditing;
 
 namespace WebHoanTien.Web.Pages.Account;
 
+[DisableAuditing]
 public class ConfirmEmailModel : PageModel
 {
     private readonly IdentityUserManager _userManager;
@@ -41,7 +44,7 @@ public class ConfirmEmailModel : PageModel
         }
 
         var user = await _userManager.FindByIdAsync(UserId.ToString());
-        if (user is null)
+        if (user is null || user.IsAnonymous())
         {
             Error = "Không tìm thấy tài khoản cần xác minh.";
             return Page();
