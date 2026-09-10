@@ -9,7 +9,7 @@
     var otherProviders = Model.VisibleExternalProviders.Where(provider => provider.AuthenticationScheme != "Google").ToList();
 }
 
-<section class="auth-shell">
+<section class="auth-shell auth-shell-single">
     <div class="auth-card">
         <span class="eyebrow">Bắt đầu trong một phút</span>
         <h1>Tạo tài khoản</h1>
@@ -99,11 +99,6 @@
             }
         }
     </div>
-    <aside class="auth-aside">
-        <span class="eyebrow">Minh bạch ngay từ đầu</span>
-        <h2>Đơn đầu hoàn 100%, đơn tiếp theo hoàn 80% hoa hồng.</h2>
-        <p>Tỷ lệ được chụp lại tại thời điểm đặt hàng. Đơn hủy, hoàn hoặc bị từ chối không phát sinh cashback phải trả.</p>
-    </aside>
 </section>
 
 @section Scripts {

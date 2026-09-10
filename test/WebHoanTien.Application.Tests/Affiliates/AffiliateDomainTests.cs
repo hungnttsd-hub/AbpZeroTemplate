@@ -19,8 +19,11 @@ public class AffiliateDomainTests
     }
 
     [Theory]
-    [InlineData(1, 60, 100)]
+    [InlineData(1, 60, 80)]
     [InlineData(2, 60, 80)]
+    [InlineData(1, 70, 80)]
+    [InlineData(2, 70, 80)]
+    [InlineData(3, 70, 70)]
     [InlineData(3, 60, 60)]
     [InlineData(4, 60, 60)]
     [InlineData(5, 60, 60)]

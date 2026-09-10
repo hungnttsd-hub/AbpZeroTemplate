@@ -35,9 +35,13 @@ public class AnonymousAccountController : AbpController
         var secret = _session.DeviceSecret;
         if (secret.Length != 64 || !secret.All(Uri.IsHexDigit)) throw new UserFriendlyException("Vui lòng tải lại trang để ghi nhớ thiết bị.");
         await _session.LimitAsync("create", 10, 5, 60);
-        var user = await _session.TransactionAsync(() => _session.Accounts.CreateOrResumeAsync(secret, _session.CreationEnabled));
-        await _session.SignInAsync(user, secret);
-        return new { redirectUrl = "/Account/AnonymousSuccess?returnUrl=" + Uri.EscapeDataString(AnonymousAccountSession.SafeReturn(input.ReturnUrl)) };
+        var result = await _session.TransactionAsync(() => _session.Accounts.CreateOrResumeAsync(secret, _session.CreationEnabled));
+        await _session.SignInAsync(result.User, secret);
+        return new {
+            redirectUrl = result.IsNewAccount
+                ? "/Account/AnonymousSuccess?returnUrl=" + Uri.EscapeDataString(AnonymousAccountSession.SafeReturn(input.ReturnUrl))
+                : "/"
+        };
     });
 
     [HttpPost("anonymous/recover"), AllowAnonymous]
@@ -122,7 +126,7 @@ public class AnonymousAccountController : AbpController
     }
     private async Task<IActionResult> Execute(Func<Task<object>> action)
     {
-        if (!ModelState.IsValid) return BadRequest(new { message = "Vui lòng kiểm tra các trường và mật khẩu xác nhận." });
+        if (!ModelState.IsValid) return BadRequest(new { message = "Vui lòng kiểm tra các trường đã nhập." });
         try { return Ok(await action()); }
         catch (AccountRateLimitException ex)
         { Response.Headers.RetryAfter = ex.RetryAfter.ToString(); return StatusCode(429, new { message = ex.Message }); }
@@ -154,5 +158,4 @@ public class AccountUpgradeInput : AnonymousCreateInput
     [Required, StringLength(256)] public string Username { get; set; } = "";
     [Required, EmailAddress, StringLength(256)] public string Email { get; set; } = "";
     [Required, StringLength(128)] public string Password { get; set; } = "";
-    [Required, Compare(nameof(Password))] public string ConfirmPassword { get; set; } = "";
 }

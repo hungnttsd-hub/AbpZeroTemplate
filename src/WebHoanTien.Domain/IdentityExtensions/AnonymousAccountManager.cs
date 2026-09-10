@@ -68,7 +68,7 @@ public class AnonymousAccountManager : DomainService
         return _devices.AnyAsync(x => x.SecretHash == hash);
     }
 
-    public async Task<IdentityUser> CreateOrResumeAsync(string secret, bool creationEnabled)
+    public async Task<(IdentityUser User, bool IsNewAccount)> CreateOrResumeAsync(string secret, bool creationEnabled)
     {
         var hash = Hash(secret);
         await _accounts.LockAsync("device:" + hash);
@@ -77,8 +77,9 @@ public class AnonymousAccountManager : DomainService
         {
             var existing = await RequireAnonymousAsync(device.UserId);
             device.LastUsedAt = Clock.Now;
+            device.ExpiresAt = Clock.Now.AddYears(WebHoanTienConsts.AnonymousDeviceLifetimeYears);
             await _devices.UpdateAsync(device);
-            return existing;
+            return (existing, false);
         }
         if (!creationEnabled) throw new UserFriendlyException("Tạo tài khoản ẩn danh đang tạm dừng. Bạn vẫn có thể khôi phục bằng mã.");
         if (await _devices.AnyAsync(x => x.SecretHash == hash))
@@ -93,7 +94,7 @@ public class AnonymousAccountManager : DomainService
         await RememberAsync(user.Id, secret);
         await ConsentAsync(user.Id, LegalConsentMethod.AnonymousRegistration);
         Logger.LogInformation("AnonymousAccountCreated {UserId}", user.Id);
-        return user;
+        return (user, true);
     }
 
     public async Task<IdentityUser> RecoverAsync(string code, string deviceSecret)
@@ -118,7 +119,7 @@ public class AnonymousAccountManager : DomainService
     public async Task RememberAsync(Guid userId, string secret)
     {
         await _devices.InsertAsync(new AnonymousDevice(GuidGenerator.Create())
-        { UserId = userId, SecretHash = Hash(secret), CreatedAt = Clock.Now, LastUsedAt = Clock.Now, ExpiresAt = Clock.Now.AddDays(90) });
+        { UserId = userId, SecretHash = Hash(secret), CreatedAt = Clock.Now, LastUsedAt = Clock.Now, ExpiresAt = Clock.Now.AddYears(WebHoanTienConsts.AnonymousDeviceLifetimeYears) });
     }
 
     public async Task<string> GetRecoveryAsync(Guid userId)

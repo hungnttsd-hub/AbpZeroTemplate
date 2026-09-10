@@ -31,13 +31,12 @@
       delete input.__RequestVerificationToken;
       if ('acceptedTerms' in input) input.acceptedTerms = input.acceptedTerms === 'on' || input.acceptedTerms === 'true';
       const status = form.querySelector('[data-account-status]');
-      if ('confirmPassword' in input && input.password !== input.confirmPassword) { show(status, 'Mật khẩu xác nhận không khớp.'); return; }
       form.dataset.busy = 'true';
       const button = form.querySelector('button:not([type=button])');
       const originalButtonText = button?.textContent;
       const isAnonymousCreate = form.dataset.accountApi === '/api/account/anonymous';
       if (button) button.disabled = true;
-      if (button && isAnonymousCreate) button.textContent = 'Đang tạo tài khoản…';
+      if (button && isAnonymousCreate) button.textContent = button.dataset.loadingLabel || 'Đang tạo tài khoản…';
       form.setAttribute('aria-busy', 'true');
       try {
         const result = await api(form.dataset.accountApi, form.dataset.accountMethod || 'POST', input);
@@ -91,7 +90,7 @@
         const groups = code.split('-');
         for (let i = 0; i < groups.length; i++) { const span = document.createElement('span'); span.textContent = groups[i] + (i < groups.length - 1 ? '-' : ''); codeElement.append(span); }
       };
-      const loading = busy => recovery.querySelectorAll('[data-recovery-copy],[data-recovery-save],[data-recovery-save-home],[data-recovery-ack],[data-recovery-regenerate]').forEach(b => b.disabled = busy || !recoveryCode);
+      const loading = busy => recovery.querySelectorAll('[data-recovery-copy],[data-recovery-save],[data-recovery-ack],[data-recovery-regenerate]').forEach(b => b.disabled = busy || !recoveryCode);
       loading(true);
       api('/api/account/anonymous/recovery').then(result => setCode(result.recoveryCode)).catch(error => {
         if (error.name !== 'AbortError') { codeElement.textContent = 'Chưa tải được mã'; show(status, error.message + ' Hãy tải lại trang.'); }
@@ -128,20 +127,15 @@
         } catch { show(status, 'Không thể lưu ảnh trên trình duyệt này. Hãy sao chép mã.'); return false; }
       };
       let savingImage = false;
-      const saveRecovery = async goHome => {
+      const saveRecovery = async () => {
         if (savingImage || !recoveryCode) return;
         savingImage = true;
         loading(true);
         try {
-          if (await saveRecoveryImage() && goHome) {
-            // Let the browser dispatch the download before unloading this page.
-            await new Promise(resolve => setTimeout(resolve, 250));
-            if (!signal.aborted) navigate('/');
-          }
+          await saveRecoveryImage();
         } finally { savingImage = false; loading(false); }
       };
-      recovery.querySelector('[data-recovery-save]').addEventListener('click', () => saveRecovery(false), { signal });
-      recovery.querySelector('[data-recovery-save-home]')?.addEventListener('click', () => saveRecovery(true), { signal });
+      recovery.querySelector('[data-recovery-save]').addEventListener('click', saveRecovery, { signal });
       recovery.querySelector('[data-recovery-ack]').addEventListener('click', event => {
         if (!recoveryCode) return; acknowledged = true; event.currentTarget.textContent = 'Đã xác nhận lưu mã'; show(status, 'Bạn có thể tiếp tục vào app.', true);
       }, { signal });

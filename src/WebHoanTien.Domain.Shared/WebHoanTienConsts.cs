@@ -11,9 +11,9 @@ public static class WebHoanTienConsts
     public const int AffiliateIdMaxLength = 128;
     public const int AffiliateOverrideNoteMaxLength = 500;
     public const decimal DefaultUserShareRate = 60m;
-    public const decimal FirstOrderUserShareRate = 100m;
     public const decimal IntroductoryUserShareRate = 80m;
     public const int IntroductoryOrderCount = 2;
+    public const int AnonymousDeviceLifetimeYears = 2;
     public const decimal MinimumWithdrawalAmount = 10_000m;
     public const decimal WithdrawalFeeAmount = 0m;
     public const long MaximumWithdrawalProofSize = 5 * 1024 * 1024;

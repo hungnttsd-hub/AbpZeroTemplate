@@ -8,6 +8,11 @@
     align-items: stretch;
 }
 
+.auth-shell-single {
+    max-width: 680px;
+    grid-template-columns: minmax(0, 1fr);
+}
+
 .auth-card,
 .auth-aside {
     border-radius: var(--surface-radius-lg);

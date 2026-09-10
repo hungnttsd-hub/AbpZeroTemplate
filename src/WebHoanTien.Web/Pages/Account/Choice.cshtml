@@ -2,14 +2,14 @@
 @model WebHoanTien.Web.Pages.Account.AccountFlowModel
 @{ Layout = "/Pages/Shared/_CustomerLayout.cshtml"; ViewData["Title"] = "Chọn cách tiếp tục"; ViewData["AccountHeaderBackUrl"] = Model.SafeReturnUrl; ViewData["AccountHeaderBackLabel"] = "Quay lại trang trước"; }
 <section class="cb-account-shell"><div class="cb-account-card">
-    <span class="eyebrow">Chào mừng bạn đến với CatBack</span><h1>Chọn cách tiếp tục</h1><p class="cb-account-lead">Chọn cách đăng nhập hoặc khôi phục tài khoản của bạn dưới đây.</p>
+    <span class="eyebrow">Chào mừng bạn đến với CatBack</span><h1>Chọn cách tiếp tục</h1><p class="cb-account-lead">Bạn có thể chọn một trong ba cách dưới đây để tiếp tục.</p>
     @{ ViewData["GoogleLegalAtBottom"] = true; }
     <partial name="/Pages/Shared/_AccountGoogle.cshtml" model="Model.SafeReturnUrl" />
     <a class="cb-account-option" href="@Model.WithReturn("/Account/Login")"><span class="cb-account-icon"><i class="fa-regular fa-user" aria-hidden="true"></i></span><span><strong>Đăng nhập bằng tài khoản</strong><small>Dùng username hoặc email và mật khẩu để đăng nhập.</small></span><span aria-hidden="true">›</span></a>
     <button type="button" class="cb-account-option" data-anonymous-open aria-haspopup="dialog"><span class="cb-account-icon cb-account-icon-gold"><i class="fa-solid fa-user-secret" aria-hidden="true"></i></span><span><strong>Sử dụng tài khoản ẩn danh</strong><small>Không cần đăng ký ngay, có mã khôi phục.</small></span><span aria-hidden="true">›</span></button>
-    <a class="cb-account-option" href="@Model.WithReturn("/Account/Recovery")"><span class="cb-account-icon cb-account-icon-blue"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span><span><strong>Khôi phục tài khoản ẩn danh</strong><small>Dùng mã khôi phục đã lưu để đăng nhập lại tài khoản cũ.</small></span><span aria-hidden="true">›</span></a>
     <div class="cb-account-info"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span><strong>Bảo vệ tài khoản của bạn</strong><br />Giữ kín mã khôi phục và đăng ký tài khoản khi cần rút tiền.</span></div>
     <partial name="/Pages/Shared/_AccountGoogleLegal.cshtml" />
+    <p class="cb-account-legal"><a href="@Model.WithReturn("/Account/Recovery")">Khôi phục tài khoản ẩn danh</a></p>
 </div></section>
 <partial name="/Pages/Shared/_AnonymousCreateModal.cshtml" model="Model" />
 @section Scripts { <script src="~/google-identity.js" asp-append-version="true" defer></script> }

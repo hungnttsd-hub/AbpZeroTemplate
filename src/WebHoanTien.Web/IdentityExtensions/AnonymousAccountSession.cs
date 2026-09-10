@@ -91,7 +91,7 @@ public class AnonymousAccountSession : ITransientDependency
     public static string SafeReturn(string? url) => !string.IsNullOrWhiteSpace(url) && url.Length <= 2048 &&
         url.StartsWith('/') && !url.StartsWith("//") && !url.Contains('\\') && !url.Any(char.IsControl) ? url : "/";
     public void SetDevice(string secret) => _http.HttpContext!.Response.Cookies.Append(CookieName, secret,
-        new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Path = "/", IsEssential = true, MaxAge = TimeSpan.FromDays(90) });
+        new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Path = "/", IsEssential = true, Expires = DateTimeOffset.UtcNow.AddYears(WebHoanTienConsts.AnonymousDeviceLifetimeYears) });
     public void ForgetCookie() => _http.HttpContext!.Response.Cookies.Delete(CookieName, new CookieOptions { Secure = true, HttpOnly = true, Path = "/" });
     public async Task EnsureDeviceAsync()
     {
@@ -125,6 +125,7 @@ public class AnonymousAccountSession : ITransientDependency
             await _signIn.SignInWithClaimsAsync(user, true, new[] {
                 new Claim(CatBackAccountProperties.AnonymousClaim, "1"),
                 new Claim(CatBackAccountProperties.CredentialClaim, AnonymousAccountManager.Hash(secret!)) });
+            SetDevice(secret!);
         }
         else
         {

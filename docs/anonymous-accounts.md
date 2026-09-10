@@ -47,7 +47,7 @@ Rollback bằng tắt tạo mới. Không rollback về binary không có guard 
 | PUT `/api/account/anonymous/username` | Theo policy Identity, uniqueness và kiểm tra xung đột namespace email đăng nhập |
 | GET `/api/account/device/current` | Chỉ metadata credential thuộc user hiện tại |
 | DELETE `/api/account/device/current` | Thu hồi credential hiện tại, xóa cookie, logout |
-| POST `/api/account/upgrade` | Username/email/password/confirmPassword/acceptedTerms/returnUrl; user lấy từ phiên |
+| POST `/api/account/upgrade` | Username/email/password/acceptedTerms/returnUrl; user lấy từ phiên |
 | POST `/api/account/upgrade/resend` | Phát token mới, link cũ hết hiệu lực; tài khoản vẫn Anonymous |
 
 Các POST/PUT/DELETE dùng antiforgery. Payload JSON trả `redirectUrl`, `pending`/`message` hoặc lỗi. `CatBack:RegistrationRequired` là mã lỗi guard rút tiền. API device/recovery quản lý chỉ nhận current user, không nhận UserId tùy ý.
