@@ -18,7 +18,7 @@
 
     var userInitial = displayedUserName[..1].ToUpperInvariant();
 }
-<button class="header-avatar customer-navigation-trigger" type="button"
+<button class="header-avatar customer-navigation-trigger @(Context.Request.Path.StartsWithSegments("/Account", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" type="button"
         title="Tài khoản: @displayedUserName" aria-label="Mở menu tài khoản của @displayedUserName"
         aria-haspopup="dialog" aria-controls="account-navigation-drawer" aria-expanded="false"
         data-account-navigation-open>@userInitial</button>

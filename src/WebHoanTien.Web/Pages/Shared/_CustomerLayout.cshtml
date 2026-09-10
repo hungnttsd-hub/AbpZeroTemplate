@@ -42,7 +42,17 @@
     var isGuideActive = currentPath.StartsWith("/huong-dan", StringComparison.OrdinalIgnoreCase) ||
                         currentPath.StartsWith("/Guide", StringComparison.OrdinalIgnoreCase);
     var isAccountActive = currentPath.StartsWith("/Account", StringComparison.OrdinalIgnoreCase);
+    var accountHeaderBackUrl = ViewData["AccountHeaderBackUrl"] as string;
+    var accountHeaderBackLabel = ViewData["AccountHeaderBackLabel"] as string ?? "Quay lại";
+    var hasAccountHeaderBack = !string.IsNullOrWhiteSpace(accountHeaderBackUrl);
     var bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
+
+    if (hasAccountHeaderBack)
+    {
+        bodyClass = string.IsNullOrWhiteSpace(bodyClass)
+            ? "account-header-back-page"
+            : string.Concat(bodyClass, " account-header-back-page");
+    }
     var unreadNotificationCount = isAuthenticated ? await CustomerNotifications.GetUnreadCountAsync() : 0;
 
     var hasAdminRole = isAuthenticated && User.IsInRole("admin");
@@ -173,40 +183,16 @@
 {
     <partial name="/Pages/Shared/_CatBackLaunch.cshtml" />
 }
-<header class="site-header">
-    <a class="brand" href="/" aria-label="Về trang chủ"><span class="brand-mark" aria-hidden="true"><img src="~/catback-mascot-reference.png" alt="" /></span></a>
-    <nav class="site-navigation" aria-label="Điều hướng chính">
-        @if (isAuthenticated)
-        {
-            <a class="site-nav-link @(isWalletActive ? "is-active" : null)" href="/Wallet">Ví tiền</a>
-            <a class="site-nav-link orders-navigation-link @(isOrdersActive ? "is-active" : null)" href="/Orders">Đơn hàng</a>
-        }
-        else
-        {
-            <a class="site-nav-link orders-navigation-link" href="/Account/Choice?returnUrl=%2FOrders">Đơn hàng</a>
-        }
-    </nav>
-    <div class="header-actions">
-        @if (isAuthenticated)
-        {
-            <a class="header-notification-bell" href="/Notifications" aria-label="Mở thông báo, @unreadNotificationCount chưa đọc">
-                <img src="~/notification-icons/bell.svg" alt="" />
-                <span class="notification-count-badge" data-notification-badge
-                      hidden="@(unreadNotificationCount == 0)">@(unreadNotificationCount > 99 ? "99+" : unreadNotificationCount)</span>
-            </a>
-        }
-        @if (isAuthenticated)
-        {
-            <button class="header-avatar @(isAccountActive ? "is-active" : null)" type="button"
-                    title="Tài khoản: @displayedUserName" aria-label="Mở menu tài khoản của @displayedUserName"
-                    aria-haspopup="dialog" aria-controls="account-navigation-drawer" aria-expanded="false"
-                    data-account-navigation-open>@userInitial</button>
-        }
-        else
-        {
-            <a class="button button-ghost login-button" href="/Account/Choice">Đăng nhập</a>
-        }
-    </div>
+<header class="site-header @(hasAccountHeaderBack ? "account-header-with-back" : null)">
+    <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
+    {
+        IsSiteHeader = true,
+        BackUrl = accountHeaderBackUrl,
+        BackLabel = accountHeaderBackLabel,
+        IsWalletActive = isWalletActive,
+        IsOrdersActive = isOrdersActive,
+        UnreadNotificationCount = unreadNotificationCount
+    })" />
 </header>
 @if (isAuthenticated)
 {

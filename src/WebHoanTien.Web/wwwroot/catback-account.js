@@ -34,7 +34,11 @@
       if ('confirmPassword' in input && input.password !== input.confirmPassword) { show(status, 'Mật khẩu xác nhận không khớp.'); return; }
       form.dataset.busy = 'true';
       const button = form.querySelector('button:not([type=button])');
+      const originalButtonText = button?.textContent;
+      const isAnonymousCreate = form.dataset.accountApi === '/api/account/anonymous';
       if (button) button.disabled = true;
+      if (button && isAnonymousCreate) button.textContent = 'Đang tạo tài khoản…';
+      form.setAttribute('aria-busy', 'true');
       try {
         const result = await api(form.dataset.accountApi, form.dataset.accountMethod || 'POST', input);
         if (result.redirectUrl) { navigate(result.redirectUrl); return; }
@@ -43,10 +47,40 @@
       } catch (error) {
         if (error.name !== 'AbortError') show(status, error.message);
         if (error.pending) document.querySelector('[data-upgrade-pending]')?.removeAttribute('hidden');
-      } finally { delete form.dataset.busy; if (button) button.disabled = false; }
+      } finally {
+        delete form.dataset.busy;
+        form.removeAttribute('aria-busy');
+        if (button) {
+          button.disabled = false;
+          if (isAnonymousCreate) button.textContent = originalButtonText;
+        }
+      }
     }, { signal }));
     const confirm = async (title, message) => window.CatsBackModal?.confirm
       ? window.CatsBackModal.confirm({ title, message, confirmText: 'Tiếp tục', cancelText: 'Quay lại' }) : window.confirm(message);
+    const createDialog = document.querySelector('[data-anonymous-create]');
+    let createTrigger;
+    if (createDialog) {
+      const isCreating = () => !!createDialog.querySelector('form[data-busy]');
+      const openCreate = source => {
+        if (createDialog.open) return;
+        createTrigger = source;
+        createDialog.showModal();
+        createDialog.querySelector('h2').focus();
+      };
+      document.querySelectorAll('[data-anonymous-open]').forEach(button =>
+        button.addEventListener('click', () => openCreate(button), { signal }));
+      createDialog.querySelectorAll('[data-anonymous-dismiss]').forEach(button =>
+        button.addEventListener('click', () => { if (!isCreating()) createDialog.close(); }, { signal }));
+      createDialog.addEventListener('cancel', event => { if (isCreating()) event.preventDefault(); }, { signal });
+      createDialog.addEventListener('close', () => createTrigger?.focus(), { signal });
+      if (createDialog.dataset.autoOpen === 'true') {
+        openCreate(document.querySelector('[data-anonymous-open]'));
+        const url = new URL(location.href);
+        url.searchParams.delete('showAnonymous');
+        history.replaceState(history.state, '', url);
+      }
+    }
     const recovery = document.querySelector('[data-recovery-page]');
     let recoveryCode = '', acknowledged = false;
     if (recovery) {
@@ -57,7 +91,7 @@
         const groups = code.split('-');
         for (let i = 0; i < groups.length; i++) { const span = document.createElement('span'); span.textContent = groups[i] + (i < groups.length - 1 ? '-' : ''); codeElement.append(span); }
       };
-      const loading = busy => recovery.querySelectorAll('[data-recovery-copy],[data-recovery-save],[data-recovery-ack],[data-recovery-regenerate]').forEach(b => b.disabled = busy);
+      const loading = busy => recovery.querySelectorAll('[data-recovery-copy],[data-recovery-save],[data-recovery-save-home],[data-recovery-ack],[data-recovery-regenerate]').forEach(b => b.disabled = busy || !recoveryCode);
       loading(true);
       api('/api/account/anonymous/recovery').then(result => setCode(result.recoveryCode)).catch(error => {
         if (error.name !== 'AbortError') { codeElement.textContent = 'Chưa tải được mã'; show(status, error.message + ' Hãy tải lại trang.'); }
@@ -67,25 +101,47 @@
         try { await navigator.clipboard.writeText(recoveryCode); show(status, 'Đã sao chép mã', true); notify('Đã sao chép mã'); }
         catch { show(status, 'Không thể sao chép tự động. Hãy chọn mã để sao chép hoặc dùng Lưu ảnh.'); }
       }, { signal });
-      recovery.querySelector('[data-recovery-save]').addEventListener('click', async () => {
-        if (!recoveryCode) return;
+      const saveRecoveryImage = async () => {
+        if (!recoveryCode || signal.aborted) return false;
         try {
           await document.fonts.ready;
+          if (signal.aborted) return false;
           const canvas = document.createElement('canvas'); canvas.width = 1000; canvas.height = 620;
           const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff7df'; ctx.fillRect(0, 0, 1000, 620);
           ctx.fillStyle = '#031e45'; ctx.font = 'bold 42px sans-serif'; ctx.fillText('CATBACK • MÃ KHÔI PHỤC', 60, 90);
-          ctx.font = '28px sans-serif'; ctx.fillText(recovery.querySelector('[data-recovery-username]').textContent, 60, 155);
+          ctx.font = '28px sans-serif'; ctx.fillText(recovery.dataset.recoveryUsername || '', 60, 155);
           ctx.font = 'bold 35px monospace'; const groups = recoveryCode.split('-');
           ctx.fillText(groups.slice(0, 5).join('-'), 60, 265); ctx.fillText(groups.slice(5).join('-'), 60, 325);
           ctx.font = '24px sans-serif'; ctx.fillText('Giữ kín mã này để khôi phục tài khoản của bạn.', 60, 450);
           ctx.fillText('Mã cũ hết hiệu lực khi đổi mã hoặc nâng cấp tài khoản.', 60, 500);
-          canvas.toBlob(blob => {
-            if (!blob) { show(status, 'Không thể lưu ảnh. Hãy sao chép mã.'); return; }
-            const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'CatBack-ma-khoi-phuc.png'; link.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1500); show(status, 'Đã tạo ảnh mã khôi phục. Hãy kiểm tra tệp đã tải.', true);
-          }, 'image/png');
-        } catch { show(status, 'Không thể lưu ảnh trên trình duyệt này. Hãy sao chép mã.'); }
-      }, { signal });
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          if (signal.aborted) return false;
+          if (!blob) { show(status, 'Không thể lưu ảnh. Hãy sao chép mã.'); return false; }
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url; link.download = 'CatBack-ma-khoi-phuc.png';
+          document.body.append(link);
+          link.click(); link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+          show(status, 'Đã tạo ảnh mã khôi phục. Hãy kiểm tra tệp đã tải.', true);
+          return true;
+        } catch { show(status, 'Không thể lưu ảnh trên trình duyệt này. Hãy sao chép mã.'); return false; }
+      };
+      let savingImage = false;
+      const saveRecovery = async goHome => {
+        if (savingImage || !recoveryCode) return;
+        savingImage = true;
+        loading(true);
+        try {
+          if (await saveRecoveryImage() && goHome) {
+            // Let the browser dispatch the download before unloading this page.
+            await new Promise(resolve => setTimeout(resolve, 250));
+            if (!signal.aborted) navigate('/');
+          }
+        } finally { savingImage = false; loading(false); }
+      };
+      recovery.querySelector('[data-recovery-save]').addEventListener('click', () => saveRecovery(false), { signal });
+      recovery.querySelector('[data-recovery-save-home]')?.addEventListener('click', () => saveRecovery(true), { signal });
       recovery.querySelector('[data-recovery-ack]').addEventListener('click', event => {
         if (!recoveryCode) return; acknowledged = true; event.currentTarget.textContent = 'Đã xác nhận lưu mã'; show(status, 'Bạn có thể tiếp tục vào app.', true);
       }, { signal });
@@ -131,7 +187,7 @@
       document.addEventListener('catback:registration-required', () => openWithdraw(document.activeElement), { signal });
       if (new URLSearchParams(location.search).get('registrationRequired') === 'true') openWithdraw(document.querySelector('.wallet-action-withdraw'));
     }
-    return () => { clearTimeout(toastTimer); toast.remove(); recoveryCode = ''; if (recovery) recovery.querySelector('[data-recovery-code]').replaceChildren(); if (dialog?.open) dialog.close(); };
+    return () => { clearTimeout(toastTimer); toast.remove(); recoveryCode = ''; if (recovery) recovery.querySelector('[data-recovery-code]').replaceChildren(); if (dialog?.open) dialog.close(); if (createDialog?.open) createDialog.close(); };
   });
   initialize(); document.addEventListener('turbo:load', initialize);
 })();

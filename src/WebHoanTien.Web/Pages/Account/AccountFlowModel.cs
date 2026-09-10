@@ -21,6 +21,7 @@ public class AccountFlowModel : PageModel
     public AccountFlowModel(AnonymousAccountSession session, IdentityUserManager users, ICurrentUser current)
     { _session = session; _users = users; _current = current; }
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
+    [BindProperty(SupportsGet = true)] public bool ShowAnonymous { get; set; }
     [BindProperty(SupportsGet = true)] public string? Token { get; set; }
     public string Username { get; private set; } = "";
     public Guid UserId { get; private set; }
@@ -34,6 +35,8 @@ public class AccountFlowModel : PageModel
     public async Task<IActionResult> OnGetAsync()
     {
         var path = Request.Path.Value ?? "";
+        if (path.EndsWith("/Anonymous", StringComparison.OrdinalIgnoreCase))
+            return Redirect(WithReturn("/Account/Choice") + "&showAnonymous=true");
         if (path.EndsWith("UpgradeConfirmation", StringComparison.OrdinalIgnoreCase)) return Page();
         var protectedPage = path.EndsWith("Upgrade", StringComparison.OrdinalIgnoreCase) || path.EndsWith("AnonymousSuccess", StringComparison.OrdinalIgnoreCase);
         if (protectedPage)

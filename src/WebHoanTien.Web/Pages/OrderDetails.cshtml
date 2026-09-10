@@ -10,18 +10,12 @@
 <section class="cb-order-detail-page">
     <header class="cb-detail-hero">
         <div class="cb-orders-titlebar">
-            <a class="cb-back-button" href="@Model.ReturnUrl" aria-label="Quay lại danh sách đơn hàng">
-                <img src="~/orders-icons/arrow-left.svg" alt="" />
-            </a>
-            <h1>Thông tin đơn hàng</h1>
-            @if (User.Identity?.IsAuthenticated == true)
+            <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
             {
-                <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
-            }
-            else
-            {
-                <span class="cb-title-spacer" aria-hidden="true"></span>
-            }
+                Title = "Thông tin đơn hàng",
+                BackUrl = Model.ReturnUrl,
+                BackLabel = "Quay lại danh sách đơn hàng"
+            })" />
         </div>
 
         <div class="cb-detail-summary">

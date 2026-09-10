@@ -1,0 +1,54 @@
+@model WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+}
+@if (!string.IsNullOrWhiteSpace(Model.BackUrl))
+{
+    <a class="cb-back-button" href="@Model.BackUrl" aria-label="@Model.BackLabel">
+        <img src="~/orders-icons/arrow-left.svg" alt="" />
+    </a>
+}
+else if (Model.IsSiteHeader)
+{
+    <a class="brand" href="/" aria-label="Về trang chủ"><span class="brand-mark" aria-hidden="true"><img src="~/catback-mascot-reference.png" alt="" /></span></a>
+}
+@if (!string.IsNullOrWhiteSpace(Model.Title))
+{
+    <h1>@Model.Title</h1>
+}
+@if (Model.IsSiteHeader)
+{
+    <nav class="site-navigation" aria-label="Điều hướng chính">
+        @if (isAuthenticated)
+        {
+            <a class="site-nav-link @(Model.IsWalletActive ? "is-active" : null)" href="/Wallet">Ví tiền</a>
+            <a class="site-nav-link orders-navigation-link @(Model.IsOrdersActive ? "is-active" : null)" href="/Orders">Đơn hàng</a>
+        }
+        else
+        {
+            <a class="site-nav-link orders-navigation-link" href="/Account/Choice?returnUrl=%2FOrders">Đơn hàng</a>
+        }
+    </nav>
+    <div class="header-actions">
+        @if (isAuthenticated)
+        {
+            <a class="header-notification-bell" href="/Notifications" aria-label="Mở thông báo, @Model.UnreadNotificationCount chưa đọc">
+                <img src="~/notification-icons/bell.svg" alt="" />
+                <span class="notification-count-badge" data-notification-badge hidden="@(Model.UnreadNotificationCount == 0)">@(Model.UnreadNotificationCount > 99 ? "99+" : Model.UnreadNotificationCount)</span>
+            </a>
+            <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+        }
+        else
+        {
+            <a class="button button-ghost login-button" href="/Account/Choice">Đăng nhập</a>
+        }
+    </div>
+}
+else if (isAuthenticated)
+{
+    <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+}
+else
+{
+    <span class="cb-title-spacer" aria-hidden="true"></span>
+}

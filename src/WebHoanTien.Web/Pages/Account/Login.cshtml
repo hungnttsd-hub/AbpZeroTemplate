@@ -10,6 +10,9 @@
     var googleClientId = Configuration["Authentication:Google:ClientId"];
     var hasGoogleProvider = Model.VisibleExternalProviders.Any(provider => provider.AuthenticationScheme == "Google");
     var otherProviders = Model.VisibleExternalProviders.Where(provider => provider.AuthenticationScheme != "Google").ToList();
+    var loginChoiceUrl = Url.Page("./Choice", new { returnUrl = Model.ReturnUrl, returnUrlHash = Model.ReturnUrlHash });
+    ViewData["AccountHeaderBackUrl"] = loginChoiceUrl;
+    ViewData["AccountHeaderBackLabel"] = "Quay lại cách tiếp tục";
 }
 
 <section class="auth-shell">
@@ -107,12 +110,12 @@
         {
             <div class="status-message status-error">Hiện chưa có phương thức đăng nhập khả dụng.</div>
         }
-    </div>
-    <aside class="auth-aside">
-        <span class="eyebrow">CatBack</span>
-        <h2>Link của bạn,<br />đơn của bạn,<br />cashback của bạn.</h2>
-        <p>Thông tin đăng nhập chỉ dùng để bảo vệ lịch sử link và đơn hàng của chính bạn.</p>
-    </aside>
+        </div>
+        <aside class="auth-aside">
+            <span class="eyebrow">CatBack</span>
+            <h2>Link của bạn,<br />đơn của bạn,<br />cashback của bạn.</h2>
+            <p>Thông tin đăng nhập chỉ dùng để bảo vệ lịch sử link và đơn hàng của chính bạn.</p>
+        </aside>
 </section>
 
 @section Scripts {

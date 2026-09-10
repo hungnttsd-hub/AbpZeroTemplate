@@ -7,18 +7,12 @@
 <section class="cb-orders-page">
     <header class="cb-orders-hero">
         <div class="cb-orders-titlebar">
-            <a class="cb-back-button" href="/" aria-label="Quay về trang chủ">
-                <img src="~/orders-icons/arrow-left.svg" alt="" />
-            </a>
-            <h1>Đơn hàng</h1>
-            @if (User.Identity?.IsAuthenticated == true)
+            <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
             {
-                <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
-            }
-            else
-            {
-                <span class="cb-title-spacer" aria-hidden="true"></span>
-            }
+                Title = "Đơn hàng",
+                BackUrl = "/",
+                BackLabel = "Quay về trang chủ"
+            })" />
         </div>
 
         <div class="cb-order-metrics" aria-label="Tổng quan đơn hàng">

@@ -1,3 +1,24 @@
+.cb-back-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cb-back-button img {
+  width: 23px;
+  height: 23px;
+}
+
+.cb-back-button:focus-visible {
+  outline: 3px solid var(--catback-teal);
+  outline-offset: 3px;
+}
+
 .site-header {
   max-width: 1180px;
   min-height: 82px;

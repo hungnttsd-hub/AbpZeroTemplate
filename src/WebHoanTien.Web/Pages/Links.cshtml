@@ -7,11 +7,12 @@
 <section class="customer-dashboard links-page-dashboard">
     <header class="cb-orders-hero cb-links-hero">
         <div class="cb-orders-titlebar">
-            <a class="cb-back-button" href="/" aria-label="Quay về trang chủ">
-                <img src="~/orders-icons/arrow-left.svg" alt="" />
-            </a>
-            <h1>Link đã tạo</h1>
-            <partial name="/Pages/Shared/_CustomerNavigationTrigger.cshtml" />
+            <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
+            {
+                Title = "Link đã tạo",
+                BackUrl = "/",
+                BackLabel = "Quay về trang chủ"
+            })" />
         </div>
     </header>
     <div class="dashboard-grid links-page-grid">

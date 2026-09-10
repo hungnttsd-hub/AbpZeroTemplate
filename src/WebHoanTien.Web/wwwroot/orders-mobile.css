@@ -50,22 +50,6 @@
   text-align: center;
 }
 
-.cb-back-button {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, .28);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, .1);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.cb-back-button img {
-  width: 23px;
-  height: 23px;
-}
-
 .cb-orders-titlebar .customer-navigation-trigger {
   justify-self: end;
   width: 42px;

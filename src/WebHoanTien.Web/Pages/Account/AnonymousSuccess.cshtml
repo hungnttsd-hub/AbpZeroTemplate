@@ -1,9 +1,9 @@
 @page
 @model WebHoanTien.Web.Pages.Account.AccountFlowModel
 @{ Layout = "/Pages/Shared/_CustomerLayout.cshtml"; ViewData["Title"] = "Mã khôi phục"; }
-<section class="cb-account-shell" data-recovery-page><a class="cb-account-back" href="@Model.SafeReturnUrl" data-recovery-continue>Bỏ qua ›</a><div class="cb-account-card">
+<section class="cb-account-shell" data-recovery-page data-recovery-username="@Model.Username"><div class="cb-account-card">
     <span class="eyebrow">Tài khoản đã sẵn sàng</span><h1>Bắt đầu với tài khoản ẩn danh</h1><p class="cb-account-lead">Hãy lưu mã để bảo vệ quyền truy cập tài khoản của bạn.</p>
-    <div class="cb-account-option"><span class="cb-account-icon"><i class="fa-solid fa-user-secret" aria-hidden="true"></i></span><div><small>Tên người dùng</small><strong data-recovery-username>@Model.Username</strong><span class="cb-account-badge">Ẩn danh</span></div></div>
+    <button type="button" class="button cb-account-primary" data-recovery-save-home disabled><i class="fa-solid fa-link" aria-hidden="true"></i> Lưu mã và tạo link hoàn tiền</button>
     <div class="cb-recovery-card"><h2><i class="fa-solid fa-key" aria-hidden="true"></i> Mã khôi phục</h2><div class="cb-recovery-code" data-recovery-code aria-live="polite">Đang tải mã…</div><div class="cb-recovery-actions"><button type="button" data-recovery-copy>Sao chép</button><button type="button" data-recovery-save>Lưu ảnh</button></div><p class="cb-account-warning">Giữ kín mã này. Người có mã có thể truy cập tài khoản. Hãy lưu mã để dùng khi đăng xuất hoặc đổi thiết bị.</p></div>
     <p data-recovery-status role="status" hidden></p><button type="button" class="button cb-account-primary" data-recovery-ack>Tôi đã lưu mã</button><a class="button cb-account-secondary" href="@Model.SafeReturnUrl" data-recovery-continue>Tiếp tục vào app</a>
     <details><summary>Đổi mã khôi phục</summary><p>Mã cũ sẽ hết hiệu lực ngay khi tạo mã mới.</p><button type="button" data-recovery-regenerate>Tạo mã mới</button></details>
