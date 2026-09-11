@@ -162,16 +162,15 @@ public class WebHoanTienWebModule : AbpModule
         var dataProtection = context.Services.AddDataProtection()
             .SetApplicationName(configuration["DataProtection:ApplicationName"] ?? "CatsBack")
             .PersistKeysToDbContext<WebHoanTienDbContext>();
-        var protectionCertificate = configuration["DataProtection:CertificateThumbprint"];
-        if (!string.IsNullOrWhiteSpace(protectionCertificate))
+        var recoveryCertificates = new RecoveryCertificates(configuration);
+        context.Services.AddSingleton<RecoveryCertificates>(_ => recoveryCertificates);
+        if (recoveryCertificates.Current != null)
         {
-            var certificates = (protectionCertificate + ";" + configuration["DataProtection:PreviousCertificateThumbprints"])
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(RecoveryCodeProtector.FindCertificate).ToArray();
-            dataProtection.ProtectKeysWithCertificate(certificates[0]).UnprotectKeysWithAnyCertificate(certificates);
+            dataProtection.ProtectKeysWithCertificate(recoveryCertificates.Current)
+                .UnprotectKeysWithAnyCertificate(recoveryCertificates.All);
         }
         else if (!hostingEnvironment.IsDevelopment() && configuration.GetValue("Authentication:Anonymous:Enabled", false))
-            throw new AbpException("Configure DataProtection:CertificateThumbprint before enabling anonymous accounts in production.");
+            throw new AbpException("Configure DataProtection:CertificatePath, CertificateBase64Path or CertificateThumbprint before enabling anonymous accounts in production.");
 
         context.Services.RemoveAll<Microsoft.AspNetCore.Identity.IUserValidator<Volo.Abp.Identity.IdentityUser>>();
         context.Services.AddTransient<Microsoft.AspNetCore.Identity.IUserValidator<Volo.Abp.Identity.IdentityUser>, CatBackUserValidator>();

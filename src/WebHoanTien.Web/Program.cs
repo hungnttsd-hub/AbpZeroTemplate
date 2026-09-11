@@ -30,6 +30,8 @@ public class Program
         {
             Log.Information("Starting web host.");
             var builder = WebApplication.CreateBuilder(args);
+            // Secret JSON files take precedence over deployment environment overrides.
+            builder.Configuration.AddEnvironmentVariables(prefix: "CATBACK_");
             builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: false);
             builder.Configuration.AddJsonFile("/etc/secrets/appsettings.secrets.json", optional: true, reloadOnChange: false);
             builder.Host.UseAutofac()

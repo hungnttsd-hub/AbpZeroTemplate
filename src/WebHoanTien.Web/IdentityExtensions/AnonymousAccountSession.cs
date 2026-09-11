@@ -26,16 +26,15 @@ namespace WebHoanTien.Web.IdentityExtensions;
 public class RecoveryCodeProtector : IRecoveryCodeProtector, ITransientDependency
 {
     private readonly IDataProtector _protector;
-    private readonly IConfiguration _configuration;
-    public RecoveryCodeProtector(IDataProtectionProvider provider, IConfiguration configuration)
-    { _protector = provider.CreateProtector("CatBack.Anonymous.Recovery.v1"); _configuration = configuration; }
+    private readonly RecoveryCertificates _certificates;
+    public RecoveryCodeProtector(IDataProtectionProvider provider, RecoveryCertificates certificates)
+    { _protector = provider.CreateProtector("CatBack.Anonymous.Recovery.v1"); _certificates = certificates; }
     public string Protect(string code)
     {
-        var thumbprint = _configuration["DataProtection:CertificateThumbprint"];
-        if (string.IsNullOrWhiteSpace(thumbprint)) return _protector.Protect(code);
+        var certificate = _certificates.Current;
+        if (certificate == null) return _protector.Protect(code);
         // The existing application key ring can contain legacy unencrypted keys in the same DB.
         // An RSA envelope keeps recovery codes confidential even before that ring is rotated.
-        using var certificate = FindCertificate(thumbprint);
         using var rsa = certificate.GetRSAPublicKey() ?? throw new InvalidOperationException("Recovery protection requires an RSA certificate.");
         return _protector.Protect("rsa1:" + certificate.Thumbprint + ":" + Convert.ToBase64String(rsa.Encrypt(Encoding.UTF8.GetBytes(code), RSAEncryptionPadding.OaepSHA256)));
     }
@@ -45,10 +44,7 @@ public class RecoveryCodeProtector : IRecoveryCodeProtector, ITransientDependenc
         if (!plaintext.StartsWith("rsa1:", StringComparison.Ordinal)) return plaintext;
         var parts = plaintext.Split(':');
         if (parts.Length != 3) throw new CryptographicException("Invalid recovery envelope.");
-        var allowed = (_configuration["DataProtection:CertificateThumbprint"] + ";" +
-            _configuration["DataProtection:PreviousCertificateThumbprints"]).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (!allowed.Contains(parts[1], StringComparer.OrdinalIgnoreCase)) throw new CryptographicException("Recovery certificate is not configured.");
-        using var certificate = FindCertificate(parts[1]);
+        var certificate = _certificates.Find(parts[1]);
         using var rsa = certificate.GetRSAPrivateKey() ?? throw new CryptographicException("Recovery certificate private key is unavailable.");
         return Encoding.UTF8.GetString(rsa.Decrypt(Convert.FromBase64String(parts[2]), RSAEncryptionPadding.OaepSHA256));
     }

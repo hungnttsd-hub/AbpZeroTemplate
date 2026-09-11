@@ -58,6 +58,7 @@ client_secret_*.json
 **/appsettings.secrets.json
 **/appsettings.*.local.json
 *.pfx
+*.pfx.base64
 *.p12
 *.key
 
