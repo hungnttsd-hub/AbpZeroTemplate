@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1384" height="68" viewBox="0 0 1384 68" fill="none">
+<defs>
+  <linearGradient id="tabActive" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#0C748E"/>
+    <stop offset="55%" stop-color="#19C8DA"/>
+    <stop offset="100%" stop-color="#58F4FF"/>
+  </linearGradient>
+</defs>
+<rect x="0" y="8" width="334" height="52" rx="20" fill="url(#tabActive)" stroke="#5EF7FF"/>
+<text x="135" y="40" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">Tất cả</text>
+<text x="111" y="40" font-size="16" fill="#FFFFFF">▣</text>
+<rect x="352" y="8" width="318" height="52" rx="20" fill="#FFFFFF" stroke="#D7EDF4"/>
+<text x="495" y="40" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#587499">Chờ xử lý</text>
+<text x="467" y="40" font-size="16" fill="#587499">◔</text>
+<rect x="688" y="8" width="318" height="52" rx="20" fill="#FFFFFF" stroke="#D7EDF4"/>
+<text x="826" y="40" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#587499">Đã xác nhận</text>
+<text x="795" y="40" font-size="16" fill="#33B36B">✓</text>
+<rect x="1024" y="8" width="360" height="52" rx="20" fill="#FFFFFF" stroke="#D7EDF4"/>
+<text x="1184" y="40" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#587499">Đã hủy</text>
+<text x="1152" y="40" font-size="16" fill="#587499">⊘</text>
+</svg>

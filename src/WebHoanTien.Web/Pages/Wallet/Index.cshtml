@@ -8,11 +8,12 @@
 }
 
 <section class="wallet-shell wallet-overview-shell">
-    <header class="wallet-topbar">
+    <header class="cb-page-header wallet-topbar cb-mobile-page-header">
         <a href="/" aria-label="Về trang chủ"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg></a>
         <h1>Ví tiền</h1>
         <span></span>
     </header>
+    <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Ví tiền", Description = "Quản lý số dư và theo dõi các khoản hoàn tiền của bạn" })" />
 
     <section class="wallet-balance-hero">
         <div>
@@ -53,7 +54,7 @@
         <a class="wallet-action-history" href="/Wallet/History"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg><span>Lịch sử ví</span><b>›</b></a>
     </div>
 
-    <section class="wallet-list-card">
+    <section class="cb-card wallet-list-card">
         <header><h2>Biến động gần đây</h2><a href="/Wallet/History">Xem tất cả ›</a></header>
         <partial name="_MovementList" model="Model.Overview.RecentMovements" />
     </section>

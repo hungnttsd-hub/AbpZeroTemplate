@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="252" height="941" viewBox="0 0 252 941" fill="none">
+<defs>
+  <linearGradient id="sbBg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#093966"/>
+    <stop offset="100%" stop-color="#082C58"/>
+  </linearGradient>
+  <linearGradient id="activeGrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#0C748E"/>
+    <stop offset="55%" stop-color="#19C8DA"/>
+    <stop offset="100%" stop-color="#58F4FF"/>
+  </linearGradient>
+  <filter id="activeGlow" x="-20%" y="-30%" width="140%" height="180%">
+    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1ED7E6" flood-opacity="0.35"/>
+  </filter>
+</defs>
+<rect width="252" height="941" rx="0" fill="url(#sbBg)"/>
+<rect x="0" y="0" width="252" height="941" fill="rgba(255,255,255,0.02)"/>
+<text x="65" y="51" font-size="30" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">CatBack</text>
+<text x="66" y="75" font-size="12" font-family="Inter, Arial" font-weight="700" fill="#6FF5FF">MUA SẮM THÔNG MINH</text>
+<text x="66" y="92" font-size="12" font-family="Inter, Arial" font-weight="700" fill="#6FF5FF">HOÀN TIỀN THẬT</text>
+<circle cx="28" cy="44" r="20" fill="#DFFBFF" opacity="0.95"/><text x="16" y="50" font-size="16" font-family="Inter, Arial" font-weight="800" fill="#0A3668">🐱</text>
+
+<g transform="translate(14,166)" filter="url(#activeGlow)">
+  <rect width="222" height="42" rx="14" fill="url(#activeGrad)"/>
+  <text x="52" y="27" font-size="13" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">Đơn hàng</text>
+  <text x="20" y="26" font-size="17" fill="#FFFFFF">▣</text>
+</g>
+<text x="52" y="118" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Trang chủ</text><text x="24" y="118" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="214" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Link đã tạo</text><text x="24" y="214" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="260" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Ví hoàn tiền</text><text x="24" y="260" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="306" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Rút tiền</text><text x="24" y="306" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="352" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Lịch sử ví</text><text x="24" y="352" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="398" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Thông báo</text><text x="24" y="398" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="444" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Hướng dẫn</text><text x="24" y="444" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="490" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Tài khoản &amp; cài đặt</text><text x="24" y="490" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text><text x="52" y="566" font-size="13" font-family="Inter, Arial" font-weight="700" fill="#FFFFFF">Quản trị</text><text x="24" y="566" font-size="16" fill="#FFFFFF" opacity="0.9">◻</text>
+<rect x="14" y="618" width="222" height="111" rx="18" fill="rgba(9,63,107,0.55)" stroke="rgba(116,231,255,0.35)"/>
+<text x="26" y="649" font-size="15" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">Cần hỗ trợ?</text>
+<text x="26" y="671" font-size="12" font-family="Inter, Arial" font-weight="500" fill="#BDEAF6">CatBack luôn sẵn sàng</text>
+<text x="26" y="688" font-size="12" font-family="Inter, Arial" font-weight="500" fill="#BDEAF6">hỗ trợ bạn.</text>
+<rect x="26" y="690" width="198" height="35" rx="12" fill="rgba(10,100,140,0.5)" stroke="#58F4FF"/>
+<text x="80" y="712" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">Liên hệ ngay →</text>
+
+<rect x="14" y="752" width="222" height="110" rx="18" fill="url(#activeGrad)" opacity="0.15" stroke="rgba(116,231,255,0.35)"/>
+<text x="26" y="782" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#DFFBFF">Mua sắm</text>
+<text x="26" y="801" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#DFFBFF">thông minh</text>
+<text x="26" y="820" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#6FF5FF">Cùng CatBack</text>
+<text x="26" y="839" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#DFFBFF">Hoàn tiền thật!</text>
+<circle cx="183" cy="806" r="30" fill="#DFFBFF" opacity="0.9"/><text x="170" y="814" font-size="24">🐱</text>
+<text x="18" y="895" font-size="11" font-family="Inter, Arial" fill="#A7D2E9">© 2024 CatBack</text>
+<text x="18" y="913" font-size="11" font-family="Inter, Arial" fill="#A7D2E9">Mua sắm thông minh</text>
+<text x="18" y="929" font-size="11" font-family="Inter, Arial" fill="#A7D2E9">Hoàn tiền thật</text>
+</svg>

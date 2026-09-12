@@ -1,0 +1,61 @@
+{
+  "colors": {
+    "navy": "#0A3668",
+    "navyDeep": "#082C58",
+    "cyan": "#1ED7E6",
+    "cyanBright": "#52F0FF",
+    "teal": "#16B7C7",
+    "tealDeep": "#0FA0B4",
+    "skyBg": "#E8F9FF",
+    "cardBg": "#FFFFFF",
+    "line": "#D4EAF3",
+    "text": "#123C74",
+    "muted": "#6F8BAA",
+    "success": "#31C76E",
+    "warning": "#F2C75A",
+    "warningBg": "#FFF1BF",
+    "danger": "#FF8C42",
+    "badgeInfo": "#EEF9FF"
+  },
+  "radius": {
+    "page": 26,
+    "card": 24,
+    "pill": 18,
+    "button": 20,
+    "sidebarItem": 16
+  },
+  "shadow": {
+    "soft": "0 10px 28px rgba(23, 115, 173, 0.10)",
+    "gloss": "0 10px 30px rgba(15, 177, 196, 0.22)",
+    "activeGlow": "0 0 0 1px rgba(101, 239, 255, 0.80), 0 10px 30px rgba(30, 215, 230, 0.35)",
+    "card": "0 8px 24px rgba(10, 54, 104, 0.08)"
+  },
+  "layout": {
+    "sidebarWidth": 252,
+    "contentPaddingX": 36,
+    "contentPaddingTop": 22,
+    "contentGap": 18,
+    "kpiCardHeight": 98,
+    "orderCardRadius": 22,
+    "filterTabHeight": 52
+  },
+  "typography": {
+    "fontFamily": "Inter, Be Vietnam Pro, system-ui, sans-serif",
+    "title": {
+      "size": 34,
+      "weight": 800
+    },
+    "section": {
+      "size": 18,
+      "weight": 700
+    },
+    "body": {
+      "size": 16,
+      "weight": 500
+    },
+    "caption": {
+      "size": 13,
+      "weight": 500
+    }
+  }
+}

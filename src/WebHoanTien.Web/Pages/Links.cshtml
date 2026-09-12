@@ -6,7 +6,7 @@
 }
 <section class="customer-dashboard links-page-dashboard">
     <header class="cb-orders-hero cb-links-hero">
-        <div class="cb-orders-titlebar">
+        <div class="cb-page-header cb-orders-titlebar cb-mobile-page-header">
             <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
             {
                 Title = "Link đã tạo",
@@ -14,10 +14,11 @@
                 BackLabel = "Quay về trang chủ"
             })" />
         </div>
+        <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Link đã tạo", Description = "Tạo link mua sắm và quản lý các link hoàn tiền của bạn" })" />
     </header>
     <div class="dashboard-grid links-page-grid">
         <div class="dashboard-main">
-            <form method="post" asp-page-handler="Prepare" class="dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
+            <form method="post" asp-page-handler="Prepare" class="cb-card dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
                 <div class="dashboard-create-heading">
                     <span class="dashboard-create-icon" aria-hidden="true"><img src="~/catback/icons/link.svg" alt="" /></span>
                     <div><h2>Dán link Shopee tại đây <span aria-hidden="true">✦</span></h2></div>
@@ -60,7 +61,7 @@
                 </template>
             </form>
 
-            <section class="dashboard-links" aria-labelledby="your-links-heading" data-created-list-limit="0" data-link-page-size="@LinksModel.PageSize">
+            <section class="cb-card dashboard-links" aria-labelledby="your-links-heading" data-created-list-limit="0" data-link-page-size="@LinksModel.PageSize">
                 <header class="dashboard-section-heading">
                     <h2 id="your-links-heading">Link của bạn</h2>
                 </header>

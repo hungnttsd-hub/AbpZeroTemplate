@@ -1,0 +1,35 @@
+:root {
+  --cb-navy: #0A3668;
+  --cb-navy-deep: #082C58;
+  --cb-cyan: #1ED7E6;
+  --cb-cyan-bright: #52F0FF;
+  --cb-teal: #16B7C7;
+  --cb-teal-deep: #0FA0B4;
+  --cb-sky-bg: #E8F9FF;
+  --cb-card-bg: #FFFFFF;
+  --cb-line: #D4EAF3;
+  --cb-text: #123C74;
+  --cb-muted: #6F8BAA;
+  --cb-success: #31C76E;
+  --cb-warning: #F2C75A;
+  --cb-warning-bg: #FFF1BF;
+  --cb-danger: #FF8C42;
+  --cb-badge-info: #EEF9FF;
+
+  --cb-radius-page: 26px;
+  --cb-radius-card: 24px;
+  --cb-radius-pill: 18px;
+  --cb-radius-btn: 20px;
+  --cb-radius-sidebar: 16px;
+
+  --cb-shadow-soft: 0 10px 28px rgba(23, 115, 173, 0.10);
+  --cb-shadow-gloss: 0 10px 30px rgba(15, 177, 196, 0.22);
+  --cb-shadow-active: 0 0 0 1px rgba(101, 239, 255, 0.80), 0 10px 30px rgba(30, 215, 230, 0.35);
+  --cb-shadow-card: 0 8px 24px rgba(10, 54, 104, 0.08);
+
+  --cb-grad-sidebar: linear-gradient(180deg, #093966 0%, #062E59 45%, #082C58 100%);
+  --cb-grad-active: linear-gradient(90deg, #0C748E 0%, #19C8DA 54%, #58F4FF 100%);
+  --cb-grad-hero: linear-gradient(135deg, #F4FDFF 0%, #DDF8FF 35%, #CBF4FF 100%);
+  --cb-grad-pill: linear-gradient(180deg, #FFFFFF 0%, #F6FCFF 100%);
+  --cb-grad-card-gloss: linear-gradient(180deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.00) 42%);
+}

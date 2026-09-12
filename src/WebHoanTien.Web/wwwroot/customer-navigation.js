@@ -3,6 +3,8 @@
   window.__catBackNavigationInitialized = true;
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const desktopViewport = window.matchMedia('(min-width: 1024px)');
+  const usesDesktopNavigation = () => desktopViewport.matches && document.body?.classList.contains('cb-desktop-enabled');
   const focusableSelector = [
     'a[href]',
     'button:not([disabled])',
@@ -22,6 +24,7 @@
   );
 
   const openAccountNavigation = (trigger) => {
+    if (usesDesktopNavigation()) return;
     const overlay = document.querySelector('[data-account-navigation-overlay]');
     const drawer = overlay?.querySelector('.account-navigation-drawer');
     if (!overlay || !drawer) return;
@@ -85,6 +88,13 @@
     activeOverlay = undefined;
     activeTrigger = undefined;
   };
+
+  desktopViewport.addEventListener('change', () => {
+    if (!usesDesktopNavigation()) return;
+    const wasOpen = drawerIsOpen();
+    resetAccountNavigation();
+    if (wasOpen) document.querySelector('.cb-desktop-account')?.focus();
+  });
 
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;

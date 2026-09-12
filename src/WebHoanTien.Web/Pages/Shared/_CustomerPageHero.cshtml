@@ -1,0 +1,15 @@
+@model WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel
+<div class="cb-desktop-only cb-page-hero" hidden>
+    <div class="cb-page-hero-copy">
+        <h1>@Model.Title</h1>
+        <p>@Model.Description</p>
+        @if (!string.IsNullOrWhiteSpace(Model.Note))
+        {
+            <small>@Model.Note</small>
+        }
+    </div>
+    <div class="cb-page-hero-decoration" aria-hidden="true">
+        <p>Mua sắm thông minh<br /><strong>Hoàn tiền thật!</strong></p>
+        <span class="cb-page-hero-art"><img src="~/catback/hero-approved-reference.png" asp-append-version="true" alt="" /></span>
+    </div>
+</div>

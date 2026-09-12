@@ -8,7 +8,7 @@
 }
 
 <div class="guide-video-page" data-guide-root>
-    <header class="guide-detail-hero">
+    <header class="cb-page-header guide-detail-hero">
         <a class="guide-back-button" href="@Model.BackUrl" aria-label="Quay lại trang hướng dẫn">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
         </a>
@@ -20,7 +20,7 @@
     </header>
 
     <div class="guide-detail-content">
-        <section class="guide-player-card">
+        <section class="cb-card guide-player-card">
             <button class="guide-player-preview guide-player-preview--@video.Illustration"
                     type="button"
                     data-guide-player
@@ -88,7 +88,7 @@
             </div>
         </section>
 
-        <section class="guide-steps-card" aria-labelledby="guide-steps-title">
+        <section class="cb-card guide-steps-card" aria-labelledby="guide-steps-title">
             <h2 id="guide-steps-title">Các bước chính</h2>
             <ol>
                 @for (var index = 0; index < video.Steps.Count; index++)

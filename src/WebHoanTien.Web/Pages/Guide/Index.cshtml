@@ -7,7 +7,8 @@
 }
 
 <div class="guide-page" data-guide-root>
-    <header class="guide-hero">
+    <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Hướng dẫn", Description = "Video và lưu ý để tạo link hoàn tiền đúng cách" })" />
+    <header class="cb-page-header guide-hero cb-mobile-page-header">
         <a class="guide-back-button" href="/" aria-label="Quay lại trang chủ">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
         </a>
@@ -22,7 +23,7 @@
     </header>
 
     <div class="guide-content">
-        <section class="guide-device-card" aria-live="polite">
+        <section class="cb-card guide-device-card" aria-live="polite">
             <span class="guide-device-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2" /><path d="M10 5h4M10.5 18.5h3" /></svg>
             </span>

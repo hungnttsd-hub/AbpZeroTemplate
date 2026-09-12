@@ -1,0 +1,40 @@
+CatBack Glossy Dashboard Template – Codex handoff v1
+
+Core:
+- README.md
+- spec.md
+- PROMPT_CODEX.md
+- design-tokens.json
+- manifest.txt
+
+Reference:
+- reference/01_final_template.png
+- reference/02_blueprint_preview.png
+- reference/03_gloss_system_preview.png
+- reference/04_master_svg_preview.png
+- reference/crop-map.json
+- reference/crops/01_sidebar.png
+- reference/crops/02_topbar.png
+- reference/crops/03_hero_banner.png
+- reference/crops/04_link_generator.png
+- reference/crops/05_wallet_card.png
+- reference/crops/06_feature_tiles.png
+- reference/crops/07_recent_orders.png
+- reference/crops/08_commission_guide.png
+
+SVG:
+- blueprints/00_page_layout_blueprint.svg
+- svg/00_dashboard_master_exact.svg
+- svg/01_sidebar_exact.svg
+- svg/02_topbar_exact.svg
+- svg/03_hero_banner_exact.svg
+- svg/04_link_generator_exact.svg
+- svg/05_wallet_card_exact.svg
+- svg/06_feature_tiles_exact.svg
+- svg/07_recent_orders_exact.svg
+- svg/08_commission_guide_exact.svg
+- svg/09_gloss_shadow_system.svg
+
+Implementation helpers:
+- css/catback-glossy-tokens.css
+- docs/IMPLEMENTATION_CHECKLIST.md

@@ -1,7 +1,7 @@
 @page
 @model WebHoanTien.Web.Pages.Account.AccountFlowModel
 @{ Layout = "/Pages/Shared/_CustomerLayout.cshtml"; ViewData["Title"] = "Nâng cấp tài khoản"; ViewData["UpgradeUserId"] = Model.UserId; ViewData["AccountHeaderBackUrl"] = "/Account/Profile"; ViewData["AccountHeaderBackLabel"] = "Quay lại tài khoản"; }
-<section class="cb-account-shell"><div class="cb-account-card">
+<section class="cb-account-shell"><div class="cb-card cb-account-card">
     <span class="eyebrow">Bảo vệ tài khoản của bạn</span><h1>Đăng ký</h1><p class="cb-account-lead">Nâng cấp tài khoản chính thức để bảo vệ dữ liệu và rút tiền hoàn.</p>
     <form method="post" action="/api/account/upgrade" class="form-stack" data-account-api="/api/account/upgrade" data-turbo="false">@Html.AntiForgeryToken()<input type="hidden" name="returnUrl" value="@Model.SafeReturnUrl" />
         <div class="field"><label for="upgrade-username">Username</label><input id="upgrade-username" name="username" value="@Model.Username" required maxlength="256" autocomplete="username" /></div>

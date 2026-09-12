@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1384" height="132" viewBox="0 0 1384 132" fill="none">
+<defs>
+  <linearGradient id="heroBg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F4FDFF"/>
+    <stop offset="100%" stop-color="#CFF6FF"/>
+  </linearGradient>
+</defs>
+<rect width="1384" height="132" rx="26" fill="url(#heroBg)"/>
+<path d="M0 22C110 10 190 58 290 38C395 18 430 10 530 34C610 54 640 78 742 54C867 25 953 8 1083 38C1186 62 1309 24 1384 10V132H0V22Z" fill="#FFFFFF" opacity="0.35"/>
+<text x="36" y="57" font-size="34" font-family="Inter, Arial" font-weight="800" fill="#123C74">Đơn hàng</text>
+<text x="36" y="95" font-size="18" font-family="Inter, Arial" font-weight="500" fill="#4E6F97">Quản lý đơn hàng và theo dõi hoàn tiền của bạn</text>
+<text x="760" y="38" font-size="16" font-family="Inter, Arial" font-style="italic" font-weight="800" fill="#1670A2">Mua sắm thông minh</text>
+<text x="816" y="60" font-size="16" font-family="Inter, Arial" font-style="italic" font-weight="800" fill="#1670A2">Hoàn tiền thật!</text>
+<circle cx="1023" cy="66" r="42" fill="#E6FCFF"/><text x="1004" y="76" font-size="34">🐱</text>
+<circle cx="1120" cy="82" r="24" fill="#FFD85C" opacity="0.95"/>
+<circle cx="1154" cy="92" r="20" fill="#FFE58C" opacity="0.95"/>
+<text x="1178" y="52" font-size="18" fill="#FFD45E">✦</text><text x="1230" y="35" font-size="18" fill="#FFD45E">✦</text><text x="1262" y="64" font-size="18" fill="#FFD45E">✦</text>
+<path d="M1218 16C1244 5 1285 8 1310 27C1301 60 1270 81 1238 77C1220 60 1212 38 1218 16Z" fill="#FFFFFF" opacity="0.82"/>
+<text x="1234" y="40" font-size="12" font-family="Inter, Arial" font-style="italic" font-weight="700" fill="#1670A2">Mỗi đơn hàng</text>
+<text x="1230" y="56" font-size="12" font-family="Inter, Arial" font-style="italic" font-weight="700" fill="#1670A2">đều mang lại</text>
+<text x="1240" y="72" font-size="12" font-family="Inter, Arial" font-style="italic" font-weight="700" fill="#1670A2">giá trị thật!</text>
+</svg>

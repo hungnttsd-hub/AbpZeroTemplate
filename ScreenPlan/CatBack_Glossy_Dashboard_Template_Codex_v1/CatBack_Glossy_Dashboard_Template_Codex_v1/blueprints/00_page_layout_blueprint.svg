@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941">
+<rect width="1672" height="941" fill="#F7FBFD"/>
+<style>text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#123B59}.title{font-weight:800;font-size:18px}.label{font-weight:700;font-size:13px}.dim{font-size:11px;fill:#6C7C91}.box{stroke:#0AA6B2;stroke-width:2;stroke-dasharray:7 5}</style>
+<rect class="box" x="0" y="0" width="244" height="941" fill="#DCECF3"/><text x="18" y="30" class="title">Sidebar</text><text x="18" y="50" class="dim">244 × 941</text>
+<rect class="box" x="244" y="0" width="1428" height="70" fill="#F1F7FA"/><text x="270" y="30" class="title">Topbar</text><text x="270" y="50" class="dim">1428 × 70</text>
+<rect class="box" x="270" y="70" width="1365" height="278" rx="18" fill="#D8FAFB"/><text x="289" y="101" class="title">Hero banner</text><text x="289" y="121" class="dim">1365 × 278</text>
+<rect class="box" x="270" y="360" width="892" height="158" rx="18" fill="#FFF"/><text x="289" y="392" class="title">Link generator</text><text x="289" y="412" class="dim">892 × 158</text>
+<rect class="box" x="1170" y="360" width="465" height="181" rx="18" fill="#B7F4EF"/><text x="1189" y="392" class="title">Wallet glossy</text><text x="1189" y="412" class="dim">465 × 181</text>
+<rect class="box" x="270" y="532" width="892" height="66" rx="14" fill="#FFF"/><text x="289" y="570" class="label">Feature tiles</text>
+<rect class="box" x="270" y="615" width="895" height="294" rx="18" fill="#FFF"/><text x="289" y="647" class="title">Recent orders</text><text x="289" y="667" class="dim">895 × 294</text>
+<rect class="box" x="1170" y="557" width="465" height="352" rx="18" fill="#FFF"/><text x="1189" y="589" class="title">Commission guide</text><text x="1189" y="609" class="dim">465 × 352</text>
+<!-- gutter measurements -->
+<line x1="244" y1="925" x2="270" y2="925" stroke="#E27A31" stroke-width="2"/><line x1="244" y1="916" x2="244" y2="934" stroke="#E27A31"/><line x1="270" y1="916" x2="270" y2="934" stroke="#E27A31"/><text x="248" y="912" class="dim">26px</text>
+<line x1="1162" y1="548" x2="1170" y2="548" stroke="#E27A31" stroke-width="2"/><text x="1148" y="544" class="dim">8px</text>
+</svg>

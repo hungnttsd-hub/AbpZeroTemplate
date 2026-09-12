@@ -14,7 +14,7 @@
     var stableRedirectUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}{Model.Tracking.RedirectUrl}";
 }
 <section class="page-shell narrow">
-    <div class="panel result-panel @(isShop ? "is-shop-result" : !isProduct ? "is-legacy-result" : string.Empty)">
+    <div class="cb-card panel result-panel @(isShop ? "is-shop-result" : !isProduct ? "is-legacy-result" : string.Empty)">
         <span class="success-mark">✓</span><span class="eyebrow">Link đã sẵn sàng</span>
         @if (isShop)
         {

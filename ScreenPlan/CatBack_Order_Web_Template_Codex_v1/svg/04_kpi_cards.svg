@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1384" height="112" viewBox="0 0 1384 112" fill="none">
+<defs>
+  <linearGradient id="cardGloss" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+    <stop offset="100%" stop-color="#FFFFFF" stop-opacity="1"/>
+  </linearGradient>
+</defs>
+<g><rect x="0" y="7" width="432" height="98" rx="22" fill="url(#cardGloss)" stroke="#D7EDF4"/><circle cx="56" cy="56" r="26" fill="#FFF7D7"/><text x="44" y="64" font-size="22">◔</text><text x="116" y="54" font-size="24" font-family="Inter, Arial" font-weight="800" fill="#123C74">6</text><text x="116" y="82" font-size="14" font-family="Inter, Arial" font-weight="700" fill="#547197">Chờ xử lý</text><circle cx="387" cy="56" r="18" fill="#F1FBFF"/><text x="380" y="64" font-size="22" fill="#1670A2">›</text></g>
+<g><rect x="476" y="7" width="432" height="98" rx="22" fill="url(#cardGloss)" stroke="#D7EDF4"/><circle cx="532" cy="56" r="26" fill="#E5FBF0"/><text x="520" y="64" font-size="22">✓</text><text x="592" y="54" font-size="24" font-family="Inter, Arial" font-weight="800" fill="#123C74">4</text><text x="592" y="82" font-size="14" font-family="Inter, Arial" font-weight="700" fill="#547197">Đã xác nhận</text><circle cx="863" cy="56" r="18" fill="#F1FBFF"/><text x="856" y="64" font-size="22" fill="#1670A2">›</text></g>
+<g><rect x="952" y="7" width="432" height="98" rx="22" fill="url(#cardGloss)" stroke="#D7EDF4"/><circle cx="1008" cy="56" r="26" fill="#DFFBFF"/><text x="998" y="64" font-size="22">💲</text><text x="1068" y="54" font-size="24" font-family="Inter, Arial" font-weight="800" fill="#123C74">135.681đ</text><text x="1068" y="82" font-size="14" font-family="Inter, Arial" font-weight="700" fill="#547197">Hoàn tiền dự kiến</text><circle cx="1339" cy="56" r="18" fill="#F1FBFF"/><text x="1332" y="64" font-size="22" fill="#1670A2">›</text></g>
+</svg>

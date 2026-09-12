@@ -1176,6 +1176,12 @@
         border-radius: 0;
     }
 
+    /* Clear the 260px header backdrop, including the shorter hero at 370px and below.
+       Padding also prevents the first card's margin collapsing through the form. */
+    .wallet-withdraw-shell > .wallet-withdraw-form {
+        padding-top: 20px;
+    }
+
     .wallet-topbar {
         min-height: 66px;
         margin: 0;

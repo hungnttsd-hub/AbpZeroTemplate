@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1384 940" fill="none">
+  <!-- Wave geometry reused from the supplied Orders header and gloss SVG references. -->
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#dcf9ff"/><stop offset=".5" stop-color="#e8f9ff"/><stop offset="1" stop-color="#f4fdff"/></linearGradient>
+    <radialGradient id="light"><stop stop-color="#a3edf7" stop-opacity=".62"/><stop offset="1" stop-color="#e8f9ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1384v940H0z"/>
+  <ellipse cx="1070" cy="210" rx="660" ry="380" fill="url(#light)"/>
+  <g transform="scale(1 2.4)">
+    <path d="M0 22C110 10 190 58 290 38C395 18 430 10 530 34C610 54 640 78 742 54C867 25 953 8 1083 38C1186 62 1309 24 1384 10V132H0V22Z" fill="#fff" opacity=".36"/>
+    <path d="M0 22C110 10 190 58 290 38C395 18 430 10 530 34C610 54 640 78 742 54C867 25 953 8 1083 38C1186 62 1309 24 1384 10" stroke="#fff" stroke-opacity=".62"/>
+  </g>
+  <g transform="translate(0 580) scale(1 1.8)">
+    <path d="M0 22C110 10 190 58 290 38C395 18 430 10 530 34C610 54 640 78 742 54C867 25 953 8 1083 38C1186 62 1309 24 1384 10V132H0V22Z" fill="#fff" opacity=".32"/>
+  </g>
+</svg>

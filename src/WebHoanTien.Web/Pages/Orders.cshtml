@@ -6,7 +6,7 @@
 }
 <section class="cb-orders-page">
     <header class="cb-orders-hero">
-        <div class="cb-orders-titlebar">
+        <div class="cb-page-header cb-orders-titlebar cb-mobile-page-header">
             <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
             {
                 Title = "Đơn hàng",
@@ -14,32 +14,21 @@
                 BackLabel = "Quay về trang chủ"
             })" />
         </div>
+        <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Đơn hàng", Description = "Quản lý đơn hàng và theo dõi hoàn tiền của bạn", Note = Model.IsAdminOrderView ? "Phạm vi quản trị: đơn hàng của tất cả khách hàng." : null })" />
 
         <div class="cb-order-metrics" aria-label="Tổng quan đơn hàng">
-            <article>
-                <span class="cb-metric-icon cb-metric-pending"><img src="~/orders-icons/clock.svg" alt="" /></span>
-                <strong>@Model.PendingCount</strong>
-                <span>Chờ xử lý</span>
-            </article>
-            <article>
-                <span class="cb-metric-icon cb-metric-confirmed"><img src="~/orders-icons/badge-check.svg" alt="" /></span>
-                <strong>@Model.ConfirmedCount</strong>
-                <span>Đã xác nhận</span>
-            </article>
-            <article>
-                <span class="cb-metric-icon cb-metric-cashback"><img src="~/orders-icons/cashback.svg" alt="" /></span>
-                <strong>@CustomerOrderUi.FormatMoney(Model.ExpectedCashback)</strong>
-                <span>Hoàn tiền dự kiến</span>
-            </article>
+            <partial name="/Pages/Shared/_CustomerKpiCard.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerKpiCardModel { Value = Model.PendingCount.ToString(), Label = "Chờ xử lý", Icon = "/orders-icons/clock.svg", IconClass = "cb-metric-pending", ActionUrl = "/Orders?status=pending", ActionLabel = "Xem đơn hàng chờ xử lý" })" />
+            <partial name="/Pages/Shared/_CustomerKpiCard.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerKpiCardModel { Value = Model.ConfirmedCount.ToString(), Label = "Đã xác nhận", Icon = "/orders-icons/badge-check.svg", IconClass = "cb-metric-confirmed", ActionUrl = "/Orders?status=confirmed", ActionLabel = "Xem đơn hàng đã xác nhận" })" />
+            <partial name="/Pages/Shared/_CustomerKpiCard.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerKpiCardModel { Value = CustomerOrderUi.FormatMoney(Model.ExpectedCashback), Label = "Hoàn tiền dự kiến", Icon = "/orders-icons/cashback.svg", IconClass = "cb-metric-cashback", ActionUrl = "/Wallet", ActionLabel = "Xem ví hoàn tiền" })" />
         </div>
     </header>
 
     <div class="cb-orders-content">
-        <nav class="cb-order-filters" aria-label="Lọc đơn hàng">
-            <a class="@Model.FilterClass(null)" href="/Orders">Tất cả</a>
-            <a class="@Model.FilterClass("pending")" href="/Orders?status=pending">Chờ xử lý</a>
-            <a class="@Model.FilterClass("confirmed")" href="/Orders?status=confirmed">Đã xác nhận</a>
-            <a class="@Model.FilterClass("cancelled")" href="/Orders?status=cancelled">Đã hủy</a>
+        <nav class="cb-order-filters cb-list-filters" aria-label="Lọc đơn hàng">
+            <a class="@Model.FilterClass(null)" href="/Orders"><i class="cb-desktop-only fa-solid fa-folder-open" hidden aria-hidden="true"></i>Tất cả</a>
+            <a class="@Model.FilterClass("pending")" href="/Orders?status=pending"><i class="cb-desktop-only fa-regular fa-clock" hidden aria-hidden="true"></i>Chờ xử lý</a>
+            <a class="@Model.FilterClass("confirmed")" href="/Orders?status=confirmed"><i class="cb-desktop-only fa-regular fa-circle-check" hidden aria-hidden="true"></i>Đã xác nhận</a>
+            <a class="@Model.FilterClass("cancelled")" href="/Orders?status=cancelled"><i class="cb-desktop-only fa-solid fa-ban" hidden aria-hidden="true"></i>Đã hủy</a>
         </nav>
 
         @if (Model.Orders.Items.Count == 0)

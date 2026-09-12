@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="252" height="260" viewBox="0 0 252 260" fill="none">
+<defs><linearGradient id="glowBlock" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0C748E"/><stop offset="100%" stop-color="#58F4FF"/></linearGradient></defs>
+<rect x="14" y="16" width="222" height="111" rx="18" fill="#0A416C" stroke="#3EDFF0"/>
+<text x="28" y="47" font-size="15" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">Cần hỗ trợ?</text>
+<text x="28" y="69" font-size="12" font-family="Inter, Arial" fill="#C6EEFA">CatBack luôn sẵn sàng hỗ trợ bạn.</text>
+<rect x="28" y="78" width="194" height="34" rx="12" fill="rgba(255,255,255,0.05)" stroke="#58F4FF"/>
+<text x="86" y="99" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">Liên hệ ngay →</text>
+<rect x="14" y="146" width="222" height="98" rx="18" fill="url(#glowBlock)" opacity="0.16" stroke="#58F4FF"/>
+<text x="28" y="177" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#DFFBFF">Mua sắm thông minh</text>
+<text x="28" y="196" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#6FF5FF">Cùng CatBack</text>
+<text x="28" y="215" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#DFFBFF">Hoàn tiền thật!</text>
+<circle cx="182" cy="195" r="28" fill="#E4FCFF"/><text x="168" y="203" font-size="22">🐱</text>
+</svg>

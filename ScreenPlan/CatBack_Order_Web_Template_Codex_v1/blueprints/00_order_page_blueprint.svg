@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941" fill="none">
+<defs>
+  <style>
+    .label{font:700 14px Inter, Arial; fill:#0A3668}
+    .small{font:500 12px Inter, Arial; fill:#567291}
+    .box{fill:rgba(30,215,230,.07);stroke:#16B7C7;stroke-width:2;stroke-dasharray:8 6}
+  </style>
+</defs>
+<rect width="1672" height="941" fill="#F8FEFF"/>
+<rect class="box" x="0" y="0" width="252" height="941" rx="0"/>
+<text class="label" x="18" y="24">Sidebar / 252 px</text>
+<text class="small" x="18" y="44">Logo, primary nav, support card, promo block</text>
+
+<rect class="box" x="270" y="12" width="1384" height="84" rx="24"/>
+<text class="label" x="286" y="36">Topbar / 84 px</text>
+<text class="small" x="286" y="56">Bell, avatar, greeting, logout</text>
+
+<rect class="box" x="270" y="98" width="1384" height="132" rx="26"/>
+<text class="label" x="286" y="122">Orders Hero Header / 132 px</text>
+<text class="small" x="286" y="142">Page title left, soft wave background, mascot and speech bubbles right</text>
+
+<rect class="box" x="270" y="180" width="1384" height="112" rx="24"/>
+<text class="label" x="286" y="204">KPI strip / 3 cards</text>
+<text class="small" x="286" y="224">Pending, Confirmed, Cashback total</text>
+
+<rect class="box" x="270" y="304" width="1384" height="68" rx="20"/>
+<text class="label" x="286" y="328">Filter tabs</text>
+<text class="small" x="286" y="348">Tất cả, Chờ xử lý, Đã xác nhận, Đã hủy</text>
+
+<rect class="box" x="270" y="388" width="1384" height="240" rx="22"/>
+<text class="label" x="286" y="412">Order card item</text>
+<text class="small" x="286" y="432">Product image, title, source, date, status pill, amount, cashback, order code, CTA, recipient row</text>
+
+<rect class="box" x="270" y="646" width="1384" height="240" rx="22"/>
+<text class="label" x="286" y="670">Order card item repeat</text>
+<text class="small" x="286" y="690">Identical structure, reusable component</text>
+
+<line x1="252" y1="0" x2="252" y2="941" stroke="#B5DAE8" stroke-width="2"/>
+<text class="label" x="1360" y="920">Page size reference: 1672 × 941</text>
+</svg>

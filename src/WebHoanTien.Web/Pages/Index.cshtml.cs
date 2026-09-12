@@ -8,10 +8,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Users;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Permissions;
 
 namespace WebHoanTien.Web.Pages;
 
@@ -23,6 +25,9 @@ public class IndexModel : PageModel
     private readonly ICurrentUser _currentUser;
     private readonly ITimeLimitedDataProtector _protector;
     private readonly IDistributedCache _cache;
+    private readonly IAffiliateOrderAppService _orders;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly ILogger<IndexModel> _logger;
 
     [BindProperty] public string LinkUrl { get; set; } = string.Empty;
     [BindProperty(SupportsGet = true)] public bool ShowHidden { get; set; }
@@ -32,11 +37,18 @@ public class IndexModel : PageModel
     public AffiliateTrackingDto? CreatedLink { get; private set; }
     public PagedResultDto<AffiliateTrackingDto> RecentLinks { get; private set; } = new();
     public CustomerWalletOverviewDto Wallet { get; private set; } = new();
+    public PagedResultDto<AffiliateOrderDto> RecentOrders { get; private set; } = new();
+    public bool RecentOrdersUnavailable { get; private set; }
+    public bool CanViewAllOrders { get; private set; }
 
     public IndexModel(IAffiliateLinkAppService links, ICustomerWalletAppService wallet, ICurrentUser currentUser,
-        IDataProtectionProvider dataProtection, IDistributedCache cache)
+        IDataProtectionProvider dataProtection, IDistributedCache cache,
+        IAffiliateOrderAppService orders, IAuthorizationService authorizationService, ILogger<IndexModel> logger)
     {
         _links = links; _wallet = wallet; _currentUser = currentUser; _cache = cache;
+        _orders = orders;
+        _authorizationService = authorizationService;
+        _logger = logger;
         _protector = dataProtection.CreateProtector("WebHoanTien.PendingAffiliate.v1").ToTimeLimitedDataProtector();
     }
 
@@ -182,6 +194,17 @@ public class IndexModel : PageModel
                           await _links.GetAsync(CreatedLinkId.Value);
         }
         Wallet = await _wallet.GetOverviewAsync();
+        try
+        {
+            CanViewAllOrders = (await _authorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Orders)).Succeeded;
+            RecentOrders = await _orders.GetListAsync(new AffiliateOrderListInput { MaxResultCount = 5 });
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // An optional dashboard summary must not prevent the customer from creating links.
+            RecentOrdersUnavailable = true;
+            _logger.LogWarning(exception, "Unable to load recent orders on the customer dashboard.");
+        }
     }
 
     internal static string SuccessMessageFor(AffiliateTrackingDto result)

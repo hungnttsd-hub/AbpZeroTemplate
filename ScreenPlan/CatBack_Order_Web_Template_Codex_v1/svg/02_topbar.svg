@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1384" height="84" viewBox="0 0 1384 84" fill="none">
+<rect width="1384" height="84" rx="24" fill="#EAFBFF"/>
+<circle cx="1134" cy="28" r="6" fill="#FF4D4F"/>
+<text x="1117" y="35" font-size="24" fill="#0A3668">🔔</text>
+<circle cx="1187" cy="28" r="20" fill="#19C8DA"/>
+<text x="1181" y="34" font-size="18" font-family="Inter, Arial" font-weight="800" fill="#FFFFFF">A</text>
+<text x="1220" y="24" font-size="12" font-family="Inter, Arial" fill="#7A95AF">Xin chào,</text>
+<text x="1220" y="49" font-size="16" font-family="Inter, Arial" font-weight="800" fill="#123C74">admin</text>
+<text x="1285" y="40" font-size="18" fill="#123C74">⌄</text>
+<rect x="1312" y="8" width="120" height="44" rx="12" fill="#FFFFFF" stroke="#D8EBF3"/>
+<text x="1333" y="36" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#123C74">⎋  Đăng xuất</text>
+</svg>

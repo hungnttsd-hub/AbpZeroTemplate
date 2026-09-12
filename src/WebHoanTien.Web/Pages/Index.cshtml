@@ -4,26 +4,33 @@
     ViewData["Title"] = "CatBack — Mua sắm Shopee thông minh";
     ViewData["BodyClass"] = "catback-link-page";
 }
-<section class="customer-dashboard">
+<section class="customer-dashboard cb-home-dashboard">
     <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
+        <a class="cb-desktop-only cb-hero-reference" hidden href="#link-form" aria-label="Tạo link mua sắm hoàn tiền cùng CatBack">
+            <img src="~/catback/hero-approved-reference.png" asp-append-version="true" width="1365" height="278"
+                 alt="Sắm Shopee lời hơn cùng CatBack. Tạo link mua sắm, theo dõi đơn hàng và nhận hoàn tiền. Hoàn tiền lên tới 80% hoa hồng sau khi Shopee đối soát đơn hàng." fetchpriority="high" />
+        </a>
         <div class="dashboard-hero-copy">
             <img class="dashboard-hero-mascot" src="~/catback-mascot-reference.png" alt="Mèo may mắn CatBack" />
             <div>
-                <h1 id="dashboard-hero-title">Sắm Shopee lời hơn<br />cùng CatBack</h1>
+                <span class="cb-desktop-only cb-hero-eyebrow" hidden>Mua sắm thông minh · Hoàn tiền thật</span>
+                <h1 id="dashboard-hero-title">Sắm Shopee lời hơn<br />cùng <span class="cb-hero-brand">CatBack</span></h1>
+                <p class="cb-desktop-only cb-hero-description" hidden>Tạo link mua sắm, theo dõi đơn hàng<br />và nhận hoàn tiền cùng CatBack.</p>
                 <span class="dashboard-trust-badge">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 2.7 8 7 10 4.3-2 7-5.3 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
                     Hoàn tiền thật – Rút tiền thật
                 </span>
+                <partial name="/Pages/Shared/_CustomerHeroTrust.cshtml" />
             </div>
         </div>
         <div class="dashboard-cashback-note">
             <p>
-                <span class="dashboard-cashback-heading">⚡ Hoàn tiền lên tới
+                <span class="dashboard-cashback-heading"><span class="cb-cashback-label"><span class="cb-cashback-lightning" aria-hidden="true">⚡</span><i class="cb-desktop-only fa-solid fa-crown" hidden aria-hidden="true"></i> Hoàn tiền lên tới</span>
                     <strong class="dashboard-highlight-rate">80%</strong>
                     <span>hoa hồng</span>
                 </span>
                 <span class="dashboard-cashback-subtitle">Nhận hoàn tiền sau khi Shopee đối soát đơn hàng.</span>
-                <button class="install-app-button dashboard-install-button" id="install-app-button" type="button">Cài đặt ngay</button>
+                <button class="install-app-button dashboard-install-button" id="install-app-button" type="button" title="Cài đặt ứng dụng CatBack">Cài đặt ngay</button>
             </p>
         </div>
     </section>
@@ -45,10 +52,18 @@
             </span>
         </a>
     }
+    else
+    {
+        <section class="cb-desktop-only cb-card cb-wallet-guest" hidden>
+            <partial name="/Pages/Shared/_CustomerSectionHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerSectionHeaderModel { Title = "Ví hoàn tiền" })" />
+            <p>Đăng nhập để xem số dư và theo dõi hoàn tiền của bạn.</p>
+            <a class="cb-button" href="/Account/Choice?returnUrl=%2FWallet">Đăng nhập</a>
+        </section>
+    }
 
     <div class="dashboard-grid">
         <div class="dashboard-main">
-            <form method="post" asp-page-handler="Prepare" class="dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
+            <form method="post" asp-page-handler="Prepare" class="cb-card dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
                 <div class="dashboard-create-heading">
                     <span class="dashboard-create-icon" aria-hidden="true"><img src="~/catback/icons/link.svg" alt="" /></span>
                     <div><h2>Dán link Shopee tại đây <span aria-hidden="true">✦</span></h2></div>
@@ -138,7 +153,9 @@
                 </template>
             </form>
 
-            <section class="dashboard-links" aria-labelledby="your-links-heading" data-created-list-limit="5">
+            <partial name="/Pages/Shared/_CustomerBenefits.cshtml" />
+            <partial name="/Pages/Shared/_CustomerRecentOrders.cshtml" model="Model" />
+            <section class="cb-card dashboard-links" aria-labelledby="your-links-heading" data-created-list-limit="5">
                 <header class="dashboard-section-heading">
                     <h2 id="your-links-heading">Link của bạn</h2>
                 </header>
@@ -309,8 +326,8 @@
         </div>
 
         <aside class="dashboard-sidebar">
-            <section class="affiliate-guide" id="how">
-                <h2>Để chắc chắn được tính hoa hồng</h2>
+            <section class="cb-card affiliate-guide" id="how">
+                <h2><i class="cb-desktop-only fa-solid fa-book-open" hidden aria-hidden="true"></i>Để chắc chắn được tính hoa hồng</h2>
                 <ol>
                     <li><span>1</span><p>Bấm <strong>Mua ngay</strong> hoặc <strong>Vào Shop mua hàng</strong> để sang Shopee rồi đặt hàng.</p></li>
                     <li><span>2</span><p><strong>Mỗi đơn một lần bấm.</strong> Mua thêm đơn nữa thì quay lại đây bấm Mua ngay lần nữa, không bấm lại thì đơn sau không được tính.</p></li>

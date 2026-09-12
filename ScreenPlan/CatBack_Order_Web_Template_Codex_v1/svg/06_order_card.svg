@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1384" height="240" viewBox="0 0 1384 240" fill="none">
+<defs>
+  <linearGradient id="ocGloss" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#FFFFFF"/>
+    <stop offset="100%" stop-color="#FBFEFF"/>
+  </linearGradient>
+</defs>
+<rect x="0.5" y="0.5" width="1383" height="239" rx="22" fill="url(#ocGloss)" stroke="#D7EDF4"/>
+<rect x="18" y="20" width="108" height="100" rx="16" fill="#F7FCFF" stroke="#D7EDF4"/>
+<rect x="35" y="37" width="74" height="66" rx="8" fill="#FFB741"/>
+<text x="61" y="80" font-size="22">📘</text>
+<text x="148" y="42" font-size="18" font-family="Inter, Arial" font-weight="800" fill="#123C74">Sách - Toán bồi dưỡng học sinh giỏi lớp 1</text>
+<text x="148" y="66" font-size="18" font-family="Inter, Arial" font-weight="800" fill="#123C74">(Biên soạn theo chương trình GDPT mới)</text>
+<text x="148" y="94" font-size="16" font-family="Inter, Arial" font-weight="500" fill="#6F8BAA">🛍  Sản phẩm từ Shopee</text>
+<text x="148" y="121" font-size="15" font-family="Inter, Arial" font-weight="500" fill="#6F8BAA">◔  10:05 · 06/09/2026</text>
+<rect x="148" y="144" width="112" height="32" rx="16" fill="#FFF1BF"/>
+<text x="170" y="165" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#A86E00">Chờ xử lý</text>
+
+<line x1="749" y1="24" x2="749" y2="147" stroke="#E3F1F6"/>
+<line x1="977" y1="24" x2="977" y2="147" stroke="#E3F1F6"/>
+<text x="773" y="42" font-size="14" font-family="Inter, Arial" fill="#7B95AF">Số tiền đơn hàng</text>
+<text x="773" y="78" font-size="18" font-family="Inter, Arial" font-weight="800" fill="#123C74">65.550đ</text>
+<text x="1001" y="42" font-size="14" font-family="Inter, Arial" fill="#7B95AF">Hoàn tiền dự kiến</text>
+<text x="1001" y="78" font-size="18" font-family="Inter, Arial" font-weight="800" fill="#0AAE9D">+0đ</text>
+<line x1="749" y1="104" x2="1230" y2="104" stroke="#E3F1F6"/>
+<text x="773" y="126" font-size="14" font-family="Inter, Arial" fill="#7B95AF">Mã đơn hàng</text>
+<text x="773" y="157" font-size="16" font-family="Inter, Arial" font-weight="800" fill="#123C74">260906AJ5X9X52</text>
+<text x="927" y="157" font-size="18" fill="#5C7AA0">📋</text>
+<rect x="1171" y="57" width="168" height="50" rx="24" fill="#F7FCFF" stroke="#B9DBE8"/>
+<text x="1214" y="88" font-size="16" font-family="Inter, Arial" font-weight="800" fill="#123C74">Xem chi tiết</text>
+<text x="1311" y="89" font-size="18" fill="#123C74">›</text>
+
+<line x1="0" y1="175" x2="1384" y2="175" stroke="#E3F1F6"/>
+<rect x="18" y="190" width="1348" height="34" rx="12" fill="#F4FBFF"/>
+<text x="40" y="212" font-size="14" font-family="Inter, Arial" font-weight="500" fill="#5F799C">👤  Người nhận</text>
+<text x="176" y="212" font-size="14" font-family="Inter, Arial" font-weight="800" fill="#123C74">Chưa xác định</text>
+<line x1="288" y1="196" x2="288" y2="220" stroke="#E3F1F6"/>
+<text x="320" y="212" font-size="14" font-family="Inter, Arial" font-weight="600" fill="#F58A1F">⚠  1 token chưa ghép hoặc đang xung đột</text>
+</svg>

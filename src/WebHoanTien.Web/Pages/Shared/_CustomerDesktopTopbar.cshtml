@@ -1,0 +1,20 @@
+@model WebHoanTien.Web.Pages.Shared.CustomerDesktopShellModel
+<header class="cb-desktop-only cb-desktop-topbar" hidden>
+    <div class="cb-desktop-user">
+        @if (Model.IsAuthenticated)
+        {
+            <a class="cb-desktop-notification" href="/Notifications" aria-label="Mở thông báo">
+                <img src="~/notification-icons/bell.svg" alt="" width="24" height="24" />
+                <span class="notification-count-badge" data-notification-badge hidden="@(Model.UnreadNotificationCount == 0)">@(Model.UnreadNotificationCount > 99 ? "99+" : Model.UnreadNotificationCount)</span>
+            </a>
+            <a class="cb-desktop-account" href="/Account/Profile" aria-label="Mở tài khoản của @Model.DisplayName">
+                <span class="cb-desktop-avatar" aria-hidden="true">@Model.Initial</span>
+                <span class="cb-desktop-identity"><small>Xin chào,</small><strong>@Model.DisplayName</strong></span>
+            </a>
+        }
+        else
+        {
+            <a class="cb-button" href="/Account/Choice">Đăng nhập</a>
+        }
+    </div>
+</header>

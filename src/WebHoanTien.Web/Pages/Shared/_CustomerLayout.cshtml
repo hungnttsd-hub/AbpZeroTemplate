@@ -46,6 +46,15 @@
     var accountHeaderBackLabel = ViewData["AccountHeaderBackLabel"] as string ?? "Quay lại";
     var hasAccountHeaderBack = !string.IsNullOrWhiteSpace(accountHeaderBackUrl);
     var bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
+    // Customer desktop styling is opt-in. Operations screens keep the existing shell.
+    var useDesktopTemplate = !currentPath.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) &&
+                             !currentPath.StartsWith("/Identity", StringComparison.OrdinalIgnoreCase) &&
+                             !currentPath.StartsWith("/SettingManagement", StringComparison.OrdinalIgnoreCase) &&
+                             ViewData["DisableCustomerDesktop"] is not true;
+    if (useDesktopTemplate)
+    {
+        bodyClass = string.Concat(bodyClass, " cb-desktop-enabled");
+    }
 
     if (hasAccountHeaderBack)
     {
@@ -169,6 +178,7 @@
     <link rel="stylesheet" href="~/catback-account.css" asp-append-version="true" data-turbo-track="reload" />
     <script src="~/catback-account.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <link rel="stylesheet" href="~/catback-spa.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/customer-desktop.css" asp-append-version="true" data-turbo-track="reload" />
     <script src="~/catback-spa.js" asp-append-version="true" data-turbo-track="reload"></script>
     <script src="~/libs/@@hotwired/turbo/turbo.es2017-umd.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/catback-modal.js" asp-append-version="true" data-turbo-track="reload" defer></script>
@@ -179,6 +189,29 @@
     <script src="~/customer-navigation.js" asp-append-version="true" data-turbo-track="reload" defer></script>
 </head>
 <body class="@bodyClass" data-catback-spa-shell>
+@if (useDesktopTemplate)
+{
+    var desktopAdminItems = new System.Collections.Generic.List<WebHoanTien.Web.Pages.Shared.CustomerDesktopNavigationItem>();
+    if (canManageAffiliates) { desktopAdminItems.Add(new("/Admin/Affiliates", "Quản trị hoàn tiền", "fa-solid fa-chart-line")); }
+    if (canManageSettlements) { desktopAdminItems.Add(new("/Admin/Settlements", "Duyệt đối soát Shopee", "fa-solid fa-file-invoice-dollar")); }
+    if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Payouts", "Duyệt yêu cầu rút tiền", "fa-solid fa-money-check-dollar")); }
+    if (canManageNotifications) { desktopAdminItems.Add(new("/Admin/Notifications", "Quản lý thông báo", "fa-solid fa-bullhorn")); }
+    if (canManageSettings) { desktopAdminItems.Add(new("/Admin/Settings", "Cấu hình email", "fa-solid fa-envelope-open-text")); }
+    if (canManageUsers) { desktopAdminItems.Add(new("/Identity/Users", "Quản lý người dùng", "fa-solid fa-users", true)); }
+    if (canManageRoles) { desktopAdminItems.Add(new("/Identity/Roles", "Quản lý vai trò", "fa-solid fa-user-lock", true)); }
+    if (hasAdminRole) { desktopAdminItems.Add(new("/hangfire", "Tác vụ nền", "fa-solid fa-list-check", true)); }
+    var desktopShell = new WebHoanTien.Web.Pages.Shared.CustomerDesktopShellModel
+    {
+        CurrentPath = currentPath,
+        IsAuthenticated = isAuthenticated,
+        DisplayName = displayedUserName,
+        Initial = userInitial,
+        UnreadNotificationCount = unreadNotificationCount,
+        AdminNavigationItems = desktopAdminItems
+    };
+    <partial name="/Pages/Shared/_CustomerDesktopSidebar.cshtml" model="desktopShell" />
+    <partial name="/Pages/Shared/_CustomerDesktopTopbar.cshtml" model="desktopShell" />
+}
 @if (isHomeActive)
 {
     <partial name="/Pages/Shared/_CatBackLaunch.cshtml" />

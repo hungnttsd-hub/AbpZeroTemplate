@@ -9,11 +9,12 @@
 }
 
 <section class="wallet-shell wallet-withdraw-shell">
-    <header class="wallet-topbar">
+    <header class="cb-page-header wallet-topbar cb-mobile-page-header">
         <a href="/Wallet" aria-label="Về ví tiền"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg></a>
         <h1>Rút tiền</h1>
         <span></span>
     </header>
+    <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Rút tiền", Description = "Rút số dư khả dụng về tài khoản nhận tiền của bạn" })" />
 
     <section class="wallet-balance-hero wallet-withdraw-hero">
         <div>
@@ -26,8 +27,9 @@
 
     <form method="post" asp-page-handler="Create" class="wallet-withdraw-form" data-withdraw-form data-turbo="false" data-available="@Model.Preparation.Wallet.AvailableBalance.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-fee="@Model.Preparation.FeeAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)">
         @Html.AntiForgeryToken()
-        <section class="wallet-form-card">
+        <section class="cb-card wallet-form-card wallet-amount-card">
             <label for="withdraw-amount">Số tiền muốn rút</label>
+            <p class="cb-desktop-only wallet-field-description" hidden>Nhập số tiền bạn muốn rút về tài khoản ngân hàng</p>
             <div class="wallet-amount-input">
                 <input id="withdraw-amount" type="text" inputmode="numeric" autocomplete="off" placeholder="Nhập số tiền" aria-label="Số tiền muốn rút" />
                 <input asp-for="Input.Amount" type="hidden" data-withdraw-value />
@@ -43,8 +45,9 @@
             <p class="wallet-inline-error" data-withdraw-error role="alert" hidden></p>
         </section>
 
-        <section class="wallet-form-card wallet-bank-card">
+        <section class="cb-card wallet-form-card wallet-bank-card">
             <header><h2>Tài khoản nhận tiền</h2><a href="/Account/Profile#payout-account">Thay đổi ›</a></header>
+            <p class="cb-desktop-only wallet-field-description" hidden>Tiền sẽ được chuyển về tài khoản ngân hàng này</p>
             @if (Model.Preparation.PayoutAccount is null)
             {
                 <div class="wallet-bank-missing"><strong>Chưa có tài khoản nhận tiền</strong><p>Lưu thông tin ngân hàng trước khi tạo yêu cầu.</p><a href="/Account/Profile#payout-account">Thêm tài khoản</a></div>
@@ -58,7 +61,8 @@
 
         <section class="wallet-processing-strip"><div><b>◇</b><span>Phí rút tiền<strong>@WalletPageUi.FormatMoney(Model.Preparation.FeeAmount)</strong></span></div><div><b>◷</b><span>Thời gian xử lý<strong>@Model.Preparation.ProcessingTimeLabel</strong></span></div></section>
 
-        <section class="wallet-summary-card">
+        <section class="cb-card wallet-summary-card">
+            <h2 class="cb-desktop-only wallet-summary-heading" hidden>Tóm tắt giao dịch</h2>
             <dl><div><dt>Số tiền rút</dt><dd data-withdraw-summary>0đ</dd></div><div><dt>Phí</dt><dd>@WalletPageUi.FormatMoney(Model.Preparation.FeeAmount)</dd></div><div><dt>Tiền thực nhận</dt><dd data-withdraw-net>0đ</dd></div></dl>
         </section>
 
@@ -70,9 +74,9 @@
         <div class="wallet-submit-status" data-withdraw-status role="status"></div>
     </form>
 
-    <section class="wallet-note-card"><span>i</span><div><h2>Lưu ý</h2><ul><li>Chỉ rút được số dư đã ghi nhận.</li><li>Hoa hồng sắp ghi nhận chưa thể rút.</li><li>Tiền sẽ về tài khoản sau khi admin xử lý thành công.</li></ul></div></section>
+    <section class="cb-card wallet-note-card"><span>i</span><div><h2>Lưu ý</h2><ul><li>Chỉ rút được số dư đã ghi nhận.</li><li>Hoa hồng sắp ghi nhận chưa thể rút.</li><li>Tiền sẽ về tài khoản sau khi admin xử lý thành công.</li></ul></div></section>
 
-    <section class="wallet-withdrawal-history">
+    <section class="cb-card wallet-withdrawal-history">
         <header><h2><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>Lịch sử rút tiền</h2><a href="/Wallet/History?kind=Withdrawal">Xem tất cả ›</a></header>
         @if (Model.Preparation.RecentWithdrawals.Count == 0)
         {

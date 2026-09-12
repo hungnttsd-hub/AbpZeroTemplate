@@ -9,7 +9,7 @@
 }
 <section class="cb-order-detail-page">
     <header class="cb-detail-hero">
-        <div class="cb-orders-titlebar">
+        <div class="cb-page-header cb-orders-titlebar cb-mobile-page-header">
             <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel
             {
                 Title = "Thông tin đơn hàng",
@@ -17,6 +17,7 @@
                 BackLabel = "Quay lại danh sách đơn hàng"
             })" />
         </div>
+        <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Thông tin đơn hàng", Description = "Theo dõi trạng thái, sản phẩm và khoản hoàn tiền của đơn hàng" })" />
 
         <div class="cb-detail-summary">
             <div class="cb-detail-status-row">
@@ -40,7 +41,7 @@
     </header>
 
     <div class="cb-detail-content">
-        <section class="cb-detail-section">
+        <section class="cb-card cb-detail-section">
             <h2>Sản phẩm</h2>
             <div class="cb-detail-products">
                 @if (order.Items.Count == 0)
@@ -87,7 +88,7 @@
             </div>
         </section>
 
-        <section class="cb-detail-section">
+        <section class="cb-card cb-detail-section">
             <h2>Thời gian xử lý</h2>
             <div class="cb-order-timeline">
                 <div class="is-complete">

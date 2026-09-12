@@ -1,0 +1,22 @@
+{
+  "canvas": {"width":1672,"height":941},
+  "layout": {
+    "sidebar": {"x":0,"y":0,"w":244,"h":941},
+    "topbar": {"x":244,"y":0,"w":1428,"h":70},
+    "hero": {"x":270,"y":70,"w":1365,"h":278},
+    "linkGenerator": {"x":270,"y":360,"w":892,"h":158},
+    "wallet": {"x":1170,"y":360,"w":465,"h":181},
+    "featureTiles": {"x":270,"y":532,"w":892,"h":66},
+    "recentOrders": {"x":270,"y":615,"w":895,"h":294},
+    "commissionGuide": {"x":1170,"y":557,"w":465,"h":352}
+  },
+  "colors": {
+    "navy950":"#062D5B","navy900":"#073964","navy800":"#064B70","blue700":"#075C8B","teal600":"#089AA2","teal500":"#08A6B0","cyan400":"#20D5C9","cyan300":"#4CEBE1","mint100":"#D8FAFB","pageBg":"#F6FBFE","card":"#FFFFFF","border":"#DDEAF0","text":"#082D5B","muted":"#6A7A91","success":"#00A547"
+  },
+  "radius": {"sm":10,"md":14,"lg":18,"xl":22},
+  "shadows": {
+    "card":"0 10px 28px rgba(10,76,115,.10)",
+    "soft":"0 5px 16px rgba(10,76,115,.08)",
+    "glow":"0 10px 30px rgba(0,231,224,.24)"
+  }
+}

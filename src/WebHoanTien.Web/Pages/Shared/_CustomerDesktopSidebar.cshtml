@@ -1,0 +1,64 @@
+@model WebHoanTien.Web.Pages.Shared.CustomerDesktopShellModel
+@{
+    var path = Model.CurrentPath.TrimEnd('/');
+    bool IsPath(string prefix) => path.Equals(prefix, StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith(prefix + "/", StringComparison.OrdinalIgnoreCase);
+    var items = new[]
+    {
+        (Url: "/", Label: "Trang chủ", Icon: "", Active: path.Length == 0 || IsPath("/Index")),
+        (Url: "/Orders", Label: "Đơn hàng", Icon: "/catback/icons/shopping-bag.svg", Active: IsPath("/Orders")),
+        (Url: "/Links", Label: "Link đã tạo", Icon: "/catback/icons/link-dark.svg", Active: IsPath("/Links") || IsPath("/LinkResult")),
+        (Url: "/Wallet", Label: "Ví hoàn tiền", Icon: "/notification-icons/wallet.svg", Active: path.Equals("/Wallet", StringComparison.OrdinalIgnoreCase) || IsPath("/Wallet/Index")),
+        (Url: "/Wallet/Withdraw", Label: "Rút tiền", Icon: "/notification-icons/bank.svg", Active: IsPath("/Wallet/Withdraw")),
+        (Url: "/Wallet/History", Label: "Lịch sử ví", Icon: "/orders-icons/clock.svg", Active: IsPath("/Wallet/History")),
+        (Url: "/Notifications", Label: "Thông báo", Icon: "/notification-icons/bell.svg", Active: IsPath("/Notifications")),
+        (Url: "/huong-dan", Label: "Hướng dẫn", Icon: "/orders-icons/shield-check.svg", Active: IsPath("/huong-dan") || IsPath("/Guide")),
+        (Url: "/Account/Profile", Label: "Tài khoản & cài đặt", Icon: "/notification-icons/filters.svg", Active: IsPath("/Account"))
+    };
+}
+<aside class="cb-desktop-only cb-desktop-sidebar" hidden aria-label="Điều hướng CatBack">
+    <a class="cb-desktop-brand" href="/" aria-label="CatBack — Trang chủ">
+        <img src="~/catback-mascot-reference.png" asp-append-version="true" alt="" width="44" height="44" />
+        <span>CatBack<small>Mua sắm thông minh<br />Hoàn tiền thật</small></span>
+    </a>
+    <nav class="cb-desktop-menu" aria-label="Chức năng CatBack">
+        @foreach (var item in items)
+        {
+            <a href="@item.Url" class="@(item.Active ? "is-active" : null)" aria-current="@(item.Active ? "page" : null)">
+                @if (string.IsNullOrEmpty(item.Icon))
+                {
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z" /></svg>
+                }
+                else
+                {
+                    <img src="@item.Icon" alt="" width="21" height="21" />
+                }
+                <span>@item.Label</span>
+            </a>
+        }
+    </nav>
+    @if (Model.AdminNavigationItems.Count > 0)
+    {
+        <details class="cb-desktop-admin">
+            <summary><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Quản trị</summary>
+            <nav class="cb-desktop-menu" aria-label="Chức năng quản trị">
+                @foreach (var item in Model.AdminNavigationItems)
+                {
+                    <a href="@item.Url" data-turbo="@(item.FullReload ? "false" : null)">
+                        <i class="@item.Icon" aria-hidden="true"></i><span>@item.Label</span>
+                    </a>
+                }
+            </nav>
+        </details>
+    }
+    <div class="cb-desktop-support">
+        <img src="~/orders-icons/headphones.svg" alt="" width="24" height="24" />
+        <div><strong>Cần hỗ trợ?</strong><p>CatBack luôn sẵn sàng.</p></div>
+        <a href="mailto:support@webhoantien.com">Liên hệ ngay <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="cb-desktop-promo">
+        <p>Mua sắm<br />thông minh<br /><strong>Cùng CatBack<br />Hoàn tiền thật!</strong></p>
+        <img src="~/catback-mascot-reference.png" asp-append-version="true" alt="" width="112" height="112" />
+    </div>
+    <p class="cb-desktop-brand-note">© @DateTime.Now.Year CatBack<br />Mua sắm thông minh<br />Hoàn tiền thật</p>
+</aside>

@@ -19,23 +19,23 @@
                 }
             </div>
             <div class="cb-order-product-copy">
-                <h2>@productName</h2>
+                <h2 title="@productName">@productName</h2>
                 <p><img src="~/orders-icons/store.svg" alt="" />Sản phẩm từ Shopee</p>
                 <time datetime="@order.PurchaseTime.ToString("O")"><img src="~/orders-icons/clock.svg" alt="" />@CustomerOrderUi.FormatDate(order.PurchaseTime)</time>
-                <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
+                <span class="cb-status cb-status-@statusClass"><i class="cb-desktop-only @(CustomerOrderUi.IsCancelled(order.Status) ? "fa-solid fa-ban" : CustomerOrderUi.IsConfirmed(order.Status) ? "fa-regular fa-circle-check" : "fa-regular fa-clock")" hidden aria-hidden="true"></i>@CustomerOrderUi.GetStatusLabel(order.Status)</span>
             </div>
         </div>
         @if (Model.IsAdminOrderView)
         {
             <div class="cb-order-user">
-                <span>Người nhận</span>
+                <span><i class="cb-desktop-only fa-regular fa-user" hidden aria-hidden="true"></i>Người nhận</span>
                 <strong>@(order.Recipients.Count == 0
                     ? "Chưa xác định"
                     : string.Join(" · ", order.Recipients.Select(x =>
                         $"{x.UserEmail ?? x.UserId.ToString()} (+{CustomerOrderUi.FormatMoney(x.SettledUserCommission ?? x.ExpectedUserCommission)})")))</strong>
                 @if (order.UnmatchedAttributionCount > 0)
                 {
-                    <small>@order.UnmatchedAttributionCount token chưa ghép hoặc đang xung đột</small>
+                    <small><i class="cb-desktop-only fa-solid fa-triangle-exclamation" hidden aria-hidden="true"></i>@order.UnmatchedAttributionCount token chưa ghép hoặc đang xung đột</small>
                 }
             </div>
         }

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" fill="none">
+<defs>
+  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0C748E"/><stop offset="55%" stop-color="#19C8DA"/><stop offset="100%" stop-color="#58F4FF"/></linearGradient>
+  <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05"/></linearGradient>
+  <filter id="shadow1" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#1ED7E6" flood-opacity="0.30"/></filter>
+  <filter id="shadow2" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#0A3668" flood-opacity="0.10"/></filter>
+</defs>
+<rect width="1200" height="520" rx="24" fill="#F4FDFF"/>
+<text x="36" y="52" font-size="28" font-family="Inter, Arial" font-weight="800" fill="#123C74">Gloss and Shadow System</text>
+<text x="36" y="82" font-size="16" font-family="Inter, Arial" fill="#6F8BAA">Use these visual rules consistently across the order page implementation.</text>
+<g filter="url(#shadow1)"><rect x="36" y="128" width="280" height="116" rx="24" fill="url(#g1)"/><rect x="48" y="140" width="256" height="40" rx="20" fill="url(#g2)" opacity="0.55"/></g>
+<text x="36" y="272" font-size="15" font-family="Inter, Arial" font-weight="700" fill="#123C74">Active pill / active nav style</text>
+<text x="36" y="295" font-size="13" font-family="Inter, Arial" fill="#6F8BAA">Gradient + strong glow + top gloss overlay.</text>
+<g filter="url(#shadow2)"><rect x="360" y="128" width="280" height="116" rx="24" fill="#FFFFFF" stroke="#D7EDF4"/><rect x="372" y="140" width="256" height="34" rx="17" fill="url(#g2)" opacity="0.75"/></g>
+<text x="360" y="272" font-size="15" font-family="Inter, Arial" font-weight="700" fill="#123C74">White card style</text>
+<text x="360" y="295" font-size="13" font-family="Inter, Arial" fill="#6F8BAA">Thin border + soft shadow + subtle gloss cap.</text>
+<g filter="url(#shadow2)"><rect x="684" y="128" width="280" height="116" rx="24" fill="#EAFBFF"/><path d="M698 154C745 128 808 137 852 160C900 184 938 191 952 188V244H684V128Z" fill="#FFFFFF" opacity="0.36"/></g>
+<text x="684" y="272" font-size="15" font-family="Inter, Arial" font-weight="700" fill="#123C74">Hero cloud gloss</text>
+<text x="684" y="295" font-size="13" font-family="Inter, Arial" fill="#6F8BAA">Large soft waves for the page header / section headers.</text>
+<rect x="36" y="344" width="1128" height="132" rx="24" fill="#FFFFFF" stroke="#D7EDF4"/>
+<text x="60" y="380" font-size="16" font-family="Inter, Arial" font-weight="700" fill="#123C74">Recommended shadows</text>
+<text x="60" y="414" font-size="14" font-family="Inter, Arial" fill="#6F8BAA">Card shadow: 0 8px 24px rgba(10, 54, 104, 0.08)</text>
+<text x="60" y="438" font-size="14" font-family="Inter, Arial" fill="#6F8BAA">Gloss shadow: 0 10px 30px rgba(15, 177, 196, 0.22)</text>
+<text x="60" y="462" font-size="14" font-family="Inter, Arial" fill="#6F8BAA">Active glow: 0 0 0 1px rgba(101, 239, 255, .8), 0 10px 30px rgba(30, 215, 230, .35)</text>
+</svg>

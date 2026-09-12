@@ -1,0 +1,13 @@
+{
+  "canvas": [0,0,1672,941],
+  "regions": {
+    "sidebar": [0,0,244,941],
+    "topbar": [244,0,1672,70],
+    "hero_banner": [270,70,1635,348],
+    "link_generator": [270,355,1162,520],
+    "wallet_card": [1170,355,1635,545],
+    "feature_tiles": [270,528,1162,606],
+    "recent_orders": [270,610,1165,918],
+    "commission_guide": [1170,553,1635,918]
+  }
+}

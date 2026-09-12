@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="941" viewBox="0 0 1672 941" fill="none">
+<rect width="1672" height="941" fill="#EAFBFF"/>
+<image href="../svg/01_sidebar.svg" x="0" y="0" width="252" height="941" preserveAspectRatio="none"/>
+<rect x="252" y="0" width="1420" height="941" fill="#EAFBFF"/>
+<image href="../svg/02_topbar.svg" x="270" y="12" width="1384" height="84" preserveAspectRatio="none"/>
+<image href="../svg/03_orders_header_hero.svg" x="270" y="98" width="1384" height="132" preserveAspectRatio="none"/>
+<image href="../svg/04_kpi_cards.svg" x="270" y="180" width="1384" height="112" preserveAspectRatio="none"/>
+<image href="../svg/05_filter_tabs.svg" x="270" y="304" width="1384" height="68" preserveAspectRatio="none"/>
+<image href="../svg/06_order_card.svg" x="270" y="388" width="1384" height="240" preserveAspectRatio="none"/>
+<image href="../svg/06_order_card.svg" x="270" y="646" width="1384" height="240" preserveAspectRatio="none"/>
+</svg>

@@ -12,11 +12,12 @@
 <section class="notification-shell" data-notification-root data-category="@categoryValue"
          data-unread-only="@Model.UnreadOnly.ToString().ToLowerInvariant()"
          data-total-count="@Model.Data.TotalCount">
-    <header class="notification-hero">
+    <partial name="/Pages/Shared/_CustomerPageHero.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerPageHeroModel { Title = "Thông báo", Description = "Cập nhật về đơn hàng, hoàn tiền và hoạt động tài khoản" })" />
+    <header class="cb-page-header notification-hero">
         <a class="notification-back-button" href="/" data-notification-back aria-label="Quay lại">
             <img src="~/notification-icons/arrow-left.svg" alt="" />
         </a>
-        <div class="notification-hero-copy">
+        <div class="notification-hero-copy cb-mobile-page-header">
             <h1>Thông báo</h1>
         </div>
         <div class="notification-hero-actions">
@@ -30,7 +31,7 @@
             }
         </div>
 
-        <nav class="notification-chips" aria-label="Lọc nhanh thông báo">
+        <nav class="notification-chips cb-list-filters" aria-label="Lọc nhanh thông báo">
             <button class="@(Model.Category is null ? "is-active" : null)" type="button" data-notification-category="">✓ Tất cả</button>
             <button class="@(Model.Category == CustomerNotificationCategory.Cashback ? "is-active" : null)" type="button" data-notification-category="1">Hoàn tiền</button>
             <button class="@(Model.Category == CustomerNotificationCategory.Order ? "is-active" : null)" type="button" data-notification-category="2">Đơn hàng</button>

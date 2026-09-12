@@ -1,0 +1,47 @@
+@model IndexModel
+<section class="cb-desktop-only cb-card cb-recent-orders" hidden aria-labelledby="recent-orders-heading">
+    <partial name="/Pages/Shared/_CustomerSectionHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerSectionHeaderModel
+    {
+        Title = "Đơn hàng gần đây",
+        TitleId = "recent-orders-heading",
+        Description = Model.CanViewAllOrders ? "Phạm vi quản trị: đơn hàng của tất cả khách hàng." : null,
+        ActionUrl = "/Orders"
+    })" />
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="cb-empty-state"><img src="~/catback/icons/shopping-bag.svg" alt="" width="40" height="40" /><p>Đăng nhập để theo dõi đơn hàng và hoàn tiền của bạn.</p><a href="/Account/Choice?returnUrl=%2FOrders">Đăng nhập <span aria-hidden="true">→</span></a></div>
+    }
+    else if (Model.RecentOrdersUnavailable)
+    {
+        <div class="cb-empty-state" role="status"><p>Chưa tải được đơn hàng gần đây. Bạn vẫn có thể tạo link mua hàng.</p><a href="/Orders">Mở trang đơn hàng <span aria-hidden="true">→</span></a></div>
+    }
+    else if (Model.RecentOrders.Items.Count == 0)
+    {
+        <div class="cb-empty-state"><img src="~/catback/icons/empty-box.svg" alt="" width="40" height="40" /><p>Chưa có đơn hàng. Đơn sẽ xuất hiện sau khi Shopee ghi nhận.</p><a href="#link-form">Tạo link mua hàng <span aria-hidden="true">→</span></a></div>
+    }
+    else
+    {
+        <div class="cb-table-scroll" tabindex="0" role="region" aria-label="5 đơn hàng mới nhất">
+            <table class="cb-table">
+                <thead><tr><th scope="col">Ngày</th><th scope="col">Sản phẩm</th><th scope="col">Giá trị đơn</th><th scope="col">Hoàn tiền</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+                <tbody>
+                    @foreach (var order in Model.RecentOrders.Items)
+                    {
+                        var firstItem = order.Items.FirstOrDefault();
+                        var productName = string.IsNullOrWhiteSpace(firstItem?.ProductName) ? "Sản phẩm Shopee" : firstItem.ProductName;
+                        var productImage = firstItem?.ImageUrl ?? order.ProductImageUrl;
+                        var commission = CustomerOrderUi.DisplayCommission(order);
+                        <tr>
+                            <td><time datetime="@order.PurchaseTime.ToString("O")">@CustomerOrderUi.FormatDate(order.PurchaseTime)</time></td>
+                            <td><div class="cb-table-product"><img src="@(string.IsNullOrWhiteSpace(productImage) ? "/orders-icons/store.svg" : productImage)" alt="" width="36" height="36" loading="lazy" onerror="this.onerror=null;this.src='/orders-icons/store.svg'" /><span>@productName<small>Shopee</small></span></div></td>
+                            <td class="cb-money">@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</td>
+                            <td class="cb-money @(commission > 0 ? "cb-cashback-value" : "cb-cashback-zero")">@CustomerOrderUi.FormatMoney(commission)</td>
+                            <td><span class="cb-status cb-status-@CustomerOrderUi.GetStatusClass(order.Status)">@CustomerOrderUi.GetStatusLabel(order.Status)</span></td>
+                            <td><a class="cb-table-action" href="/Orders/@order.Id?returnUrl=%2F" aria-label="Xem chi tiết đơn @order.ExternalOrderId">Chi tiết <span aria-hidden="true">→</span></a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

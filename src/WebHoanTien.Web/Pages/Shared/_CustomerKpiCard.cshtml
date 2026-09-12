@@ -1,0 +1,9 @@
+@model WebHoanTien.Web.Pages.Shared.CustomerKpiCardModel
+<article class="cb-kpi-card">
+    <span class="cb-metric-icon @Model.IconClass"><img src="@Model.Icon" alt="" /></span>
+    <strong>@Model.Value</strong>
+    <a class="cb-desktop-only cb-kpi-action" hidden href="@Model.ActionUrl" aria-label="@Model.ActionLabel">
+        <img src="~/orders-icons/chevron-right.svg" alt="" width="20" height="20" />
+    </a>
+    <span>@Model.Label</span>
+</article>

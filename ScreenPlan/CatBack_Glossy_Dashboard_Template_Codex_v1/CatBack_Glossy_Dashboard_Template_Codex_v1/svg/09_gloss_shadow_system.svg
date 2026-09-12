@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<defs>
+  <linearGradient id="wallet" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#075C8B"/><stop offset="55%" stop-color="#08A4A7"/><stop offset="100%" stop-color="#20D5C9"/></linearGradient>
+  <linearGradient id="active" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#0C6B8A"/><stop offset="100%" stop-color="#0A8FA6"/></linearGradient>
+  <linearGradient id="gloss" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.70"/><stop offset="55%" stop-color="#FFFFFF" stop-opacity="0.08"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+</defs>
+<style>text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#082D5B}.h{font-size:28px;font-weight:800}.b{font-size:18px;font-weight:800}.s{font-size:14px;fill:#687A91}.white{fill:#fff}.light{fill:#D8FBF7}</style>
+<rect width="900" height="520" fill="#F6FBFE"/>
+<text x="32" y="50" class="h">CatBack glossy surface system</text>
+
+<rect x="37" y="90" width="390" height="150" rx="22" fill="#0A4C73" opacity="0.08"/>
+<rect x="32" y="82" width="390" height="150" rx="22" fill="#fff" stroke="#DDEAF0"/>
+<text x="58" y="125" class="b">White content card</text>
+<text x="58" y="154" class="s">Border #DDEAF0 · radius 18–22px</text>
+<text x="58" y="181" class="s">Shadow 0 10 28 rgba(10,76,115,.10)</text>
+
+<rect x="463" y="94" width="410" height="150" rx="22" fill="#00E7E0" opacity="0.16"/>
+<rect x="456" y="82" width="410" height="150" rx="22" fill="url(#wallet)" stroke="#4CEBE1"/>
+<path d="M456 82 H866 V138 C770 108 680 135 602 120 C540 109 493 102 456 112 Z" fill="url(#gloss)"/>
+<text x="482" y="126" class="b white">Glossy wallet / hero accent</text>
+<text x="482" y="156" class="s light">Deep blue → teal → mint</text>
+<text x="482" y="184" class="s light">Top specular layer + cyan edge glow</text>
+
+<rect x="38" y="280" width="390" height="92" rx="16" fill="#00E7E0" opacity="0.15"/>
+<rect x="32" y="270" width="390" height="92" rx="16" fill="url(#active)" stroke="#20F0E5"/>
+<text x="227" y="326" text-anchor="middle" class="b white">Active navigation</text>
+
+<rect x="461" y="278" width="410" height="92" rx="16" fill="#0A4C73" opacity="0.06"/>
+<rect x="456" y="270" width="410" height="92" rx="16" fill="#FFFFFF" stroke="#DDEAF0"/>
+<rect x="478" y="290" width="52" height="52" rx="14" fill="#DDF8FA"/>
+<circle cx="504" cy="316" r="9" fill="none" stroke="#08A6B0" stroke-width="3"/>
+<text x="552" y="310" class="b">Icon tile / micro card</text>
+<text x="552" y="337" class="s">Soft cyan background + crisp navy text</text>
+
+<text x="32" y="416" class="b">Gloss formula</text>
+<text x="32" y="447" class="s">1) Gradient base  2) 1px cyan border  3) translucent white top shape  4) soft shadow  5) restrained glow only on premium surfaces</text>
+<text x="32" y="479" class="s">Avoid blur on text/icons. Gloss belongs to surfaces; content typography stays sharp.</text>
+</svg>

@@ -1,0 +1,14 @@
+@model WebHoanTien.Web.Pages.Shared.CustomerSectionHeaderModel
+<header class="cb-section-header">
+    <div>
+        <h2 id="@Model.TitleId">@Model.Title</h2>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p>@Model.Description</p>
+        }
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Model.ActionUrl))
+    {
+        <a href="@Model.ActionUrl">@Model.ActionLabel <span aria-hidden="true">→</span></a>
+    }
+</header>

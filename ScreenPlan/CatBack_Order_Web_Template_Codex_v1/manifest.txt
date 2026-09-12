@@ -1,0 +1,26 @@
+CatBack Order Web Template Codex v1
+
+Files:
+- README.md
+- spec.md
+- PROMPT_CODEX.md
+- design-tokens.json
+- styles/glossy-order-page-tokens.css
+- docs/IMPLEMENTATION_CHECKLIST.md
+- reference/01_final_order_template.png
+- reference/02_sidebar_crop.png
+- reference/03_header_stats_crop.png
+- reference/04_order_card_crop.png
+- reference/05_blueprint_preview.png
+- reference/06_gloss_system_preview.png
+- reference/07_master_svg_preview.png
+- blueprints/00_order_page_blueprint.svg
+- svg/01_sidebar.svg
+- svg/02_topbar.svg
+- svg/03_orders_header_hero.svg
+- svg/04_kpi_cards.svg
+- svg/05_filter_tabs.svg
+- svg/06_order_card.svg
+- svg/07_sidebar_support_blocks.svg
+- svg/08_gloss_shadow_system.svg
+- svg/09_master_order_page.svg
