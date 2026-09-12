@@ -35,8 +35,14 @@
       const button = form.querySelector('button:not([type=button])');
       const originalButtonText = button?.textContent;
       const isAnonymousCreate = form.dataset.accountApi === '/api/account/anonymous';
-      if (button) button.disabled = true;
-      if (button && isAnonymousCreate) button.textContent = button.dataset.loadingLabel || 'Đang tạo tài khoản…';
+      const buttonLoading = isAnonymousCreate ? window.CatBackLoading : null;
+      if (buttonLoading) {
+        buttonLoading.setButtonLoading(button, true, { text: button?.dataset.loadingLabel || 'Đang tạo tài khoản…' });
+      } else if (button) {
+        button.disabled = true;
+        if (isAnonymousCreate) button.textContent = button.dataset.loadingLabel || 'Đang tạo tài khoản…';
+      }
+      if (status) status.hidden = true;
       form.setAttribute('aria-busy', 'true');
       try {
         const result = await api(form.dataset.accountApi, form.dataset.accountMethod || 'POST', input);
@@ -49,7 +55,9 @@
       } finally {
         delete form.dataset.busy;
         form.removeAttribute('aria-busy');
-        if (button) {
+        if (buttonLoading) {
+          buttonLoading.setButtonLoading(button, false);
+        } else if (button) {
           button.disabled = false;
           if (isAnonymousCreate) button.textContent = originalButtonText;
         }
