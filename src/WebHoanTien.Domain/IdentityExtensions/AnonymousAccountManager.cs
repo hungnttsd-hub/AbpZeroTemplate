@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.Auditing;
 using Volo.Abp.Data;
@@ -30,15 +31,17 @@ public class AnonymousAccountManager : DomainService
     private readonly IRepository<UserLegalConsent, Guid> _consents;
     private readonly IRecoveryCodeProtector _protector;
     private readonly AdminNewUserRegistrationNotifier _registrationNotifier;
+    private readonly IOptions<IdentityOptions> _identityOptions;
     public const string InvalidRecovery = "Mã khôi phục không hợp lệ hoặc đã hết hiệu lực.";
 
     public AnonymousAccountManager(IdentityUserManager users, IUserStore<IdentityUser> userStore,
         IAccountIdentityStore accounts, IRepository<AnonymousRecovery, Guid> recoveries,
         IRepository<AnonymousDevice, Guid> devices, IRepository<PendingAccountUpgrade, Guid> pending,
         IRepository<UserLegalConsent, Guid> consents, IRecoveryCodeProtector protector,
-        AdminNewUserRegistrationNotifier registrationNotifier)
+        AdminNewUserRegistrationNotifier registrationNotifier, IOptions<IdentityOptions> identityOptions)
     { _users = users; _userStore = userStore; _accounts = accounts; _recoveries = recoveries;
-      _devices = devices; _pending = pending; _consents = consents; _protector = protector; _registrationNotifier = registrationNotifier; }
+      _devices = devices; _pending = pending; _consents = consents; _protector = protector; _registrationNotifier = registrationNotifier;
+      _identityOptions = identityOptions; }
 
     public static string NewSecret() => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     public static string Hash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
@@ -180,6 +183,17 @@ public class AnonymousAccountManager : DomainService
             throw new UserFriendlyException("Email đã được sử dụng. CatBack không tự gộp tài khoản.");
     }
 
+    public async Task<IdentityUser> UpgradeWithUserNameAsync(Guid userId, string name, string password)
+    {
+        await _identityOptions.SetAsync();
+        var user = await RequireAnonymousAsync(userId);
+        Check(await _users.SetUserNameAsync(user, name.Trim()));
+        Check(await _users.AddPasswordAsync(user, password));
+        user.SetProperty(CatBackAccountProperties.UserNameRegistration, true);
+        await FinishUpgradeAsync(user, LegalConsentMethod.UserNameRegistration);
+        return user;
+    }
+
     public async Task<PendingAccountUpgrade> BeginUpgradeAsync(Guid userId, string name, string email,
         string password, string token, string returnUrl)
     {
@@ -253,7 +267,12 @@ public class AnonymousAccountManager : DomainService
         { item.RevokedAt = Clock.Now; await _devices.UpdateAsync(item); }
         await RevokePendingAsync(user.Id);
         await ConsentAsync(user.Id, method);
-        await _registrationNotifier.EnqueueAsync(user.Id, method == LegalConsentMethod.GoogleRegistration ? UserSelfRegistrationMethod.Google : UserSelfRegistrationMethod.Email);
+        await _registrationNotifier.EnqueueAsync(user.Id, method switch
+        {
+            LegalConsentMethod.GoogleRegistration => UserSelfRegistrationMethod.Google,
+            LegalConsentMethod.UserNameRegistration => UserSelfRegistrationMethod.UserName,
+            _ => UserSelfRegistrationMethod.Email
+        });
         Logger.LogInformation("AnonymousAccountUpgraded {UserId}", user.Id);
     }
     private async Task RevokePendingAsync(Guid userId)

@@ -41,7 +41,7 @@ public class CustomerProfileAppService : WebHoanTienAppService, ICustomerProfile
             x.TermsVersion == WebHoanTienConsts.TermsVersion && x.PrivacyVersion == WebHoanTienConsts.PrivacyVersion);
         var payoutAccount = await _payoutAccounts.FindAsync(x => x.UserId == user.Id);
         var displayName = string.Join(' ', new[] { user.Name, user.Surname }.Where(x => !string.IsNullOrWhiteSpace(x))).Trim();
-        if (string.IsNullOrWhiteSpace(displayName)) displayName = user.Email ?? user.UserName;
+        if (string.IsNullOrWhiteSpace(displayName)) displayName = string.IsNullOrWhiteSpace(user.Email) ? user.UserName : user.Email;
         displayName = ShortenDisplayName(displayName);
         return new CustomerProfileDto
         {

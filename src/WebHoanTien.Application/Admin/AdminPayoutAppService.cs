@@ -91,7 +91,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
         var request = await _withdrawals.GetAsync(id);
         var user = await _users.FindAsync(request.UserId);
         var hasProof = await _proofs.AnyAsync(x => x.WithdrawalRequestId == id);
-        return await MapAsync(request, user?.Email ?? user?.UserName ?? "Không xác định", hasProof);
+        return await MapAsync(request, string.IsNullOrWhiteSpace(user?.Email) ? user?.UserName ?? "Không xác định" : user.Email, hasProof);
     }
 
     [DisableAuditing]
@@ -133,7 +133,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
             await _withdrawals.UpdateAsync(request, autoSave: true, cancellationToken: cancellationToken);
             await _notificationManager.NotifyWithdrawalStatusAsync(request);
             var user = await _users.FindAsync(request.UserId, cancellationToken: cancellationToken);
-            var result = await MapAsync(request, user?.Email ?? user?.UserName ?? "Không xác định", true);
+            var result = await MapAsync(request, string.IsNullOrWhiteSpace(user?.Email) ? user?.UserName ?? "Không xác định" : user.Email, true);
             await unitOfWork.CompleteAsync(cancellationToken);
             return result;
         }
@@ -156,7 +156,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
             await _withdrawals.UpdateAsync(request, autoSave: true);
             await _notificationManager.NotifyWithdrawalStatusAsync(request);
             var user = await _users.FindAsync(request.UserId);
-            return await MapAsync(request, user?.Email ?? user?.UserName ?? "Không xác định",
+            return await MapAsync(request, string.IsNullOrWhiteSpace(user?.Email) ? user?.UserName ?? "Không xác định" : user.Email,
                 await _proofs.AnyAsync(x => x.WithdrawalRequestId == id));
         }
         catch (Exception exception) when (ContainsDatabaseMarker(exception, "Concurrency"))
@@ -200,7 +200,7 @@ public class AdminPayoutAppService : WebHoanTienAppService, IAdminPayoutAppServi
         var ids = userIds.Distinct().ToList();
         if (ids.Count == 0) return new Dictionary<Guid, string>();
         var query = (await _users.GetQueryableAsync()).Where(x => ids.Contains(x.Id));
-        return (await AsyncExecuter.ToListAsync(query)).ToDictionary(x => x.Id, x => x.Email ?? x.UserName);
+        return (await AsyncExecuter.ToListAsync(query)).ToDictionary(x => x.Id, x => string.IsNullOrWhiteSpace(x.Email) ? x.UserName : x.Email);
     }
 
     private async Task<HashSet<Guid>> GetProofRequestIdsAsync(IEnumerable<Guid> requestIds)

@@ -200,7 +200,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         var result = await base.OnPostAsync(action);
         if (result is PageResult && ModelState.IsValid && string.IsNullOrWhiteSpace(LinkError))
         {
-            LinkError = "Đăng nhập chưa thành công. Hãy kiểm tra email, mật khẩu và trạng thái xác minh email.";
+            LinkError = "Đăng nhập chưa thành công. Hãy kiểm tra username/email, mật khẩu và trạng thái tài khoản.";
         }
 
         if (!LinkExternalLogin || result is not RedirectResult || pendingLogin is null || localUser is null)

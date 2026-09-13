@@ -2,11 +2,17 @@
   "version": "1.0.0",
   "name": "my-app",
   "private": true,
+  "engines": { "node": ">=20.9.0" },
   "scripts": {
-    "create-bundles": "abp install-libs"
+    "create-bundles": "abp install-libs",
+    "build-assets": "node scripts/build-assets.mjs"
   },
   "dependencies": {
     "@abp/aspnetcore.mvc.ui.theme.leptonxlite": "~3.3.4",
     "@hotwired/turbo": "8.0.23"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "sharp": "0.35.4"
   }
 }

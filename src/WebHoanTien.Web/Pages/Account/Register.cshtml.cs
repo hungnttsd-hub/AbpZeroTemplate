@@ -1,43 +1,38 @@
 using Volo.Abp.Users;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
-using Volo.Abp.Account.Web.Pages.Account;
+using Volo.Abp.Auditing;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Emailing;
 using Volo.Abp.Guids;
 using Volo.Abp.Identity;
 using Volo.Abp.Timing;
+using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
 using WebHoanTien.IdentityExtensions;
 
 namespace WebHoanTien.Web.Pages.Account;
 
+[DisableAuditing]
 public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
 {
     private readonly IRepository<UserLegalConsent, Guid> _consents;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
-    private readonly IEmailSender _emailSender;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly AdminNewUserRegistrationNotifier _adminRegistrationNotifier;
-    private bool _confirmationEmailSent;
 
     public string? RegistrationError { get; private set; }
 
     [BindProperty]
     public bool AcceptedTerms { get; set; }
-
-    [BindProperty, Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
-    public string ConfirmPassword { get; set; } = "";
 
     public override async Task<IActionResult> OnGetAsync()
     {
@@ -57,14 +52,14 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         IRepository<UserLegalConsent, Guid> consents,
         IGuidGenerator guidGenerator,
         IClock clock,
-        IEmailSender emailSender,
+        IUnitOfWorkManager unitOfWorkManager,
         AdminNewUserRegistrationNotifier adminRegistrationNotifier)
         : base(accountAppService, schemeProvider, accountOptions, identityDynamicClaimsPrincipalContributorCache)
     {
         _consents = consents;
         _guidGenerator = guidGenerator;
         _clock = clock;
-        _emailSender = emailSender;
+        _unitOfWorkManager = unitOfWorkManager;
         _adminRegistrationNotifier = adminRegistrationNotifier;
     }
 
@@ -74,17 +69,23 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
         if (IsExternalLogin)
         {
             ModelState.Remove("Input.Password");
-            ModelState.Remove(nameof(ConfirmPassword));
         }
-        else if (Input?.Password != ConfirmPassword)
-            ModelState.AddModelError(nameof(ConfirmPassword), "Mật khẩu xác nhận không khớp.");
-
-        if (Input is not null && !string.IsNullOrWhiteSpace(Input.EmailAddress))
+        else
         {
-            Input.EmailAddress = Input.EmailAddress.Trim();
-            Input.UserName = Input.UserName?.Trim();
+            // ABP's shared input requires email for external registration only.
+            ModelState.Remove("Input.EmailAddress");
+            if (Input is not null) Input.EmailAddress = string.Empty;
         }
 
+        if (Input is not null)
+        {
+            Input.UserName = (Input.UserName ?? string.Empty).Trim();
+            if (IsExternalLogin) Input.EmailAddress = (Input.EmailAddress ?? string.Empty).Trim();
+        }
+        else
+        {
+            ModelState.AddModelError("Input.UserName", "Vui lòng nhập username và mật khẩu.");
+        }
         if (!AcceptedTerms)
         {
             ModelState.AddModelError(nameof(AcceptedTerms), "Bạn cần đồng ý với Điều khoản và Chính sách riêng tư.");
@@ -97,19 +98,19 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             return Page();
         }
 
-        var existingUser = Input is null
-            ? null
-            : await UserManager.FindByEmailAsync(Input.EmailAddress);
+        var existingUser = Input is null ? null : IsExternalLogin
+            ? await UserManager.FindByEmailAsync(Input.EmailAddress)
+            : await UserManager.FindByNameAsync(Input.UserName);
         if (!IsExternalLogin && existingUser is not null)
         {
-            RegistrationError = "Tài khoản với email này đã tồn tại trong hệ thống. Vui lòng đăng nhập.";
+            RegistrationError = "Username này đã được sử dụng. Vui lòng chọn username khác hoặc đăng nhập.";
             ExternalProviders = await GetExternalProviders();
             await CheckSelfRegistrationAsync();
             return Page();
         }
 
         var result = await base.OnPostAsync();
-        if (result is RedirectResult && Input is not null)
+        if (IsExternalLogin && result is RedirectResult && Input is not null)
         {
             var user = await UserManager.FindByEmailAsync(Input.EmailAddress);
             if (user is not null && !await _consents.AnyAsync(x => x.UserId == user.Id &&
@@ -121,7 +122,7 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
                     user.Id,
                     WebHoanTienConsts.TermsVersion,
                     WebHoanTienConsts.PrivacyVersion,
-                    IsExternalLogin ? LegalConsentMethod.GoogleRegistration : LegalConsentMethod.EmailRegistration,
+                    LegalConsentMethod.GoogleRegistration,
                     _clock.Now), autoSave: true);
             }
 
@@ -133,14 +134,14 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
             }
         }
 
-        if (_confirmationEmailSent)
+        if (result is RedirectResult)
         {
-            return RedirectToPage("./ConfirmEmailSent");
+            return LocalRedirect(!string.IsNullOrWhiteSpace(ReturnUrl) && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/");
         }
 
-        if (result is PageResult && ModelState.IsValid)
+        if (result is PageResult && ModelState.IsValid && string.IsNullOrWhiteSpace(RegistrationError))
         {
-            RegistrationError = "Không thể tạo tài khoản. Vui lòng kiểm tra lại email và yêu cầu mật khẩu.";
+            RegistrationError = "Không thể tạo tài khoản. Vui lòng kiểm tra lại username và yêu cầu mật khẩu.";
         }
 
         return result;
@@ -148,42 +149,33 @@ public class RegisterModel : Volo.Abp.Account.Web.Pages.Account.RegisterModel
 
     protected override async Task RegisterLocalUserAsync()
     {
-        ValidateModel();
-        var userDto = await AccountAppService.RegisterAsync(new RegisterDto
+        try
         {
-            AppName = "MVC",
-            EmailAddress = Input.EmailAddress,
-            Password = Input.Password,
-            UserName = Input.UserName
-        });
+            // ModelState above validates username/password. The base DTO would
+            // reintroduce mandatory email, so create through Identity directly.
+            await IdentityOptions.SetAsync();
+            using var transaction = _unitOfWorkManager.Begin(requiresNew: true, isTransactional: true);
+            var user = new IdentityUser(_guidGenerator.Create(), Input.UserName, string.Empty, CurrentTenant.Id);
+            // Persist the registered type explicitly; an anonymous type makes the
+            // session middleware revoke this password login on the next request.
+            user.SetProperty(CatBackAccountProperties.Type, (int)AccountType.Registered);
+            user.SetProperty(CatBackAccountProperties.UserNameRegistration, true);
+            AnonymousAccountManager.Check(await UserManager.CreateAsync(user, Input.Password));
+            AnonymousAccountManager.Check(await UserManager.AddDefaultRolesAsync(user));
+            await _consents.InsertAsync(new UserLegalConsent(
+                _guidGenerator.Create(), user.Id,
+                WebHoanTienConsts.TermsVersion, WebHoanTienConsts.PrivacyVersion,
+                LegalConsentMethod.UserNameRegistration, _clock.Now));
+            await _adminRegistrationNotifier.EnqueueAsync(user.Id, UserSelfRegistrationMethod.UserName);
+            await transaction.CompleteAsync();
 
-        var user = await UserManager.GetByIdAsync(userDto.Id);
-        await IdentityOptions.SetAsync();
-        if (!IdentityOptions.Value.SignIn.RequireConfirmedEmail)
-        {
-            await SignInManager.SignInAsync(user, isPersistent: true);
             await IdentityDynamicClaimsPrincipalContributorCache.ClearAsync(user.Id, user.TenantId);
-            return;
+            await SignInManager.SignInAsync(user, isPersistent: true);
         }
-
-        var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-        var confirmationUrl = Url.Page(
-            "/Account/ConfirmEmail",
-            pageHandler: null,
-            values: new { userId = user.Id, token = encodedToken, returnUrl = ReturnUrl },
-            protocol: Request.Scheme);
-        if (string.IsNullOrWhiteSpace(confirmationUrl))
+        catch (BusinessException exception)
         {
-            throw new InvalidOperationException("Không thể tạo URL xác minh email.");
+            RegistrationError = GetLocalizeExceptionMessage(exception);
+            throw;
         }
-
-        var safeUrl = HtmlEncoder.Default.Encode(confirmationUrl);
-        await _emailSender.SendAsync(
-            user.Email!,
-            "Xác minh email CatBack",
-            $"<p>Chào bạn,</p><p>Nhấn vào liên kết dưới đây để xác minh email và tiếp tục:</p><p><a href=\"{safeUrl}\">Xác minh email</a></p><p>Không chia sẻ liên kết này với người khác.</p>",
-            isBodyHtml: true);
-        _confirmationEmailSent = true;
     }
 }

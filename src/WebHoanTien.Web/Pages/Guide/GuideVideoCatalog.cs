@@ -105,9 +105,9 @@ public static class GuideVideoCatalog
             new GuideVideoSources(RegisterVideoId, RegisterVideoId, RegisterVideoId),
             [
                 "Chọn Đăng ký miễn phí trên màn hình đăng nhập.",
-                "Nhập email và mật khẩu từ 6 ký tự hoặc chọn Tiếp tục với Google.",
+                "Nhập username và mật khẩu từ 6 ký tự hoặc chọn Tiếp tục với Google.",
                 "Hoàn tất tạo tài khoản theo hướng dẫn hiển thị trên màn hình.",
-                "Đăng nhập để bắt đầu tạo link và theo dõi tiền hoàn của bạn."
+                "Tài khoản sẽ tự đăng nhập để bạn bắt đầu tạo link và theo dõi tiền hoàn."
             ],
             [],
             [],

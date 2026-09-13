@@ -1,4 +1,8 @@
+FROM node:22-bookworm-slim AS node-runtime
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-runtime /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 WORKDIR /src
 COPY . .
 RUN dotnet restore WebHoanTien.sln

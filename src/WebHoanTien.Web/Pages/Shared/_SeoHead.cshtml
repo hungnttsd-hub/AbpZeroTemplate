@@ -1,0 +1,26 @@
+@inject WebHoanTien.Web.Seo.SeoMetadataProvider Seo
+@{
+    var metadata = Seo.Create(Context, ViewData["Title"] as string);
+}
+<title>@metadata.Title</title>
+<meta name="description" content="@metadata.Description" />
+<meta name="robots" content="@metadata.Robots" />
+@if (metadata.CanonicalUrl is not null)
+{
+    <link rel="canonical" href="@metadata.CanonicalUrl" />
+    <meta property="og:url" content="@metadata.CanonicalUrl" />
+}
+<meta property="og:site_name" content="@Seo.Options.SiteName" />
+<meta property="og:title" content="@metadata.OgTitle" />
+<meta property="og:description" content="@metadata.OgDescription" />
+<meta property="og:type" content="@metadata.OgType" />
+<meta property="og:image" content="@metadata.OgImage" />
+<meta name="twitter:card" content="summary_large_image" />
+@if (!string.IsNullOrWhiteSpace(Seo.Options.GoogleSiteVerification))
+{
+    <meta name="google-site-verification" content="@Seo.Options.GoogleSiteVerification" />
+}
+@if (metadata.StructuredData is not null)
+{
+    <script type="application/ld+json">@Html.Raw(metadata.StructuredData)</script>
+}

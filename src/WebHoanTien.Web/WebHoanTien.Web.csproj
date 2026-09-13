@@ -2,6 +2,15 @@
 
   <Import Project="..\..\common.props" />
 
+  <Target Name="BuildSeoAssets" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Release' and '$(SkipClientAssets)' != 'true'">
+    <Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="npm run build-assets" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <ItemGroup>
+      <Content Remove="wwwroot/optimized/**" />
+      <Content Include="wwwroot/optimized/**" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>

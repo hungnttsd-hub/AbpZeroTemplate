@@ -15,13 +15,25 @@ namespace WebHoanTien.Web.IdentityExtensions;
 public class CatBackSignInManager : AbpSignInManager
 {
     private readonly IAccountIdentityStore _accounts;
+    private readonly IUserConfirmation<IdentityUser> _confirmation;
     public CatBackSignInManager(IdentityUserManager users, IHttpContextAccessor context,
         IUserClaimsPrincipalFactory<IdentityUser> factory, IOptions<IdentityOptions> identityOptions,
         ILogger<SignInManager<IdentityUser>> logger, IAuthenticationSchemeProvider schemes,
         IUserConfirmation<IdentityUser> confirmation, IOptions<AbpIdentityOptions> abpOptions,
         ISettingProvider settings, IAccountIdentityStore accounts)
         : base(users, context, factory, identityOptions, logger, schemes, confirmation, abpOptions, settings)
-    { _accounts = accounts; }
+    { _accounts = accounts; _confirmation = confirmation; }
+
+    public override async Task<bool> CanSignInAsync(IdentityUser user)
+    {
+        if (!user.IsUserNameRegistration()) return await base.CanSignInAsync(user);
+
+        // Username registrations have no login email to confirm. Keep the other
+        // confirmation requirements and the normal PreSignInCheck/lockout checks.
+        if (Options.SignIn.RequireConfirmedPhoneNumber && !await UserManager.IsPhoneNumberConfirmedAsync(user)) return false;
+        if (Options.SignIn.RequireConfirmedAccount && !await _confirmation.IsConfirmedAsync(UserManager, user)) return false;
+        return true;
+    }
 
     public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
     {

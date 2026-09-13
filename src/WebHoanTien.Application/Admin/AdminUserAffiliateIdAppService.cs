@@ -145,7 +145,7 @@ public class AdminUserAffiliateIdAppService : WebHoanTienAppService, IAdminUserA
         }
     }
 
-    private static string GetEmail(IdentityUser user) => user.Email ?? user.UserName;
+    private static string GetEmail(IdentityUser user) => string.IsNullOrWhiteSpace(user.Email) ? user.UserName : user.Email;
 
     private static bool IsOverrideConflict(Exception exception)
     {

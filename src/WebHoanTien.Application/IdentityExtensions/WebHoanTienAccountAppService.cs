@@ -35,6 +35,7 @@ public class WebHoanTienAccountAppService : AccountAppService
         input.ExtraProperties.Remove(CatBackAccountProperties.Type);
         input.ExtraProperties.Remove(CatBackAccountProperties.LoginEmail);
         input.ExtraProperties.Remove(CatBackAccountProperties.NormalizedLoginEmail);
+        input.ExtraProperties.Remove(CatBackAccountProperties.UserNameRegistration);
         var registeredUser = await base.RegisterAsync(input);
         await _adminRegistrationNotifier.EnqueueAsync(
             registeredUser.Id,

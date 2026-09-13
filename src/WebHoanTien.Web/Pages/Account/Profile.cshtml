@@ -18,7 +18,7 @@
         }
         <div>
             <h1>@Model.Profile.DisplayName</h1>
-            <p>@Model.LoginEmail</p>
+            <p>@Model.Profile.Username</p>
         </div>
     </header>
 
@@ -27,7 +27,11 @@
             <article class="cb-card profile-card">
                 <h2>Thông tin đăng nhập</h2>
                 <dl class="profile-details">
-                    <div><dt>Email đăng nhập</dt><dd>@Model.LoginEmail</dd></div>
+                    <div><dt>Username</dt><dd>@Model.Profile.Username</dd></div>
+                    @if (!string.IsNullOrWhiteSpace(Model.LoginEmail))
+                    {
+                        <div><dt>Email đăng nhập</dt><dd>@Model.LoginEmail</dd></div>
+                    }
                     <div><dt>Đăng nhập Google</dt><dd class="profile-status @(Model.Profile.HasGoogleLogin ? "is-connected" : null)">@(Model.Profile.HasGoogleLogin ? "Đã liên kết" : "Chưa liên kết")</dd></div>
                     <div><dt>Điều khoản hiện hành</dt><dd class="profile-status @(Model.Profile.HasCurrentLegalConsent ? "is-connected" : null)">@(Model.Profile.HasCurrentLegalConsent ? "Đã chấp thuận" : "Chưa chấp thuận")</dd></div>
                 </dl>
@@ -36,7 +40,7 @@
                 {
                     <div class="profile-contact-email">
                         <h3>Email liên hệ</h3>
-                        <p>Email này có thể dùng để nhận mật khẩu mới khi bạn quên mật khẩu. Mặc định là email đăng nhập và có thể thay đổi.</p>
+                        <p>Bạn có thể bổ sung hoặc thay đổi email liên hệ để nhận mật khẩu mới khi quên mật khẩu.</p>
 
                         @if (!string.IsNullOrWhiteSpace(Model.ContactEmailStatusMessage))
                         {

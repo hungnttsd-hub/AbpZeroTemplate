@@ -301,6 +301,6 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         var ids = userIds.Distinct().ToList();
         if (ids.Count == 0) return new Dictionary<Guid, string>();
         return (await _users.GetListAsync(x => ids.Contains(x.Id)))
-            .ToDictionary(x => x.Id, x => x.Email ?? x.UserName);
+            .ToDictionary(x => x.Id, x => string.IsNullOrWhiteSpace(x.Email) ? x.UserName : x.Email);
     }
 }

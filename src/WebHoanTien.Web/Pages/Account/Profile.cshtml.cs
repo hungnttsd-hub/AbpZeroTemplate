@@ -84,7 +84,7 @@ public class ProfileModel : PageModel
         if (!hasLocalPassword || hasGoogleLogin)
         {
             const string message =
-                "Email liên hệ chỉ áp dụng cho tài khoản đăng ký trực tiếp bằng email và mật khẩu, chưa liên kết Google.";
+                "Email liên hệ chỉ áp dụng cho tài khoản có mật khẩu, chưa liên kết Google.";
             if (IsAjaxRequest())
             {
                 ModelState.AddModelError(nameof(ContactEmail), message);
@@ -262,7 +262,7 @@ public class ProfileModel : PageModel
         var user = await _userManager.GetByIdAsync(_currentUser.GetId());
         CanChangePassword = await _userManager.HasPasswordAsync(user);
         CanEditContactEmail = CanChangePassword && !Profile.HasGoogleLogin;
-        LoginEmail = string.IsNullOrWhiteSpace(user.GetLoginEmail())
+        LoginEmail = user.IsUserNameRegistration() ? user.GetLoginEmail() ?? string.Empty : string.IsNullOrWhiteSpace(user.GetLoginEmail())
             ? user.Email ?? string.Empty
             : user.GetLoginEmail()!;
 

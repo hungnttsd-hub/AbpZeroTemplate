@@ -107,7 +107,7 @@
     @if (isAuthenticated || isAccountActive) { <meta name="turbo-cache-control" content="no-cache" /> }
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="CatBack giúp tạo link mua sắm Shopee và theo dõi phần hoàn tiền được chia sẻ." />
+    <partial name="/Pages/Shared/_SeoHead.cshtml" />
     <meta name="theme-color" content="#031E45" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -140,12 +140,6 @@
                 }
             })();
         </script>
-    }
-    <title>@(ViewData["Title"] ?? "CatBack")</title>
-    @if (isHomeActive)
-    {
-        <link rel="preload" href="~/catback-launch-background.webp?v=1" as="image" type="image/webp" />
-        <link rel="preload" href="~/catback-mascot-launch-480.webp?v=1" as="image" type="image/webp" />
     }
     <link rel="manifest" href="~/manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />

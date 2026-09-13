@@ -24,7 +24,7 @@ public class VideoModel : PageModel
         var video = GuideVideoCatalog.Find(slug);
         if (video is null)
         {
-            return Redirect("/huong-dan");
+            return NotFound();
         }
 
         Video = video;

@@ -42,7 +42,7 @@ public class AdminNotificationAppService : WebHoanTienAppService, IAdminNotifica
         var emails = targetIds.Count == 0
             ? new Dictionary<Guid, string>()
             : (await _users.GetListAsync(x => targetIds.Contains(x.Id)))
-                .ToDictionary(x => x.Id, x => x.Email ?? x.UserName);
+                .ToDictionary(x => x.Id, x => string.IsNullOrWhiteSpace(x.Email) ? x.UserName : x.Email);
         return new PagedResultDto<AdminNotificationCampaignDto>(totalCount,
             campaigns.Select(x => Map(x, x.TargetUserId.HasValue
                 ? emails.GetValueOrDefault(x.TargetUserId.Value) ?? "Không xác định"
@@ -67,7 +67,7 @@ public class AdminNotificationAppService : WebHoanTienAppService, IAdminNotifica
             var target = (await _users.GetListAsync(x => x.NormalizedEmail == normalizedEmail && x.IsActive))
                 .FirstOrDefault() ?? throw new BusinessException(WebHoanTienDomainErrorCodes.NotificationTargetNotFound);
             targetUserId = target.Id;
-            targetEmail = target.Email ?? target.UserName;
+            targetEmail = string.IsNullOrWhiteSpace(target.Email) ? target.UserName : target.Email;
             recipientIds = new List<Guid> { target.Id };
         }
         else if (input.Audience == NotificationAudience.AllUsers)

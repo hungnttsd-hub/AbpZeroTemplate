@@ -20,7 +20,8 @@ public enum UserSelfRegistrationMethod
 {
     Email = 1,
     Google = 2,
-    ExternalProvider = 3
+    ExternalProvider = 3,
+    UserName = 4
 }
 
 public class AdminNewUserRegistrationNotifier : ITransientDependency
@@ -83,16 +84,11 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         IdentityUser newUser,
         UserSelfRegistrationMethod registrationMethod)
     {
-        if (string.IsNullOrWhiteSpace(newUser.Email))
-        {
-            return;
-        }
-
         var registeredAt = newUser.CreationTime == default ? _clock.Now : newUser.CreationTime;
         var methodLabel = GetRegistrationMethodLabel(registrationMethod);
         var emailDetails = new RegistrationEmailDetails(
             newUser.Id,
-            newUser.Email,
+            string.IsNullOrWhiteSpace(newUser.Email) ? "Chưa cung cấp" : newUser.Email,
             newUser.UserName ?? string.Empty,
             methodLabel,
             registeredAt);
@@ -105,7 +101,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
                 CustomerNotificationCategory.Administration,
                 CustomerNotificationKind.NewUserRegistered,
                 "Người dùng mới đăng ký",
-                $"{newUser.Email} vừa đăng ký tài khoản CatBack qua {methodLabel}.",
+                $"{(string.IsNullOrWhiteSpace(newUser.Email) ? newUser.UserName : newUser.Email)} vừa đăng ký tài khoản CatBack qua {methodLabel}.",
                 "/Identity/Users",
                 $"registration:{newUser.Id:N}");
         }
@@ -219,6 +215,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
     {
         UserSelfRegistrationMethod.Email => "email",
         UserSelfRegistrationMethod.Google => "Google",
+        UserSelfRegistrationMethod.UserName => "username và mật khẩu",
         _ => "nhà cung cấp đăng nhập liên kết"
     };
 

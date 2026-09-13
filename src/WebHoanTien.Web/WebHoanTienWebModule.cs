@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using WebHoanTien.IdentityExtensions;
+using WebHoanTien.Web.Seo;
 using System.Linq;
 using System;
 using System.IO;
@@ -155,6 +156,15 @@ public class WebHoanTienWebModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         var connectionString = configuration.GetConnectionString("Default")
             ?? throw new AbpException("ConnectionStrings:Default chưa được cấu hình.");
+        context.Services.AddOptions<SeoOptions>()
+            .Configure(options => options.BaseUrl = configuration["App:SelfUrl"] ?? "")
+            .Bind(configuration.GetSection("SEO"))
+            .Validate(options => Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var origin)
+                && origin.Scheme == Uri.UriSchemeHttps && origin.AbsolutePath == "/"
+                && string.IsNullOrEmpty(origin.Query) && string.IsNullOrEmpty(origin.Fragment),
+                "SEO:BaseUrl must be an absolute HTTPS origin without path, query or fragment.")
+            .ValidateOnStart();
+        context.Services.AddSingleton<SeoMetadataProvider>();
         context.Services.AddHangfire(config => config.UsePostgreSqlStorage(
             options => options.UseNpgsqlConnection(connectionString),
             new PostgreSqlStorageOptions { SchemaName = WebHoanTienConsts.HangfireDbSchema }));
@@ -466,12 +476,19 @@ public class WebHoanTienWebModule : AbpModule
         }
 
         app.UseForwardedHeaders();
+        app.UseMiddleware<SeoResponseMiddleware>();
         UseConfiguredGoogleCallbackUrl(app, context.ServiceProvider.GetRequiredService<IConfiguration>());
         app.UseAbpRequestLocalization();
 
         if (!env.IsDevelopment())
         {
-            app.UseErrorPage();
+            // Keep the original URL and HTTP status instead of redirecting missing URLs to /Error.
+            app.UseExceptionHandler(error => error.Run(async http =>
+            {
+                http.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                http.Response.ContentType = "text/plain; charset=utf-8";
+                await http.Response.WriteAsync("Không thể xử lý yêu cầu lúc này. Vui lòng thử lại sau.");
+            }));
         }
 
         app.UseCorrelationId();
@@ -481,9 +498,15 @@ public class WebHoanTienWebModule : AbpModule
             {
                 var path = context.Context.Request.Path.Value;
                 if (string.Equals(path, "/manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(path, "/pwa-launch.html", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(path, "/pwa-launch.html", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(path, "/service-worker.js", StringComparison.OrdinalIgnoreCase))
                 {
                     context.Context.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate";
+                }
+                else if (!env.IsDevelopment())
+                {
+                    context.Context.Response.Headers.CacheControl = context.Context.Request.Query.ContainsKey("v")
+                        ? "public, max-age=31536000, immutable" : "public, max-age=3600";
                 }
             }
         });

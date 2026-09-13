@@ -38,6 +38,7 @@ packages/
 **/dist/
 
 # Logs and temporary files
+src/WebHoanTien.Web/wwwroot/optimized/
 Logs/
 **/Logs/
 *.log

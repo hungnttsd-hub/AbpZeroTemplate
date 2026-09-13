@@ -96,6 +96,13 @@ public class AnonymousAccountController : AbpController
     {
         if (!input.AcceptedTerms) throw new UserFriendlyException("Bạn cần chấp thuận Điều khoản và Chính sách riêng tư.");
         await _session.LimitAsync("upgrade", 20, 5, 60);
+        if (string.IsNullOrWhiteSpace(input.Email))
+        {
+            var user = await _session.TransactionAsync(() => _session.Accounts.UpgradeWithUserNameAsync(
+                CurrentUser.GetId(), input.Username, input.Password));
+            await _session.SignInAsync(user);
+            return new { redirectUrl = AnonymousAccountSession.SafeReturn(input.ReturnUrl) };
+        }
         var token = AnonymousAccountManager.NewSecret();
         var item = await _session.TransactionAsync(() => _session.Accounts.BeginUpgradeAsync(CurrentUser.GetId(),
             input.Username, input.Email, input.Password, token, AnonymousAccountSession.SafeReturn(input.ReturnUrl)));
@@ -156,6 +163,6 @@ public class AnonymousUsernameInput
 public class AccountUpgradeInput : AnonymousCreateInput
 {
     [Required, StringLength(256)] public string Username { get; set; } = "";
-    [Required, EmailAddress, StringLength(256)] public string Email { get; set; } = "";
+    [EmailAddress, StringLength(256)] public string? Email { get; set; }
     [Required, StringLength(128)] public string Password { get; set; } = "";
 }

@@ -11,6 +11,8 @@ public static class AccountIdentity
         user.ExtraProperties.TryGetValue(CatBackAccountProperties.Type, out var value)
             ? (AccountType)Convert.ToInt32(value) : AccountType.Registered;
     public static bool IsAnonymous(this IdentityUser user) => user.GetAccountType() == AccountType.Anonymous;
+    public static bool IsUserNameRegistration(this IdentityUser user) =>
+        !user.IsAnonymous() && user.GetProperty<bool>(CatBackAccountProperties.UserNameRegistration);
     public static string? GetLoginEmail(this IdentityUser user) => user.GetProperty<string?>(CatBackAccountProperties.LoginEmail);
     public static void SetLoginEmail(this IdentityUser user, string email)
     {

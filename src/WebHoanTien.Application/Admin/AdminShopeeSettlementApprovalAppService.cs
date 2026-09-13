@@ -625,13 +625,13 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                     : new List<string>(),
             UserEmail = (soleRecipient?.UserId ?? record.UserId) is { } displayUserId &&
                 users.TryGetValue(displayUserId, out var user)
-                ? user.Email ?? user.UserName
+                ? string.IsNullOrWhiteSpace(user.Email) ? user.UserName : user.Email
                 : null,
             Recipients = recipientRows.Select(recipient => new AdminShopeeSettlementRecipientDto
             {
                 UserId = recipient.UserId,
                 UserEmail = users.TryGetValue(recipient.UserId, out var recipientUser)
-                    ? recipientUser.Email ?? recipientUser.UserName
+                    ? string.IsNullOrWhiteSpace(recipientUser.Email) ? recipientUser.UserName : recipientUser.Email
                     : null,
                 ProjectedUserCommission = recipient.UserCommission,
                 ApprovedUserCommission = record.Status == ShopeeSettlementRecordStatus.Approved

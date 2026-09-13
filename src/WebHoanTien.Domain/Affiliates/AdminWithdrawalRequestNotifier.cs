@@ -89,7 +89,7 @@ public class AdminWithdrawalRequestNotifier : ITransientDependency
         }
 
         var user = await _userManager.FindByIdAsync(request.UserId.ToString());
-        var userLabel = user?.Email ?? user?.UserName ?? request.UserId.ToString("D");
+        var userLabel = string.IsNullOrWhiteSpace(user?.Email) ? user?.UserName ?? request.UserId.ToString("D") : user.Email;
         var bankName = PayoutBankCatalog.Banks
             .FirstOrDefault(bank => bank.Code.Equals(request.BankCode, StringComparison.OrdinalIgnoreCase))?.Name
             ?? request.BankCode;
