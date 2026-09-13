@@ -21,7 +21,8 @@ public enum UserSelfRegistrationMethod
     Email = 1,
     Google = 2,
     ExternalProvider = 3,
-    UserName = 4
+    UserName = 4,
+    Anonymous = 5
 }
 
 public class AdminNewUserRegistrationNotifier : ITransientDependency
@@ -86,6 +87,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
     {
         var registeredAt = newUser.CreationTime == default ? _clock.Now : newUser.CreationTime;
         var methodLabel = GetRegistrationMethodLabel(registrationMethod);
+        var isAnonymousRegistration = registrationMethod == UserSelfRegistrationMethod.Anonymous;
         var emailDetails = new RegistrationEmailDetails(
             newUser.Id,
             string.IsNullOrWhiteSpace(newUser.Email) ? "Chưa cung cấp" : newUser.Email,
@@ -100,10 +102,12 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
                 administrator.Id,
                 CustomerNotificationCategory.Administration,
                 CustomerNotificationKind.NewUserRegistered,
-                "Người dùng mới đăng ký",
-                $"{(string.IsNullOrWhiteSpace(newUser.Email) ? newUser.UserName : newUser.Email)} vừa đăng ký tài khoản CatBack qua {methodLabel}.",
+                isAnonymousRegistration ? "Tài khoản ẩn danh mới" : "Người dùng mới đăng ký",
+                isAnonymousRegistration
+                    ? $"{newUser.UserName} vừa tạo tài khoản ẩn danh trên CatBack."
+                    : $"{(string.IsNullOrWhiteSpace(newUser.Email) ? newUser.UserName : newUser.Email)} vừa đăng ký tài khoản CatBack qua {methodLabel}.",
                 "/Identity/Users",
-                $"registration:{newUser.Id:N}");
+                isAnonymousRegistration ? $"registration:anonymous:{newUser.Id:N}" : $"registration:{newUser.Id:N}");
         }
 
         if (!TryGetAdminEmail(out var adminEmail))
@@ -216,6 +220,7 @@ public class AdminNewUserRegistrationNotifier : ITransientDependency
         UserSelfRegistrationMethod.Email => "email",
         UserSelfRegistrationMethod.Google => "Google",
         UserSelfRegistrationMethod.UserName => "username và mật khẩu",
+        UserSelfRegistrationMethod.Anonymous => "tài khoản ẩn danh",
         _ => "nhà cung cấp đăng nhập liên kết"
     };
 

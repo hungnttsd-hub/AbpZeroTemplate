@@ -96,6 +96,7 @@ public class AnonymousAccountManager : DomainService
         await GenerateRecoveryAsync(user.Id);
         await RememberAsync(user.Id, secret);
         await ConsentAsync(user.Id, LegalConsentMethod.AnonymousRegistration);
+        await _registrationNotifier.EnqueueAsync(user.Id, UserSelfRegistrationMethod.Anonymous);
         Logger.LogInformation("AnonymousAccountCreated {UserId}", user.Id);
         return (user, true);
     }
