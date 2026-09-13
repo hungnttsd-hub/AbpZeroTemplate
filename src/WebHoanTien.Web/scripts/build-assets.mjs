@@ -1,11 +1,18 @@
-import { readdir, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { transform } from 'esbuild';
-import sharp from 'sharp';
+let sharp;
+try {
+  ({ default: sharp } = await import('sharp'));
+} catch (error) {
+  // CSS/JS minification remains usable on older local Node versions; Docker uses Node 22.
+  console.warn(`Skipping optional WebP conversion: ${error.message}`);
+}
 
 const root = fileURLToPath(new URL('../wwwroot/', import.meta.url));
 const output = path.join(root, 'optimized');
+await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 for (const name of await readdir(root)) {
   const extension = path.extname(name);
@@ -19,9 +26,11 @@ for (const name of await readdir(root)) {
     (_, quote, url) => `url(${quote}/${url}${quote})`) : result.code;
   await writeFile(path.join(output, name), code);
 }
-await sharp(path.join(root, 'catback/hero-approved-reference.png'))
-  .webp({ quality: 88 }).toFile(path.join(output, 'hero.webp'));
-await sharp(path.join(root, 'catback-mascot-reference.png'))
-  .resize({ width: 480, withoutEnlargement: true }).webp({ quality: 88 })
-  .toFile(path.join(output, 'mascot.webp'));
-console.log('Built minified CSS/JS and optimized CatBack images.');
+if (sharp) {
+  await sharp(path.join(root, 'catback/hero-approved-reference.png'))
+    .webp({ quality: 88 }).toFile(path.join(output, 'hero.webp'));
+  await sharp(path.join(root, 'catback-mascot-reference.png'))
+    .resize({ width: 480, withoutEnlargement: true }).webp({ quality: 88 })
+    .toFile(path.join(output, 'mascot.webp'));
+}
+console.log(`Built minified CSS/JS assets${sharp ? ' and optimized CatBack images' : ''}.`);

@@ -7,7 +7,11 @@
     <Exec Command="npm run build-assets" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <ItemGroup>
       <Content Remove="wwwroot/optimized/**" />
-      <Content Include="wwwroot/optimized/**" CopyToPublishDirectory="PreserveNewest" />
+      <None Remove="wwwroot/optimized/**" />
+      <Content Include="wwwroot/optimized/**/*.css" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="wwwroot/optimized/**/*.js" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="wwwroot/optimized/**/*.webp" CopyToPublishDirectory="PreserveNewest"
+               Condition="Exists('$(MSBuildProjectDirectory)/wwwroot/optimized/hero.webp') Or Exists('$(MSBuildProjectDirectory)/wwwroot/optimized/mascot.webp')" />
     </ItemGroup>
   </Target>
 

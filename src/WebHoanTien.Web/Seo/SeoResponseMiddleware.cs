@@ -12,9 +12,15 @@ public sealed class SeoResponseMiddleware(RequestDelegate next)
         var path = request.Path.Value ?? "/";
         context.Response.OnStarting(() => {
             var html = context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) == true;
-            if (!seo.CanIndex(request) || context.Response.StatusCode >= 400)
+            if ((html || context.Response.StatusCode >= 400) &&
+                (!seo.CanIndex(request) || context.Response.StatusCode >= 400))
                 context.Response.Headers["X-Robots-Tag"] = seo.Create(context).Robots;
-            if (html) context.Response.Headers.CacheControl = "private, no-store";
+            if (html)
+            {
+                // The customer layout contains account name, notification count and permission-based
+                // navigation. Keep every rendered page private even when its body is public content.
+                context.Response.Headers.CacheControl = "private, no-store";
+            }
             return Task.CompletedTask;
         });
 

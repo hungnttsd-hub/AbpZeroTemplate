@@ -318,11 +318,10 @@
   body.cb-desktop-enabled .dashboard-cashback-note::after { display: none; }
   body.cb-desktop-enabled .dashboard-cashback-note,
   body.cb-desktop-enabled .dashboard-cashback-note > p { display: contents; }
-  body.cb-desktop-enabled .dashboard-hero-copy { display: block; padding: 16px 24px; background: rgba(255,255,255,.85); }
+  body.cb-desktop-enabled .dashboard-hero-copy { position: absolute; z-index: -1; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; border: 0; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
   body.cb-desktop-enabled .dashboard-hero-copy > img,
   body.cb-desktop-enabled .dashboard-hero-copy > div > :not(h1) { display: none; }
-  body.cb-desktop-enabled .dashboard-hero-copy h1 { margin: 0; color: var(--cb-web-navy); font-size: 22px; line-height: 1.4; }
-  body.cb-desktop-enabled .dashboard-hero-copy h1 br { display: none; }
+  body.cb-desktop-enabled .dashboard-hero-copy h1 { margin: 0; }
   /* Keep the existing PWA button functional over the arrow printed in the artwork. */
   body.cb-desktop-enabled .dashboard-cashback-note .dashboard-install-button:not([hidden]) {
     position: absolute;

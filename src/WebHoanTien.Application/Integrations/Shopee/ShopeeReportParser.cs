@@ -44,11 +44,11 @@ public class ShopeeReportParser : ITransientDependency
         if (subIdColumns.Count == 0) throw InvalidReport("Không thấy cột bắt buộc: Sub ID.");
         var purchaseTimeColumn = RequiredColumn(columns, "Thời gian đặt hàng", "purchasetime", "ordertime", "ordercreatedtime",
             "ngaydathang", "thoigiandathang", "thoigiantao", "createdtime");
-        var commissionColumn = RequiredColumn(columns, "Hoa hồng thực nhận", "netcommission", "actualcommission", "commission",
+        var commissionColumn = RequiredColumn(columns, "Hoa hồng thực nhận", "affiliatenetcommission", "netcommission", "actualcommission", "commission",
             "hoahongthucnhan", "hoahongrongtiepthilienket", "hoahong", "commissionvalue");
 
         var statusColumn = OptionalColumn(columns, "orderstatus", "status", "trangthaidathang", "trangthaidonhang", "trangthai");
-        var purchaseAmountColumn = OptionalColumn(columns, "purchaseamount", "ordervalue", "actualamount", "gmv", "giatridonhang", "giatri");
+        var purchaseAmountColumn = OptionalColumn(columns, "purchasevalue", "purchaseamount", "ordervalue", "actualamount", "gmv", "giatridonhang", "giatri");
         var itemIdColumn = OptionalColumn(columns, "itemid", "productid", "masanpham", "id san pham", "idsanpham");
         var modelIdColumn = OptionalColumn(columns, "modelid", "idmodel", "model", "variationid", "maphanloai");
         var productNameColumn = OptionalColumn(columns, "productname", "itemname", "tenitem", "tensanpham", "ten san pham");

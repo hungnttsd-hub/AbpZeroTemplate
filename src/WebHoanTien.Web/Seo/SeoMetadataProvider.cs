@@ -29,7 +29,7 @@ public sealed class SeoMetadataProvider(IOptions<SeoOptions> options, IWebHostEn
     public SeoMetadata Create(HttpContext context, string? pageTitle = null)
     {
         var page = SeoPageCatalog.Find(context.Request.Path.Value);
-        var publicContent = page is not null && HasOnlyTrackingQuery(context.Request)
+        var publicContent = ProductionIndexing && IsPrimaryHost(context.Request) && page is not null && HasOnlyTrackingQuery(context.Request)
             && (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method));
         var title = page?.Path == "/" ? Options.DefaultTitle : WithBrand(page?.Title ?? pageTitle ?? "CatBack");
         var description = page is not null && page.Path != "/" ? page.Description : Options.DefaultDescription;

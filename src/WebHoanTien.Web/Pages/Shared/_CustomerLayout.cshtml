@@ -117,6 +117,9 @@
     <meta name="turbo-prefetch" content="false" />
     @if (isHomeActive)
     {
+        <link rel="preload" href="~/catback/hero-approved-reference.png" as="image" type="image/png" fetchpriority="high" />
+        <link rel="preload" href="~/catback-launch-background.webp?v=1" as="image" type="image/webp" />
+        <link rel="preload" href="~/catback-mascot-launch-480.webp?v=1" as="image" type="image/webp" />
         <style>
             html.cb-pwa-launch-pending,
             html.cb-pwa-launch-pending body {

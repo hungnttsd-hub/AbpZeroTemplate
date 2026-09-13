@@ -132,7 +132,7 @@ public class SeoPolicyTests
         metadata.Title.ShouldNotBeNullOrWhiteSpace();
         metadata.Description.ShouldNotBeNullOrWhiteSpace();
         metadata.StructuredData!.ShouldNotContain("private@example.test");
-        JsonDocument.Parse(metadata.StructuredData).RootElement.GetProperty("@type").GetString().ShouldBe("Organization");
+        JsonDocument.Parse(metadata.StructuredData!).RootElement.GetProperty("@type").GetString().ShouldBe("Organization");
         context.Request.QueryString = new QueryString("?handler=More&token=secret");
         seo.Create(context).CanonicalUrl.ShouldBeNull();
         seo.Create(context).StructuredData.ShouldBeNull();
