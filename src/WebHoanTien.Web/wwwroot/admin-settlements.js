@@ -3,6 +3,33 @@
     const toast = document.querySelector("[data-admin-settlement-toast]");
     const money = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
 
+    function previewManual(form) {
+        const panel = form.querySelector('[data-manual-amounts]');
+        if (!panel) return null;
+        const inputs = ['gross', 'tax', 'fee'].map(key => panel.querySelector(`[data-manual-${key}]`));
+        inputs[2].setCustomValidity(Number(inputs[1].value) + Number(inputs[2].value) > 100
+            ? 'Tổng tỷ lệ thuế và phí không được vượt quá 100%.' : '');
+        if (inputs.some(input => !input.validity.valid || input.value === '')) {
+            panel.querySelector('[data-preview-net]').textContent = 'Vui lòng nhập giá trị hợp lệ';
+            panel.querySelector('[data-preview-fee]').textContent = '—';
+            panel.querySelector('[data-preview-tax]').textContent = '—';
+            return null;
+        }
+        const [gross, taxRate, feeRate] = inputs.map(input => Number(input.value));
+        const round = value => Math.round((value + Number.EPSILON) * 10000) / 10000;
+        const fee = round(gross * feeRate / 100);
+        const tax = Math.min(round(gross - fee), round(gross * taxRate / 100));
+        const net = round(gross - fee - tax);
+        for (const [key, value] of Object.entries({ fee, tax, net }))
+            panel.querySelector(`[data-preview-${key}]`).textContent = `${money.format(value)}đ`;
+        return net;
+    }
+    document.querySelectorAll('[data-approve-record]').forEach(previewManual);
+    document.addEventListener('input', event => {
+        const form = event.target.closest('[data-approve-record]');
+        if (form) previewManual(form);
+    });
+
     function notify(message, error) {
         if (!toast) return;
         toast.textContent = message;
@@ -107,12 +134,13 @@
         if (!form) return;
         event.preventDefault();
         const bulk = form.hasAttribute("data-approve-all");
-        const count = bulk ? Number(form.dataset.count) || 0 : 1;
-        const amount = bulk ? Number(form.dataset.amount) || 0 : Number(form.closest("[data-settlement-record]")?.dataset.paid) || 0;
+        const manual = form.querySelector("[data-manual-amounts]");
+        if (manual && !form.reportValidity()) return;
+        const amount = manual ? previewManual(form) : bulk ? Number(form.dataset.amount) || 0 : Number(form.closest("[data-settlement-record]")?.dataset.paid) || 0;
         const confirmed = await window.CatsBackModal.confirm({
             variant: "info",
-            title: bulk ? `Duyệt ${count} đơn đối soát?` : "Duyệt đơn đối soát?",
-            message: amount > 0
+            title: bulk ? "Duyệt các đơn Shopee đã thanh toán?" : "Duyệt đơn đối soát?",
+            message: bulk ? "Chỉ duyệt các đơn Shopee đã thanh toán. Đơn chưa thanh toán cần nhập hoa hồng, thuế và phí rồi duyệt riêng." : amount > 0
                 ? `Thao tác sẽ cộng tiền vào ví người dùng. Tổng hoa hồng tương ứng: ${money.format(amount)}đ.`
                 : "Thao tác sẽ dùng giá trị đối soát đang hiển thị để cộng tiền vào ví người dùng.",
             cancelText: "Kiểm tra lại",
@@ -139,6 +167,11 @@
                 headers: { "X-Requested-With": "XMLHttpRequest" },
                 credentials: "same-origin"
             }));
+            if (manual) {
+                notify(payload.message);
+                window.setTimeout(() => window.location.reload(), 700);
+                return;
+            }
             if (Number(payload.result?.approvedCount) === 0 || Number(payload.result?.skippedCount) > 0) {
                 applySummary(payload.result);
                 notify(payload.message);

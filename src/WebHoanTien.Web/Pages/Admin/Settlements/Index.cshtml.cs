@@ -61,11 +61,13 @@ public class IndexModel : PageModel
                 (RecordPageNumber - 1) * RecordPageSize, RecordPageSize);
     }
 
-    public async Task<IActionResult> OnPostApproveAsync(Guid recordId)
+    public async Task<IActionResult> OnPostApproveAsync(Guid recordId, bool useManualAmounts, AdminShopeeSettlementManualInput manual)
     {
         try
         {
-            var result = await _settlements.ApproveAsync(recordId);
+            if (useManualAmounts && !ModelState.IsValid)
+                return BadRequest(new { success = false, error = "Vui lòng nhập đủ hoa hồng, thuế và phí hợp lệ." });
+            var result = await _settlements.ApproveAsync(recordId, useManualAmounts ? manual : null);
             return new JsonResult(new
             {
                 success = true,

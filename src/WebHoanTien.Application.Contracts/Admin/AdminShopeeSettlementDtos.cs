@@ -8,6 +8,18 @@ using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.Admin;
 
+public sealed class AdminShopeeSettlementManualInput
+{
+    public const decimal DefaultTaxPercent = 10m;
+    public const decimal DefaultServiceFeePercent = 0.98m;
+    [Required, Range(typeof(decimal), "0", "99999999999999")]
+    public decimal? GrossCommission { get; set; }
+    [Required, Range(typeof(decimal), "0", "100")]
+    public decimal? TaxPercent { get; set; }
+    [Required, Range(typeof(decimal), "0", "100")]
+    public decimal? ServiceFeePercent { get; set; }
+}
+
 public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRequestDto
 {
     [StringLength(256)] public string? Filter { get; set; }
@@ -68,6 +80,7 @@ public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Gu
     public bool HasBonus { get; set; }
     public bool HasPpp { get; set; }
     public string ExternalOrderId { get; set; } = string.Empty;
+    public decimal DefaultGrossCommission { get; set; }
     public decimal EligibleCommission { get; set; }
     public decimal AllocatedServiceFee { get; set; }
     public decimal AllocatedTax { get; set; }
@@ -132,7 +145,7 @@ public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
         AdminShopeeSettlementBatchListInput input, int skipCount = 0, int maxResultCount = 50);
     Task<AdminShopeeSettlementBatchDetailsDto> GetAsync(Guid batchId, int skipCount = 0,
         int maxResultCount = 50);
-    Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId);
+    Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId, AdminShopeeSettlementManualInput? manual = null);
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId);
     Task<AdminShopeeSettlementRefreshResultDto> RefreshMatchesAsync(Guid batchId);
 }

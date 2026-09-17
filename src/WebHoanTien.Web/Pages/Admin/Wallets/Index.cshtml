@@ -1,0 +1,66 @@
+@page "/Admin/Wallets"
+@using WalletPageModel = WebHoanTien.Web.Pages.Admin.Wallets.IndexModel
+@model WebHoanTien.Web.Pages.Admin.Wallets.IndexModel
+@{ ViewData["Title"] = "Ví người dùng"; }
+
+<section class="admin-wallet-shell">
+    <header class="admin-wallet-heading">
+        <div><span>CATBACK OPERATIONS</span><h1>Ví người dùng</h1><p>Xem số dư và các khoản hoa hồng, rút tiền của từng tài khoản.</p></div>
+        <a href="/Admin/Payouts">Duyệt yêu cầu rút tiền</a>
+    </header>
+    <form method="get" class="admin-wallet-filter">
+        <label for="wallet-filter">Tìm người dùng</label>
+        <div><input id="wallet-filter" asp-for="Filter" maxlength="256" placeholder="Email, tên tài khoản, tên hoặc ID người dùng" /><button type="submit">Tìm kiếm</button><a href="/Admin/Wallets">Xóa lọc</a></div>
+    </form>
+    <p class="admin-wallet-explanation"><strong>Số dư khả dụng</strong> = hoa hồng đã ghi nhận − tiền đang chờ rút − tiền đã rút (tối thiểu 0đ). Hoa hồng chờ duyệt chưa được cộng vào số dư.</p>
+    <div class="admin-wallet-list-heading"><h2>@Model.Data.TotalCount tài khoản</h2><span>Trang @Model.PageNumber / @Model.TotalPages</span></div>
+    @if (Model.Data.Items.Count == 0)
+    {
+        <div class="admin-wallet-empty"><strong>Không tìm thấy người dùng</strong><p>Thử tìm bằng email hoặc tên tài khoản khác.</p></div>
+    }
+    else
+    {
+        <div class="admin-wallet-list">
+            @foreach (var wallet in Model.Data.Items)
+            {
+                <article class="admin-wallet-card">
+                    <header>
+                        <div class="admin-wallet-user">
+                            <h3>@(string.IsNullOrWhiteSpace(wallet.Email) ? wallet.UserName : wallet.Email)</h3>
+                            <p>@wallet.UserName @if (!string.IsNullOrWhiteSpace(wallet.DisplayName)) { <span>· @wallet.DisplayName</span> }</p>
+                            <small>ID: @wallet.UserId</small>
+                        </div>
+                        <span class="admin-wallet-account-status @(wallet.IsActive ? "active" : "inactive")">@(wallet.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")</span>
+                    </header>
+                    <dl>
+                        <div class="available"><dt>Số dư khả dụng</dt><dd>@WalletPageModel.Money(wallet.AvailableBalance)</dd></div>
+                        <div><dt>Hoa hồng đã ghi nhận</dt><dd>@WalletPageModel.Money(wallet.ConfirmedAmount)</dd></div>
+                        <div><dt>Hoa hồng chờ duyệt</dt><dd>@WalletPageModel.Money(wallet.PendingAmount)</dd></div>
+                        <div><dt>Đang chờ rút</dt><dd>@WalletPageModel.Money(wallet.ReservedAmount)</dd></div>
+                        <div><dt>Đã rút</dt><dd>@WalletPageModel.Money(wallet.PaidAmount)</dd></div>
+                    </dl>
+                    @if (wallet.RawBalance < 0)
+                    {
+                        <p class="admin-wallet-warning">Cần đối chiếu: số tiền đang chờ rút và đã rút vượt hoa hồng đã ghi nhận @WalletPageModel.Money(-wallet.RawBalance).</p>
+                    }
+                </article>
+            }
+        </div>
+    }
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="admin-wallet-pagination" aria-label="Phân trang ví người dùng">
+            @if (Model.PageNumber > 1)
+            {
+                <a asp-page="/Admin/Wallets/Index" asp-route-Filter="@Model.Filter" asp-route-PageNumber="@(Model.PageNumber - 1)">‹ Trước</a>
+            }
+            else { <span></span> }
+            <span>@Model.PageNumber / @Model.TotalPages</span>
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <a asp-page="/Admin/Wallets/Index" asp-route-Filter="@Model.Filter" asp-route-PageNumber="@(Model.PageNumber + 1)">Sau ›</a>
+            }
+            else { <span></span> }
+        </nav>
+    }
+</section>

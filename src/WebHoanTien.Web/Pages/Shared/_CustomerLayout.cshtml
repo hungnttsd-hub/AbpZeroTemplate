@@ -169,6 +169,7 @@
     <link rel="stylesheet" href="~/guide.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-affiliate-overrides.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-notifications.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/admin-wallets.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-payouts.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-settlements.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/admin-settlement-actions.css" asp-append-version="true" data-turbo-track="reload" />
@@ -191,6 +192,7 @@
     var desktopAdminItems = new System.Collections.Generic.List<WebHoanTien.Web.Pages.Shared.CustomerDesktopNavigationItem>();
     if (canManageAffiliates) { desktopAdminItems.Add(new("/Admin/Affiliates", "Quản trị hoàn tiền", "fa-solid fa-chart-line")); }
     if (canManageSettlements) { desktopAdminItems.Add(new("/Admin/Settlements", "Duyệt đối soát Shopee", "fa-solid fa-file-invoice-dollar")); }
+    if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Wallets", "Ví người dùng", "fa-solid fa-wallet")); }
     if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Payouts", "Duyệt yêu cầu rút tiền", "fa-solid fa-money-check-dollar")); }
     if (canManageNotifications) { desktopAdminItems.Add(new("/Admin/Notifications", "Quản lý thông báo", "fa-solid fa-bullhorn")); }
     if (canManageSettings) { desktopAdminItems.Add(new("/Admin/Settings", "Cấu hình email", "fa-solid fa-envelope-open-text")); }
@@ -291,6 +293,9 @@
                             }
                             @if (canManagePayouts)
                             {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Wallets", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Wallets" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-wallet"></i></span><span class="account-navigation-label">Ví người dùng</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
                                 <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Payouts", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Payouts" data-account-navigation-link>
                                     <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-money-check-dollar"></i></span><span class="account-navigation-label">Duyệt yêu cầu rút tiền</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
                                 </a>

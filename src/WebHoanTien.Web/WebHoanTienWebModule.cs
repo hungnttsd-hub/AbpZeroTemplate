@@ -403,6 +403,7 @@ public class WebHoanTienWebModule : AbpModule
                     bundle.AddFiles("/global-styles.css");
                     bundle.AddFiles("/catback-modal.css");
                     bundle.AddFiles("/admin-payouts.css");
+                    bundle.AddFiles("/admin-wallets.css");
                     bundle.AddFiles("/admin-notifications.css");
                     bundle.AddFiles("/admin-affiliate-overrides.css");
                 }

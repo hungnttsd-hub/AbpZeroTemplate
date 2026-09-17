@@ -33,8 +33,13 @@ public class WalletBalanceCalculator : ITransientDependency
     }
 
     public async Task<WalletBalanceSnapshot> GetAsync(Guid userId)
+        => (await GetManyAsync(new[] { userId }))[userId];
+
+    public async Task<Dictionary<Guid, WalletBalanceSnapshot>> GetManyAsync(IReadOnlyCollection<Guid> userIds)
     {
-        var attributions = await _attributions.GetListAsync(x => x.UserId == userId &&
+        var ids = userIds.Distinct().ToList();
+        if (ids.Count == 0) return new Dictionary<Guid, WalletBalanceSnapshot>();
+        var attributions = await _attributions.GetListAsync(x => x.UserId.HasValue && ids.Contains(x.UserId.Value) &&
             x.Status != AffiliateAttributionStatus.Unmatched);
         var itemIds = attributions.Select(x => x.OrderItemId).Distinct().ToList();
         var items = itemIds.Count == 0 ? new List<AffiliateOrderItem>() :
@@ -44,18 +49,20 @@ public class WalletBalanceCalculator : ITransientDependency
             await _orders.GetListAsync(x => orderIds.Contains(x.Id));
         var orderByItem = items.ToDictionary(x => x.Id, x => x.OrderId);
         var orderById = orders.ToDictionary(x => x.Id);
-        var withdrawals = await _withdrawals.GetListAsync(x => x.UserId == userId);
+        var withdrawals = await _withdrawals.GetListAsync(x => ids.Contains(x.UserId));
+        var attributionsByUser = attributions.ToLookup(x => x.UserId!.Value);
+        var withdrawalsByUser = withdrawals.ToLookup(x => x.UserId);
 
-        return new WalletBalanceSnapshot(
-            attributions.Where(x => orderByItem.TryGetValue(x.OrderItemId, out var orderId) &&
+        return ids.ToDictionary(userId => userId, userId => new WalletBalanceSnapshot(
+            attributionsByUser[userId].Where(x => orderByItem.TryGetValue(x.OrderItemId, out var orderId) &&
                     orderById.TryGetValue(orderId, out var order) && order.Status == AffiliateOrderStatus.Settled)
                 .Sum(x => x.SettledUserCommission ?? 0m),
-            attributions.Where(x => orderByItem.TryGetValue(x.OrderItemId, out var orderId) &&
+            attributionsByUser[userId].Where(x => orderByItem.TryGetValue(x.OrderItemId, out var orderId) &&
                     orderById.TryGetValue(orderId, out var order) &&
                     order.Status is AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending
                         or AffiliateOrderStatus.Completed)
                 .Sum(x => x.UserCommissionSnapshot),
-            withdrawals.Where(x => x.Status == WithdrawalRequestStatus.Pending).Sum(x => x.Amount),
-            withdrawals.Where(x => x.Status == WithdrawalRequestStatus.Paid).Sum(x => x.Amount));
+            withdrawalsByUser[userId].Where(x => x.Status == WithdrawalRequestStatus.Pending).Sum(x => x.Amount),
+            withdrawalsByUser[userId].Where(x => x.Status == WithdrawalRequestStatus.Paid).Sum(x => x.Amount)));
     }
 }

@@ -1,5 +1,7 @@
 @page "/Admin/Settlements"
 @using WebHoanTien.Affiliates
+@using WebHoanTien.Admin
+@using System.Globalization
 @using WebHoanTien.Web.Pages.Admin.Settlements
 @model WebHoanTien.Web.Pages.Admin.Settlements.IndexModel
 @{ ViewData["Title"] = "Duyệt đối soát Shopee"; }
@@ -91,7 +93,7 @@
                             {
                                 <form method="post" asp-page-handler="ApproveAll" data-approve-all data-count="@reviewableCount" data-amount="@reviewableAmount">
                                     @Html.AntiForgeryToken()<input type="hidden" name="batchId" value="@selectedBatch.Id" />
-                                    <button type="submit">Duyệt tất cả (@reviewableCount)</button>
+                                    <button type="submit">Duyệt các đơn Shopee đã thanh toán</button>
                                 </form>
                             }
                         </div>
@@ -160,6 +162,22 @@
                             {
                                 <form method="post" asp-page-handler="Approve" data-approve-record>
                                     @Html.AntiForgeryToken()<input type="hidden" name="recordId" value="@record.Id" />
+                                    @if (!record.IsShopeePaid)
+                                    {
+                                        <input type="hidden" name="useManualAmounts" value="true" />
+                                        <fieldset class="admin-settlement-manual" data-manual-amounts>
+                                            <legend>Tính hoa hồng để duyệt trước thanh toán</legend>
+                                            <div class="admin-settlement-manual-fields">
+                                                <label>Tổng hoa hồng (đ)<input name="manual.GrossCommission" type="number" min="0" max="99999999999999" step="0.0001" required value="@record.DefaultGrossCommission.ToString(CultureInfo.InvariantCulture)" data-manual-gross /></label>
+                                                <label>Thuế (%)<input name="manual.TaxPercent" type="number" min="0" max="100" step="0.0001" required value="@AdminShopeeSettlementManualInput.DefaultTaxPercent.ToString(CultureInfo.InvariantCulture)" data-manual-tax /></label>
+                                                <label>Phí dịch vụ (%)<input name="manual.ServiceFeePercent" type="number" min="0" max="100" step="0.0001" required value="@AdminShopeeSettlementManualInput.DefaultServiceFeePercent.ToString(CultureInfo.InvariantCulture)" data-manual-fee /></label>
+                                            </div>
+                                            <p>Phí = tổng hoa hồng × % phí. Thuế = tổng hoa hồng × % thuế. Thực nhận = tổng hoa hồng − phí − thuế.</p>
+                                            <p>Phí: <b data-preview-fee></b> · Thuế: <b data-preview-tax></b> · Thực nhận: <b data-preview-net aria-live="polite"></b></p>
+                                            <small>Thực nhận được chia cho user theo tỷ lệ hiện tại. Thuế mặc định 10% dành cho cá nhân thuộc diện khấu trừ từ 2 triệu đồng/lần chi trả; có thể sửa theo kỳ đối soát.</small>
+                                            <small><a href="https://help.shopee.vn/portal/10/article/174381" target="_blank" rel="noopener noreferrer">Phí Shopee 0,98%</a> · <a href="https://help.shopee.vn/portal/10/article/163104" target="_blank" rel="noopener noreferrer">Chính sách thuế</a>. Đơn chưa thanh toán cần duyệt riêng tại đây.</small>
+                                        </fieldset>
+                                    }
                                     <button type="submit">Duyệt và cộng ví</button><span role="status"></span>
                                 </form>
                             }
