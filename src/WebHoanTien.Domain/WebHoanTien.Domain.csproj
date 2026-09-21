@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WebHoanTien.Domain.Shared\WebHoanTien.Domain.Shared.csproj" />
+    <EmbeddedResource Include="../../InitialDocs/wordy_wings_gdd/data/*.json" LogicalName="WordyWings.Content.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

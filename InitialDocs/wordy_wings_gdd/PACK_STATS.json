@@ -1,0 +1,19 @@
+{
+  "worlds": 10,
+  "levels": 200,
+  "mvpLevels": 30,
+  "mechanics": 7,
+  "vocabularyTerms": 321,
+  "levelDistribution": {
+    "W01": 20,
+    "W02": 20,
+    "W03": 20,
+    "W04": 20,
+    "W05": 20,
+    "W06": 20,
+    "W07": 20,
+    "W08": 20,
+    "W09": 20,
+    "W10": 20
+  }
+}

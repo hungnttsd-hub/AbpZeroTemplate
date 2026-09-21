@@ -1,0 +1,86 @@
+[
+  {
+    "id": "word_shot",
+    "name": "Word Shot",
+    "core": "Nghe/đọc yêu cầu rồi kéo-thả ná để bắn đúng mục tiêu.",
+    "skills": [
+      "listening",
+      "vocabulary",
+      "visual discrimination"
+    ],
+    "fail": "Bắn sai: mục tiêu đọc tên của nó, rung nhẹ; không mất mạng; cho thử lại.",
+    "mvp": true
+  },
+  {
+    "id": "balloon_pop",
+    "name": "Balloon Pop",
+    "core": "Chạm/bắn bong bóng mang hình hoặc từ đúng trước khi chúng trôi khỏi vùng chơi.",
+    "skills": [
+      "listening",
+      "rapid recognition",
+      "attention"
+    ],
+    "fail": "Chọn sai: bong bóng xẹp vui nhộn, đọc từ đúng của vật vừa chọn; câu hỏi được lặp lại.",
+    "mvp": true
+  },
+  {
+    "id": "drag_sort",
+    "name": "Drag & Sort",
+    "core": "Kéo đồ vật vào giỏ/nhóm/địa điểm phù hợp.",
+    "skills": [
+      "categorisation",
+      "prepositions",
+      "vocabulary"
+    ],
+    "fail": "Sai nhóm: vật bật trở lại vị trí cũ và có gợi ý bằng animation.",
+    "mvp": true
+  },
+  {
+    "id": "letter_puzzle",
+    "name": "Letter Puzzle",
+    "core": "Ghép chữ cái hoặc âm tiết thành từ mục tiêu; có audio mẫu.",
+    "skills": [
+      "spelling",
+      "letter recognition",
+      "phonological awareness"
+    ],
+    "fail": "Chữ sai chỉ rung, không khóa tiến trình; sau 2 lần sai highlight chữ đầu.",
+    "mvp": true
+  },
+  {
+    "id": "rescue_mission",
+    "name": "Rescue Mission",
+    "core": "Tìm đúng nhân vật/đồ vật qua mô tả rồi giải cứu bằng chạm, đường đi hoặc thao tác vật lý.",
+    "skills": [
+      "comprehension",
+      "adjectives",
+      "simple sentences"
+    ],
+    "fail": "Sai: narrator mô tả lại clue ngắn hơn, thêm highlight môi trường.",
+    "mvp": false
+  },
+  {
+    "id": "adventure_commands",
+    "name": "Adventure Commands",
+    "core": "Điều khiển nhân vật theo lệnh: go left, jump, open, put in/on/under...",
+    "skills": [
+      "commands",
+      "directions",
+      "prepositions"
+    ],
+    "fail": "Lệnh sai tạo animation vui, sau đó phát lại câu lệnh chậm hơn.",
+    "mvp": false
+  },
+  {
+    "id": "boss_challenge",
+    "name": "Boss Challenge",
+    "core": "Chuỗi 4-6 thử thách tổng hợp cuối world, không có combat bạo lực; mục tiêu là lấy lại Word Star.",
+    "skills": [
+      "review",
+      "mixed comprehension",
+      "recall"
+    ],
+    "fail": "Checkpoint theo từng câu; sai không reset toàn boss; hint tăng dần.",
+    "mvp": true
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "target": "ES2022", "module": "ES2022", "moduleResolution": "Bundler", "strict": true, "skipLibCheck": true, "outDir": ".balloon-dart-tests", "rootDir": "src/game/balloon-dart" },
+  "include": ["src/game/balloon-dart/model.ts", "src/game/balloon-dart/motion.ts"]
+}

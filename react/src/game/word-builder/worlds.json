@@ -1,0 +1,12 @@
+{
+  "W01": { "theme": "rainbow", "mode": "build_to_unlock", "action": "build_bridge", "target": "rainbow_bridge", "mission": "Tìm những chữ thất lạc để xây cầu cho Momo!", "spawns": ["balloon", "crate", "platform", "creature", "obstacle", "cloud"] },
+  "W02": { "theme": "island", "mode": "build_to_unlock", "action": "release_animal", "target": "animal_cage", "mission": "Ghép mật mã để đưa bạn thú ra ngoài!", "spawns": ["crate", "balloon", "hanging", "creature"] },
+  "W03": { "theme": "home", "mode": "build_to_unlock", "action": "power_machine", "target": "home_lamp", "mission": "Nhặt chữ và thắp sáng ngôi nhà của Momo!", "spawns": ["crate", "falling", "obstacle", "moving_target"] },
+  "W04": { "theme": "kitchen", "mode": "build_to_unlock", "action": "cook_food", "target": "magic_pot", "mission": "Tìm chữ để nấu món ngon cho Momo!", "spawns": ["crate", "balloon", "platform", "creature"] },
+  "W05": { "theme": "school", "mode": "collect_letters", "action": "reveal_treasure", "target": "magic_book", "mission": "Tìm chữ để mở chiếc rương sách phép thuật!", "spawns": ["cloud", "crate", "platform"] },
+  "W06": { "theme": "jungle", "mode": "order_letters", "action": "build_bridge", "target": "jungle_path", "mission": "Xây con đường để Momo vượt chướng ngại vật!", "spawns": ["moving_target", "hanging", "platform"] },
+  "W07": { "theme": "city", "mode": "build_to_unlock", "action": "start_vehicle", "target": "station_vehicle", "mission": "Tìm chữ để khởi động chuyến tàu khám phá!", "spawns": ["crate", "falling", "platform", "obstacle"] },
+  "W08": { "theme": "weather", "mode": "missing_letter", "action": "grow_plant", "target": "weather_garden", "mission": "Tìm chữ còn thiếu để khu vườn thức dậy!", "spawns": ["cloud", "balloon", "hanging"] },
+  "W09": { "theme": "space", "mode": "missing_letter", "action": "power_machine", "target": "rocket_core", "mission": "Tìm chữ để nạp năng lượng cho tên lửa!", "spawns": ["moving_target", "cloud", "platform"] },
+  "W10": { "theme": "castle", "mode": "order_letters", "action": "open_door", "target": "story_gate", "mission": "Ghép mật mã để mở cổng lâu đài!", "spawns": ["crate", "hanging", "creature"] }
+}

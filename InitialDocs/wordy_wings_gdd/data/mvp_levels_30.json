@@ -1,0 +1,1562 @@
+[
+  {
+    "id": "W01-L01",
+    "worldId": "W01",
+    "order": 1,
+    "title": "Rainbow Valley 1",
+    "mechanic": "word_shot",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "red"
+    ],
+    "reviewVocabulary": [
+      "green",
+      "purple"
+    ],
+    "instruction": "Find the red.",
+    "instructionAudioKey": "audio/rainbow-valley/01_instruction.mp3",
+    "targets": [
+      {
+        "value": "red",
+        "correct": true
+      },
+      {
+        "value": "green",
+        "correct": false
+      },
+      {
+        "value": "purple",
+        "correct": false
+      },
+      {
+        "value": "triangle",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'red' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L02",
+    "worldId": "W01",
+    "order": 2,
+    "title": "Rainbow Valley 2",
+    "mechanic": "balloon_pop",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "blue"
+    ],
+    "reviewVocabulary": [
+      "orange",
+      "circle"
+    ],
+    "instruction": "Pop the blue.",
+    "instructionAudioKey": "audio/rainbow-valley/02_instruction.mp3",
+    "targets": [
+      {
+        "value": "blue",
+        "correct": true
+      },
+      {
+        "value": "orange",
+        "correct": false
+      },
+      {
+        "value": "circle",
+        "correct": false
+      },
+      {
+        "value": "star",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'blue' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L03",
+    "worldId": "W01",
+    "order": 3,
+    "title": "Rainbow Valley 3",
+    "mechanic": "drag_sort",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "yellow"
+    ],
+    "reviewVocabulary": [
+      "pink",
+      "square"
+    ],
+    "instruction": "Put the yellow in the right group.",
+    "instructionAudioKey": "audio/rainbow-valley/03_instruction.mp3",
+    "targets": [
+      {
+        "value": "yellow",
+        "correct": true
+      },
+      {
+        "value": "pink",
+        "correct": false
+      },
+      {
+        "value": "square",
+        "correct": false
+      },
+      {
+        "value": "big",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'yellow' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L04",
+    "worldId": "W01",
+    "order": 4,
+    "title": "Rainbow Valley 4",
+    "mechanic": "word_shot",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "green"
+    ],
+    "reviewVocabulary": [
+      "purple",
+      "triangle"
+    ],
+    "instruction": "Find the green.",
+    "instructionAudioKey": "audio/rainbow-valley/04_instruction.mp3",
+    "targets": [
+      {
+        "value": "green",
+        "correct": true
+      },
+      {
+        "value": "purple",
+        "correct": false
+      },
+      {
+        "value": "triangle",
+        "correct": false
+      },
+      {
+        "value": "small",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'green' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L05",
+    "worldId": "W01",
+    "order": 5,
+    "title": "Rainbow Valley 5",
+    "mechanic": "letter_puzzle",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "orange"
+    ],
+    "reviewVocabulary": [
+      "circle",
+      "star"
+    ],
+    "instruction": "Build the word ORANGE.",
+    "instructionAudioKey": "audio/rainbow-valley/05_instruction.mp3",
+    "targets": [
+      {
+        "value": "orange",
+        "correct": true
+      },
+      {
+        "value": "circle",
+        "correct": false
+      },
+      {
+        "value": "star",
+        "correct": false
+      },
+      {
+        "value": "ball",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'orange' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L06",
+    "worldId": "W01",
+    "order": 6,
+    "title": "Rainbow Valley 6",
+    "mechanic": "word_shot",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "pink"
+    ],
+    "reviewVocabulary": [
+      "square",
+      "big"
+    ],
+    "instruction": "Find the pink.",
+    "instructionAudioKey": "audio/rainbow-valley/06_instruction.mp3",
+    "targets": [
+      {
+        "value": "pink",
+        "correct": true
+      },
+      {
+        "value": "square",
+        "correct": false
+      },
+      {
+        "value": "big",
+        "correct": false
+      },
+      {
+        "value": "box",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'pink' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L07",
+    "worldId": "W01",
+    "order": 7,
+    "title": "Rainbow Valley 7",
+    "mechanic": "drag_sort",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "purple"
+    ],
+    "reviewVocabulary": [
+      "triangle",
+      "small"
+    ],
+    "instruction": "Put the purple in the right group.",
+    "instructionAudioKey": "audio/rainbow-valley/07_instruction.mp3",
+    "targets": [
+      {
+        "value": "purple",
+        "correct": true
+      },
+      {
+        "value": "triangle",
+        "correct": false
+      },
+      {
+        "value": "small",
+        "correct": false
+      },
+      {
+        "value": "kite",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'purple' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L08",
+    "worldId": "W01",
+    "order": 8,
+    "title": "Rainbow Valley 8",
+    "mechanic": "balloon_pop",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "circle"
+    ],
+    "reviewVocabulary": [
+      "star",
+      "ball"
+    ],
+    "instruction": "Pop the circle.",
+    "instructionAudioKey": "audio/rainbow-valley/08_instruction.mp3",
+    "targets": [
+      {
+        "value": "circle",
+        "correct": true
+      },
+      {
+        "value": "star",
+        "correct": false
+      },
+      {
+        "value": "ball",
+        "correct": false
+      },
+      {
+        "value": "flower",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'circle' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L09",
+    "worldId": "W01",
+    "order": 9,
+    "title": "Rainbow Valley 9",
+    "mechanic": "word_shot",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "square"
+    ],
+    "reviewVocabulary": [
+      "big",
+      "box"
+    ],
+    "instruction": "Find the square.",
+    "instructionAudioKey": "audio/rainbow-valley/09_instruction.mp3",
+    "targets": [
+      {
+        "value": "square",
+        "correct": true
+      },
+      {
+        "value": "big",
+        "correct": false
+      },
+      {
+        "value": "box",
+        "correct": false
+      },
+      {
+        "value": "black",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'square' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W01-L10",
+    "worldId": "W01",
+    "order": 10,
+    "title": "Rainbow Valley 10",
+    "mechanic": "boss_challenge",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "triangle"
+    ],
+    "reviewVocabulary": [
+      "small",
+      "kite"
+    ],
+    "instruction": "Boss review: find triangle and finish the Word Star challenge.",
+    "instructionAudioKey": "audio/rainbow-valley/10_instruction.mp3",
+    "targets": [
+      {
+        "value": "triangle",
+        "correct": true
+      },
+      {
+        "value": "small",
+        "correct": false
+      },
+      {
+        "value": "kite",
+        "correct": false
+      },
+      {
+        "value": "white",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 90,
+    "learningObjective": "Recognise and understand 'triangle' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 3,
+      "coins": 0
+    },
+    "isBoss": true
+  },
+  {
+    "id": "W02-L01",
+    "worldId": "W02",
+    "order": 1,
+    "title": "Animal Island 1",
+    "mechanic": "word_shot",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "cat"
+    ],
+    "reviewVocabulary": [
+      "fish",
+      "horse"
+    ],
+    "instruction": "Find the cat.",
+    "instructionAudioKey": "audio/animal-island/01_instruction.mp3",
+    "targets": [
+      {
+        "value": "cat",
+        "correct": true
+      },
+      {
+        "value": "fish",
+        "correct": false
+      },
+      {
+        "value": "horse",
+        "correct": false
+      },
+      {
+        "value": "monkey",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'cat' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L02",
+    "worldId": "W02",
+    "order": 2,
+    "title": "Animal Island 2",
+    "mechanic": "balloon_pop",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "dog"
+    ],
+    "reviewVocabulary": [
+      "duck",
+      "rabbit"
+    ],
+    "instruction": "Pop the dog.",
+    "instructionAudioKey": "audio/animal-island/02_instruction.mp3",
+    "targets": [
+      {
+        "value": "dog",
+        "correct": true
+      },
+      {
+        "value": "duck",
+        "correct": false
+      },
+      {
+        "value": "rabbit",
+        "correct": false
+      },
+      {
+        "value": "tiger",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'dog' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L03",
+    "worldId": "W02",
+    "order": 3,
+    "title": "Animal Island 3",
+    "mechanic": "drag_sort",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "bird"
+    ],
+    "reviewVocabulary": [
+      "cow",
+      "frog"
+    ],
+    "instruction": "Put the bird in the right group.",
+    "instructionAudioKey": "audio/animal-island/03_instruction.mp3",
+    "targets": [
+      {
+        "value": "bird",
+        "correct": true
+      },
+      {
+        "value": "cow",
+        "correct": false
+      },
+      {
+        "value": "frog",
+        "correct": false
+      },
+      {
+        "value": "lion",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'bird' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L04",
+    "worldId": "W02",
+    "order": 4,
+    "title": "Animal Island 4",
+    "mechanic": "word_shot",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "fish"
+    ],
+    "reviewVocabulary": [
+      "horse",
+      "monkey"
+    ],
+    "instruction": "Find the fish.",
+    "instructionAudioKey": "audio/animal-island/04_instruction.mp3",
+    "targets": [
+      {
+        "value": "fish",
+        "correct": true
+      },
+      {
+        "value": "horse",
+        "correct": false
+      },
+      {
+        "value": "monkey",
+        "correct": false
+      },
+      {
+        "value": "elephant",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'fish' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L05",
+    "worldId": "W02",
+    "order": 5,
+    "title": "Animal Island 5",
+    "mechanic": "letter_puzzle",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "duck"
+    ],
+    "reviewVocabulary": [
+      "rabbit",
+      "tiger"
+    ],
+    "instruction": "Build the word DUCK.",
+    "instructionAudioKey": "audio/animal-island/05_instruction.mp3",
+    "targets": [
+      {
+        "value": "duck",
+        "correct": true
+      },
+      {
+        "value": "rabbit",
+        "correct": false
+      },
+      {
+        "value": "tiger",
+        "correct": false
+      },
+      {
+        "value": "giraffe",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'duck' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L06",
+    "worldId": "W02",
+    "order": 6,
+    "title": "Animal Island 6",
+    "mechanic": "word_shot",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "cow"
+    ],
+    "reviewVocabulary": [
+      "frog",
+      "lion"
+    ],
+    "instruction": "Find the cow.",
+    "instructionAudioKey": "audio/animal-island/06_instruction.mp3",
+    "targets": [
+      {
+        "value": "cow",
+        "correct": true
+      },
+      {
+        "value": "frog",
+        "correct": false
+      },
+      {
+        "value": "lion",
+        "correct": false
+      },
+      {
+        "value": "crocodile",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'cow' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L07",
+    "worldId": "W02",
+    "order": 7,
+    "title": "Animal Island 7",
+    "mechanic": "drag_sort",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "horse"
+    ],
+    "reviewVocabulary": [
+      "monkey",
+      "elephant"
+    ],
+    "instruction": "Put the horse in the right group.",
+    "instructionAudioKey": "audio/animal-island/07_instruction.mp3",
+    "targets": [
+      {
+        "value": "horse",
+        "correct": true
+      },
+      {
+        "value": "monkey",
+        "correct": false
+      },
+      {
+        "value": "elephant",
+        "correct": false
+      },
+      {
+        "value": "snake",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'horse' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L08",
+    "worldId": "W02",
+    "order": 8,
+    "title": "Animal Island 8",
+    "mechanic": "balloon_pop",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "rabbit"
+    ],
+    "reviewVocabulary": [
+      "tiger",
+      "giraffe"
+    ],
+    "instruction": "Pop the rabbit.",
+    "instructionAudioKey": "audio/animal-island/08_instruction.mp3",
+    "targets": [
+      {
+        "value": "rabbit",
+        "correct": true
+      },
+      {
+        "value": "tiger",
+        "correct": false
+      },
+      {
+        "value": "giraffe",
+        "correct": false
+      },
+      {
+        "value": "bee",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'rabbit' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L09",
+    "worldId": "W02",
+    "order": 9,
+    "title": "Animal Island 9",
+    "mechanic": "word_shot",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "frog"
+    ],
+    "reviewVocabulary": [
+      "lion",
+      "crocodile"
+    ],
+    "instruction": "Find the frog.",
+    "instructionAudioKey": "audio/animal-island/09_instruction.mp3",
+    "targets": [
+      {
+        "value": "frog",
+        "correct": true
+      },
+      {
+        "value": "lion",
+        "correct": false
+      },
+      {
+        "value": "crocodile",
+        "correct": false
+      },
+      {
+        "value": "butterfly",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'frog' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W02-L10",
+    "worldId": "W02",
+    "order": 10,
+    "title": "Animal Island 10",
+    "mechanic": "boss_challenge",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "monkey"
+    ],
+    "reviewVocabulary": [
+      "elephant",
+      "snake"
+    ],
+    "instruction": "Boss review: find monkey and finish the Word Star challenge.",
+    "instructionAudioKey": "audio/animal-island/10_instruction.mp3",
+    "targets": [
+      {
+        "value": "monkey",
+        "correct": true
+      },
+      {
+        "value": "elephant",
+        "correct": false
+      },
+      {
+        "value": "snake",
+        "correct": false
+      },
+      {
+        "value": "bear",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 90,
+    "learningObjective": "Recognise and understand 'monkey' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 3,
+      "coins": 0
+    },
+    "isBoss": true
+  },
+  {
+    "id": "W03-L01",
+    "worldId": "W03",
+    "order": 1,
+    "title": "Happy Home 1",
+    "mechanic": "word_shot",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "bed"
+    ],
+    "reviewVocabulary": [
+      "sofa",
+      "mirror"
+    ],
+    "instruction": "Find the bed.",
+    "instructionAudioKey": "audio/happy-home/01_instruction.mp3",
+    "targets": [
+      {
+        "value": "bed",
+        "correct": true
+      },
+      {
+        "value": "sofa",
+        "correct": false
+      },
+      {
+        "value": "mirror",
+        "correct": false
+      },
+      {
+        "value": "toy",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'bed' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L02",
+    "worldId": "W03",
+    "order": 2,
+    "title": "Happy Home 2",
+    "mechanic": "balloon_pop",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "chair"
+    ],
+    "reviewVocabulary": [
+      "lamp",
+      "door"
+    ],
+    "instruction": "Pop the chair.",
+    "instructionAudioKey": "audio/happy-home/02_instruction.mp3",
+    "targets": [
+      {
+        "value": "chair",
+        "correct": true
+      },
+      {
+        "value": "lamp",
+        "correct": false
+      },
+      {
+        "value": "door",
+        "correct": false
+      },
+      {
+        "value": "doll",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'chair' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L03",
+    "worldId": "W03",
+    "order": 3,
+    "title": "Happy Home 3",
+    "mechanic": "drag_sort",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "table"
+    ],
+    "reviewVocabulary": [
+      "clock",
+      "window"
+    ],
+    "instruction": "Put the table in the right place.",
+    "instructionAudioKey": "audio/happy-home/03_instruction.mp3",
+    "targets": [
+      {
+        "value": "table",
+        "correct": true
+      },
+      {
+        "value": "clock",
+        "correct": false
+      },
+      {
+        "value": "window",
+        "correct": false
+      },
+      {
+        "value": "teddy",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'table' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L04",
+    "worldId": "W03",
+    "order": 4,
+    "title": "Happy Home 4",
+    "mechanic": "word_shot",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "sofa"
+    ],
+    "reviewVocabulary": [
+      "mirror",
+      "toy"
+    ],
+    "instruction": "Find the sofa.",
+    "instructionAudioKey": "audio/happy-home/04_instruction.mp3",
+    "targets": [
+      {
+        "value": "sofa",
+        "correct": true
+      },
+      {
+        "value": "mirror",
+        "correct": false
+      },
+      {
+        "value": "toy",
+        "correct": false
+      },
+      {
+        "value": "book",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'sofa' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L05",
+    "worldId": "W03",
+    "order": 5,
+    "title": "Happy Home 5",
+    "mechanic": "letter_puzzle",
+    "difficulty": 1,
+    "targetVocabulary": [
+      "lamp"
+    ],
+    "reviewVocabulary": [
+      "door",
+      "doll"
+    ],
+    "instruction": "Build the word LAMP.",
+    "instructionAudioKey": "audio/happy-home/05_instruction.mp3",
+    "targets": [
+      {
+        "value": "lamp",
+        "correct": true
+      },
+      {
+        "value": "door",
+        "correct": false
+      },
+      {
+        "value": "doll",
+        "correct": false
+      },
+      {
+        "value": "box",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'lamp' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L06",
+    "worldId": "W03",
+    "order": 6,
+    "title": "Happy Home 6",
+    "mechanic": "word_shot",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "clock"
+    ],
+    "reviewVocabulary": [
+      "window",
+      "teddy"
+    ],
+    "instruction": "Find the clock.",
+    "instructionAudioKey": "audio/happy-home/06_instruction.mp3",
+    "targets": [
+      {
+        "value": "clock",
+        "correct": true
+      },
+      {
+        "value": "window",
+        "correct": false
+      },
+      {
+        "value": "teddy",
+        "correct": false
+      },
+      {
+        "value": "kitchen",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'clock' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L07",
+    "worldId": "W03",
+    "order": 7,
+    "title": "Happy Home 7",
+    "mechanic": "drag_sort",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "mirror"
+    ],
+    "reviewVocabulary": [
+      "toy",
+      "book"
+    ],
+    "instruction": "Put the mirror in the right place.",
+    "instructionAudioKey": "audio/happy-home/07_instruction.mp3",
+    "targets": [
+      {
+        "value": "mirror",
+        "correct": true
+      },
+      {
+        "value": "toy",
+        "correct": false
+      },
+      {
+        "value": "book",
+        "correct": false
+      },
+      {
+        "value": "bedroom",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'mirror' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L08",
+    "worldId": "W03",
+    "order": 8,
+    "title": "Happy Home 8",
+    "mechanic": "balloon_pop",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "door"
+    ],
+    "reviewVocabulary": [
+      "doll",
+      "box"
+    ],
+    "instruction": "Pop the door.",
+    "instructionAudioKey": "audio/happy-home/08_instruction.mp3",
+    "targets": [
+      {
+        "value": "door",
+        "correct": true
+      },
+      {
+        "value": "doll",
+        "correct": false
+      },
+      {
+        "value": "box",
+        "correct": false
+      },
+      {
+        "value": "bathroom",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'door' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L09",
+    "worldId": "W03",
+    "order": 9,
+    "title": "Happy Home 9",
+    "mechanic": "word_shot",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "window"
+    ],
+    "reviewVocabulary": [
+      "teddy",
+      "kitchen"
+    ],
+    "instruction": "Find the window.",
+    "instructionAudioKey": "audio/happy-home/09_instruction.mp3",
+    "targets": [
+      {
+        "value": "window",
+        "correct": true
+      },
+      {
+        "value": "teddy",
+        "correct": false
+      },
+      {
+        "value": "kitchen",
+        "correct": false
+      },
+      {
+        "value": "garden",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 45,
+    "learningObjective": "Recognise and understand 'window' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 1,
+      "coins": 0
+    },
+    "isBoss": false
+  },
+  {
+    "id": "W03-L10",
+    "worldId": "W03",
+    "order": 10,
+    "title": "Happy Home 10",
+    "mechanic": "boss_challenge",
+    "difficulty": 2,
+    "targetVocabulary": [
+      "toy"
+    ],
+    "reviewVocabulary": [
+      "book",
+      "bedroom"
+    ],
+    "instruction": "Boss review: find toy and finish the Word Star challenge.",
+    "instructionAudioKey": "audio/happy-home/10_instruction.mp3",
+    "targets": [
+      {
+        "value": "toy",
+        "correct": true
+      },
+      {
+        "value": "book",
+        "correct": false
+      },
+      {
+        "value": "bedroom",
+        "correct": false
+      },
+      {
+        "value": "in",
+        "correct": false
+      }
+    ],
+    "stars": {
+      "1": "complete with hints allowed",
+      "2": "complete with <= 1 wrong attempt",
+      "3": "complete first try without hint"
+    },
+    "hintPolicy": {
+      "afterWrongAttempts": 2,
+      "audioReplay": true,
+      "visualPulse": true
+    },
+    "estimatedSeconds": 90,
+    "learningObjective": "Recognise and understand 'toy' in a short spoken/visual task.",
+    "reward": {
+      "wordStars": 3,
+      "coins": 0
+    },
+    "isBoss": true
+  }
+]

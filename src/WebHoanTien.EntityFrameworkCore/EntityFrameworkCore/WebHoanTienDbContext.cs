@@ -15,6 +15,7 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Notifications;
 using WebHoanTien.IdentityExtensions;
+using WebHoanTien.WordyWings;
 
 namespace WebHoanTien.EntityFrameworkCore;
 
@@ -27,6 +28,13 @@ public class WebHoanTienDbContext :
     ISettingManagementDbContext,
     IDataProtectionKeyContext
 {
+    public DbSet<ChildProfile> ChildProfiles { get; set; } = null!;
+    public DbSet<GameWorld> GameWorlds { get; set; } = null!;
+    public DbSet<GameLevel> GameLevels { get; set; } = null!;
+    public DbSet<VocabularyTerm> VocabularyTerms { get; set; } = null!;
+    public DbSet<LevelAttempt> LevelAttempts { get; set; } = null!;
+    public DbSet<PlayerProgress> PlayerProgresses { get; set; } = null!;
+    public DbSet<WordMastery> WordMasteries { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<AnonymousRecovery> AnonymousRecoveries { get; set; } = null!;
     public DbSet<AnonymousDevice> AnonymousDevices { get; set; } = null!;
@@ -80,5 +88,6 @@ public class WebHoanTienDbContext :
         builder.ConfigureAffiliate();
         builder.ConfigureNotifications();
         builder.ConfigureAnonymousAccounts();
+        builder.ConfigureWordyWings();
     }
 }

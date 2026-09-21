@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WordyWings ProgressSync",
+  "type": "object",
+  "required": [
+    "attemptId",
+    "childId",
+    "levelId",
+    "startedAt",
+    "completedAt",
+    "stars"
+  ],
+  "properties": {
+    "attemptId": {
+      "type": "string"
+    },
+    "childId": {
+      "type": "string"
+    },
+    "levelId": {
+      "type": "string"
+    },
+    "startedAt": {
+      "type": "string"
+    },
+    "completedAt": {
+      "type": "string"
+    },
+    "wrongAttempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hintCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stars": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "targetResults": {
+      "type": "array"
+    }
+  }
+}

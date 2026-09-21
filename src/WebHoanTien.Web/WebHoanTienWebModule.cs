@@ -493,6 +493,15 @@ public class WebHoanTienWebModule : AbpModule
         }
 
         app.UseCorrelationId();
+        app.Use(async (http, next) =>
+        {
+            if (http.Request.Path == "/wordy-wings" || http.Request.Path == "/wordy-wings/")
+            {
+                http.Response.Redirect("/wordy-wings/index.html");
+                return;
+            }
+            await next();
+        });
         app.UseStaticFiles(new StaticFileOptions
         {
             OnPrepareResponse = context =>
@@ -500,7 +509,8 @@ public class WebHoanTienWebModule : AbpModule
                 var path = context.Context.Request.Path.Value;
                 if (string.Equals(path, "/manifest.webmanifest", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(path, "/pwa-launch.html", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(path, "/service-worker.js", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(path, "/service-worker.js", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(path, "/wordy-wings/index.html", StringComparison.OrdinalIgnoreCase))
                 {
                     context.Context.Response.Headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate";
                 }

@@ -1,0 +1,15 @@
+{
+  "ammo": {
+    "normal": { "name": "Hạt sao", "description": "Cân bằng · 2 sát thương", "damage": 2, "radius": 16, "color": 16765022, "blastRadius": 0, "penetrations": 0, "bounces": 0 },
+    "explosive": { "name": "Hạt nổ", "description": "Nổ lan · phá gỗ", "damage": 3, "radius": 20, "color": 15895152, "blastRadius": 175, "penetrations": 0, "bounces": 0 },
+    "piercing": { "name": "Mũi xuyên", "description": "Xuyên tối đa 3 lớp", "damage": 2, "radius": 13, "color": 7715023, "blastRadius": 0, "penetrations": 3, "bounces": 0 },
+    "bouncy": { "name": "Hạt nảy", "description": "Nảy đá / đất 4 lần", "damage": 2, "radius": 18, "color": 11112680, "blastRadius": 0, "penetrations": 0, "bounces": 4 }
+  },
+  "tiers": [
+    { "from": 0, "targets": 2, "health": 2, "gravity": 490, "wind": 0, "moving": 0, "cover": false, "normal": 4, "explosive": 2, "piercing": 2, "bouncy": 2 },
+    { "from": 3, "targets": 3, "health": 2, "gravity": 510, "wind": 0, "moving": 0, "cover": true, "normal": 4, "explosive": 2, "piercing": 2, "bouncy": 2 },
+    { "from": 9, "targets": 4, "health": 2, "gravity": 520, "wind": 28, "moving": 1, "cover": true, "normal": 4, "explosive": 2, "piercing": 3, "bouncy": 2 },
+    { "from": 17, "targets": 5, "health": 3, "gravity": 560, "wind": 48, "moving": 2, "cover": true, "normal": 4, "explosive": 3, "piercing": 3, "bouncy": 3 },
+    { "from": 25, "targets": 5, "health": 3, "gravity": 590, "wind": 65, "moving": 3, "cover": true, "normal": 3, "explosive": 3, "piercing": 3, "bouncy": 3 }
+  ]
+}

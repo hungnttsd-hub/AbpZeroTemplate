@@ -1,0 +1,2721 @@
+[
+  {
+    "id": "BD-01",
+    "mechanic": "balloon_dart",
+    "title": "Shapes: First Pop",
+    "difficulty": 1,
+    "learningMode": "pictureListening",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-01-R1",
+        "instructionText": "Pop the circle.",
+        "instructionAudioKey": "instruction.pop_the_circle",
+        "target": {
+          "semanticId": "circle"
+        },
+        "balloons": [
+          {
+            "instanceId": "ball_0",
+            "semantic": {
+              "id": "ball",
+              "word": "ball",
+              "imageKey": "vocab.ball",
+              "audioKey": "word.ball"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "visible"
+          }
+        ],
+        "aimAssist": "long",
+        "seed": 1101
+      },
+      {
+        "id": "BD-01-R2",
+        "instructionText": "Pop the star.",
+        "instructionAudioKey": "instruction.pop_the_star",
+        "target": {
+          "semanticId": "star"
+        },
+        "balloons": [
+          {
+            "instanceId": "flower_0",
+            "semantic": {
+              "id": "flower",
+              "word": "flower",
+              "imageKey": "vocab.flower",
+              "audioKey": "word.flower"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "star_1",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "visible"
+          }
+        ],
+        "aimAssist": "long",
+        "seed": 1102
+      },
+      {
+        "id": "BD-01-R3",
+        "instructionText": "Pop the ball.",
+        "instructionAudioKey": "instruction.pop_the_ball",
+        "target": {
+          "semanticId": "ball"
+        },
+        "balloons": [
+          {
+            "instanceId": "ball_0",
+            "semantic": {
+              "id": "ball",
+              "word": "ball",
+              "imageKey": "vocab.ball",
+              "audioKey": "word.ball"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "flower_1",
+            "semantic": {
+              "id": "flower",
+              "word": "flower",
+              "imageKey": "vocab.flower",
+              "audioKey": "word.flower"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "visible"
+          }
+        ],
+        "aimAssist": "long",
+        "seed": 1103
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-02",
+    "mechanic": "balloon_dart",
+    "title": "Four Choices",
+    "difficulty": 2,
+    "learningMode": "pictureListening",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-02-R1",
+        "instructionText": "Pop the flower.",
+        "instructionAudioKey": "instruction.pop_the_flower",
+        "target": {
+          "semanticId": "flower"
+        },
+        "balloons": [
+          {
+            "instanceId": "ball_0",
+            "semantic": {
+              "id": "ball",
+              "word": "ball",
+              "imageKey": "vocab.ball",
+              "audioKey": "word.ball"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "flower_2",
+            "semantic": {
+              "id": "flower",
+              "word": "flower",
+              "imageKey": "vocab.flower",
+              "audioKey": "word.flower"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "visible"
+          }
+        ],
+        "aimAssist": "long",
+        "seed": 1201
+      },
+      {
+        "id": "BD-02-R2",
+        "instructionText": "Pop the circle.",
+        "instructionAudioKey": "instruction.pop_the_circle",
+        "target": {
+          "semanticId": "circle"
+        },
+        "balloons": [
+          {
+            "instanceId": "square_0",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "heart_3",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "visible"
+          }
+        ],
+        "aimAssist": "long",
+        "seed": 1202
+      },
+      {
+        "id": "BD-02-R3",
+        "instructionText": "Pop the star.",
+        "instructionAudioKey": "instruction.pop_the_star",
+        "target": {
+          "semanticId": "star"
+        },
+        "balloons": [
+          {
+            "instanceId": "triangle_0",
+            "semantic": {
+              "id": "triangle",
+              "word": "triangle",
+              "shape": "triangle",
+              "imageKey": "shape.triangle",
+              "audioKey": "word.triangle"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "heart_1",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "visible"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "visible"
+          }
+        ],
+        "aimAssist": "long",
+        "seed": 1203
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-03",
+    "mechanic": "balloon_dart",
+    "title": "Moving Shapes",
+    "difficulty": 3,
+    "learningMode": "pictureListening",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-03-R1",
+        "instructionText": "Pop the triangle.",
+        "instructionAudioKey": "instruction.pop_the_triangle",
+        "target": {
+          "semanticId": "triangle"
+        },
+        "balloons": [
+          {
+            "instanceId": "square_0",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "triangle_1",
+            "semantic": {
+              "id": "triangle",
+              "word": "triangle",
+              "shape": "triangle",
+              "imageKey": "shape.triangle",
+              "audioKey": "word.triangle"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "fade"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1301
+      },
+      {
+        "id": "BD-03-R2",
+        "instructionText": "Pop the square.",
+        "instructionAudioKey": "instruction.pop_the_square",
+        "target": {
+          "semanticId": "square"
+        },
+        "balloons": [
+          {
+            "instanceId": "heart_0",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "star_1",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "square_2",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "circle_3",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "fade"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1302
+      },
+      {
+        "id": "BD-03-R3",
+        "instructionText": "Pop the heart.",
+        "instructionAudioKey": "instruction.pop_the_heart",
+        "target": {
+          "semanticId": "heart"
+        },
+        "balloons": [
+          {
+            "instanceId": "triangle_0",
+            "semantic": {
+              "id": "triangle",
+              "word": "triangle",
+              "shape": "triangle",
+              "imageKey": "shape.triangle",
+              "audioKey": "word.triangle"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "heart_2",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "fade"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "fade"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1303
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-04",
+    "mechanic": "balloon_dart",
+    "title": "Colors",
+    "difficulty": 3,
+    "learningMode": "colorRecognition",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-04-R1",
+        "instructionText": "Pop the red balloon.",
+        "instructionAudioKey": "instruction.pop_the_red_balloon",
+        "target": {
+          "requiredColor": "red"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "red"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "red",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_3",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1301
+      },
+      {
+        "id": "BD-04-R2",
+        "instructionText": "Pop the blue balloon.",
+        "instructionAudioKey": "instruction.pop_the_blue_balloon",
+        "target": {
+          "requiredColor": "blue"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_3",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "red"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "red",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1302
+      },
+      {
+        "id": "BD-04-R3",
+        "instructionText": "Pop the yellow balloon.",
+        "instructionAudioKey": "instruction.pop_the_yellow_balloon",
+        "target": {
+          "requiredColor": "yellow"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "red"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "red",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_3",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1303
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-05",
+    "mechanic": "balloon_dart",
+    "title": "Blue Circle",
+    "difficulty": 4,
+    "learningMode": "compoundListening",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-05-R1",
+        "instructionText": "Pop the blue circle.",
+        "instructionAudioKey": "instruction.pop_the_blue_circle",
+        "target": {
+          "requiredShape": "circle",
+          "requiredColor": "blue"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_1",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_3",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1401
+      },
+      {
+        "id": "BD-05-R2",
+        "instructionText": "Pop the yellow star.",
+        "instructionAudioKey": "instruction.pop_the_yellow_star",
+        "target": {
+          "requiredShape": "star",
+          "requiredColor": "yellow"
+        },
+        "balloons": [
+          {
+            "instanceId": "star_0",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_3",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1402
+      },
+      {
+        "id": "BD-05-R3",
+        "instructionText": "Pop the green square.",
+        "instructionAudioKey": "instruction.pop_the_green_square",
+        "target": {
+          "requiredShape": "square",
+          "requiredColor": "green"
+        },
+        "balloons": [
+          {
+            "instanceId": "square_0",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_2",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1403
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-06",
+    "mechanic": "balloon_dart",
+    "title": "Big and Small",
+    "difficulty": 4,
+    "learningMode": "sizeAndShape",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-06-R1",
+        "instructionText": "Pop the big circle.",
+        "instructionAudioKey": "instruction.pop_the_big_circle",
+        "target": {
+          "requiredShape": "circle",
+          "requiredSize": "big"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "size": "small"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "size": "big"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "size": "big"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_3",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "size": "small"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1401
+      },
+      {
+        "id": "BD-06-R2",
+        "instructionText": "Pop the small star.",
+        "instructionAudioKey": "instruction.pop_the_small_star",
+        "target": {
+          "requiredShape": "star",
+          "requiredSize": "small"
+        },
+        "balloons": [
+          {
+            "instanceId": "star_0",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "size": "big"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "size": "small"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "size": "small"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_3",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart",
+              "size": "big"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1402
+      },
+      {
+        "id": "BD-06-R3",
+        "instructionText": "Pop the big square.",
+        "instructionAudioKey": "instruction.pop_the_big_square",
+        "target": {
+          "requiredShape": "square",
+          "requiredSize": "big"
+        },
+        "balloons": [
+          {
+            "instanceId": "triangle_0",
+            "semantic": {
+              "id": "triangle",
+              "word": "triangle",
+              "shape": "triangle",
+              "imageKey": "shape.triangle",
+              "audioKey": "word.triangle",
+              "size": "big"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_1",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "size": "small"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_2",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "size": "big"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_3",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "size": "small"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "medium",
+        "seed": 1403
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-07",
+    "mechanic": "balloon_dart",
+    "title": "Five Moving Targets",
+    "difficulty": 5,
+    "learningMode": "pictureListening",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-07-R1",
+        "instructionText": "Pop the sun.",
+        "instructionAudioKey": "instruction.pop_the_sun",
+        "target": {
+          "semanticId": "sun"
+        },
+        "balloons": [
+          {
+            "instanceId": "ball_0",
+            "semantic": {
+              "id": "ball",
+              "word": "ball",
+              "imageKey": "vocab.ball",
+              "audioKey": "word.ball"
+            },
+            "movement": {
+              "pattern": "crossLane",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "flower_1",
+            "semantic": {
+              "id": "flower",
+              "word": "flower",
+              "imageKey": "vocab.flower",
+              "audioKey": "word.flower"
+            },
+            "movement": {
+              "pattern": "figureEight",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "sun_2",
+            "semantic": {
+              "id": "sun",
+              "word": "sun",
+              "imageKey": "vocab.sun",
+              "audioKey": "word.sun"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_4",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 120,
+              "amplitudeY": 26,
+              "periodMs": 5000,
+              "phase": 2.8
+            },
+            "initialPosition": {
+              "x": 1.0,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "short",
+        "seed": 1501
+      },
+      {
+        "id": "BD-07-R2",
+        "instructionText": "Pop the flower.",
+        "instructionAudioKey": "instruction.pop_the_flower",
+        "target": {
+          "semanticId": "flower"
+        },
+        "balloons": [
+          {
+            "instanceId": "square_0",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square"
+            },
+            "movement": {
+              "pattern": "figureEight",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "flower_1",
+            "semantic": {
+              "id": "flower",
+              "word": "flower",
+              "imageKey": "vocab.flower",
+              "audioKey": "word.flower"
+            },
+            "movement": {
+              "pattern": "crossLane",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "triangle_2",
+            "semantic": {
+              "id": "triangle",
+              "word": "triangle",
+              "shape": "triangle",
+              "imageKey": "shape.triangle",
+              "audioKey": "word.triangle"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_3",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_4",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 120,
+              "amplitudeY": 26,
+              "periodMs": 5000,
+              "phase": 2.8
+            },
+            "initialPosition": {
+              "x": 1.0,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "short",
+        "seed": 1502
+      },
+      {
+        "id": "BD-07-R3",
+        "instructionText": "Pop the circle.",
+        "instructionAudioKey": "instruction.pop_the_circle",
+        "target": {
+          "semanticId": "circle"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle"
+            },
+            "movement": {
+              "pattern": "crossLane",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "coral",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_1",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square"
+            },
+            "movement": {
+              "pattern": "figureEight",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_2",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_3",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "violet",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "triangle_4",
+            "semantic": {
+              "id": "triangle",
+              "word": "triangle",
+              "shape": "triangle",
+              "imageKey": "shape.triangle",
+              "audioKey": "word.triangle"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 120,
+              "amplitudeY": 26,
+              "periodMs": 5000,
+              "phase": 2.8
+            },
+            "initialPosition": {
+              "x": 1.0,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "short",
+        "seed": 1503
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  },
+  {
+    "id": "BD-08",
+    "mechanic": "balloon_dart",
+    "title": "Audio Challenge",
+    "difficulty": 5,
+    "learningMode": "compoundListening",
+    "inputMode": "both",
+    "rounds": [
+      {
+        "id": "BD-08-R1",
+        "instructionText": "Pop the yellow circle.",
+        "instructionAudioKey": "instruction.pop_the_yellow_circle",
+        "target": {
+          "requiredShape": "circle",
+          "requiredColor": "yellow"
+        },
+        "balloons": [
+          {
+            "instanceId": "circle_0",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_1",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_2",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_3",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_4",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart",
+              "color": "red"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 120,
+              "amplitudeY": 26,
+              "periodMs": 5000,
+              "phase": 2.8
+            },
+            "initialPosition": {
+              "x": 1.0,
+              "y": 0.34
+            },
+            "balloonSkin": "red",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "short",
+        "seed": 1501
+      },
+      {
+        "id": "BD-08-R2",
+        "instructionText": "Pop the blue star.",
+        "instructionAudioKey": "instruction.pop_the_blue_star",
+        "target": {
+          "requiredShape": "star",
+          "requiredColor": "blue"
+        },
+        "balloons": [
+          {
+            "instanceId": "star_0",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_1",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_2",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_3",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_4",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "color": "red"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 120,
+              "amplitudeY": 26,
+              "periodMs": 5000,
+              "phase": 2.8
+            },
+            "initialPosition": {
+              "x": 1.0,
+              "y": 0.34
+            },
+            "balloonSkin": "red",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "short",
+        "seed": 1502
+      },
+      {
+        "id": "BD-08-R3",
+        "instructionText": "Pop the green heart.",
+        "instructionAudioKey": "instruction.pop_the_green_heart",
+        "target": {
+          "requiredShape": "heart",
+          "requiredColor": "green"
+        },
+        "balloons": [
+          {
+            "instanceId": "heart_0",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart",
+              "color": "red"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 60,
+              "amplitudeY": 14,
+              "periodMs": 3600,
+              "phase": 0.0
+            },
+            "initialPosition": {
+              "x": 0.2,
+              "y": 0.34
+            },
+            "balloonSkin": "red",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "square_1",
+            "semantic": {
+              "id": "square",
+              "word": "square",
+              "shape": "square",
+              "imageKey": "shape.square",
+              "audioKey": "word.square",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 75,
+              "amplitudeY": 17,
+              "periodMs": 3950,
+              "phase": 0.7
+            },
+            "initialPosition": {
+              "x": 0.4,
+              "y": 0.42
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "heart_2",
+            "semantic": {
+              "id": "heart",
+              "word": "heart",
+              "shape": "heart",
+              "imageKey": "shape.heart",
+              "audioKey": "word.heart",
+              "color": "green"
+            },
+            "movement": {
+              "pattern": "driftVertical",
+              "amplitudeX": 90,
+              "amplitudeY": 20,
+              "periodMs": 4300,
+              "phase": 1.4
+            },
+            "initialPosition": {
+              "x": 0.6,
+              "y": 0.34
+            },
+            "balloonSkin": "green",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "circle_3",
+            "semantic": {
+              "id": "circle",
+              "word": "circle",
+              "shape": "circle",
+              "imageKey": "shape.circle",
+              "audioKey": "word.circle",
+              "color": "blue"
+            },
+            "movement": {
+              "pattern": "gentleBob",
+              "amplitudeX": 105,
+              "amplitudeY": 23,
+              "periodMs": 4650,
+              "phase": 2.0999999999999996
+            },
+            "initialPosition": {
+              "x": 0.8,
+              "y": 0.42
+            },
+            "balloonSkin": "blue",
+            "labelMode": "hidden"
+          },
+          {
+            "instanceId": "star_4",
+            "semantic": {
+              "id": "star",
+              "word": "star",
+              "shape": "star",
+              "imageKey": "shape.star",
+              "audioKey": "word.star",
+              "color": "yellow"
+            },
+            "movement": {
+              "pattern": "driftHorizontal",
+              "amplitudeX": 120,
+              "amplitudeY": 26,
+              "periodMs": 5000,
+              "phase": 2.8
+            },
+            "initialPosition": {
+              "x": 1.0,
+              "y": 0.34
+            },
+            "balloonSkin": "yellow",
+            "labelMode": "hidden"
+          }
+        ],
+        "aimAssist": "short",
+        "seed": 1503
+      }
+    ],
+    "reward": {
+      "stars": 3
+    }
+  }
+]

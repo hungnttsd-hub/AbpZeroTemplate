@@ -36,6 +36,9 @@ packages/
 **/.npm/
 **/.yarn/cache/
 **/dist/
+**/*.tsbuildinfo
+react/.word-builder-tests/
+src/WebHoanTien.Web/wwwroot/wordy-wings/
 
 # Logs and temporary files
 src/WebHoanTien.Web/wwwroot/optimized/
@@ -67,3 +70,5 @@ client_secret_*.json
 _ReSharper*/
 *.DotSettings.user
 
+
+react/.balloon-dart-tests/

@@ -1,0 +1,96 @@
+{
+  "events": [
+    {
+      "name": "BALLOON_DART_LEVEL_STARTED",
+      "payload": [
+        "levelId",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_ROUND_STARTED",
+      "payload": [
+        "levelId",
+        "roundId",
+        "target",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_DART_FIRED",
+      "payload": [
+        "levelId",
+        "roundId",
+        "shotIndex",
+        "angle",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_WRONG_HIT",
+      "payload": [
+        "levelId",
+        "roundId",
+        "balloonInstanceId",
+        "semanticId",
+        "shotIndex",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_MISS",
+      "payload": [
+        "levelId",
+        "roundId",
+        "shotIndex",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_HINT_SHOWN",
+      "payload": [
+        "levelId",
+        "roundId",
+        "hintType",
+        "errorCount",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_CORRECT_HIT",
+      "payload": [
+        "levelId",
+        "roundId",
+        "balloonInstanceId",
+        "semanticId",
+        "shotIndex",
+        "timestamp"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_ROUND_COMPLETED",
+      "payload": [
+        "levelId",
+        "roundId",
+        "shots",
+        "wrongHits",
+        "misses",
+        "hintCount",
+        "durationMs"
+      ]
+    },
+    {
+      "name": "BALLOON_DART_LEVEL_COMPLETED",
+      "payload": [
+        "levelId",
+        "roundsCompleted",
+        "shots",
+        "wrongHits",
+        "misses",
+        "hintCount",
+        "durationSeconds",
+        "stars"
+      ]
+    }
+  ]
+}

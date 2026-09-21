@@ -5,6 +5,7 @@ COPY --from=node-runtime /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 WORKDIR /src
 COPY . .
+RUN cd react && npm ci --no-audit --no-fund && npm run build:host
 RUN dotnet restore WebHoanTien.sln
 RUN dotnet publish src/WebHoanTien.Web/WebHoanTien.Web.csproj -c Release -o /app/web --no-restore
 RUN dotnet publish src/WebHoanTien.DbMigrator/WebHoanTien.DbMigrator.csproj -c Release -o /app/migrator --no-restore

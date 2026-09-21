@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "target": "ES2022", "module": "ES2022", "moduleResolution": "Bundler", "strict": true, "skipLibCheck": true, "outDir": ".word-builder-tests", "rootDir": "src/game/word-builder" },
+  "include": ["src/game/word-builder/LetterSequenceManager.ts"]
+}

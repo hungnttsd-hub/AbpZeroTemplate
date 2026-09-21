@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460">
+<rect width="1200" height="460" fill="#fffdf8"/>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#24483f"/></marker></defs>
+<style>.b{fill:#fff8e8;stroke:#8d5524;stroke-width:2}.t{font:20px sans-serif;fill:#24483f}.s{font:15px sans-serif;fill:#24483f}.l{stroke:#24483f;stroke-width:2;fill:none;marker-end:url(#a)}</style>
+<rect class="b" x="40" y="170" width="150" height="80" rx="18"/><text class="t" x="115" y="205" text-anchor="middle">Round start</text><text class="s" x="115" y="230" text-anchor="middle">play instruction</text>
+<rect class="b" x="250" y="170" width="150" height="80" rx="18"/><text class="t" x="325" y="205" text-anchor="middle">Aim</text><text class="s" x="325" y="230" text-anchor="middle">drag / tap</text>
+<rect class="b" x="460" y="170" width="150" height="80" rx="18"/><text class="t" x="535" y="205" text-anchor="middle">Fire dart</text>
+<rect class="b" x="675" y="60" width="180" height="80" rx="18"/><text class="t" x="765" y="95" text-anchor="middle">Correct hit</text><text class="s" x="765" y="120" text-anchor="middle">pop + word</text>
+<rect class="b" x="675" y="190" width="180" height="80" rx="18"/><text class="t" x="765" y="225" text-anchor="middle">Wrong hit</text><text class="s" x="765" y="250" text-anchor="middle">bounce + word</text>
+<rect class="b" x="675" y="320" width="180" height="80" rx="18"/><text class="t" x="765" y="355" text-anchor="middle">Miss</text><text class="s" x="765" y="380" text-anchor="middle">recycle dart</text>
+<rect class="b" x="930" y="60" width="210" height="80" rx="18"/><text class="t" x="1035" y="95" text-anchor="middle">Fill star</text><text class="s" x="1035" y="120" text-anchor="middle">next round / level end</text>
+<path class="l" d="M190 210 H250"/><path class="l" d="M400 210 H460"/><path class="l" d="M610 205 C645 205 645 100 675 100"/><path class="l" d="M610 210 H675"/><path class="l" d="M610 215 C645 215 645 360 675 360"/><path class="l" d="M855 100 H930"/><path class="l" d="M765 270 C765 295 535 300 535 250"/><path class="l" d="M765 320 C765 290 535 290 535 250"/>
+</svg>

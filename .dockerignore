@@ -7,3 +7,6 @@
 .gitignore
 TestResults
 **/appsettings.secrets.json
+**/node_modules
+**/dist
+react/.env.local

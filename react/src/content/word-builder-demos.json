@@ -1,0 +1,66 @@
+[
+  {
+    "id": "WB01", "worldId": "W02", "title": "Giải cứu mèo con",
+    "mode": "collect_letters", "targetWord": "CAT", "slots": 3, "difficulty": 1,
+    "instruction": { "text": "Build the word CAT." }, "ghostLetters": true,
+    "letters": [{ "id": "c1", "char": "C", "spawn": "crate" }, { "id": "a1", "char": "A", "spawn": "balloon" }, { "id": "t1", "char": "T", "spawn": "creature" }],
+    "completionAction": { "type": "release_animal", "target": "cat_cage" },
+    "mission": "Tìm ba chữ để mở cửa cho mèo con!", "example": "It is a cat!", "theme": "island"
+  },
+  {
+    "id": "WB02", "worldId": "W03", "title": "Mở cửa đón bạn",
+    "mode": "order_letters", "targetWord": "DOG", "slots": 3, "difficulty": 2,
+    "instruction": { "text": "Build the word DOG." },
+    "letters": [{ "id": "d1", "char": "D", "spawn": "platform" }, { "id": "o1", "char": "O", "spawn": "static" }, { "id": "g1", "char": "G", "spawn": "crate" }],
+    "completionAction": { "type": "open_door", "target": "friend_door" },
+    "mission": "Xếp mật mã để mở cửa đón bạn cún!", "example": "Hello, dog!", "theme": "home"
+  },
+  {
+    "id": "WB03", "worldId": "W08", "title": "Khu vườn thức dậy",
+    "mode": "missing_letter", "targetWord": "SUN", "slots": 3, "difficulty": 3,
+    "instruction": { "text": "Find the missing letter. SUN." }, "missingIndices": [1], "distractors": ["O", "A"],
+    "letters": [{ "id": "u1", "char": "U", "spawn": "cloud" }],
+    "completionAction": { "type": "grow_plant", "target": "sun_flower" },
+    "mission": "Tìm chữ còn thiếu để bông hoa đón nắng!", "example": "The sun is warm.", "theme": "weather"
+  },
+  {
+    "id": "WB04", "worldId": "W04", "title": "Món ngon của Momo",
+    "mode": "build_to_unlock", "targetWord": "APPLE", "slots": 5, "difficulty": 4,
+    "instruction": { "text": "Build the word APPLE." }, "distractors": ["T"],
+    "letters": [{ "id": "a1", "char": "A", "spawn": "balloon" }, { "id": "p1", "char": "P", "spawn": "crate" }, { "id": "p2", "char": "P", "spawn": "platform" }, { "id": "l1", "char": "L", "spawn": "creature" }, { "id": "e1", "char": "E", "spawn": "obstacle" }],
+    "completionAction": { "type": "cook_food", "target": "apple_pot" },
+    "mission": "Mang chữ về nồi phép thuật để nấu táo cho Momo!", "example": "It is an apple!", "theme": "kitchen"
+  },
+  {
+    "id": "WB05", "worldId": "W05", "title": "Rương sách phép thuật",
+    "mode": "collect_letters", "targetWord": "BOOK", "slots": 4, "difficulty": 1,
+    "instruction": { "text": "Build the word BOOK." }, "ghostLetters": true,
+    "letters": [{ "id": "b1", "char": "B", "spawn": "crate" }, { "id": "o1", "char": "O", "spawn": "hanging" }, { "id": "o2", "char": "O", "spawn": "falling" }, { "id": "k1", "char": "K", "spawn": "cloud" }],
+    "completionAction": { "type": "reveal_treasure", "target": "book_chest" },
+    "mission": "Tìm đủ chữ để mở rương sách bí mật!", "example": "Open the book!", "theme": "school"
+  },
+  {
+    "id": "WB06", "worldId": "W07", "title": "Chuyến tàu khám phá",
+    "mode": "build_to_unlock", "targetWord": "TRAIN", "slots": 5, "difficulty": 4,
+    "instruction": { "text": "Build the word TRAIN." }, "distractors": ["S", "O"],
+    "letters": [{ "id": "t1", "char": "T", "spawn": "crate" }, { "id": "r1", "char": "R", "spawn": "falling" }, { "id": "a1", "char": "A", "spawn": "moving_target" }, { "id": "i1", "char": "I", "spawn": "hanging" }, { "id": "n1", "char": "N", "spawn": "obstacle" }],
+    "completionAction": { "type": "start_vehicle", "target": "word_train" },
+    "mission": "Lắp lại mật mã để đoàn tàu khởi hành!", "example": "The train can go!", "theme": "city"
+  },
+  {
+    "id": "WB07", "worldId": "W01", "title": "Cầu nhỏ qua suối",
+    "mode": "order_letters", "targetWord": "FISH", "slots": 4, "difficulty": 3,
+    "instruction": { "text": "Build the word FISH." }, "distractors": ["E"],
+    "letters": [{ "id": "f1", "char": "F", "spawn": "platform" }, { "id": "i1", "char": "I", "spawn": "balloon" }, { "id": "s1", "char": "S", "spawn": "moving_target" }, { "id": "h1", "char": "H", "spawn": "crate" }],
+    "completionAction": { "type": "build_bridge", "target": "fish_bridge" },
+    "mission": "Xây cầu để Momo sang thăm bạn cá!", "example": "Look at the fish!", "theme": "rainbow"
+  },
+  {
+    "id": "WB08", "worldId": "W09", "title": "Ngôi sao năng lượng",
+    "mode": "missing_letter", "targetWord": "STAR", "slots": 4, "difficulty": 5,
+    "instruction": { "text": "Listen. Build STAR." }, "missingIndices": [0, 2], "distractors": ["O"], "hideMeaningAfterMs": 2000,
+    "letters": [{ "id": "s1", "char": "S", "spawn": "cloud" }, { "id": "a1", "char": "A", "spawn": "creature" }],
+    "completionAction": { "type": "power_machine", "target": "star_core" },
+    "mission": "Nghe mật mã và nạp năng lượng cho ngôi sao!", "example": "A bright star!", "theme": "space"
+  }
+]
