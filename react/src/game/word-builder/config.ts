@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import profiles from './worlds.json';
+import meanings from './meanings.json';
 export const builderModes = ['collect_letters', 'order_letters', 'missing_letter', 'build_to_unlock'] as const;
 export const actionTypes = ['open_door', 'build_bridge', 'release_animal', 'start_vehicle', 'grow_plant', 'cook_food', 'power_machine', 'reveal_treasure'] as const;
-export const spawnTypes = ['static', 'falling', 'balloon', 'crate', 'platform', 'hanging', 'moving_target', 'creature', 'cloud', 'obstacle'] as const;
+export const spawnTypes = ['static', 'falling', 'balloon', 'crate', 'platform', 'hanging', 'moving_target', 'creature', 'cloud', 'obstacle', 'bush', 'pulley', 'spring'] as const;
 const base = z.object({
   mode: z.enum(builderModes), targetWord: z.string().regex(/^[A-Z]+(?: [A-Z]+)*$/),
   unit: z.enum(['letter', 'word']).default('letter'), difficulty: z.number().int().min(1).max(6).default(1),
   instruction: z.object({ text: z.string().min(1), audio: z.string().default('') }),
   meaningAsset: z.object({ type: z.literal('image'), src: z.string() }).optional(),
+  meaningWord: z.string().optional(),
   letters: z.array(z.object({ id: z.string().min(1), char: z.string().regex(/^[A-Z]+$/), spawn: z.enum(spawnTypes) })).min(1).max(10),
   slots: z.number().int().min(1).max(8), distractors: z.array(z.string().regex(/^[A-Z]+$/)).max(2).default([]),
   missingIndices: z.array(z.number().int().min(0)).default([]),
@@ -42,12 +44,12 @@ export function resolveWordBuilder(level: BuilderLevelSource): WordBuilderConfig
   return wordBuilderSchema.parse({ mode: profile.mode, targetWord: word, difficulty: level.difficulty,
     instruction: { text: `Build the word ${word}.` }, letters: [...word].map((char, index) => ({ id: `letter_${index}`, char, spawn: spawns[index % spawns.length] })),
     slots: word.length, missingIndices: profile.mode === 'missing_letter' ? [Math.floor(word.length / 2)] : [], completionAction: { type: profile.action, target: profile.target }, mission: profile.mission,
-    example: `Look! ${word.toLowerCase()}!`, theme: profile.theme, ghostLetters: level.difficulty === 1 });
+    example: `Look! ${word.toLowerCase()}!`, meaningWord: (meanings as Record<string, string>)[word], theme: profile.theme, ghostLetters: false });
 }
 export function builderSize(config: WordBuilderConfig, parentWidth: number) {
   const compact = parentWidth < 600; const width = compact ? 480 : 960;
-  if (!compact) return { width, height: Math.max(600, 160 + (Math.ceil((config.letters.length + config.distractors.length) / 4) - 1) * 135 + 285) };
+  if (!compact) return { width, height: Math.max(850, 230 + Math.ceil((config.letters.length + config.distractors.length) / 3) * 180 + Math.ceil((config.letters.length + config.distractors.length) / 8) * 125 + 190) };
   const rows = Math.ceil((config.letters.length + config.distractors.length) / (compact ? 3 : 6));
   const slotRows = Math.ceil(config.slots / (compact ? 3 : 8));
-  return { width, height: 420 + rows * 145 + slotRows * 120 + 150 };
+  return { width, height: 480 + rows * 180 + rows * 125 + slotRows * 120 + 210 };
 }

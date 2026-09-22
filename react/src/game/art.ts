@@ -1,8 +1,9 @@
-// Original vector placeholders. Asset keys can replace these without changing mechanics.
+// Original vocabulary illustrations with shared soft lighting. Shapes and semantic colors remain readable.
 const colors: Record<string, string> = { red: '#f16b65', blue: '#60a5fa', yellow: '#ffd259', green: '#6cc796', orange: '#ffa553', pink: '#f497bb', purple: '#ac8be4', black: '#384552', white: '#fafbf6', brown: '#b17a56' };
 const eyes = '<g fill="#304443"><circle cx="77" cy="84" r="5"/><circle cx="123" cy="84" r="5"/></g><path d="M92 103q8 9 16 0" fill="none"/>';
 const animal = (color: string, ears: string, extra = '') => `${ears}<ellipse cx="100" cy="100" rx="63" ry="58" fill="${color}"/>${extra}${eyes}`;
 const shapes: Record<string, string> = {
+  'orange-fruit': '<circle cx="100" cy="112" r="66" fill="#ffa84e"/><path d="M101 48q-2-19 9-30" fill="none" stroke="#8c7148" stroke-width="8"/><path d="M104 43q27-37 60-16-22 32-60 16Z" fill="#8fbb6c"/><ellipse cx="73" cy="91" rx="12" ry="23" fill="#ffda93" stroke="none"/><path d="m130 138 2 1m-16 16 2 1m22-37 2 1" stroke="#e88e3b"/>',
   heart: '<path d="M100 166 34 103C-7 48 58 4 100 57c42-53 107-9 66 46Z" fill="#f2a5bc"/>',
   moon: '<path d="M140 24C71 37 57 114 124 155 47 182 8 111 36 59 57 20 103 9 140 24Z" fill="#ffdb86"/>',
   circle: '<circle cx="100" cy="95" r="62" fill="#83c6e7"/>', square: '<rect x="40" y="35" width="120" height="120" rx="14" fill="#a28ae6"/>',
@@ -55,16 +56,31 @@ shapes.small = '<circle cx="102" cy="98" r="30" fill="#95cbb0"/>';
 shapes.apple = '<path d="M101 58q-12-31 8-43" fill="none" stroke="#987457" stroke-width="10"/><path d="M106 45q4-32 39-23-3 30-39 23" fill="#96bc7e"/><path d="M101 63C39 29 18 95 50 151q26 43 51 17 26 26 51-17 31-57 10-89-21-26-61 1Z" fill="#ec8d7f"/><path d="M62 80q-15 16-6 40" stroke="#ffd5bc" stroke-width="10" fill="none"/>';
 shapes.sun = '<g stroke="#e8bd69" stroke-width="9"><path d="M100 13v17m0 140v17M13 100h17m140 0h17M37 37l13 13m100 100 13 13M37 163l13-13m100-100 13-13"/></g><circle cx="100" cy="100" r="52" fill="#f5d27e"/><circle cx="83" cy="92" r="5" fill="#425853"/><circle cx="117" cy="92" r="5" fill="#425853"/><path d="M85 117q15 14 30 0" fill="none"/>';
 shapes.train = '<path d="M27 144h149" stroke-width="10"/><rect x="29" y="87" width="86" height="51" rx="9" fill="#8cbcb3"/><rect x="110" y="48" width="58" height="90" rx="8" fill="#91acc7"/><rect x="121" y="61" width="33" height="30" fill="#f6dfa4"/><rect x="48" y="58" width="22" height="31" fill="#bd9780"/><circle cx="58" cy="145" r="18" fill="#526b68"/><circle cx="135" cy="145" r="18" fill="#526b68"/>';
-export function wordSvg(term: string): string {
+/** Paint each solid fill with a gentle bevel without altering its semantic hue. */
+function paintIllustration(art: string, override?: string) {
+  const source = override && /^#[0-9a-f]{6}$/i.test(override) ? art.replace(/fill="#[0-9a-f]{6}"/gi, `fill="${override}"`) : art;
+  const fills = new Map<string, number>();
+  const painted = source.replace(/fill="(#[0-9a-f]{6})"/gi, (_, color: string) => {
+    if (!fills.has(color)) fills.set(color, fills.size);
+    return `fill="url(#paint${fills.get(color)})"`;
+  });
+  const shade = (color: string, delta: number) => '#' + [1, 3, 5].map(i => {
+    const channel = Number.parseInt(color.slice(i, i + 2), 16);
+    return Math.round(delta > 0 ? channel + (255 - channel) * delta : channel * (1 + delta)).toString(16).padStart(2, '0');
+  }).join('');
+  const gradients = [...fills].map(([color, i]) => `<linearGradient id="paint${i}" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="${shade(color, .18)}"/><stop offset=".45" stop-color="${color}"/><stop offset="1" stop-color="${shade(color, -.13)}"/></linearGradient>`).join('');
+  return `<defs>${gradients}<filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="145%"><feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#284d3a" flood-opacity=".2"/></filter></defs><g filter="url(#soft-shadow)" stroke="#425853" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">${painted}</g>`;
+}
+export function wordSvg(term: string, fill?: string): string {
   const art = colors[term] ? `<path d="M100 20C78 52 41 75 41 113a59 59 0 0 0 118 0c0-38-37-61-59-93Z" fill="${colors[term]}"/><ellipse cx="77" cy="98" rx="10" ry="19" fill="white" opacity=".5"/>` : shapes[term];
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><g stroke="#425853" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${art ?? '<rect x="40" y="40" width="120" height="120" rx="28" fill="#d9e9e0"/><path d="m70 100 22 22 42-48" fill="none"/>'}</g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">${paintIllustration(art ?? '<rect x="40" y="40" width="120" height="120" rx="28" fill="#d9e9e0"/><path d="m70 100 22 22 42-48" fill="none"/>', fill)}</svg>`;
 }
 export const wordImage = (term: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(wordSvg(term))}`;
+export const hasWordArt = (term: string) => !!(colors[term] || shapes[term]);
 
 // Phaser's XHRLoader calls atob for every data: URL. Unlike an HTML img,
 // its SVG loader requires actual Base64 rather than percent-encoded XML.
 export function wordTextureUrl(term: string, fill?: string): string {
-  const svg = wordSvg(term);
-  const bytes = new TextEncoder().encode(fill && /^#[0-9a-f]{6}$/i.test(fill) ? svg.replace(/fill="#[0-9a-f]{6}"/gi, `fill="${fill}"`) : svg);
+  const bytes = new TextEncoder().encode(wordSvg(term, fill));
   return `data:image/svg+xml;base64,${btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join(''))}`;
 }

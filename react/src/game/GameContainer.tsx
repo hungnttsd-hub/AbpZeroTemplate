@@ -8,6 +8,8 @@ import { createMechanic, type GameMechanic } from './mechanics';
 import { builderSize, resolveWordBuilder } from './word-builder/config';
 import { resolveBalloonDart } from './balloon-dart/model';
 import { palette as balloonPalette } from './balloon-dart/visuals';
+import { gameBackdrop, preloadTheme, prepareTheme } from './theme';
+import { preloadShotArt } from './word-shot/visuals';
 
 interface Props { level: LevelDefinition; childId: string; muted: boolean; onMute: () => void; onComplete: (a: Attempt) => void; onExit: () => void }
 export default function GameContainer({ level, childId, muted, onMute, onComplete, onExit }: Props) {
@@ -40,9 +42,12 @@ export default function GameContainer({ level, childId, muted, onMute, onComplet
     class LevelScene extends Phaser.Scene {
       constructor() { super('LevelScene'); }
       preload() {
+        preloadTheme(this, level.worldId, builderConfig?.theme);
+        if (level.mechanic === 'word_shot' || level.mechanic === 'boss_challenge') preloadShotArt(this);
         const terms = new Set([...level.targets.map(t => t.value), ...level.targetVocabulary, ...level.reviewVocabulary]);
         const balloonAssets = new Set<string>();
         if (builderConfig) terms.add(builderConfig.targetWord.toLowerCase());
+        if (builderConfig?.meaningWord) terms.add(builderConfig.meaningWord);
         if (balloonConfig) for (const r of balloonConfig.rounds) for (const b of r.balloons) {
           terms.add(b.semantic.shape ?? b.semantic.word ?? b.semantic.id);
           if (b.semantic.shape && b.semantic.color && balloonPalette[b.semantic.color] !== undefined) {
@@ -59,10 +64,9 @@ export default function GameContainer({ level, childId, muted, onMute, onComplet
       create() {
         if (!active) return;
         try {
-          this.cameras.main.setBackgroundColor('#eff7e9');
-          this.add.ellipse(260, 840, 1500, 420, 0xdcebcf); this.add.ellipse(1420, 900, 1400, 530, 0xcfe5c5);
-          const art = this.add.graphics().fillStyle(0xffffff, .72);
-          [[180, 100], [1350, 160], [1150, 64]].forEach(([x, y]) => { art.fillEllipse(x, y, 150, 45).fillCircle(x - 20, y - 20, 40).fillCircle(x + 30, y - 10, 30); });
+          prepareTheme(this);
+          this.cameras.main.setBackgroundColor('#c4e9ef');
+          gameBackdrop(this, this.scale.width, this.scale.height);
           // Optional production assets replace only successfully loaded textures.
           for (const t of level.targets) if (this.textures.exists(`remote:${t.value}`)) {
             const source = this.textures.get(`remote:${t.value}`).getSourceImage();
@@ -85,7 +89,7 @@ export default function GameContainer({ level, childId, muted, onMute, onComplet
       physics: isBuilder || isBalloon ? { default: 'matter', matter: { gravity: { x: 0, y: isBalloon ? 0 : .8 }, debug: false } } : undefined,
       backgroundColor: '#eff7e9', scene: [LevelScene], render: { antialias: true },
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }, input: { activePointers: 2 },
-      audio: { noAudio: true }, callbacks: { postBoot: g => { g.canvas.setAttribute('aria-label', level.mechanic === 'word_shot' || level.isBoss ? 'Wordy Wings. Kéo ná để ngắm và thả để bắn. Phím 1 đến 4 chọn đạn, A D di chuyển, mũi tên chỉnh góc và lực, Space bắn.' : isBalloon ? 'Wordy Wings. Kéo ngắm rồi thả để bắn, hoặc chạm bóng. Phím mũi tên chỉnh góc, Space bắn.' : isBuilder ? 'Wordy Wings. Chạm vật thể để tìm chữ; kéo chữ đến vị trí hoặc chạm chữ rồi chạm vị trí.' : 'Wordy Wings. Phím 1 đến 6 chọn mục tiêu từ trái sang phải.'); g.canvas.setAttribute('tabindex', '0'); } } });
+      audio: { noAudio: true }, callbacks: { postBoot: g => { g.canvas.setAttribute('aria-label', level.mechanic === 'word_shot' || level.isBoss ? 'Wordy Wings. Kéo ná để ngắm và thả để bắn. Phím 1 đến 6 chọn đạn, A D di chuyển, mũi tên chỉnh góc và lực, Space bắn.' : isBalloon ? 'Wordy Wings. Kéo ngắm rồi thả để bắn, hoặc chạm bóng. Phím mũi tên chỉnh góc, Space bắn.' : isBuilder ? 'Wordy Wings. Chạm vật thể để tìm chữ; kéo chữ đến vị trí hoặc chạm chữ rồi chạm vị trí.' : 'Wordy Wings. Phím 1 đến 6 chọn mục tiêu từ trái sang phải.'); g.canvas.setAttribute('tabindex', '0'); } } });
     const resize = new ResizeObserver(() => {
       if (!builderConfig || !host.current || !game.current) return;
       const next = builderSize(builderConfig, builderWidth());
@@ -111,7 +115,3 @@ export default function GameContainer({ level, childId, muted, onMute, onComplet
     <p className="game-feedback" aria-live="polite">{feedback}</p>{audioUnavailable && <p className="subtle">Thiết bị chưa phát được giọng đọc. Bé vẫn có thể chơi bằng hình và chữ.</p>}
   </div>;
 }
-
-
-
-

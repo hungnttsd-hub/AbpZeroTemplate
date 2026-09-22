@@ -1,0 +1,278 @@
+[
+  {
+    "questionType": "action_recognition",
+    "count": 33,
+    "difficulties": [
+      1,
+      2
+    ],
+    "mechanics": [
+      "listen_run"
+    ]
+  },
+  {
+    "questionType": "can_cannot",
+    "count": 60,
+    "difficulties": [
+      6,
+      8
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "color_object",
+    "count": 17,
+    "difficulties": [
+      2
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "color_recognition",
+    "count": 17,
+    "difficulties": [
+      1
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "compare_quantity",
+    "count": 20,
+    "difficulties": [
+      5
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "count_objects",
+    "count": 53,
+    "difficulties": [
+      1,
+      2,
+      4
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "final_reasoning",
+    "count": 20,
+    "difficulties": [
+      10
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "function_question",
+    "count": 40,
+    "difficulties": [
+      3,
+      4
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "listen_find_picture",
+    "count": 33,
+    "difficulties": [
+      1,
+      2
+    ],
+    "mechanics": [
+      "listen_run"
+    ]
+  },
+  {
+    "questionType": "memory_scene",
+    "count": 40,
+    "difficulties": [
+      9,
+      10
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "missing_letter",
+    "count": 80,
+    "difficulties": [
+      3,
+      5,
+      6,
+      8
+    ],
+    "mechanics": [
+      "raise_board"
+    ]
+  },
+  {
+    "questionType": "multi_clue_scene",
+    "count": 80,
+    "difficulties": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "odd_one_out",
+    "count": 37,
+    "difficulties": [
+      2,
+      3
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "picture_to_word",
+    "count": 33,
+    "difficulties": [
+      1,
+      2
+    ],
+    "mechanics": [
+      "raise_board"
+    ]
+  },
+  {
+    "questionType": "preposition_scene",
+    "count": 40,
+    "difficulties": [
+      3,
+      5
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "select_pair",
+    "count": 40,
+    "difficulties": [
+      5,
+      7
+    ],
+    "mechanics": [
+      "quick_match"
+    ]
+  },
+  {
+    "questionType": "sentence_completion",
+    "count": 40,
+    "difficulties": [
+      4,
+      5
+    ],
+    "mechanics": [
+      "raise_board"
+    ]
+  },
+  {
+    "questionType": "sentence_order",
+    "count": 60,
+    "difficulties": [
+      7,
+      8,
+      10
+    ],
+    "mechanics": [
+      "quick_match"
+    ]
+  },
+  {
+    "questionType": "shape_recognition",
+    "count": 17,
+    "difficulties": [
+      1
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "short_story",
+    "count": 80,
+    "difficulties": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "mechanics": [
+      "raise_board"
+    ]
+  },
+  {
+    "questionType": "simple_inference",
+    "count": 20,
+    "difficulties": [
+      9
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "two_attribute_object",
+    "count": 40,
+    "difficulties": [
+      3,
+      4
+    ],
+    "mechanics": [
+      "answer_zone"
+    ]
+  },
+  {
+    "questionType": "two_step_instruction",
+    "count": 60,
+    "difficulties": [
+      6,
+      7,
+      9
+    ],
+    "mechanics": [
+      "listen_run"
+    ]
+  },
+  {
+    "questionType": "weather_choice",
+    "count": 20,
+    "difficulties": [
+      4
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  },
+  {
+    "questionType": "word_picture_mismatch",
+    "count": 20,
+    "difficulties": [
+      6
+    ],
+    "mechanics": [
+      "bell_choice"
+    ]
+  }
+]

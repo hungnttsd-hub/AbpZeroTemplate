@@ -1,0 +1,11 @@
+﻿Difficulty,Total,action_recognition,can_cannot,color_object,color_recognition,compare_quantity,count_objects,final_reasoning,function_question,listen_find_picture,memory_scene,missing_letter,multi_clue_scene,odd_one_out,picture_to_word,preposition_scene,select_pair,sentence_completion,sentence_order,shape_recognition,short_story,simple_inference,two_attribute_object,two_step_instruction,weather_choice,word_picture_mismatch
+1,100,16,0,0,17,0,16,0,0,17,0,0,0,0,17,0,0,0,0,17,0,0,0,0,0,0
+2,100,17,0,17,0,0,17,0,0,16,0,0,0,17,16,0,0,0,0,0,0,0,0,0,0,0
+3,100,0,0,0,0,0,0,0,20,0,0,20,0,20,0,20,0,0,0,0,0,0,20,0,0,0
+4,100,0,0,0,0,0,20,0,20,0,0,0,0,0,0,0,0,20,0,0,0,0,20,0,20,0
+5,100,0,0,0,0,20,0,0,0,0,0,20,0,0,0,20,20,20,0,0,0,0,0,0,0,0
+6,100,0,40,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,20,0,20
+7,100,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,20,0,20,0,20,0,0,20,0,0
+8,100,0,20,0,0,0,0,0,0,0,0,20,20,0,0,0,0,0,20,0,20,0,0,0,0,0
+9,100,0,0,0,0,0,0,0,0,0,20,0,20,0,0,0,0,0,0,0,20,20,0,20,0,0
+10,100,0,0,0,0,0,0,20,0,0,20,0,20,0,0,0,0,0,20,0,20,0,0,0,0,0

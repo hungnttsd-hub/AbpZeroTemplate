@@ -1,5 +1,5 @@
 {
-  "W01": { "theme": "rainbow", "mode": "build_to_unlock", "action": "build_bridge", "target": "rainbow_bridge", "mission": "Tìm những chữ thất lạc để xây cầu cho Momo!", "spawns": ["balloon", "crate", "platform", "creature", "obstacle", "cloud"] },
+  "W01": { "theme": "rainbow", "mode": "build_to_unlock", "action": "build_bridge", "target": "rainbow_bridge", "mission": "Săn chữ và xây cầu cho Momo!", "spawns": ["balloon", "crate", "platform", "bush", "pulley", "spring"] },
   "W02": { "theme": "island", "mode": "build_to_unlock", "action": "release_animal", "target": "animal_cage", "mission": "Ghép mật mã để đưa bạn thú ra ngoài!", "spawns": ["crate", "balloon", "hanging", "creature"] },
   "W03": { "theme": "home", "mode": "build_to_unlock", "action": "power_machine", "target": "home_lamp", "mission": "Nhặt chữ và thắp sáng ngôi nhà của Momo!", "spawns": ["crate", "falling", "obstacle", "moving_target"] },
   "W04": { "theme": "kitchen", "mode": "build_to_unlock", "action": "cook_food", "target": "magic_pot", "mission": "Tìm chữ để nấu món ngon cho Momo!", "spawns": ["crate", "balloon", "platform", "creature"] },

@@ -1,5 +1,6 @@
 import { WordBuilderSceneController } from './word-builder/WordBuilderSceneController';
 import { BalloonDartController } from './balloon-dart/BalloonDartController';
+import { woodPanel } from './theme';
 import { WordShotMechanic } from './word-shot/WordShotMechanic';
 import Phaser from 'phaser';
 import type { LevelDefinition, MechanicId } from '../types';
@@ -33,10 +34,14 @@ export abstract class BaseMechanic implements GameMechanic {
   }
   protected card(x: number, y: number, value: string, correct: boolean): Card {
     const s = this.ctx.scene;
-    const background = s.add.rectangle(0, 0, 232, 262, 0xffffff).setStrokeStyle(4, 0xd4e6d8);
+    const background = s.add.rectangle(0, 0, 228, 258, 0xfff9e3, .4).setStrokeStyle(3, 0xd8be88, .5);
     const art = s.textures.exists(`word:${value}`) ? s.add.image(0, -24, `word:${value}`).setDisplaySize(170, 170) : s.add.text(0, -25, '?', { fontSize: '80px', color: '#79ab92' }).setOrigin(.5);
     const text = s.add.text(0, 90, value, { fontFamily: 'Arial, sans-serif', fontSize: '30px', color: '#36574c', fontStyle: 'bold' }).setOrigin(.5);
     const card = this.add(s.add.container(x, y, [background, art, text]).setSize(240, 274).setInteractive({ useHandCursor: true }));
+    // Place the decorative panel behind the answer border, illustration and word.
+    const ornament = woodPanel(s, 244, 276, 0xffedc3); card.addAt(ornament, 0);
+    card.setData({ ornament, illustration: art, wordLabel: text });
+    card.setData('answerBackground', background);
     card.setData({ value, correct, homeX: x, homeY: y }); this.cards.push(card);
     return card;
   }
@@ -71,7 +76,7 @@ export abstract class BaseMechanic implements GameMechanic {
     if (!this.hinted) { this.ctx.tracker.hintCount++; this.hinted = true; }
     const card = this.cards.find(c => c.active && c.getData('correct'));
     if (card) {
-      const background = card.list[0];
+      const background = card.getData('answerBackground');
       if (background instanceof Phaser.GameObjects.Rectangle) background.setStrokeStyle(8, 0xedb747);
     }
     this.ctx.feedback('Look for the golden glow!');
@@ -93,12 +98,17 @@ export class BalloonPopMechanic extends BaseMechanic {
     super.mount(ctx, level); ctx.feedback('Tap a balloon · Chạm vào bóng');
     const cards = this.targetCards(385);
     cards.forEach((card, i) => {
-      (card.list[2] as Phaser.GameObjects.Text).setVisible(false);
-      const picture = card.list[1];
+      (card.getData('wordLabel') as Phaser.GameObjects.Text).setVisible(false);
+      const picture = card.getData('illustration');
       if (picture instanceof Phaser.GameObjects.Image) picture.setY(0);
       else if (picture instanceof Phaser.GameObjects.Text) picture.setVisible(false);
       this.add(ctx.scene.add.line(0, 0, card.x, card.y + 125, card.x + 15, card.y + 245, 0x99b4ab).setOrigin(0));
-      (card.list[0] as Phaser.GameObjects.Rectangle).setFillStyle([0xfff0dc, 0xe4f0ff, 0xf5e7ff, 0xe4f6e9][i % 4]);
+      (card.getData('ornament') as Phaser.GameObjects.Graphics).setVisible(false);
+      (card.getData('answerBackground') as Phaser.GameObjects.Rectangle).setVisible(false);
+      if (picture instanceof Phaser.GameObjects.Image) picture.setDisplaySize(108, 108);
+      const skin = ['74c9ff', 'ff9d87', 'c8a0ff', '94d985'][i % 4];
+      if (ctx.scene.textures.exists(`art:balloon:${skin}`)) card.addAt(ctx.scene.add.image(0, 13, `art:balloon:${skin}`), 0);
+      else card.addAt(ctx.scene.add.ellipse(0, 0, 182, 220, 0x94cdda).setStrokeStyle(4, 0xfff5d8), 0);
       if (!ctx.reducedMotion) ctx.scene.tweens.add({ targets: card, y: card.y - 18, duration: 1600 + i * 150, yoyo: true, repeat: -1 });
       card.on('pointerdown', () => this.answer(card));
     });
@@ -110,7 +120,8 @@ export class DragSortMechanic extends BaseMechanic {
   mount(ctx: MechanicContext, level: LevelDefinition) {
     super.mount(ctx, level); ctx.feedback('Drag into the basket · Kéo vào giỏ hoặc chạm hình rồi chạm giỏ');
     const s = ctx.scene; const cards = this.targetCards(290);
-    const basket = this.add(s.add.rectangle(800, 665, 425, 212, 0xf4dfb5).setStrokeStyle(6, 0xc79e65).setInteractive({ useHandCursor: true }));
+    this.add(woodPanel(s, 425, 212).setPosition(800, 665));
+    const basket = this.add(s.add.rectangle(800, 665, 425, 212, 0xf4dfb5, .01).setInteractive({ useHandCursor: true }));
     this.label(800, 665, level.targetVocabulary[0], 42);
     this.label(800, 728, '↓', 45);
     let selected: Card | undefined;

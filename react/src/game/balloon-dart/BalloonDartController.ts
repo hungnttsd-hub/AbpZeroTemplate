@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { woodPanel } from '../theme';
 import type { GameMechanic, MechanicContext } from '../mechanics';
 import type { LevelDefinition } from '../../types';
 import { WordBuilderEffects } from '../word-builder/WordBuilderEffects';
@@ -28,7 +29,7 @@ export class BalloonDartController implements GameMechanic {
     this.fx = new WordBuilderEffects(s, ctx.reducedMotion);
     this.own(landscape(s)); this.guide = this.own(s.add.graphics().setDepth(8));
     this.launcher = new Launcher(s); this.dart = new DartPool(s); this.balloons = new BalloonManager(s, ctx.reducedMotion);
-    this.own(s.add.rectangle(1203, 71, 290, 85, 0xfff8e8, .92).setStrokeStyle(2, 0xffffff).setDepth(12));
+    this.own(woodPanel(s, 290, 85, 0xfff5d5).setPosition(1203, 71).setDepth(12));
     this.stars = [0, 1, 2].map(i => this.own(text(s, 1127 + i * 76, 65, '☆', 54, '#c2b98e').setDepth(13)));
     this.caption = this.own(text(s, 720, 774, 'Kéo để ngắm · Thả để bắn · Hoặc chạm bóng', 25).setDepth(23));
     this.own(text(s, 223, 70, 'BALLOON GARDEN', 25, '#477d73').setDepth(12));

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wordy Wings Golden Bell Question",
+  "type": "object",
+  "required": [
+    "id",
+    "difficulty",
+    "questionType",
+    "mechanic",
+    "skill",
+    "promptText",
+    "audioText",
+    "stimulus",
+    "options",
+    "answer",
+    "hint",
+    "targetVocabulary",
+    "worldTags"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^GB-[0-9]{4}$"
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "questionType": {
+      "type": "string"
+    },
+    "mechanic": {
+      "type": "string"
+    },
+    "skill": {
+      "type": "string"
+    },
+    "promptText": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audioText": {
+      "type": "string"
+    },
+    "stimulus": {
+      "type": "object"
+    },
+    "options": {
+      "type": "array"
+    },
+    "answer": {
+      "type": "object"
+    },
+    "hint": {
+      "type": "object"
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "targetVocabulary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "worldTags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "estimatedSeconds": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 60
+    },
+    "requiresMemoryPhase": {
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

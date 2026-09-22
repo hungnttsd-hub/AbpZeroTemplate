@@ -1,14 +1,15 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Cloud, CloudOff, Compass, Flag, Headphones, Home, LockKeyhole, Map, Play, Plus, Settings2, ShieldCheck, Sparkles, Star, Trophy, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, Check, ChevronRight, Cloud, CloudOff, Compass, Flag, Headphones, Home, LockKeyhole, Map, Play, Plus, Settings2, ShieldCheck, Sparkles, Star, Trophy, Volume2, VolumeX, X } from 'lucide-react';
 import { Pip, Island } from './components/Illustrations';
 import { ApiError, GameRepository, getSession, type Session } from './services/repository';
 import { storage } from './services/storage';
 import { type Attempt, type Child, type Dashboard, type LevelDefinition, type Progress, type World, unlocked, starsFor } from './types';
 import { wordImage } from './game/art';
+const GoldenBellPage = lazy(() => import('./features/golden-bell/GoldenBellPage'));
 const BalloonDartGallery = lazy(() => import('./features/balloon-dart/BalloonDartGallery'));
 const WordBuilderDemoGallery = lazy(() => import('./features/word-builder/WordBuilderDemoGallery'));
 const GameContainer = lazy(() => import('./game/GameContainer'));
-type Page = 'welcome' | 'children' | 'map' | 'play' | 'dashboard' | 'admin' | 'word-builder' | 'balloon-dart';
+type Page = 'welcome' | 'children' | 'map' | 'play' | 'dashboard' | 'admin' | 'word-builder' | 'balloon-dart' | 'golden-bell';
 const mechanics: Record<string, string> = { word_shot: 'Kéo ná tìm từ', balloon_pop: 'Vườn bóng phi tiêu', balloon_dart: 'Vườn bóng phi tiêu', drag_sort: 'Chiếc giỏ kỳ diệu', letter_puzzle: 'Xưởng chữ phiêu lưu', word_builder: 'Xưởng chữ phiêu lưu', boss_challenge: 'Giải cứu Word Star' };
 const worldNotes = ['Sắc màu & hình khối', 'Những người bạn nhỏ', 'Ngôi nhà thân quen'];
 const avatars = ['pip', 'poki', 'lulu', 'momo'];
@@ -27,7 +28,7 @@ export default function App() {
   const [pending, setPending] = useState(0); const [creating, setCreating] = useState(false);
   const [nickname, setNickname] = useState(''); const [avatar, setAvatar] = useState('pip'); const [ageBand, setAgeBand] = useState('5_6');
   const enteredAt = useRef(Date.now()); const [breakTime, setBreakTime] = useState(false);
-  const navigate = (next: Page) => { setPage(next); setError(''); location.hash = next === 'map' ? `/map/${child?.id ?? ''}` : `/${next}`; };
+  const navigate = (next: Page) => { setPage(next); setError(''); location.hash = next === 'golden-bell' ? '/golden-bell/' + (child?.id ?? '') : next === 'map' ? `/map/${child?.id ?? ''}` : `/${next}`; };
   const sync = useCallback(async (repository: GameRepository) => {
     if (repository.local) return;
     try { await repository.sync(); setSyncState('Đã đồng bộ'); }
@@ -46,10 +47,11 @@ export default function App() {
       }
       const route = location.hash.slice(1).split('/');
       const selected = profiles.find(p => p.id === route[2]);
-      if (selected && ['map', 'play'].includes(route[1])) {
+      if (selected && ['map', 'play', 'golden-bell'].includes(route[1])) {
         const p = await repository.progress(selected.id); setChild(selected); setProgress(p);
         const requested = content.levels.find(l => l.id === route[3]);
-        if (route[1] === 'play' && requested && unlocked(requested, content.levels, p)) { setLevel(requested); setPage('play'); }
+        if (route[1] === 'golden-bell') setPage('golden-bell');
+        else if (route[1] === 'play' && requested && unlocked(requested, content.levels, p)) { setLevel(requested); setPage('play'); }
         else { setPage('map'); location.hash = `/map/${selected.id}`; }
       } else navigate('children');
       void sync(repository);
@@ -88,6 +90,7 @@ export default function App() {
     const back = () => {
       const route = location.hash.slice(1).split('/');
       if (route[1] === 'map' && child && route[2] === child.id) { setLevel(undefined); setResult(undefined); setPage('map'); }
+      else if (route[1] === 'golden-bell' && child && route[2] === child.id) setPage('golden-bell');
       else if (route[1] === 'children' && repo) setPage('children');
       else if (route[1] === 'play' && child && route[2] === child.id) {
         const requested = levels.find(l => l.id === route[3]);
@@ -138,7 +141,7 @@ export default function App() {
   const exitGame = () => { setLevel(undefined); setResult(undefined); navigate('map'); };
 
   return <div className={`app ${page === 'play' ? 'playing' : ''}`}>
-    {page !== 'play' && <header className="site-header"><button className="brand" onClick={() => child ? navigate('map') : navigate('welcome')} aria-label="Wordy Wings — Trang chính"><span className="brand-mark"><Pip/></span><span>wordy<span className="brand-light">wings</span><small>Little words. Big adventures.</small></span></button>
+    {page !== 'play' && page !== 'golden-bell' && <header className="site-header"><button className="brand" onClick={() => child ? navigate('map') : navigate('welcome')} aria-label="Wordy Wings — Trang chính"><span className="brand-mark"><Pip/></span><span>wordy<span className="brand-light">wings</span><small>Little words. Big adventures.</small></span></button>
       {child && <nav aria-label="Điều hướng"><button className={page === 'map' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('map')}><Compass size={18}/> Khám phá</button><button className="nav-item" onClick={() => void openParent('dashboard')}><ShieldCheck size={18}/> Góc phụ huynh</button></nav>}
       <div className="header-right"><button className="icon-button" aria-label={muted ? 'Bật âm thanh' : 'Tắt âm thanh'} onClick={toggleMute}>{muted ? <VolumeX size={20}/> : <Volume2 size={20}/>}</button>{child && <><span className="star-pill"><Star size={18} fill="currentColor"/>{totalStars}</span><button className="profile-button" onClick={() => void openParent('children')}><Pip friend={child.avatarKey}/><span>{child.nickname}</span><ChevronRight size={15}/></button></>}</div>
     </header>}
@@ -148,6 +151,7 @@ export default function App() {
       {creating && <form className="profile-form" onSubmit={e => void createChild(e)}><h2>Làm quen với Pip nhé!</h2><label>Biệt danh của bé<input value={nickname} onChange={e => setNickname(e.target.value)} maxLength={40} placeholder="Ví dụ: Bông" required autoComplete="off"/></label><div className="avatar-picker" aria-label="Chọn bạn đồng hành">{avatars.map(a => <button key={a} type="button" aria-pressed={avatar === a} className={avatar === a ? 'selected' : ''} onClick={() => setAvatar(a)}><Pip friend={a}/><span>{a}</span></button>)}</div><label>Nhóm tuổi<select value={ageBand} onChange={e => setAgeBand(e.target.value)}><option value="5_6">5–6 tuổi</option><option value="6_7">6–7 tuổi</option><option value="7_8">7–8 tuổi</option></select></label><button className="primary" disabled={busy || !nickname.trim()} type="submit">Sẵn sàng rồi! <ArrowRight size={19}/></button></form>}
       <p className="subtle privacy-note"><ShieldCheck size={15}/> Chỉ cần biệt danh. Không thu âm, không quảng cáo, không thu ngày sinh.</p></main>}
     {page === 'map' && child && selectedWorld && <main className="map-page"><div className="page-heading"><div><span className="eyebrow">YOUR LITTLE BIG ADVENTURE</span><h1>Đi thôi, {child.nickname}! <span className="sun-symbol">☀</span></h1><p>Một từ mới đang đợi bé ở phía bên kia cầu vồng.</p></div><div className="journey-stat"><span className="stat-icon"><Flag size={22}/></span><div><strong>{progress.length}<span> / {levels.length} màn</span></strong><small>Hành trình của bé</small></div></div></div>
+      <div className="builder-entry gb-map-entry"><div><strong><Bell size={22}/> Đuổi hình bắt chữ · Chuông Sao</strong><p>1.000 câu hỏi bằng hình · 10 mức khám phá · Cùng rung Chuông Sao sau 12 câu.</p></div><button className="secondary" onClick={() => navigate('golden-bell')}>Khám phá 1.000 câu hỏi <ArrowRight size={18}/></button></div>
       <div className="builder-entry"><div><strong>Vườn bóng phi tiêu</strong><p>Nghe, ngắm và bắn bóng · Ba lượt, ba ngôi sao.</p></div><button className="secondary" onClick={() => navigate('balloon-dart')}>Khám phá 8 màn bóng <ArrowRight size={18}/></button></div><div className="builder-entry"><div><strong>Xưởng chữ phiêu lưu</strong><p>Giải cứu bạn thú, mở cửa và khởi động đoàn tàu bằng những chữ nhỏ.</p></div><button className="secondary" onClick={() => navigate('word-builder')}>Khám phá 8 nhiệm vụ <ArrowRight size={18}/></button></div><div className="map-layout"><section className="adventure-panel"><div className="world-tabs">{worlds.map((w, i) => <button key={w.id} className={i === worldIndex ? 'world-tab selected' : 'world-tab'} onClick={() => setWorldIndex(i)}><span className="world-number">{worldOpen(i) ? `0${i + 1}` : <LockKeyhole size={14}/>}</span><span>{w.name}</span></button>)}</div>
         <div className={`world-scene world-${worldIndex}`}><div className="world-caption"><span className="eyebrow">WORLD 0{worldIndex + 1}</span><h2>{selectedWorld.vi}</h2><p>{worldNotes[worldIndex]}</p></div><Island type={worldIndex} className="map-island"/><div className="scene-cloud cloud-one"/><div className="scene-cloud cloud-two"/><span className="scene-spark sparkle-a">✧</span><span className="scene-spark sparkle-b">✦</span><span className="world-tag"><Pip friend={selectedWorld.hero.toLowerCase()}/><span>Cùng {selectedWorld.hero}</span></span></div>
         <div className="level-trail"><div className="trail-heading"><span><Flag size={17}/> CON ĐƯỜNG KHÁM PHÁ</span><span>{worldLevels.filter(l => progress.some(p => p.levelId === l.id)).length} / {worldLevels.length} màn</span></div><div className="level-nodes">{worldLevels.map((l, i) => { const p = progress.find(p => p.levelId === l.id); const open = unlocked(l, levels, progress); return <div className={`node-wrap ${l.id === currentLevel?.id ? 'current' : ''}`} key={l.id}><button aria-label={`Màn ${l.order}: ${mechanics[l.mechanic]}${p ? `, ${p.bestStars} sao` : open ? ', đã mở' : ', chưa mở'}`} disabled={!open} onClick={() => start(l)} className={`level-node ${p ? 'done' : open ? 'available' : 'locked'} ${l.isBoss ? 'boss' : ''}`}>{p ? <Check/> : !open ? <LockKeyhole size={17}/> : l.isBoss ? <Trophy size={23}/> : i + 1}</button><span className={`node-stars ${p ? 'earned' : ''}`}>{p ? '★'.repeat(p.bestStars) + '☆'.repeat(3 - p.bestStars) : l.isBoss ? 'Word Star' : `${i + 1}`}</span>{l.id === currentLevel?.id && <span className="you-are-here">Bé ở đây</span>}</div>; })}</div></div>
@@ -163,6 +167,7 @@ export default function App() {
     {page === 'dashboard' && child && dashboard && <main className="dashboard-page"><button className="text-button" onClick={() => navigate('map')}><ArrowLeft size={17}/> Về bản đồ</button><span className="eyebrow">GÓC PHỤ HUYNH</span><h1>Từng bước nhỏ của {child.nickname}</h1><p className="subtle">Khuyến khích sự tò mò, trân trọng mỗi lần bé thử.</p><div className="dashboard-stats">{[[dashboard.completedLevels, 'Màn đã khám phá'], [dashboard.stars, 'Ngôi sao đã nhận'], [dashboard.words.length, 'Từ đã gặp'], [dashboard.minutes, 'Phút phiêu lưu']].map(([value, label]) => <section key={label}><strong>{value}</strong><span>{label}</span></section>)}</div><div className="dashboard-columns"><section className="panel"><h2>Khu vườn từ vựng</h2>{dashboard.words.length ? <div className="word-grid">{dashboard.words.map(w => <div key={w.term}><img src={wordImage(w.term)} alt=""/><strong>{w.term}</strong><progress value={w.masteryScore} max={100}/><small>{w.exposureCount} lần gặp · {w.masteryScore}%</small></div>)}</div> : <p>Chơi màn đầu tiên để khu vườn bắt đầu nở hoa.</p>}</section><aside><section className="panel"><h2>Cùng bé ôn lại</h2>{dashboard.review.length ? dashboard.review.map(w => <p key={w.term} className="review-word">{w.term}<span>{w.masteryScore}%</span></p>) : <p>Chưa có từ cần ôn. Hãy để bé chơi lại những màn yêu thích.</p>}<p className="subtle">Chỉ số ghi nhớ dựa trên số lần gặp và lựa chọn trong game; không phải điểm đánh giá năng lực.</p></section><section className="panel"><h2>Lưu hành trình</h2><p>{repo?.local ? 'Đang chơi trên thiết bị này. Dữ liệu không được đồng bộ lên tài khoản; xóa dữ liệu trình duyệt sẽ xóa hành trình.' : pending ? `${pending} lượt đang chờ. ${syncState}` : syncState || 'Tiến trình đã lưu với tài khoản.'}</p>{repo && !repo.local && <button className="secondary" onClick={() => void sync(repo)}>Đồng bộ ngay</button>}<a className="text-button" href="/Account/Login?ReturnUrl=%2Fwordy-wings%2Findex.html%3Faccount%3D1">Đăng nhập tài khoản</a>{session?.isAdmin && <button className="text-button" onClick={() => navigate('admin')}><Settings2 size={16}/> Quản lý nội dung</button>}<button className="text-button" onClick={() => navigate('children')}>Đổi hồ sơ bé</button></section></aside></div></main>}
     {page === 'balloon-dart' && child && <Suspense fallback={<p className="loading-state">Đang mở vườn bóng…</p>}><BalloonDartGallery childId={child.id} scope={(repo?.owner ?? 'device') + ':' + child.id} muted={muted} onMute={toggleMute} onBack={() => navigate('map')}/></Suspense>}
     {page === 'word-builder' && child && <Suspense fallback={<p className="loading-state">Pip đang chuẩn bị…</p>}><WordBuilderDemoGallery childId={child.id} scope={(repo?.owner ?? 'device') + ':' + child.id} muted={muted} onMute={toggleMute} onBack={() => navigate('map')}/></Suspense>}
+    {page === 'golden-bell' && child && repo && <Suspense fallback={<p className="loading-state">Đang chuẩn bị 1.000 câu hỏi Chuông Sao…</p>}><GoldenBellPage child={child} repository={repo} levels={levels} progress={progress} muted={muted} onMute={toggleMute} onBack={() => navigate('map')}/></Suspense>}
     {page === 'admin' && repo && <AdminContent repository={repo} onBack={() => navigate('map')} onChanged={async () => { const c = await repo.content(); setLevels(c.levels); }}/>} 
     {gate && <div className="overlay"><form className="modal parent-gate" onSubmit={e => void passGate(e)}><button type="button" className="close-modal" aria-label="Đóng" onClick={() => setGate(false)}><X/></button><ShieldCheck size={35}/><span className="eyebrow">DÀNH CHO NGƯỜI LỚN</span><h2>Mời ba mẹ giúp bé</h2><p>Nhập kết quả để vào khu vực phụ huynh.</p><label>14 + 7 = ?<input value={gateAnswer} onChange={e => setGateAnswer(e.target.value)} inputMode="numeric" autoFocus required aria-label="Kết quả 14 cộng 7"/></label><button type="submit" className="primary">Tiếp tục <ChevronRight size={18}/></button></form></div>}
     {busy && <div className="busy-indicator" role="status"><span/> Pip đang chuẩn bị…</div>}

@@ -68,3 +68,13 @@ Bus phát: WORD_BUILDER_STARTED, LETTER_COLLECTED, LETTER_PLACED, LETTER_WRONG, 
 - Art hiện là SVG/hình vẽ Phaser riêng, chưa có bộ sprite/voice thu âm hoàn chỉnh. Các vật thể môi trường là tương tác chạm, không phải hệ vật lý phá hủy tự do.
 - Profile có W01–W10 nhưng không thêm toàn bộ nội dung mười thế giới. Difficulty 6 có nền logic `unit: "word"`; chưa có bộ màn câu hoàn chỉnh.
 - Bố cục điện thoại dùng stage dọc và vùng chữ lớn; chưa đo FPS hoặc xác nhận UX trên thiết bị thật. Theme hiện là metadata cho mở rộng art; không phải mỗi theme một bộ scenery riêng.
+
+## Letter Adventure + Bridge Builder
+
+Các màn ghép chữ hiện chia thành hai pha: săn đủ chữ cần thiết → xếp từ để xây/kích hoạt thế giới. Chữ thu được bay vào khay theo thứ tự thu thập, không tự điền vào ô. Ô đích không còn ghost letter; riêng missing_letter vẫn giữ các chữ điền sẵn của dạng bài. Đặt đúng mới hiện chữ; chữ trùng vẫn quản lý bằng ID riêng.
+
+Profile W01 dùng tuần tự balloon, crate, platform, bush, pulley, spring. Vì ORANGE có 6 chữ, O nằm ở bóng, R trong thùng, A trên platform, N trong bụi, G trên pulley, E trên spring. Vị trí các vật thể được xáo trộn, loại tương tác gắn vào ID chữ. Balloon chạm để phóng phi tiêu; crate/obstacle gõ ba lần; platform di chuyển và cần chạm bắt; bush vạch lá bằng hai chạm; pulley kéo xuống hoặc chạm ba lần; spring chạm nén rồi chạm bật. Các spawn cũ vẫn được hỗ trợ.
+
+Bridge có số ván bằng số ô của từ, mỗi vị trí đặt đúng làm hiện một ván. Momo phản ứng trong lúc thu thập/xếp, ra hiệu khi còn một chữ, sau cùng nghe đánh vần → từ hoàn chỉnh rồi chạy qua cầu lấy vật và nhảy vui. ORANGE dùng hình quả cam từ meanings.json, tách khỏi tranh màu cam của màn học màu. Các action khác dùng lại quá trình săn/xếp và phản hồi Momo; không bổ sung bộ màn đường ray/rocket riêng trong lần sửa này.
+
+Bố cục tách tiêu đề/pha, cảnh và đồ vật, khay chữ, ô đích, nút nhận sao. Khi vào pha xếp, các vật thể chưa thu được ẩn đi và cảnh chính về giữa. Chữ dùng texture độ phân giải 2 để giảm nhòe khi phóng to. Mục tiêu nhịp 60–90 giây chưa được đo bằng lượt chơi thực tế; không ép thời gian hoặc giới hạn mạng.

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { character } from '../theme';
 import type { BalloonDartConfig, BalloonOption } from './model';
 import { positionAt, clamp } from './motion';
 export const palette: Record<string, number> = { blue: 0x74c9ff, coral: 0xff9d87, yellow: 0xffd768, violet: 0xc8a0ff, green: 0x94d985, red: 0xf07778, pink: 0xf5a5ca, orange: 0xffb06a, purple: 0xc8a0ff, white: 0xfffcf2, black: 0x5a6270, brown: 0xb78b6c };
@@ -13,11 +14,9 @@ export class BalloonTarget {
     const string = scene.add.graphics().lineStyle(3, 0xb69360, .85);
     string.beginPath().moveTo(0, 105).lineTo(-7, 128).lineTo(7, 145).lineTo(0, 163).strokePath();
     this.halo = scene.add.ellipse(0, 0, 195, 238, 0xfff1a6, .5).setVisible(false);
-    const body = scene.add.ellipse(0, 0, 180, 220, color).setStrokeStyle(4, 0xffffff, .7);
-    const inner = scene.add.ellipse(8, 10, 146, 180, 0xffffff, .16);
-    const shine = scene.add.ellipse(-46, -64, 23, 58, 0xffffff, .62).setAngle(33);
-    const knot = scene.add.triangle(0, 113, 0, 15, 9, 0, 18, 15, color).setStrokeStyle(2, 0xffffff, .4);
-    const objects: Phaser.GameObjects.GameObject[] = [string, this.halo, body, inner, shine, knot];
+    const skin = `art:balloon:${color.toString(16).padStart(6, '0')}`;
+    const body = scene.textures.exists(skin) ? scene.add.image(0, 13, skin).setDisplaySize(220, 280) : scene.add.ellipse(0, 0, 180, 220, color).setStrokeStyle(4, 0xffffff, .7);
+    const objects: Phaser.GameObjects.GameObject[] = [string, this.halo, body];
     const semantic = config.semantic;
     if (mode !== 'colorRecognition') {
       const key = scene.textures.exists(`bd:${semantic.imageKey}`) ? `bd:${semantic.imageKey}` : scene.textures.exists(`bd:shape:${semantic.shape}:${semantic.color}`) ? `bd:shape:${semantic.shape}:${semantic.color}` : `word:${semantic.shape ?? semantic.word ?? semantic.id}`;
@@ -69,9 +68,16 @@ export class Launcher {
   constructor(scene: Phaser.Scene) {
     const base = scene.add.graphics().fillStyle(0xd8a66a).fillRoundedRect(-66, -6, 132, 45, 18).fillStyle(0x8d6749).fillCircle(-45, 33, 23).fillCircle(45, 33, 23).fillStyle(0xf8d878).fillCircle(-45, 33, 12).fillCircle(45, 33, 12);
     const tube = scene.add.graphics().fillStyle(0x619fc7).fillRoundedRect(-22, -31, 110, 62, 22).lineStyle(4, 0x477d98).strokeRoundedRect(-22, -31, 110, 62, 22).fillStyle(0xffd46e).fillRoundedRect(61, -39, 24, 78, 9).fillStyle(0xf5fbef).fillCircle(14, 0, 13);
+    base.fillStyle(0xffe8b0, .8).fillRoundedRect(-55, -5, 110, 9, 4);
+    base.lineStyle(3, 0xbb8253).lineBetween(-29, 19, 28, 19);
+    base.fillStyle(0xfff0be).fillCircle(-45, 29, 6).fillCircle(45, 29, 6);
+    tube.fillStyle(0xb5edee, .8).fillRoundedRect(-10, -23, 65, 11, 5);
+    tube.fillStyle(0x2c697f, .3).fillRoundedRect(-12, 17, 66, 9, 4);
+    tube.fillStyle(0xffefac).fillRoundedRect(65, -34, 6, 65, 3);
+    tube.lineStyle(2, 0xfff2ba).strokeCircle(14, 0, 18);
     this.barrel = scene.add.container(0, 0, [tube]).setRotation(-Math.PI / 2);
     this.view = scene.add.container(720, 705, [this.barrel, base]).setDepth(22);
-    const bird = scene.add.graphics().fillStyle(0x81b393).fillEllipse(0, 12, 75, 87).fillStyle(0xd7e9bd).fillEllipse(0, 25, 43, 49).fillStyle(0x81b393).fillCircle(0, -31, 36).fillStyle(0xffffff).fillCircle(-12, -35, 11).fillCircle(12, -35, 11).fillStyle(0x24483f).fillCircle(-9, -35, 5).fillCircle(15, -35, 5).fillStyle(0xeebd62).fillTriangle(-7, -22, 15, -22, 4, -8);
+    const bird = character(scene, 'poki', 0, -7, 155);
     this.mascot = scene.add.container(564, 691, [bird]).setDepth(21);
   }
   dispose() { this.view.destroy(); this.mascot.destroy(); }
@@ -104,18 +110,6 @@ export class DartPool {
 }
 
 export function landscape(scene: Phaser.Scene) {
-  const g = scene.add.graphics().setDepth(1);
-  g.fillStyle(0xb4e6f5).fillRect(0, 0, 1440, 810);
-  g.fillStyle(0xffffff, .76);
-  [[145, 172], [1190, 153], [790, 195]].forEach(([x, y]) => { g.fillEllipse(x, y, 178, 43).fillCircle(x - 30, y - 15, 30).fillCircle(x + 18, y - 24, 40); });
-  g.fillStyle(0x9fcebb).fillTriangle(0, 605, 160, 356, 470, 605).fillTriangle(995, 620, 1250, 340, 1510, 620);
-  g.fillStyle(0xc5e5b0).fillEllipse(285, 800, 1160, 550).fillStyle(0x9bc985).fillEllipse(1325, 827, 1420, 540);
-  g.fillStyle(0xb4dd90).fillEllipse(715, 1060, 2040, 890);
-  // Distant waterfall, village and fence remain below the target field.
-  g.fillStyle(0x9fdae1).fillRoundedRect(1085, 535, 39, 119, 15).lineStyle(3, 0xe2f7ec).lineBetween(1100, 549, 1100, 635);
-  [106, 167, 230, 1215, 1277, 1339].forEach(x => { g.fillStyle(0xd4b784).fillRoundedRect(x, 633, 13, 65, 5); });
-  g.lineStyle(10, 0xdcc394).lineBetween(95, 657, 250, 657).lineBetween(1208, 657, 1367, 657);
-  g.fillStyle(0xf4e4b9).fillRect(110, 553, 67, 51).fillStyle(0xbd9981).fillTriangle(99, 554, 144, 518, 188, 554).fillStyle(0x769e85).fillRoundedRect(138, 574, 17, 30, 5);
-  for (let i = 0; i < 22; i++) { const x = 40 + (i * 137) % 1370, y = 747 + (i * 37) % 58; g.fillStyle(i % 2 ? 0xffedb8 : 0xf6e8f5).fillCircle(x, y, 5).fillCircle(x + 8, y, 5).fillCircle(x + 4, y - 6, 5).fillStyle(0xe8bf60).fillCircle(x + 4, y - 1, 3); }
-  return g;
+  // The scene already owns the world backdrop. Only add the soft HUD/footer shading here.
+  return scene.add.graphics().fillStyle(0xfff8e4, .82).fillRoundedRect(343, 746, 754, 51, 24).setDepth(1);
 }
