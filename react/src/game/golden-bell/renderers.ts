@@ -233,7 +233,7 @@ class SentenceRenderer extends BaseRenderer {
   mount() {
     const tiles = this.q.stimulus.tiles ?? [];
     this.order = (this.ctx.record().draft ?? []).map(Number).filter((i, at, all) => Number.isInteger(i) && i >= 0 && i < tiles.length && all.indexOf(i) === at);
-    const cols = this.compact ? Math.min(3, tiles.length) : tiles.length;
+    const cols = this.compact ? Math.min(tiles.length > 6 ? 4 : 3, tiles.length) : tiles.length;
     this.tileWidth = Math.min(175, (this.width - 18 * (cols - 1)) / cols);
     const rows = Math.ceil(tiles.length / cols), slotTop = this.compact ? 453 : 332;
     tiles.forEach((word, i) => {

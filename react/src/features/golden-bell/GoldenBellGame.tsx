@@ -10,6 +10,7 @@ export default function GoldenBellGame({ store, muted, onMute, onBack }: { store
   const [compact, setCompact] = useState(matchMedia('(max-width: 760px)').matches);
   const [paused, setPaused] = useState(false), [notice, setNotice] = useState(''), [status, setStatus] = useState(''), [prompt, setPrompt] = useState('');
   const [revision, setRevision] = useState(0), [summary, setSummary] = useState(false);
+  const [syncState, setSyncState] = useState('Đã lưu kết quả trên thiết bị.');
   useEffect(() => { const media = matchMedia('(max-width: 760px)'), update = () => setCompact(media.matches); media.addEventListener('change', update); return () => media.removeEventListener('change', update); }, []);
   useEffect(() => {
     if (!host.current) return;
@@ -23,6 +24,13 @@ export default function GoldenBellGame({ store, muted, onMute, onBack }: { store
   useEffect(() => { const hidden = () => { if (document.hidden) setPaused(true); }; document.addEventListener('visibilitychange', hidden); return () => document.removeEventListener('visibilitychange', hidden); }, []);
   const session = store.session!;
   useEffect(() => {
+    if (session.phase !== 'summary' || store.repository?.local) return;
+    let live = true;
+    setSyncState('Đã lưu trên thiết bị. Đang đồng bộ tài khoản…');
+    void store.sync().then(() => { if (live) setSyncState('Kết quả đã đồng bộ với tài khoản.'); }).catch(() => { if (live) setSyncState('Đã lưu trên thiết bị. Kết quả sẽ đồng bộ khi kết nối lại.'); });
+    return () => { live = false; };
+  }, [session.phase, store]);
+  useEffect(() => {
     if (session.phase !== 'summary') return;
     const timer = setTimeout(() => setSummary(true), 1900); return () => clearTimeout(timer);
   }, [session.phase, revision]);
@@ -35,6 +43,6 @@ export default function GoldenBellGame({ store, muted, onMute, onBack }: { store
     <div className="gb-play-note"><span>Tiến trình được lưu sau mỗi câu trả lời.</span><span>1–4 chọn đáp án · Chạm hoặc kéo thẻ để xếp câu</span></div>
     {session.phase === 'bell' && <button className="gb-access-ring" onClick={() => scene.current?.ring()}>Rung Chuông Sao</button>}
     {(paused || notice) && <div className="overlay gb-overlay"><section className="modal"><Pip friend="poki"/><h2>{notice ? 'Giữ lại chuyến phiêu lưu' : 'Nghỉ một chút nhé!'}</h2><p>{notice || 'Chuông Sao vẫn đang đợi bé. Lượt chơi đã được giữ lại.'}</p>{notice ? <button className="primary" onClick={() => { scene.current?.setPaused(false); scene.current?.retry(); }}><RotateCcw size={19}/> Thử lại</button> : <button className="primary" onClick={() => setPaused(false)}><Play size={19}/> Chơi tiếp</button>}<button className="text-button" onClick={onBack}>Về Đảo Chuông</button></section></div>}
-    {summary && <div className="overlay gb-overlay"><section className="result-card gb-summary"><span className="eyebrow">STAR BELL AWAKENED</span><div className="gb-token">✦</div><h1>Chuông Sao đã thức dậy!</h1><p>Bé đã tìm đủ 12 Word Stars và nhận <strong>1 Bell Token</strong>.</p><div className="gb-summary-metrics"><span><strong>12/12</strong>Câu hoàn thành</span><span><strong>{session.records.filter(r => r.wrong === 0).length}</strong>Đúng lần đầu</span><span><strong>{hints}</strong>Lần được gợi ý</span></div>{wrong > 0 && <p>Mỗi lần thử đều giúp bé nhớ thêm. Những từ cần ôn đã được giữ lại cho chuyến sau.</p>}<Pip friend="momo"/><button className="primary" onClick={onBack}>Về Đảo Chuông <ArrowLeft size={18}/></button></section></div>}
+    {summary && <div className="overlay gb-overlay"><section className="result-card gb-summary"><span className="eyebrow">STAR BELL AWAKENED</span><div className="gb-token">✦</div><h1>Chuông Sao đã thức dậy!</h1><p>Bé đã tìm đủ 12 Word Stars và nhận <strong>1 Bell Token</strong>.</p><div className="gb-summary-metrics"><span><strong>12/12</strong>Câu hoàn thành</span><span><strong>{session.records.filter(r => r.wrong === 0).length}</strong>Đúng lần đầu</span><span><strong>{hints}</strong>Lần được gợi ý</span></div>{wrong > 0 && <p>Mỗi lần thử đều giúp bé nhớ thêm. Những từ cần ôn đã được giữ lại cho chuyến sau.</p>}<Pip friend="momo"/><small className="gb-sync-result" role="status">{syncState}</small><button className="primary" onClick={onBack}>Về Đảo Chuông <ArrowLeft size={18}/></button></section></div>}
   </main>;
 }

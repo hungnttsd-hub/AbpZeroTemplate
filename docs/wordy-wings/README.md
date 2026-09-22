@@ -21,7 +21,7 @@ Nếu chỉ thấy nền trống với dòng “Find the red”, cập nhật co
 ## Chạy với tài khoản và backend
 
 1. Cấu hình PostgreSQL / `ConnectionStrings:Default` cho Web và DbMigrator theo README gốc. Dùng database phát triển riêng. Không đưa mật khẩu vào source control.
-2. Chạy DbMigrator để tạo bảng `wordy.*`, seed 3 world, 30 level và vocabulary. Contributor chỉ thêm dữ liệu còn thiếu, không ghi đè nội dung admin đã chỉnh.
+2. Chạy DbMigrator để tạo bảng `wordy.*`, seed 3 world, 30 level, vocabulary và 1.000 câu Chuông Sao. Contributor chỉ thêm dữ liệu còn thiếu, không ghi đè nội dung admin đã chỉnh.
 3. Build frontend vào static files của backend rồi chạy Web.
 
 ```powershell
@@ -46,6 +46,7 @@ Dev frontend đã proxy `/api`, `/Account`, `/Legal`, `/connect`, `/Abp`, `/libs
 
 ## Đã triển khai
 
+- **Đuổi hình bắt chữ · Chuông Sao**: đủ 1.000 câu, 25 dạng, 10 mức khó; 12 câu/lượt, ghi nhớ, xếp câu, hai bước và rung chuông nhận thưởng. Mở từ bản đồ; chơi trên thiết bị không cần backend. Chi tiết và migration ở [golden-bell.md](golden-bell.md).
 - Hồ sơ bé với nickname, avatar Pip/Poki/Lulu/Momo và nhóm tuổi.
 - Bản đồ Rainbow Valley, Animal Island, Happy Home, mỗi world 10 màn.
 - Word Shot: kéo ná chỉnh góc/lực, xem quỹ đạo vật lý rồi thả; di chuyển Pip và chọn 4 loại đạn. Phải giải cứu toàn bộ mục tiêu trước khi hết đạn; có thể thử lại ngay. Chi tiết ở `word-shot.md`.

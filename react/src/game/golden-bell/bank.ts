@@ -16,9 +16,9 @@ export async function loadQuestion(id: string): Promise<Question> {
   if (!r.ok) throw new Error(`Chưa tải được câu ${id}. Hãy thử lại.`);
   return questionSchema.parse(await r.json());
 }
-export const commonWords = new Set('a an the is are am has have it i you we he she they can cannot not do does to of and or on in under behind between next to in front of small big one two three four five six seven eight nine ten first then pip poki lulu momo foxy 1 2 3 4 5 6 7 8 9 10'.split(' '));
 export const wordKey = (word: string) => word.toLowerCase().replace(/s$/, '');
-function contentWords(q: QuestionMeta) { return q.targetVocabulary.map(wordKey).filter(w => !commonWords.has(w)); }
+export const commonWords = new Set('a an the is are am has have it i you we he she they can cannot not do does to of and or on in under behind between next to in front of small big one two three four five six seven eight nine ten first then pip poki lulu momo foxy 1 2 3 4 5 6 7 8 9 10'.split(' ').map(wordKey));
+export function contentWords(q: QuestionMeta) { return q.targetVocabulary.map(wordKey).filter(w => !commonWords.has(w) && !['next to', 'in front of'].includes(w)); }
 function hash(seed: number, text: string) { let h = seed >>> 0; for (const c of text) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return h / 4294967296; }
 export interface Selection { seed: number; maxDifficulty: number; allowedVocabulary?: string[]; difficulty?: number; firstId?: string }
 export function chooseQuestion(bank: Bank, history: BellHistory, config: Selection, prefix: QuestionMeta[], excluded: string[], desired: number, preferredSkill?: string) {

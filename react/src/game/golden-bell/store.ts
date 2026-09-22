@@ -1,6 +1,6 @@
 import { storage } from '../../services/storage';
 import type { GameRepository } from '../../services/repository';
-import { chooseQuestion, loadQuestion, selectSession, type Selection } from './bank';
+import { chooseQuestion, contentWords, loadQuestion, selectSession, type Selection } from './bank';
 import { emptyHistory, evaluate, profile, type AnswerInput, type Bank, type BellHistory, type BellSession } from './model';
 
 interface SavedProfile { history: BellHistory; active?: BellSession; completedSessions: BellSession[] }
@@ -22,6 +22,12 @@ export class GoldenBellStore {
     const snapshot = structuredClone(next);
     const task = this.saving.catch(() => {}).then(() => storage.set(this.key, snapshot));
     this.saving = task; await task; this.data = snapshot; this.onChange();
+  }
+  private async patchLatest(change: (current: SavedProfile) => void) {
+    const task = this.saving.catch(() => {}).then(async () => {
+      const next = structuredClone(this.data); change(next); await storage.set(this.key, next); this.data = next; this.onChange();
+    });
+    this.saving = task; await task;
   }
   async start(config: Omit<Selection, 'seed'> & { mode: BellSession['mode'] }) {
     const seed = crypto.getRandomValues(new Uint32Array(1))[0];
@@ -69,11 +75,13 @@ export class GoldenBellStore {
       const streak = recent.length >= 4 && recent.slice(-4).every(r => r.wrong === 0 && !r.hintUsed);
       if (s.mode !== 'practice' && next < 11 && (weak || streak)) {
         const desired = Math.max(1, Math.min(s.maxDifficulty, profile[next] + (weak ? -1 : 1)));
-        const replacement = chooseQuestion(this.bank, this.history, { seed: s.seed, maxDifficulty: s.maxDifficulty, allowedVocabulary: s.allowedVocabulary }, s.questions.slice(0, next), s.questions.filter((_, i) => i !== next).map(q => q.id), desired, weak ? s.questions[s.index].skill : undefined);
+        let replacement;
+        try { replacement = chooseQuestion(this.bank, this.history, { seed: s.seed, maxDifficulty: s.maxDifficulty, allowedVocabulary: s.allowedVocabulary }, s.questions.slice(0, next), s.questions.filter((_, i) => i !== next).map(q => q.id), desired, weak ? s.questions[s.index].skill : undefined); }
+        catch { /* A small learned-vocabulary pool may have no replacement; keep the valid saved plan. */ }
         // Keep anti-repeat constraints with the following planned questions too.
         const after = s.questions[next + 1], afterNext = s.questions[next + 2];
-        if (!(replacement.questionType === 'memory_scene' && after?.questionType === 'memory_scene') && !(replacement.questionType === after?.questionType && after?.questionType === afterNext?.questionType)
-          && !replacement.targetVocabulary.some(w => after?.targetVocabulary.includes(w))) {
+        if (replacement && !(replacement.questionType === 'memory_scene' && after?.questionType === 'memory_scene') && !(replacement.questionType === after?.questionType && (after?.questionType === afterNext?.questionType || s.questions[next - 1].questionType === after?.questionType))
+          && !contentWords(replacement).some(w => [after, afterNext].filter(Boolean).some(q => contentWords(q).includes(w)))) {
           s.questions[next] = await loadQuestion(replacement.id); s.records[next].questionId = replacement.id;
         }
       }
@@ -99,15 +107,21 @@ export class GoldenBellStore {
     for (const original of pending) {
       if (original.serverCompleted) continue;
       const s = structuredClone(original);
-      await repo.api('golden-bell/session/start', 'POST', { sessionId: s.id, childId: s.childId, seed: s.seed, questionCodes: s.questions.map(q => q.id), bankVersion: s.bankVersion });
+      await repo.api('golden-bell/session/start', 'POST', { sessionId: s.id, childId: s.childId, seed: s.seed, questionCodes: s.questions.map(q => q.id), bankVersion: s.bankVersion, startedAt: s.startedAt });
       for (const answer of s.answers.slice(s.syncedAnswers)) await repo.api(`golden-bell/session/${s.id}/answer`, 'POST', answer);
-      if (s.bellRung) await repo.api(`golden-bell/session/${s.id}/complete`, 'POST', { bellRung: true });
+      if (s.bellRung) await repo.api(`golden-bell/session/${s.id}/complete`, 'POST', { bellRung: true, completedAt: s.completedAt });
       // Read the current aggregate after network I/O so new local answers are not overwritten.
-      await this.saving;
-      const next = structuredClone(this.data), active = next.active?.id === s.id ? next.active : undefined;
-      const completed = next.completedSessions.find(x => x.id === s.id);
-      for (const target of [active, completed]) if (target) { target.syncedAnswers = s.answers.length; target.serverCompleted = s.bellRung; target.serverStarted = true; }
-      await this.save(next);
+      await this.patchLatest(next => {
+        const active = next.active?.id === s.id ? next.active : undefined, completed = next.completedSessions.find(x => x.id === s.id);
+        for (const target of [active, completed]) if (target) { target.syncedAnswers = s.answers.length; target.serverCompleted = s.bellRung; target.serverStarted = true; }
+      });
     }
+    const remote = await repo.api<{ completed: string[]; tokens: number; sessions: number; minutes: number }>(`golden-bell/children/${this.childId}/history`);
+    await this.patchLatest(next => {
+      next.history.completed = [...new Set([...next.history.completed, ...remote.completed])];
+      next.history.tokens = Math.max(next.history.tokens, remote.tokens);
+      next.history.sessions = Math.max(next.history.sessions, remote.sessions);
+      next.history.minutes = Math.max(next.history.minutes, remote.minutes);
+    });
   }
 }

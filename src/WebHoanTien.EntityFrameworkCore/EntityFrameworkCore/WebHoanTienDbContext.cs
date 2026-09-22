@@ -35,6 +35,9 @@ public class WebHoanTienDbContext :
     public DbSet<LevelAttempt> LevelAttempts { get; set; } = null!;
     public DbSet<PlayerProgress> PlayerProgresses { get; set; } = null!;
     public DbSet<WordMastery> WordMasteries { get; set; } = null!;
+    public DbSet<GoldenBellQuestion> GoldenBellQuestions { get; set; } = null!;
+    public DbSet<GoldenBellSession> GoldenBellSessions { get; set; } = null!;
+    public DbSet<GoldenBellAttempt> GoldenBellAttempts { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<AnonymousRecovery> AnonymousRecoveries { get; set; } = null!;
     public DbSet<AnonymousDevice> AnonymousDevices { get; set; } = null!;

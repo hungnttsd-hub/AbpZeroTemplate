@@ -11,7 +11,7 @@ export interface ArenaEvents { status: (text: string) => void; prompt: (text: st
 /** One persistent arena; question-specific objects are owned by the renderer registry. */
 export class GoldenBellArena extends Phaser.Scene {
   private audio: AudioService;
-  private renderer?: QuestionRenderer;
+  private questionRenderer?: QuestionRenderer;
   private panel?: Phaser.GameObjects.Container;
   private questionLabel!: Phaser.GameObjects.Text;
   private promptLabel!: Phaser.GameObjects.Text;
@@ -63,10 +63,10 @@ export class GoldenBellArena extends Phaser.Scene {
       label(this, x, this.compact ? 124 : 90, String(i + 1), 14).setColor('#79927b');
     }
     for (let i = 0; i < (this.reduced ? 8 : 45); i++) this.particles.push({ sprite: label(this, 0, 0, i % 3 ? '✦' : '★', 22).setColor(i % 2 ? '#edbf54' : '#a3c9aa').setVisible(false).setDepth(25), life: 0, vx: 0, vy: 0 });
-    const keyboard = (event: KeyboardEvent) => { if (this.busy || !this.sys.isActive() || event.target instanceof HTMLButtonElement) return; this.renderer?.key(event.key); if (['Backspace', 'Enter'].includes(event.key)) event.preventDefault(); };
+    const keyboard = (event: KeyboardEvent) => { if (this.busy || !this.sys.isActive() || event.target instanceof HTMLButtonElement) return; this.questionRenderer?.key(event.key); if (['Backspace', 'Enter'].includes(event.key)) event.preventDefault(); };
     this.input.keyboard?.on('keydown', keyboard);
     this.events.once('shutdown', () => {
-      this.dead = true; this.renderer?.dispose(); this.audio.stopAll(); this.input.keyboard?.off('keydown', keyboard); this.answerTimer?.remove(false); this.hintTimer?.remove(false);
+      this.dead = true; this.questionRenderer?.dispose(); this.audio.stopAll(); this.input.keyboard?.off('keydown', keyboard); this.answerTimer?.remove(false); this.hintTimer?.remove(false);
     });
     this.bell.setInteractive({ useHandCursor: true });
     this.bell.on('pointerdown', (p: Phaser.Input.Pointer) => { if (this.session.phase === 'bell') this.ropeY = p.y; });
@@ -75,7 +75,7 @@ export class GoldenBellArena extends Phaser.Scene {
   }
   setMuted(muted: boolean) { this.audio.muted = muted; if (muted) this.audio.stopAll(); }
   setPaused(paused: boolean) { if (paused) { this.audio.stopAll(); this.scene.pause(); } else this.scene.resume(); }
-  replay() { this.renderer?.replay(); }
+  replay() { this.questionRenderer?.replay(); }
   async speak(texts: string[]) {
     // Short utterances avoid the shared voice watchdog cutting a long story in half.
     const parts = texts.flatMap(text => text.replace(/_+/g, 'blank').split(/(?<=[.!?])\s+/)).flatMap(text => {
@@ -93,7 +93,7 @@ export class GoldenBellArena extends Phaser.Scene {
   }
   retry() { if (this.retryAction) void this.safe(this.retryAction).then(ok => { if (ok) void this.mountPhase(); }); }
   private clearLayer() {
-    this.renderer?.dispose(); this.renderer = undefined; this.panel?.destroy(true); this.panel = undefined;
+    this.questionRenderer?.dispose(); this.questionRenderer = undefined; this.panel?.destroy(true); this.panel = undefined;
     this.answerTimer?.remove(false); this.hintTimer?.remove(false); this.transient.forEach(o => { this.tweens.killTweensOf(o); o.destroy(); }); this.transient = [];
   }
   private async mountPhase() {
@@ -128,18 +128,18 @@ export class GoldenBellArena extends Phaser.Scene {
     this.elapsed = 0; this.hinted = this.session.records[this.session.index].hintUsed;
     this.questionLabel.setText(`CÂU ${this.session.index + 1} / 12   ·   ${questionNames[question.questionType]}   ·   ĐỘ KHÓ ${question.difficulty}`);
     this.prompt(question.promptText); this.feedback('Chạm hình để chọn · Có thể nghe lại bất cứ lúc nào');
-    this.renderer = rendererRegistry[question.questionType](question, { scene: this, audio: this.audio, reduced: this.reduced,
+    this.questionRenderer = rendererRegistry[question.questionType](question, { scene: this, audio: this.audio, reduced: this.reduced,
       locked: () => this.busy || this.session.phase !== 'question', record: () => this.session.records[this.session.index],
       submit: (input, x, y) => void this.submit(input, x, y),
       remember: patch => this.safe(() => this.store.remember(patch)),
       replayMemory: async () => { if (this.session.records[this.session.index].memoryReplays > 0) return false; return this.safe(() => this.store.hint(true)); },
       prompt: value => this.prompt(value), feedback: value => this.feedback(value), speak: texts => this.speak(texts),
     });
-    this.renderer.mount();
+    this.questionRenderer.mount();
     if (this.session.records[this.session.index].completed) {
-      this.renderer.reveal(); this.answerTimer = this.time.delayedCall(600, () => void this.next()); return;
+      this.questionRenderer.reveal(); this.answerTimer = this.time.delayedCall(600, () => void this.next()); return;
     }
-    this.hintTimer = this.time.delayedCall(question.difficulty > 6 ? 18000 : 14000, () => this.hint());
+    this.hintTimer = this.time.delayedCall(Math.max(100, (question.difficulty > 6 ? 18000 : 14000) - this.session.records[this.session.index].durationMs), () => this.hint());
   }
   private async submit(input: AnswerInput, x = this.center, y = 560) {
     if (this.busy || this.session.phase !== 'question' || this.session.records[this.session.index].completed) return;
@@ -149,7 +149,7 @@ export class GoldenBellArena extends Phaser.Scene {
     if (!saved || !result || this.dead) return;
     const outcome = result as { correct: boolean; hint: boolean };
     if (outcome.correct) {
-      this.busy = true; this.hintTimer?.remove(false); this.renderer?.reveal(); this.sparkles(x, y);
+      this.busy = true; this.hintTimer?.remove(false); this.questionRenderer?.reveal(); this.sparkles(x, y);
       this.feedback('Đúng rồi! Một ngôi sao cho Chuông Sao.');
       if (!this.reduced) {
         const star = label(this, x, y, '★', 66).setColor('#f2c45d').setDepth(22); this.transient.push(star);
@@ -164,14 +164,18 @@ export class GoldenBellArena extends Phaser.Scene {
     } else {
       this.feedback('Almost! Thử thêm một lần nữa nhé.'); void this.speak(['Almost. Try again!']);
       if (!this.reduced) this.tweens.add({ targets: this.helper, angle: { from: -4, to: 4 }, duration: 90, yoyo: true, repeat: 1, onComplete: () => this.helper.setAngle(0) });
-      if (outcome.hint) { this.hinted = true; this.renderer?.showHint(this.session.records[this.session.index].wrong); }
+      if (outcome.hint) { this.hinted = true; this.questionRenderer?.showHint(this.session.records[this.session.index].wrong); }
     }
   }
   private async next() { if (await this.safe(() => this.store.advance())) await this.mountPhase(); }
   hint() {
     if (this.busy || this.session.phase !== 'question' || this.session.records[this.session.index].completed) return;
     const r = this.session.records[this.session.index];
-    void this.safe(() => this.store.hint()).then(ok => { if (ok) { this.hinted = true; this.renderer?.showHint(Math.max(2, r.wrong)); } });
+    const q = this.session.questions[this.session.index];
+    if (r.wrong < q.hint.afterWrong && r.durationMs + this.elapsed < (q.difficulty > 6 ? 18000 : 14000) - 150) {
+      this.feedback('Bé thử trước nhé. Chuông Sao sẽ gợi ý sau một chút!'); return;
+    }
+    void this.safe(() => this.store.hint()).then(ok => { if (ok) { this.hinted = true; this.questionRenderer?.showHint(Math.max(2, r.wrong)); } });
   }
   ring() {
     if (this.busy || this.session.phase !== 'bell') return;
@@ -203,7 +207,13 @@ export class GoldenBellArena extends Phaser.Scene {
   }
   update(_time: number, delta: number) {
     const dt = Math.min(delta, 80) / 1000;
-    if (this.session.phase === 'question' && !this.session.records[this.session.index].completed) this.elapsed += Math.min(delta, 100);
+    if (this.session.phase === 'question' && !this.session.records[this.session.index].completed) {
+      this.elapsed += Math.min(delta, 100);
+      if (this.elapsed >= 5000 && !this.busy) {
+        const elapsed = this.elapsed; this.elapsed = 0;
+        void this.safe(() => this.store.remember({}, elapsed));
+      }
+    }
     for (const p of this.particles) if (p.life > 0) { p.life -= dt; p.vy += this.reduced ? 0 : 125 * dt; p.sprite.x += p.vx * dt; p.sprite.y += p.vy * dt; p.sprite.setAlpha(Math.max(0, Math.min(1, p.life))); if (p.life <= 0) p.sprite.setVisible(false); }
   }
 }

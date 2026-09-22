@@ -42,9 +42,14 @@ const digest = createHash('sha256').update(JSON.stringify(clean)).digest('hex').
 const manifest = { version: `1.0-${digest}`, count: 1000, distribution,
   questions: clean.map(({ id, difficulty, questionType, skill, promptText, targetVocabulary, worldTags }) => ({ id, difficulty, questionType, skill, promptText, targetVocabulary, worldTags })) };
 // All validation finishes before publication. Individual payloads avoid loading 1000 scenes.
-for (const question of clean) await writeFile(new URL(`${question.id}.json`, output), JSON.stringify(question));
-await writeFile(new URL('manifest.json', output), JSON.stringify(manifest));
+async function publish(file, content) {
+  // Avoid rewriting 1,000 unchanged files on each Vite start (and Windows scanner contention).
+  try { if (await readFile(file, 'utf8') === content) return; } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  await writeFile(file, content);
+}
+for (const question of clean) await publish(new URL(`${question.id}.json`, output), JSON.stringify(question));
+await publish(new URL('manifest.json', output), JSON.stringify(manifest));
 const backend = new URL('../../content/wordy-wings/golden-bell/', import.meta.url);
 await mkdir(backend, { recursive: true });
-await writeFile(new URL('questions.v1.json', backend), JSON.stringify({ version: manifest.version, count: 1000, questions: clean }));
+await publish(new URL('questions.v1.json', backend), JSON.stringify({ version: manifest.version, count: 1000, questions: clean }));
 console.log(`Golden Bell: imported ${ids.size} unique questions / ${types.length} types / 100 per difficulty. Version ${manifest.version}`);

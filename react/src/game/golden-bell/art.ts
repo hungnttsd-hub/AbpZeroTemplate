@@ -25,7 +25,7 @@ export function questionAssets(q: Question) {
 }
 export function queueQuestionArt(scene: Phaser.Scene, q: Question) {
   let count = 0;
-  for (const [key, { asset, color }] of questionAssets(q)) if (!scene.textures.exists(key) && !scene.load.isLoading()) { scene.load.svg(key, svgData(vocabularySvg(asset, color)), { scale: 1.5 }); count++; }
+  for (const [key, { asset, color }] of questionAssets(q)) if (!scene.textures.exists(key) && !scene.load.list.entries.some(file => file.key === key) && !scene.load.inflight.entries.some(file => file.key === key)) { scene.load.svg(key, svgData(vocabularySvg(asset, color)), { scale: 1.5 }); count++; }
   return count;
 }
 export function picture(scene: Phaser.Scene, asset: string, x: number, y: number, size: number, color?: string) {

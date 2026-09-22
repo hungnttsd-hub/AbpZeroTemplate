@@ -8,6 +8,21 @@ public static class WordyWingsModelBuilderExtensions
 {
     public static void ConfigureWordyWings(this ModelBuilder builder)
     {
+        builder.Entity<GoldenBellQuestion>(b => {
+            b.ToTable("GoldenBellQuestions", "wordy"); b.ConfigureByConvention(); b.Property(x => x.Id).HasMaxLength(7);
+            b.Property(x => x.QuestionType).HasMaxLength(50).IsRequired(); b.Property(x => x.ContentVersion).HasMaxLength(80).IsRequired();
+            b.Property(x => x.DefinitionJson).HasColumnType("jsonb"); b.HasIndex(x => new { x.Difficulty, x.QuestionType });
+        });
+        builder.Entity<GoldenBellSession>(b => {
+            b.ToTable("GoldenBellSessions", "wordy"); b.ConfigureByConvention(); b.Property(x => x.BankVersion).HasMaxLength(80).IsRequired();
+            b.Property(x => x.QuestionsJson).HasColumnType("jsonb"); b.HasIndex(x => new { x.ChildProfileId, x.StartedAt });
+            b.HasOne<ChildProfile>().WithMany().HasForeignKey(x => x.ChildProfileId).OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<GoldenBellAttempt>(b => {
+            b.ToTable("GoldenBellAttempts", "wordy"); b.ConfigureByConvention(); b.Property(x => x.QuestionCode).HasMaxLength(7).IsRequired();
+            b.Property(x => x.InputJson).HasColumnType("jsonb"); b.HasIndex(x => new { x.SessionId, x.QuestionIndex, x.AttemptNumber }).IsUnique();
+            b.HasOne<GoldenBellSession>().WithMany().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+        });
         builder.Entity<ChildProfile>(b => {
             b.ToTable("Children", "wordy"); b.ConfigureByConvention();
             b.Property(x => x.Nickname).HasMaxLength(40).IsRequired();
