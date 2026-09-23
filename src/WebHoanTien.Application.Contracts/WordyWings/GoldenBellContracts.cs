@@ -15,6 +15,7 @@ public class GoldenBellStartInput
     [StringLength(80)] public string? BankVersion { get; set; }
     [MinLength(12), MaxLength(12)] public List<string>? QuestionCodes { get; set; }
     public DateTime? StartedAt { get; set; }
+    [Range(0, 1)] public int ScoringVersion { get; set; }
 }
 public class GoldenBellAnswerInput
 {
@@ -24,6 +25,7 @@ public class GoldenBellAnswerInput
     public JsonElement Input { get; set; }
     public bool HintUsed { get; set; }
     [Range(0, 86400000)] public long DurationMs { get; set; }
+    [Range(0, 86400000)] public long? AnswerMs { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 public class GoldenBellCompleteInput
@@ -32,9 +34,9 @@ public class GoldenBellCompleteInput
     public DateTime? CompletedAt { get; set; }
 }
 public record GoldenBellSessionDto(Guid Id, Guid ChildId, long Seed, string BankVersion, List<JsonElement> Questions, int CurrentQuestionIndex,
-    int WrongAttempts, int HintCount, long DurationMs, bool BellRung, DateTime StartedAt, DateTime? CompletedAt);
-public record GoldenBellAnswerDto(bool Correct, int CurrentQuestionIndex, int WrongAttempts, bool HintUsed);
-public record GoldenBellHistoryDto(List<string> Completed, int Tokens, int Sessions, double Minutes);
+    int WrongAttempts, int HintCount, long DurationMs, bool BellRung, DateTime StartedAt, DateTime? CompletedAt, int ScoringVersion, int Score, int TimedOutCount);
+public record GoldenBellAnswerDto(bool Correct, int CurrentQuestionIndex, int WrongAttempts, bool HintUsed, bool TimedOut, int Points, int TotalScore);
+public record GoldenBellHistoryDto(List<string> Completed, int Tokens, int Sessions, double Minutes, int BestScore);
 public interface IGoldenBellAppService : IApplicationService
 {
     Task<GoldenBellSessionDto> StartAsync(GoldenBellStartInput input);

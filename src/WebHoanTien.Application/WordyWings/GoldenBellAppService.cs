@@ -37,7 +37,7 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
         await OwnedChild(session.ChildProfileId); return session;
     }
     private static List<JsonElement> Questions(GoldenBellSession s) => JsonSerializer.Deserialize<List<JsonElement>>(s.QuestionsJson)!;
-    private static GoldenBellSessionDto Dto(GoldenBellSession s) => new(s.Id, s.ChildProfileId, s.Seed, s.BankVersion, Questions(s), s.CurrentQuestionIndex, s.WrongAttempts, s.HintCount, s.DurationMs, s.BellRung, s.StartedAt, s.CompletedAt);
+    private static GoldenBellSessionDto Dto(GoldenBellSession s) => new(s.Id, s.ChildProfileId, s.Seed, s.BankVersion, Questions(s), s.CurrentQuestionIndex, s.WrongAttempts, s.HintCount, s.DurationMs, s.BellRung, s.StartedAt, s.CompletedAt, s.ScoringVersion, s.Score, s.TimedOutCount);
 
     [UnitOfWork(isTransactional: true)]
     public virtual async Task<GoldenBellSessionDto> StartAsync(GoldenBellStartInput input)
@@ -48,7 +48,7 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
         if (existing != null)
         {
             if (existing.ChildProfileId != input.ChildId) throw new AbpAuthorizationException("Session is not accessible.");
-            if (existing.Seed != input.Seed || (input.QuestionCodes != null && !Questions(existing).Select(q => GoldenBellContent.Text(q, "id")).SequenceEqual(input.QuestionCodes)))
+            if (existing.ScoringVersion != input.ScoringVersion || existing.Seed != input.Seed || (input.QuestionCodes != null && !Questions(existing).Select(q => GoldenBellContent.Text(q, "id")).SequenceEqual(input.QuestionCodes)))
                 throw new UserFriendlyException("Mã lượt chơi đã được dùng cho bộ câu khác.");
             return Dto(existing);
         }
@@ -66,7 +66,7 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
         var started = input.StartedAt?.ToUniversalTime() ?? now;
         if (started > now.AddMinutes(5) || started < new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)) throw new UserFriendlyException("Thời gian bắt đầu không hợp lệ.");
         var session = new GoldenBellSession(input.SessionId) { ChildProfileId = input.ChildId, Seed = input.Seed, BankVersion = source.Version,
-            QuestionsJson = JsonSerializer.Serialize(selected), StartedAt = started };
+            QuestionsJson = JsonSerializer.Serialize(selected), StartedAt = started, ScoringVersion = input.ScoringVersion };
         await sessions.InsertAsync(session); return Dto(session);
     }
     private static List<JsonElement> SelectQuestions(GoldenBellBank bank, long seed)
@@ -98,9 +98,9 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
         var prior = await attempts.FindAsync(input.Id);
         if (prior != null)
         {
-            if (prior.SessionId != id || prior.QuestionCode != input.QuestionId || prior.QuestionIndex != input.QuestionIndex || !JsonNode.DeepEquals(JsonNode.Parse(prior.InputJson), JsonNode.Parse(inputJson)) || prior.HintUsed != input.HintUsed || prior.DurationMs != input.DurationMs)
+            if (prior.SessionId != id || prior.QuestionCode != input.QuestionId || prior.QuestionIndex != input.QuestionIndex || !JsonNode.DeepEquals(JsonNode.Parse(prior.InputJson), JsonNode.Parse(inputJson)) || prior.HintUsed != input.HintUsed || prior.DurationMs != input.DurationMs || (session.ScoringVersion == 1 && prior.AnswerMs != input.AnswerMs))
                 throw new UserFriendlyException("Mã đáp án đã được sử dụng cho nội dung khác.");
-            return new GoldenBellAnswerDto(prior.IsCorrect, session.CurrentQuestionIndex, session.WrongAttempts, prior.HintUsed);
+            return new GoldenBellAnswerDto(prior.IsCorrect, session.CurrentQuestionIndex, session.WrongAttempts, prior.HintUsed, prior.TimedOut, prior.Points, session.Score);
         }
         if (session.CompletedAt != null || session.CurrentQuestionIndex != input.QuestionIndex || input.QuestionIndex >= 12) throw new UserFriendlyException("Câu hỏi không khớp tiến trình hiện tại.");
         var question = Questions(session)[input.QuestionIndex];
@@ -109,18 +109,28 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
         if (previous.Count >= 10000) throw new UserFriendlyException("Lượt chơi có quá nhiều đáp án. Hãy mở lượt mới.");
         var previousMs = previous.Select(a => a.DurationMs).DefaultIfEmpty(0).Max();
         if (input.DurationMs < previousMs) throw new UserFriendlyException("Thời lượng câu hỏi không thể giảm.");
+        var timed = session.ScoringVersion == 1;
+        var answerMs = timed ? input.AnswerMs ?? throw new UserFriendlyException("Thiếu thời gian trả lời.") : 0;
+        if (answerMs < previous.Select(a => a.AnswerMs).DefaultIfEmpty(0).Max() || answerMs > input.DurationMs) throw new UserFriendlyException("Thời gian trả lời không hợp lệ.");
+        if (previous.Any(a => a.HintUsed) && !input.HintUsed) throw new UserFriendlyException("Trạng thái gợi ý không thể bị xóa.");
+        var timedOut = timed && answerMs >= GoldenBellScoring.TimeLimitMs(question);
+        var timeoutInput = input.Input.TryGetProperty("type", out var inputType) && inputType.ValueKind == JsonValueKind.String && inputType.GetString() == "timeout";
+        if (timeoutInput && !timedOut) throw new UserFriendlyException("Chưa hết thời gian quy định của câu hỏi.");
         // Re-evaluate against the immutable server snapshot, never the client's claimed result.
-        var correct = GoldenBellContent.Evaluate(question, input.Input);
+        var correct = !timedOut && GoldenBellContent.Evaluate(question, input.Input);
+        var points = correct && timed ? GoldenBellScoring.Points(question, answerMs, previous.Count(a => !a.IsCorrect && !a.TimedOut), input.HintUsed) : 0;
         await attempts.InsertAsync(new GoldenBellAttempt(input.Id) { SessionId = id, QuestionCode = input.QuestionId, QuestionIndex = input.QuestionIndex,
-            AttemptNumber = previous.Count + 1, IsCorrect = correct, HintUsed = input.HintUsed, DurationMs = input.DurationMs, InputJson = inputJson,
+            AttemptNumber = previous.Count + 1, IsCorrect = correct, HintUsed = input.HintUsed, DurationMs = input.DurationMs, InputJson = inputJson, AnswerMs = answerMs, TimedOut = timedOut, Points = points,
             CreatedAt = input.CreatedAt == default ? Clock.Now : input.CreatedAt.ToUniversalTime() });
         session.DurationMs += input.DurationMs - previousMs;
         if (input.HintUsed && previous.All(a => !a.HintUsed)) session.HintCount++;
-        if (correct) session.CurrentQuestionIndex++; else session.WrongAttempts++;
+        session.Score += points;
+        if (timedOut) session.TimedOutCount++;
+        if (correct || timedOut) session.CurrentQuestionIndex++; else session.WrongAttempts++;
         // Aggregate concurrency + the unique attempt id make retries safe and serialize writes.
         session.ConcurrencyStamp = Guid.NewGuid().ToString("N");
         await sessions.UpdateAsync(session);
-        return new GoldenBellAnswerDto(correct, session.CurrentQuestionIndex, session.WrongAttempts, input.HintUsed);
+        return new GoldenBellAnswerDto(correct, session.CurrentQuestionIndex, session.WrongAttempts, input.HintUsed, timedOut, points, session.Score);
     }
 
     [UnitOfWork(isTransactional: true)]
@@ -129,7 +139,7 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
         var session = await OwnedSession(id);
         if (session.CompletedAt != null) return Dto(session);
         var answers = await attempts.GetListAsync(a => a.SessionId == id);
-        if (!input.BellRung || session.CurrentQuestionIndex != 12 || answers.Where(a => a.IsCorrect).Select(a => a.QuestionIndex).Distinct().Count() != 12)
+        if (!input.BellRung || session.CurrentQuestionIndex != 12 || answers.Where(a => a.IsCorrect || a.TimedOut).Select(a => a.QuestionIndex).Distinct().Count() != 12)
             throw new UserFriendlyException("Hãy hoàn thành 12 câu và tự tay rung Chuông Sao.");
         var completedAt = input.CompletedAt?.ToUniversalTime() ?? Clock.Now;
         if (completedAt < session.StartedAt || completedAt > Clock.Now.AddMinutes(5)) throw new UserFriendlyException("Thời gian hoàn thành không hợp lệ.");
@@ -142,7 +152,7 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
             foreach (var term in GoldenBellContent.Strings(questions[index].GetProperty("targetVocabulary")).Select(t => t.ToLowerInvariant()).Distinct())
             {
                 if (!words.TryGetValue(term, out var word)) { word = new WordMastery(GuidGenerator.Create()) { ChildProfileId = child.Id, Term = term }; words[term] = word; await mastery.InsertAsync(word); }
-                word.Record(1, wrong, completedAt); await mastery.UpdateAsync(word);
+                word.Record(answers.Any(a => a.QuestionIndex == index && a.IsCorrect) ? 1 : 0, wrong, completedAt); await mastery.UpdateAsync(word);
             }
         }
         session.BellRung = true; session.CompletedAt = completedAt; session.ConcurrencyStamp = Guid.NewGuid().ToString("N");
@@ -153,8 +163,10 @@ public class GoldenBellAppService : WebHoanTienAppService, IGoldenBellAppService
     {
         await OwnedChild(childId);
         var played = await sessions.GetListAsync(s => s.ChildProfileId == childId && s.BellRung);
-        var completed = played.SelectMany(s => Questions(s).Select(q => GoldenBellContent.Text(q, "id"))).Distinct().OrderBy(x => x).ToList();
-        return new GoldenBellHistoryDto(completed, played.Count, played.Count, played.Sum(s => s.DurationMs) / 60000d);
+        var ids = played.Select(s => s.Id).ToList();
+        var correctAnswers = ids.Count == 0 ? new List<GoldenBellAttempt>() : await attempts.GetListAsync(a => ids.Contains(a.SessionId) && a.IsCorrect);
+        var completed = correctAnswers.Select(a => a.QuestionCode).Distinct().OrderBy(x => x).ToList();
+        return new GoldenBellHistoryDto(completed, played.Count, played.Count, played.Sum(s => s.DurationMs) / 60000d, played.Select(s => s.Score).DefaultIfEmpty(0).Max());
     }
     [Authorize(Roles = "admin")]
     public async Task<JsonElement> GetQuestionAsync(string code) => (await bank.GetAsync()).Questions.FirstOrDefault(q => GoldenBellContent.Text(q, "id") == code) is var question && question.ValueKind != JsonValueKind.Undefined ? question : throw new UserFriendlyException("Không tìm thấy câu hỏi.");

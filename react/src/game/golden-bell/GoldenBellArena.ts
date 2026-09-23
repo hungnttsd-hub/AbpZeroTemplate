@@ -5,9 +5,10 @@ import { bellSvg, cardPanel, queueQuestionArt, svgData } from './art';
 import { vocabularyKey, vocabularySvg } from './vocabularyArt';
 import { rendererRegistry, label, type QuestionRenderer } from './renderers';
 import type { GoldenBellStore } from './store';
-import { questionNames, type AnswerInput } from './model';
+import { pointsFor, questionNames, resolved, sessionScore, timeLimitMs, type AnswerInput } from './model';
 
-export interface ArenaEvents { status: (text: string) => void; prompt: (text: string) => void; error: (text: string) => void; changed: () => void; ready: (scene: GoldenBellArena) => void }
+export interface ArenaClock { remainingMs: number; limitMs: number; score: number; possibleScore: number; running: boolean }
+export interface ArenaEvents { status: (text: string) => void; prompt: (text: string) => void; error: (text: string) => void; changed: () => void; ready: (scene: GoldenBellArena) => void; clock: (state: ArenaClock) => void }
 /** One persistent arena; question-specific objects are owned by the renderer registry. */
 export class GoldenBellArena extends Phaser.Scene {
   private audio: AudioService;
@@ -21,10 +22,14 @@ export class GoldenBellArena extends Phaser.Scene {
   private toast!: Phaser.GameObjects.Text;
   private transient: Phaser.GameObjects.GameObject[] = [];
   private answerTimer?: Phaser.Time.TimerEvent;
-  private hintTimer?: Phaser.Time.TimerEvent;
   private busy = false;
   private dead = false;
   private elapsed = 0;
+  private answerElapsed = 0;
+  private pendingAnswerMs = 0;
+  private lastTick = performance.now();
+  private clockPaused = false;
+  private clockSignature = '';
   private hinted = false;
   private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   private retryAction?: () => Promise<void>;
@@ -66,7 +71,8 @@ export class GoldenBellArena extends Phaser.Scene {
     const keyboard = (event: KeyboardEvent) => { if (this.busy || !this.sys.isActive() || event.target instanceof HTMLButtonElement) return; this.questionRenderer?.key(event.key); if (['Backspace', 'Enter'].includes(event.key)) event.preventDefault(); };
     this.input.keyboard?.on('keydown', keyboard);
     this.events.once('shutdown', () => {
-      this.dead = true; this.questionRenderer?.dispose(); this.audio.stopAll(); this.input.keyboard?.off('keydown', keyboard); this.answerTimer?.remove(false); this.hintTimer?.remove(false);
+      if (!this.busy) void this.persistTime();
+      this.dead = true; this.questionRenderer?.dispose(); this.audio.stopAll(); this.input.keyboard?.off('keydown', keyboard); this.answerTimer?.remove(false);
     });
     this.bell.setInteractive({ useHandCursor: true });
     this.bell.on('pointerdown', (p: Phaser.Input.Pointer) => { if (this.session.phase === 'bell') this.ropeY = p.y; });
@@ -74,7 +80,44 @@ export class GoldenBellArena extends Phaser.Scene {
     this.callbacks.ready(this); void this.mountPhase();
   }
   setMuted(muted: boolean) { this.audio.muted = muted; if (muted) this.audio.stopAll(); }
-  setPaused(paused: boolean) { if (paused) { this.audio.stopAll(); this.scene.pause(); } else this.scene.resume(); }
+  setPaused(paused: boolean) {
+    this.accumulateTime(); this.clockPaused = paused; this.lastTick = performance.now();
+    if (paused) { this.audio.stopAll(); this.scene.pause(); if (!this.busy && !this.retryAction) void this.safe(() => this.persistTime()); }
+    else this.scene.resume();
+    this.publishClock();
+  }
+  async leave() {
+    await this.store.settled();
+    if (this.retryAction || this.session.phase !== 'question' || resolved(this.session.records[this.session.index])) return true;
+    if (this.busy) return false;
+    return this.safe(() => this.persistTime());
+  }
+  private accumulateTime() {
+    const now = performance.now(), delta = Math.max(0, now - this.lastTick); this.lastTick = now;
+    if (this.clockPaused || this.dead || !this.questionRenderer || this.session.phase !== 'question' || resolved(this.session.records[this.session.index])) return;
+    this.elapsed += delta;
+    if (!this.busy && this.questionRenderer.isTiming()) this.answerElapsed += delta;
+  }
+  private async persistTime() {
+    this.accumulateTime();
+    const elapsed = this.elapsed, answerMs = this.answerElapsed, index = this.session.index;
+    this.elapsed = 0; this.answerElapsed = 0;
+    if (elapsed > 0 || answerMs > 0) {
+      this.pendingAnswerMs = answerMs;
+      try { await this.store.remember({}, elapsed, answerMs, index); }
+      catch (error) { if (this.session.index === index) { this.elapsed += elapsed; this.answerElapsed += answerMs; } throw error; }
+      finally { this.pendingAnswerMs = 0; }
+    }
+  }
+  private publishClock() {
+    const q = this.session.questions[this.session.index], r = this.session.records[this.session.index];
+    const limitMs = timeLimitMs(q), answerMs = (r.answerMs ?? 0) + this.answerElapsed + this.pendingAnswerMs;
+    const value: ArenaClock = { remainingMs: Math.max(0, limitMs - answerMs), limitMs, score: sessionScore(this.session),
+      possibleScore: resolved(r) ? r.score ?? 0 : pointsFor(q, answerMs, r.wrong, r.hintUsed),
+      running: this.session.phase === 'question' && !resolved(r) && !this.clockPaused && !!this.questionRenderer?.isTiming() };
+    const signature = `${Math.ceil(value.remainingMs / 1000)}:${value.score}:${value.possibleScore}:${value.running}:${this.session.index}`;
+    if (signature !== this.clockSignature) { this.clockSignature = signature; this.callbacks.clock(value); }
+  }
   replay() { this.questionRenderer?.replay(); }
   async speak(texts: string[]) {
     // Short utterances avoid the shared voice watchdog cutting a long story in half.
@@ -94,26 +137,29 @@ export class GoldenBellArena extends Phaser.Scene {
   retry() { if (this.retryAction) void this.safe(this.retryAction).then(ok => { if (ok) void this.mountPhase(); }); }
   private clearLayer() {
     this.questionRenderer?.dispose(); this.questionRenderer = undefined; this.panel?.destroy(true); this.panel = undefined;
-    this.answerTimer?.remove(false); this.hintTimer?.remove(false); this.transient.forEach(o => { this.tweens.killTweensOf(o); o.destroy(); }); this.transient = [];
+    this.answerTimer?.remove(false); this.transient.forEach(o => { this.tweens.killTweensOf(o); o.destroy(); }); this.transient = [];
   }
   private async mountPhase() {
+    await this.store.settled();
     if (this.dead) return;
-    this.clearLayer(); this.energy.forEach((star, i) => star.setColor(this.session.records[i].completed ? '#dcae44' : '#c9cfb5'));
+    this.clearLayer(); this.elapsed = 0; this.answerElapsed = 0; this.pendingAnswerMs = 0; this.lastTick = performance.now();
+    this.energy.forEach((star, i) => star.setText(this.session.records[i].timedOut ? '○' : '★').setColor(this.session.records[i].completed ? '#dcae44' : '#c9cfb5'));
+    this.publishClock();
     this.bell.setPosition(this.compact ? 793 : 1410, this.compact ? 77 : 382).setDisplaySize(this.compact ? 91 : 278, this.compact ? 119 : 363);
     this.questionLabel.setText('ĐUỔI HÌNH BẮT CHỮ · CHUÔNG SAO'); this.prompt('');
     if (this.session.phase === 'intro') {
       this.prompt('Đánh thức Chuông Sao!');
-      this.messageCard('Mr. Mumble làm chuông mất tiếng.\nCùng các bạn tìm 12 Word Stars nhé!', 'Bắt đầu khám phá', () => void this.safe(() => this.store.begin()).then(ok => { if (ok) void this.mountPhase(); }));
-      this.feedback('Nghe · Nhìn · Khám phá. Sai cũng không sao!'); return;
+      this.messageCard('Cùng khám phá 12 câu hỏi!\nTrả lời đúng và nhanh để nhận thêm điểm.', 'Bắt đầu khám phá', () => void this.safe(() => this.store.begin()).then(ok => { if (ok) void this.mountPhase(); }));
+      this.feedback(this.session.scoringVersion === 1 ? 'Mỗi câu có thời gian riêng · Hết giờ chuyển câu · Tối đa 1.800 điểm' : 'Lượt lưu cũ không tính điểm. Mở lượt mới để chơi có đồng hồ.'); return;
     }
     if (this.session.phase === 'checkpoint') {
       this.prompt(this.session.index === 3 ? 'Cây cầu sao đã sáng!' : 'Tháp chuông đang thức dậy!');
-      this.messageCard(`Đã tìm được ${this.session.index + 1} Word Stars.\nCả đội cùng đi tiếp nào!`);
+      this.messageCard(`Đã đi qua ${this.session.index + 1} câu · ${sessionScore(this.session)} điểm.\nCả đội cùng đi tiếp nào!`);
       this.sparkles(this.center, this.compact ? 565 : 450);
       this.answerTimer = this.time.delayedCall(2200, () => void this.safe(() => this.store.advance()).then(ok => { if (ok) void this.mountPhase(); })); return;
     }
     if (this.session.phase === 'bell' || this.session.phase === 'summary') {
-      this.prompt(this.session.bellRung ? 'Chuông Sao đã thức dậy!' : 'Đủ 12 ngôi sao rồi!');
+      this.prompt(this.session.bellRung ? 'Chuông Sao đã thức dậy!' : 'Đã đi qua đủ 12 câu hỏi!');
       this.bell.setPosition(this.center, this.compact ? 660 : 447).setDisplaySize(this.compact ? 333 : 276, this.compact ? 435 : 360).setDepth(12);
       if (!this.session.bellRung) this.phaseButton(this.center, this.compact ? 1040 : 704, 'Kéo dây hoặc chạm để rung chuông', () => this.ring(), this.compact ? 696 : 694);
       this.feedback(this.session.bellRung ? 'Great job! Một Bell Token dành cho bé.' : 'Chính bé sẽ đánh thức Chuông Sao!'); return;
@@ -125,7 +171,7 @@ export class GoldenBellArena extends Phaser.Scene {
       await new Promise<void>(resolve => { this.load.once('complete', resolve); this.load.start(); });
       this.busy = false; if (this.dead) return;
     }
-    this.elapsed = 0; this.hinted = this.session.records[this.session.index].hintUsed;
+    this.elapsed = 0; this.answerElapsed = 0; this.lastTick = performance.now(); this.hinted = this.session.records[this.session.index].hintUsed;
     this.questionLabel.setText(`CÂU ${this.session.index + 1} / 12   ·   ${questionNames[question.questionType]}   ·   ĐỘ KHÓ ${question.difficulty}`);
     this.prompt(question.promptText); this.feedback('Chạm hình để chọn · Có thể nghe lại bất cứ lúc nào');
     this.questionRenderer = rendererRegistry[question.questionType](question, { scene: this, audio: this.audio, reduced: this.reduced,
@@ -136,21 +182,29 @@ export class GoldenBellArena extends Phaser.Scene {
       prompt: value => this.prompt(value), feedback: value => this.feedback(value), speak: texts => this.speak(texts),
     });
     this.questionRenderer.mount();
-    if (this.session.records[this.session.index].completed) {
+    if (resolved(this.session.records[this.session.index])) {
       this.questionRenderer.reveal(); this.answerTimer = this.time.delayedCall(600, () => void this.next()); return;
     }
-    this.hintTimer = this.time.delayedCall(Math.max(100, (question.difficulty > 6 ? 18000 : 14000) - this.session.records[this.session.index].durationMs), () => this.hint());
+    if (this.session.records[this.session.index].hintUsed) this.feedback(question.hint.text);
   }
   private async submit(input: AnswerInput, x = this.center, y = 560) {
-    if (this.busy || this.session.phase !== 'question' || this.session.records[this.session.index].completed) return;
+    if (this.busy || this.clockPaused || this.session.phase !== 'question' || resolved(this.session.records[this.session.index])) return;
+    this.accumulateTime();
     const q = this.session.questions[this.session.index];
-    let result: { correct: boolean; hint: boolean } | undefined;
-    const saved = await this.safe(async () => { result = await this.store.recordInput(input, this.elapsed); this.elapsed = 0; });
+    let result: Awaited<ReturnType<GoldenBellStore['recordInput']>>;
+    const elapsed = this.elapsed, answerMs = this.answerElapsed; this.elapsed = 0; this.answerElapsed = 0;
+    const saved = await this.safe(async () => { result = await this.store.recordInput(input, elapsed, answerMs); });
     if (!saved || !result || this.dead) return;
-    const outcome = result as { correct: boolean; hint: boolean };
+    const outcome = result!; this.publishClock();
+    if (outcome.timedOut) {
+      this.busy = true; this.audio.stopAll(); this.questionRenderer?.reveal();
+      this.feedback(`Hết giờ · 0 điểm. ${q.explanation}`);
+      void this.speak(['Time is up.', q.explanation]);
+      this.answerTimer = this.time.delayedCall(3200, () => { this.audio.stopAll(); void this.next(); }); return;
+    }
     if (outcome.correct) {
-      this.busy = true; this.hintTimer?.remove(false); this.questionRenderer?.reveal(); this.sparkles(x, y);
-      this.feedback('Đúng rồi! Một ngôi sao cho Chuông Sao.');
+      this.busy = true; this.questionRenderer?.reveal(); this.sparkles(x, y);
+      this.feedback(this.session.scoringVersion === 1 ? `Đúng rồi! +${outcome.score} điểm · Tổng ${sessionScore(this.session)} điểm` : 'Đúng rồi! Một ngôi sao cho Chuông Sao.');
       if (!this.reduced) {
         const star = label(this, x, y, '★', 66).setColor('#f2c45d').setDepth(22); this.transient.push(star);
         this.tweens.add({ targets: star, x: this.bell.x, y: this.bell.y - 40, scale: .35, alpha: .1, duration: 780, ease: 'Cubic.easeIn' });
@@ -169,10 +223,12 @@ export class GoldenBellArena extends Phaser.Scene {
   }
   private async next() { if (await this.safe(() => this.store.advance())) await this.mountPhase(); }
   hint() {
-    if (this.busy || this.session.phase !== 'question' || this.session.records[this.session.index].completed) return;
+    if (this.busy || this.clockPaused || this.session.phase !== 'question' || resolved(this.session.records[this.session.index])) return;
+    this.accumulateTime();
     const r = this.session.records[this.session.index];
     const q = this.session.questions[this.session.index];
-    if (r.wrong < q.hint.afterWrong && r.durationMs + this.elapsed < (q.difficulty > 6 ? 18000 : 14000) - 150) {
+    if (this.session.scoringVersion === 1 && (r.answerMs ?? 0) + this.answerElapsed >= timeLimitMs(q)) { void this.submit({ type: 'timeout', value: null }); return; }
+    if (r.wrong < q.hint.afterWrong && (r.answerMs ?? 0) + this.answerElapsed < Math.min(q.difficulty > 6 ? 18000 : 14000, timeLimitMs(q) * .6)) {
       this.feedback('Bé thử trước nhé. Chuông Sao sẽ gợi ý sau một chút!'); return;
     }
     void this.safe(() => this.store.hint()).then(ok => { if (ok) { this.hinted = true; this.questionRenderer?.showHint(Math.max(2, r.wrong)); } });
@@ -207,12 +263,12 @@ export class GoldenBellArena extends Phaser.Scene {
   }
   update(_time: number, delta: number) {
     const dt = Math.min(delta, 80) / 1000;
-    if (this.session.phase === 'question' && !this.session.records[this.session.index].completed) {
-      this.elapsed += Math.min(delta, 100);
-      if (this.elapsed >= 5000 && !this.busy) {
-        const elapsed = this.elapsed; this.elapsed = 0;
-        void this.safe(() => this.store.remember({}, elapsed));
-      }
+    this.accumulateTime(); this.publishClock();
+    if (this.session.phase === 'question' && !resolved(this.session.records[this.session.index]) && !this.busy && !this.clockPaused) {
+      const q = this.session.questions[this.session.index], r = this.session.records[this.session.index], answerMs = (r.answerMs ?? 0) + this.answerElapsed;
+      if (this.session.scoringVersion === 1 && answerMs >= timeLimitMs(q)) void this.submit({ type: 'timeout', value: null });
+      else if (!this.hinted && answerMs >= Math.min(q.difficulty > 6 ? 18000 : 14000, timeLimitMs(q) * .6)) this.hint();
+      else if (this.elapsed >= 1000) void this.safe(() => this.persistTime());
     }
     for (const p of this.particles) if (p.life > 0) { p.life -= dt; p.vy += this.reduced ? 0 : 125 * dt; p.sprite.x += p.vx * dt; p.sprite.y += p.vy * dt; p.sprite.setAlpha(Math.max(0, Math.min(1, p.life))); if (p.life <= 0) p.sprite.setVisible(false); }
   }

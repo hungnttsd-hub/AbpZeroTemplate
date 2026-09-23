@@ -20,9 +20,24 @@ Chơi trên thiết bị không cần API, PostgreSQL hay migration. Cần API k
 - Các dạng bao gồm nghe–chọn hình, màu sắc, hình khối, đếm, so sánh, vị trí đồ vật, hai thuộc tính, chức năng, ghép cặp, chữ thiếu, hoàn thành/xếp câu, truyện ngắn, ghi nhớ và suy luận.
 - Đáp án hình không in sẵn tên từ. Câu nhìn hình đoán chữ và câu ghép chữ hiển thị chữ theo đúng mục tiêu học.
 - Ghi nhớ: xem cảnh 4,5 giây → che cảnh → trả lời; gợi ý cho xem lại tối đa một lần. Hai bước yêu cầu thực hiện đúng hai lựa chọn theo thứ tự. Xếp câu hỗ trợ cả chạm và kéo, kể cả các thẻ có cùng một từ. Chữ thiếu xử lý vị trí không theo thứ tự và từ có chữ lặp.
-- Sai không mất mạng hoặc mất lượt. Gợi ý theo ngưỡng sai của câu hoặc sau 14–18 giây; sai từ lần thứ ba mới chỉ rõ lựa chọn. Nghe lại bất cứ lúc nào bằng nút loa.
-- Câu 4/8 có checkpoint 2,2 giây. Đủ 12 Word Stars mới mở chuông; bé phải chạm chuông, nút rung hoặc kéo dây. Ghi thưởng bền vững trước hiệu ứng; một lượt chỉ nhận một Bell Token.
+- Sai không mất mạng hoặc mất lượt; được thử lại trong thời gian còn lại. Gợi ý theo ngưỡng sai của câu hoặc sau 60% thời gian (tối đa 14–18 giây); sai từ lần thứ ba mới chỉ rõ lựa chọn. Nghe lại không đặt lại đồng hồ.
+- Câu 4/8 có checkpoint 2,2 giây. Đi qua đủ 12 câu (đúng hoặc hết giờ) mới mở chuông; bé phải chạm chuông, nút rung hoặc kéo dây. Ghi thưởng bền vững trước hiệu ứng; một lượt chỉ nhận một Bell Token. Câu hết giờ không được tính là câu trả lời đúng hay nhận Word Star.
 - Phím `1–4` chọn đáp án. Xếp câu dùng `1–7`, `Enter` để ghép, `Backspace` bỏ thẻ cuối. Có pause, mute, tự pause khi ẩn tab và giảm chuyển động theo thiết bị.
+
+## Điểm và thời gian từng câu — cập nhật 23/09/2026
+
+Lượt mới dùng `scoringVersion: 1`. Thời gian câu = `ceil((estimatedSeconds + difficulty) / 5) * 5` giây, giới hạn trong 15–60 giây. Đồng hồ hiện thời gian còn lại/tổng thời gian, thanh tiến độ và cảnh báo màu cam khi còn 5 giây. Đếm thời gian trả lời sau phần nghe ban đầu; câu ghi nhớ đếm sau khi che hình và đọc câu hỏi. Pause, tab ẩn và lúc xem lại cảnh ghi nhớ theo gợi ý tạm dừng đồng hồ. Nghe lại thông thường, chọn sai, chuyển thứ tự thẻ hoặc dùng gợi ý không đặt lại thời gian.
+
+- Đúng trước hạn: **100 điểm**, cộng `floor(50 * thời_gian_còn / thời_gian_câu)` điểm tốc độ.
+- Mỗi lựa chọn sai trước khi trả lời đúng giảm **25 điểm** của câu. Dùng gợi ý giảm **20 điểm** một lần/câu. Câu đã trả lời đúng nhận ít nhất **20 điểm**.
+- Hết thời gian: khóa đáp án, **0 điểm**, hiện đáp án đúng trong 3,2 giây rồi chuyển câu. Câu hết giờ được đưa vào nội dung cần ôn và không được tính là đã trả lời đúng.
+- Tối đa **150 điểm/câu, 1.800 điểm/lượt**. Kết quả hiển thị tổng điểm, điểm từng câu, số đúng và số hết giờ; lobby hiển thị kỷ lục.
+- Thời gian trả lời và điểm được lưu cùng lượt, lưu thời gian mỗi giây và khi pause/thoát. Quay lại tiếp tục thời gian còn lại. Khi đóng tab đột ngột, tối đa khoảng một giây chưa kịp ghi có thể bị mất.
+- Các lượt được lưu từ phiên bản trước giữ luật cũ và vẫn đồng bộ được; không tính điểm ngược cho lượt đã chơi. **Bắt đầu lượt mới** để dùng đồng hồ và tính điểm.
+
+Frontend và backend cùng công thức trong `model.ts` và `GoldenBellScoring.cs`. API tự tính điểm từ đáp án, số lần sai, hint và thời gian trả lời đã ghi; không nhận điểm tự khai từ client. Input `{type:"timeout",value:null}` chỉ được chấp nhận khi đạt giới hạn thời gian. Retry cùng ID không cộng điểm/thưởng lần nữa. Migration `AddGoldenBellScoring` thêm `ScoringVersion`, `Score`, `TimedOutCount` cho session và `AnswerMs`, `Points`, `TimedOut` cho attempt; dữ liệu cũ mặc định bằng 0/false.
+
+Migration `20260923095701_AddGoldenBellScoring` đã được áp dụng thành công trên database local `WordyWings` (`localhost:5433`) ngày 23/09/2026. Frontend và backend đã build thành công; chưa chạy test hoặc kiểm thử trình duyệt theo chỉ dẫn dự án. Tải lại trang và mở lượt mới; nếu đang chạy API, khởi động lại backend để nạp phần chấm điểm mới.
 
 ## Ngân hàng câu hỏi
 

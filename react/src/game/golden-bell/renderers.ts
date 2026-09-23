@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { AudioService } from '../services';
 import { cardPanel, friend, miniScene, picture } from './art';
-import { missingOption, type AnswerInput, type Option, type Question, type QuestionRecord } from './model';
+import { missingOption, resolved, type AnswerInput, type Option, type Question, type QuestionRecord } from './model';
 
 export interface RenderContext {
   scene: Phaser.Scene; audio: AudioService; reduced: boolean;
@@ -14,7 +14,7 @@ export interface RenderContext {
 }
 export interface QuestionRenderer {
   mount(): void; dispose(): void; showHint(level: number): void; reveal(): void;
-  key(key: string): void; replay(): void;
+  key(key: string): void; replay(): void; isTiming(): boolean;
 }
 export const label = (s: Phaser.Scene, x: number, y: number, value: string, size = 28, width?: number) =>
   s.add.text(x, y, value, { fontFamily: 'Nunito, Arial', fontSize: `${size}px`, fontStyle: 'bold', color: '#345e51', align: 'center', wordWrap: width ? { width, useAdvancedWrap: true } : undefined }).setOrigin(.5).setResolution(2);
@@ -27,6 +27,7 @@ class BaseRenderer implements QuestionRenderer {
   protected cards: Phaser.GameObjects.Container[] = [];
   protected alive = true;
   protected ready = true;
+  protected clockReady = false;
   protected get s() { return this.ctx.scene; }
   protected get compact() { return this.s.scale.width < 1000; }
   protected get center() { return this.compact ? 450 : 620; }
@@ -37,7 +38,13 @@ class BaseRenderer implements QuestionRenderer {
   protected add<T extends Phaser.GameObjects.GameObject>(object: T): T { this.root.add(object); return object; }
   protected tween(config: Phaser.Types.Tweens.TweenBuilderConfig) { if (!this.ctx.reduced) this.tweens.push(this.s.tweens.add(config)); }
   protected later(ms: number, callback: () => void) { this.timers.push(this.s.time.delayedCall(ms, () => { if (this.alive) callback(); })); }
-  protected canInput() { return this.alive && this.ready && !this.ctx.locked() && !this.ctx.record().completed; }
+  protected canInput() { return this.alive && this.ready && !this.ctx.locked() && !resolved(this.ctx.record()); }
+  isTiming() { return this.alive && this.ready && this.clockReady; }
+  protected async introduction(texts: string[]) {
+    this.clockReady = false;
+    await this.ctx.speak(texts);
+    if (this.alive) this.clockReady = true;
+  }
   protected button(x: number, y: number, w: number, h: number, text: string, callback: () => void) {
     const c = this.add(this.s.add.container(x, y, [cardPanel(this.s, w, h), label(this.s, 0, -2, text, 26, w - 25)]).setSize(w, h).setInteractive({ useHandCursor: true }));
     c.on('pointerdown', () => { if (this.canInput()) callback(); }); return c;
@@ -45,7 +52,11 @@ class BaseRenderer implements QuestionRenderer {
   mount() {}
   key(_key: string) {}
   replay() { void this.ctx.speak([this.q.audioText]); }
-  reveal() {}
+  reveal() {
+    if (this.q.answer.type !== 'option') return;
+    const answer = this.q.answer.value, card = this.cards[this.q.options.findIndex(o => o.id === answer)];
+    if (card) card.add(this.s.add.graphics().lineStyle(6, 0x7ea270).strokeRoundedRect(-card.width / 2 + 3, -card.height / 2 + 3, card.width - 6, card.height - 6, 24));
+  }
   showHint(level: number) {
     this.ctx.feedback(this.q.hint.text);
     if (level >= 3 && this.q.answer.type === 'option') {
@@ -60,9 +71,9 @@ class ChoiceRenderer extends BaseRenderer {
   protected masked?: Phaser.GameObjects.Text;
   protected optionsLayer?: Phaser.GameObjects.Container;
   protected async narrative() {
-    if (this.q.questionType !== 'short_story') { void this.ctx.speak([this.q.audioText]); return; }
+    if (this.q.questionType !== 'short_story') { await this.introduction([this.q.audioText]); return; }
     this.ready = false; this.ctx.prompt('Listen to the story.'); this.cards.forEach(c => c.setVisible(false));
-    await this.ctx.speak([this.q.audioText, this.q.promptText]);
+    await this.introduction([this.q.audioText, this.q.promptText]);
     if (!this.alive) return;
     this.ctx.prompt(this.q.promptText); this.ready = true; this.cards.forEach(c => c.setVisible(true));
   }
@@ -146,7 +157,7 @@ class ChoiceRenderer extends BaseRenderer {
   }
   key(key: string) { if (/^[1-4]$/.test(key)) this.choose(Number(key) - 1); }
   replay() { void this.ctx.speak(this.q.questionType === 'short_story' ? [this.q.audioText, this.q.promptText] : [this.q.audioText]); }
-  reveal() { if (this.masked) this.masked.setText(this.q.targetVocabulary[0].toUpperCase().split('').join(' ')); }
+  reveal() { super.reveal(); if (this.masked) this.masked.setText(this.q.targetVocabulary[0].toUpperCase().split('').join(' ')); }
 }
 const qIsSpelling = (q: Question) => q.questionType === 'missing_letter';
 
@@ -156,11 +167,11 @@ class MemoryRenderer extends ChoiceRenderer {
   private showing = false;
   mount() {
     this.options();
-    if (this.ctx.record().memorySeen) { this.ctx.prompt(this.q.promptText); void this.ctx.speak([this.q.promptText]); }
+    if (this.ctx.record().memorySeen) { this.ctx.prompt(this.q.promptText); void this.introduction([this.q.promptText]); }
     else this.present();
   }
   private present() {
-    this.memory?.destroy(); this.ready = false; this.showing = true; this.cards.forEach(c => c.setVisible(false));
+    this.memory?.destroy(); this.ready = false; this.clockReady = false; this.showing = true; this.cards.forEach(c => c.setVisible(false));
     this.ctx.prompt('Look carefully. Remember what you see.');
     this.memory = this.add(this.s.add.container(this.center, this.compact ? 635 : 458));
     const people = (this.q.stimulus.objects ?? []).filter(o => typeof o !== 'string');
@@ -177,7 +188,7 @@ class MemoryRenderer extends ChoiceRenderer {
       void this.ctx.remember({ memorySeen: true }).then(saved => {
         if (!this.alive || !saved) return;
         this.memory?.destroy(); seconds.destroy(); this.showing = false; this.ready = true;
-        this.cards.forEach(c => c.setVisible(true)); this.ctx.prompt(this.q.promptText); void this.ctx.speak([this.q.promptText]);
+        this.cards.forEach(c => c.setVisible(true)); this.ctx.prompt(this.q.promptText); void this.introduction([this.q.promptText]);
       }).catch(() => { if (this.alive) this.ctx.feedback('Chưa lưu được. Chạm nghe lại để thử tiếp.'); });
     });
     this.timers.push(this.memoryTimer); void this.ctx.speak([this.q.audioText]);
@@ -205,7 +216,7 @@ class TwoStepRenderer extends BaseRenderer {
       const card = this.button(x, y, w, h, '', () => this.choose(index));
       const [color, shape] = value.split(' '); card.add(picture(this.s, `shape_${shape}`, 0, 0, Math.min(139, w - 44), color)); this.cards.push(card);
     });
-    void this.ctx.speak([this.q.audioText]);
+    void this.introduction([this.q.audioText]);
   }
   private stepText() { return this.chosen.length ? '✓  1     →     2  …' : '1  …     →     2  …'; }
   private async choose(index: number) {
@@ -221,6 +232,7 @@ class TwoStepRenderer extends BaseRenderer {
     finally { this.ready = true; }
   }
   key(key: string) { if (/^[1-6]$/.test(key)) void this.choose(Number(key) - 1); }
+  reveal() { if (this.q.answer.type === 'option') this.steps?.setText(this.q.answer.sequence?.join(' → ') ?? '').setFontSize(this.compact ? 27 : 30); }
   showHint(level: number) { this.ctx.feedback(this.q.hint.text); if (level >= 3 && this.q.answer.type === 'option') { const i = this.values.indexOf(this.q.answer.sequence?.[this.chosen.length] ?? ''); const c = this.cards[i]; if (c) c.add(this.s.add.graphics().lineStyle(5, 0xc6a254).strokeRoundedRect(-c.width / 2 + 3, -c.height / 2 + 3, c.width - 6, c.height - 6, 25)); } }
 }
 
@@ -259,11 +271,17 @@ class SentenceRenderer extends BaseRenderer {
     this.cleanups.push(() => { this.s.input.off('dragstart', start).off('drag', drag).off('dragend', end); });
     this.button(this.center - 155, this.bottom - 12, 265, 91, '↶  Xếp lại', () => void this.keep([]));
     this.button(this.center + 155, this.bottom - 12, 265, 91, 'Ghép câu  ✓', () => this.check());
-    this.arrange(); void this.ctx.speak([this.q.audioText]);
+    this.arrange(); void this.introduction([this.q.audioText]);
   }
   private arrange() { this.tokens.forEach((tile, id) => { const at = this.order.indexOf(id), p = at < 0 ? this.homes[id] : this.slots[at]; tile.setPosition(p.x, p.y).setDepth(0); }); }
   private async keep(next: number[]) { this.ready = false; try { if (!await this.ctx.remember({ draft: next.map(String) }) || !this.alive) return; this.order = next; this.arrange(); } finally { this.ready = true; } }
   private tap(id: number) { return this.keep(this.order.includes(id) ? this.order.filter(i => i !== id) : [...this.order, id]); }
+  reveal() {
+    if (this.q.answer.type !== 'sequence') return;
+    const used = new Set<number>();
+    this.order = this.q.answer.value.map(word => { const i = this.q.stimulus.tiles!.findIndex((tile, index) => tile === word && !used.has(index)); used.add(i); return i; });
+    this.arrange();
+  }
   private check() { if (!this.canInput()) return; if (this.order.length !== this.tokens.length) { this.ctx.feedback('Chọn đủ các thẻ chữ vào ô trước nhé.'); return; } this.ctx.submit({ type: 'sequence', value: this.order.map(i => this.q.stimulus.tiles![i]) }, this.center, this.slots[0].y); }
   key(key: string) { if (!this.canInput()) return; if (/^[1-9]$/.test(key) && this.tokens[Number(key) - 1]) void this.tap(Number(key) - 1); if (key === 'Enter') this.check(); if (key === 'Backspace') void this.keep(this.order.slice(0, -1)); }
   showHint(level: number) { this.ctx.feedback(this.q.hint.text); if (level >= 3 && this.q.answer.type === 'sequence') this.ctx.feedback(`Bắt đầu với: ${this.q.answer.value[0]}`); }

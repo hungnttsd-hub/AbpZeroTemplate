@@ -11,12 +11,21 @@ export type Option = z.infer<typeof optionSchema>;
 export type SceneDescription = z.infer<typeof sceneSchema>;
 export type QuestionMeta = Pick<Question, 'id' | 'difficulty' | 'questionType' | 'skill' | 'promptText' | 'targetVocabulary' | 'worldTags'>;
 export interface Bank { version: string; count: number; distribution: number[]; questions: QuestionMeta[] }
-export type AnswerInput = { type: 'option'; value: string } | { type: 'sequence'; value: string[] };
+export type AnswerInput = { type: 'option'; value: string } | { type: 'sequence'; value: string[] } | { type: 'timeout'; value: null };
 export type Phase = 'intro' | 'question' | 'checkpoint' | 'bell' | 'summary';
-export interface QuestionRecord { questionId: string; attempts: number; wrong: number; hintUsed: boolean; durationMs: number; completed: boolean; memoryReplays: number; memorySeen?: boolean; draft?: string[] }
-export interface AnswerLog { id: string; questionId: string; questionIndex: number; input: AnswerInput; correct: boolean; hintUsed: boolean; durationMs: number; createdAt: string }
-export interface BellSession { id: string; childId: string; bankVersion: string; seed: number; mode: 'adventure' | 'review' | 'practice'; maxDifficulty: number; allowedVocabulary?: string[]; startedAt: string; completedAt?: string; questions: Question[]; index: number; phase: Phase; records: QuestionRecord[]; answers: AnswerLog[]; bellRung: boolean; checkpointSeen: number; syncedAnswers: number; serverStarted?: boolean; serverCompleted?: boolean }
-export interface BellHistory { seen: Record<string, number>; completed: string[]; review: Record<string, number>; tokens: number; sessions: number; minutes: number }
+export interface QuestionRecord { questionId: string; attempts: number; wrong: number; hintUsed: boolean; durationMs: number; completed: boolean; memoryReplays: number; memorySeen?: boolean; draft?: string[]; answerMs?: number; timedOut?: boolean; score?: number }
+export interface AnswerLog { id: string; questionId: string; questionIndex: number; input: AnswerInput; correct: boolean; hintUsed: boolean; durationMs: number; createdAt: string; answerMs?: number }
+export interface BellSession { id: string; childId: string; bankVersion: string; seed: number; mode: 'adventure' | 'review' | 'practice'; maxDifficulty: number; allowedVocabulary?: string[]; startedAt: string; completedAt?: string; questions: Question[]; index: number; phase: Phase; records: QuestionRecord[]; answers: AnswerLog[]; bellRung: boolean; checkpointSeen: number; syncedAnswers: number; serverStarted?: boolean; serverCompleted?: boolean; scoringVersion?: number }
+export interface BellHistory { seen: Record<string, number>; completed: string[]; review: Record<string, number>; tokens: number; sessions: number; minutes: number; bestScore?: number }
+export const resolved = (record: QuestionRecord) => record.completed || !!record.timedOut;
+export const sessionScore = (session: BellSession) => session.records.reduce((sum, r) => sum + (r.score ?? 0), 0);
+/** Version 1 rules are mirrored on the server; old saved rounds retain their original rules. */
+export const timeLimitMs = (q: Pick<Question, 'estimatedSeconds' | 'difficulty'>) => Math.min(60, Math.max(15, Math.ceil((q.estimatedSeconds + q.difficulty) / 5) * 5)) * 1000;
+export function pointsFor(q: Question, answerMs: number, wrong: number, hintUsed: boolean) {
+  const limit = timeLimitMs(q);
+  if (answerMs >= limit) return 0;
+  return Math.max(20, 100 + Math.floor(50 * Math.max(0, limit - answerMs) / limit) - wrong * 25 - (hintUsed ? 20 : 0));
+}
 export const emptyHistory = (): BellHistory => ({ seen: {}, completed: [], review: {}, tokens: 0, sessions: 0, minutes: 0 });
 export const profile = [1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10];
 export const questionNames: Record<Question['questionType'], string> = {

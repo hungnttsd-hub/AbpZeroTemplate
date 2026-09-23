@@ -24,6 +24,9 @@ public class GoldenBellSession : AggregateRoot<Guid>
     public int CurrentQuestionIndex { get; set; }
     public int WrongAttempts { get; set; }
     public int HintCount { get; set; }
+    public int ScoringVersion { get; set; }
+    public int Score { get; set; }
+    public int TimedOutCount { get; set; }
     public long DurationMs { get; set; }
     public bool BellRung { get; set; }
     public DateTime StartedAt { get; set; }
@@ -40,6 +43,9 @@ public class GoldenBellAttempt : Entity<Guid>
     public int AttemptNumber { get; set; }
     public bool IsCorrect { get; set; }
     public bool HintUsed { get; set; }
+    public bool TimedOut { get; set; }
+    public int Points { get; set; }
+    public long AnswerMs { get; set; }
     public long DurationMs { get; set; }
     public string InputJson { get; set; } = "{}";
     public DateTime CreatedAt { get; set; }
