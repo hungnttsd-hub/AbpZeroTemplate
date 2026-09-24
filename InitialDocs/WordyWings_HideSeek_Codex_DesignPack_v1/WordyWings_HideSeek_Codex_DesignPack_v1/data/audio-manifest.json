@@ -1,0 +1,298 @@
+[
+  {
+    "id": "hs.voice.cat.quest",
+    "text": "Find a cat.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/cat-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.cat.question",
+    "text": "Is this a cat?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/cat-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.cat.affirmative",
+    "text": "Yes! It is a cat.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/cat-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.cat.negativeIdentification",
+    "text": "No. It is a cat.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/cat-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.dog.quest",
+    "text": "Find a dog.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/dog-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.dog.question",
+    "text": "Is this a dog?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/dog-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.dog.affirmative",
+    "text": "Yes! It is a dog.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/dog-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.dog.negativeIdentification",
+    "text": "No. It is a dog.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/dog-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.tiger.quest",
+    "text": "Find a tiger.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/tiger-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.tiger.question",
+    "text": "Is this a tiger?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/tiger-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.tiger.affirmative",
+    "text": "Yes! It is a tiger.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/tiger-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.tiger.negativeIdentification",
+    "text": "No. It is a tiger.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/tiger-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.scissors.quest",
+    "text": "Find the scissors.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/scissors-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.scissors.question",
+    "text": "Are these scissors?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/scissors-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.scissors.affirmative",
+    "text": "Yes! These are scissors.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/scissors-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.scissors.negativeIdentification",
+    "text": "No. These are scissors.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/scissors-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.apple.quest",
+    "text": "Find an apple.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/apple-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.apple.question",
+    "text": "Is this an apple?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/apple-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.apple.affirmative",
+    "text": "Yes! It is an apple.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/apple-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.apple.negativeIdentification",
+    "text": "No. It is an apple.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/apple-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.orange.quest",
+    "text": "Find an orange.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/orange-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.orange.question",
+    "text": "Is this an orange?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/orange-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.orange.affirmative",
+    "text": "Yes! It is an orange.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/orange-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.orange.negativeIdentification",
+    "text": "No. It is an orange.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/orange-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.ball.quest",
+    "text": "Find a ball.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/ball-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.ball.question",
+    "text": "Is this a ball?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/ball-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.ball.affirmative",
+    "text": "Yes! It is a ball.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/ball-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.ball.negativeIdentification",
+    "text": "No. It is a ball.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/ball-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.rabbit.quest",
+    "text": "Find a rabbit.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/rabbit-quest.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.rabbit.question",
+    "text": "Is this a rabbit?",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/rabbit-question.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.rabbit.affirmative",
+    "text": "Yes! It is a rabbit.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/rabbit-affirmative.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.rabbit.negativeIdentification",
+    "text": "No. It is a rabbit.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/rabbit-negativeIdentification.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.shared.keep_searching",
+    "text": "Keep looking!",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/keep_searching.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.shared.try_again",
+    "text": "Let’s try again.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/try_again.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.shared.look_choose",
+    "text": "Look carefully and choose.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/look_choose.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.shared.found",
+    "text": "You found it!",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/found.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  },
+  {
+    "id": "hs.voice.shared.help",
+    "text": "Let’s look together.",
+    "locale": "en-GB",
+    "assetPath": "audio/hide-seek/help.mp3",
+    "fileIncluded": false,
+    "reviewStatus": "script_ready_audio_not_recorded"
+  }
+]

@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "1.0.0",
+  "desktop": {
+    "base": [
+      1600,
+      900
+    ],
+    "quest": [
+      470,
+      14,
+      660,
+      118
+    ],
+    "stars": [
+      1210,
+      24,
+      260,
+      98
+    ],
+    "pause": [
+      1494,
+      22,
+      80,
+      80
+    ],
+    "momo": [
+      28,
+      260,
+      325,
+      330
+    ],
+    "tools": [
+      486,
+      722,
+      640,
+      156
+    ],
+    "quiz": [
+      1060,
+      160,
+      510,
+      316
+    ],
+    "meaning": "x,y,width,height in logical units; quiz overlays and locks world"
+  },
+  "mobileLandscape": {
+    "referenceCssViewport": [
+      844,
+      390
+    ],
+    "safeInsetRule": "subtract env(safe-area-inset-*) first",
+    "quest": [
+      140,
+      8,
+      505,
+      56
+    ],
+    "stars": [
+      12,
+      10,
+      110,
+      48
+    ],
+    "pause": [
+      776,
+      10,
+      52,
+      52
+    ],
+    "tools": [
+      276,
+      318,
+      294,
+      62
+    ],
+    "quiz": [
+      187,
+      70,
+      470,
+      242
+    ],
+    "momo": [
+      12,
+      185,
+      145,
+      142
+    ],
+    "minimumTouchCssPx": 48,
+    "layoutStrategy": "reflow HUD and hiding spots; do not simply shrink 1600px UI"
+  },
+  "portrait": {
+    "strategy": "pause preserving reveal/quiz state; offer an illustrated rotate-to-landscape instruction plus text; no star penalty; no forced browser orientation lock"
+  },
+  "safeInitialState": {
+    "hideAllOccupants": true,
+    "hideSpeciesAltLabels": true,
+    "noTargetSpecificIdleCue": true
+  }
+}

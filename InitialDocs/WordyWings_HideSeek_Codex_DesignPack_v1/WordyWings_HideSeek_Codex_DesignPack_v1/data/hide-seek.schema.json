@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:wordywings:hide-seek:1.0.0",
+  "title": "Wordy Wings Hide Seek content pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "entities",
+    "levels"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "grammar",
+          "assetKey",
+          "quest",
+          "question",
+          "affirmative",
+          "negativeIdentification"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "assetKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quest": {
+            "type": "string",
+            "minLength": 1
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "affirmative": {
+            "type": "string",
+            "minLength": 1
+          },
+          "negativeIdentification": {
+            "type": "string",
+            "minLength": 1
+          },
+          "grammar": {
+            "enum": [
+              "singular",
+              "plural"
+            ]
+          }
+        }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "mechanic",
+          "contentVersion",
+          "targetEntityId",
+          "difficulty",
+          "initialStars",
+          "shuffleOccupants",
+          "tools",
+          "spots"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mechanic": {
+            "const": "hide_seek"
+          },
+          "contentVersion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "targetEntityId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "difficulty": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "initialStars": {
+            "const": 3
+          },
+          "shuffleOccupants": {
+            "type": "boolean"
+          },
+          "tools": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "swipe_leaves",
+                "throw_net",
+                "blast_berry"
+              ]
+            }
+          },
+          "spots": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 6,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "kind",
+                "entityId",
+                "allowedTools",
+                "anchor",
+                "coverAssetKey"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "enum": [
+                    "tree_hollow",
+                    "bush",
+                    "rock",
+                    "tall_grass",
+                    "hollow_log"
+                  ]
+                },
+                "entityId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "allowedTools": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "swipe_leaves",
+                      "throw_net",
+                      "blast_berry"
+                    ]
+                  }
+                },
+                "anchor": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "x",
+                    "y",
+                    "width",
+                    "height"
+                  ],
+                  "properties": {
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1600
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 900
+                    },
+                    "width": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 1600
+                    },
+                    "height": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 900
+                    }
+                  }
+                },
+                "coverAssetKey": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,10 +6,11 @@ import { storage } from './services/storage';
 import { type Attempt, type Child, type Dashboard, type LevelDefinition, type Progress, type World, unlocked, starsFor } from './types';
 import { wordImage } from './game/art';
 const GoldenBellPage = lazy(() => import('./features/golden-bell/GoldenBellPage'));
+const HideSeekPage = lazy(() => import('./features/hide-seek/HideSeekPage'));
 const BalloonDartGallery = lazy(() => import('./features/balloon-dart/BalloonDartGallery'));
 const WordBuilderDemoGallery = lazy(() => import('./features/word-builder/WordBuilderDemoGallery'));
 const GameContainer = lazy(() => import('./game/GameContainer'));
-type Page = 'welcome' | 'children' | 'map' | 'play' | 'dashboard' | 'admin' | 'word-builder' | 'balloon-dart' | 'golden-bell';
+type Page = 'welcome' | 'children' | 'map' | 'play' | 'dashboard' | 'admin' | 'word-builder' | 'balloon-dart' | 'golden-bell' | 'hide-seek';
 const mechanics: Record<string, string> = { word_shot: 'Kéo ná tìm từ', balloon_pop: 'Vườn bóng phi tiêu', balloon_dart: 'Vườn bóng phi tiêu', drag_sort: 'Chiếc giỏ kỳ diệu', letter_puzzle: 'Xưởng chữ phiêu lưu', word_builder: 'Xưởng chữ phiêu lưu', boss_challenge: 'Giải cứu Word Star' };
 const worldNotes = ['Sắc màu & hình khối', 'Những người bạn nhỏ', 'Ngôi nhà thân quen'];
 const avatars = ['pip', 'poki', 'lulu', 'momo'];
@@ -28,7 +29,7 @@ export default function App() {
   const [pending, setPending] = useState(0); const [creating, setCreating] = useState(false);
   const [nickname, setNickname] = useState(''); const [avatar, setAvatar] = useState('pip'); const [ageBand, setAgeBand] = useState('5_6');
   const enteredAt = useRef(Date.now()); const [breakTime, setBreakTime] = useState(false);
-  const navigate = (next: Page) => { setPage(next); setError(''); location.hash = next === 'golden-bell' ? '/golden-bell/' + (child?.id ?? '') : next === 'map' ? `/map/${child?.id ?? ''}` : `/${next}`; };
+  const navigate = (next: Page) => { setPage(next); setError(''); location.hash = ['golden-bell', 'hide-seek'].includes(next) ? `/${next}/` + (child?.id ?? '') : next === 'map' ? `/map/${child?.id ?? ''}` : `/${next}`; };
   const sync = useCallback(async (repository: GameRepository) => {
     if (repository.local) return;
     try { await repository.sync(); setSyncState('Đã đồng bộ'); }
@@ -47,10 +48,10 @@ export default function App() {
       }
       const route = location.hash.slice(1).split('/');
       const selected = profiles.find(p => p.id === route[2]);
-      if (selected && ['map', 'play', 'golden-bell'].includes(route[1])) {
+      if (selected && ['map', 'play', 'golden-bell', 'hide-seek'].includes(route[1])) {
         const p = await repository.progress(selected.id); setChild(selected); setProgress(p);
         const requested = content.levels.find(l => l.id === route[3]);
-        if (route[1] === 'golden-bell') setPage('golden-bell');
+        if (route[1] === 'golden-bell' || route[1] === 'hide-seek') setPage(route[1]);
         else if (route[1] === 'play' && requested && unlocked(requested, content.levels, p)) { setLevel(requested); setPage('play'); }
         else { setPage('map'); location.hash = `/map/${selected.id}`; }
       } else navigate('children');
@@ -91,6 +92,7 @@ export default function App() {
       const route = location.hash.slice(1).split('/');
       if (route[1] === 'map' && child && route[2] === child.id) { setLevel(undefined); setResult(undefined); setPage('map'); }
       else if (route[1] === 'golden-bell' && child && route[2] === child.id) setPage('golden-bell');
+      else if (route[1] === 'hide-seek' && child && route[2] === child.id) setPage('hide-seek');
       else if (route[1] === 'children' && repo) setPage('children');
       else if (route[1] === 'play' && child && route[2] === child.id) {
         const requested = levels.find(l => l.id === route[3]);
@@ -134,14 +136,15 @@ export default function App() {
     } else { navigate(gateTarget); }
   }
   function toggleMute() { const next = !muted; setMuted(next); void storage.set('settings:muted', next).catch(e => setError(message(e))); }
-  const totalStars = progress.reduce((sum, p) => sum + p.bestStars, 0);
+  const classicProgress = progress.filter(p => levels.some(l => l.id === p.levelId));
+  const totalStars = classicProgress.reduce((sum, p) => sum + p.bestStars, 0);
   const selectedWorld = worlds[worldIndex]; const worldLevels = levels.filter(l => l.worldId === selectedWorld?.id);
   const currentLevel = worldLevels.find(l => !progress.some(p => p.levelId === l.id) && unlocked(l, levels, progress));
   const worldOpen = (index: number) => { const first = levels.find(l => l.worldId === worlds[index]?.id); return !!first && unlocked(first, levels, progress); };
   const exitGame = () => { setLevel(undefined); setResult(undefined); navigate('map'); };
 
   return <div className={`app ${page === 'play' ? 'playing' : ''}`}>
-    {page !== 'play' && page !== 'golden-bell' && <header className="site-header"><button className="brand" onClick={() => child ? navigate('map') : navigate('welcome')} aria-label="Wordy Wings — Trang chính"><span className="brand-mark"><Pip/></span><span>wordy<span className="brand-light">wings</span><small>Little words. Big adventures.</small></span></button>
+    {page !== 'play' && page !== 'golden-bell' && page !== 'hide-seek' && <header className="site-header"><button className="brand" onClick={() => child ? navigate('map') : navigate('welcome')} aria-label="Wordy Wings — Trang chính"><span className="brand-mark"><Pip/></span><span>wordy<span className="brand-light">wings</span><small>Little words. Big adventures.</small></span></button>
       {child && <nav aria-label="Điều hướng"><button className={page === 'map' ? 'nav-item active' : 'nav-item'} onClick={() => navigate('map')}><Compass size={18}/> Khám phá</button><button className="nav-item" onClick={() => void openParent('dashboard')}><ShieldCheck size={18}/> Góc phụ huynh</button></nav>}
       <div className="header-right"><button className="icon-button" aria-label={muted ? 'Bật âm thanh' : 'Tắt âm thanh'} onClick={toggleMute}>{muted ? <VolumeX size={20}/> : <Volume2 size={20}/>}</button>{child && <><span className="star-pill"><Star size={18} fill="currentColor"/>{totalStars}</span><button className="profile-button" onClick={() => void openParent('children')}><Pip friend={child.avatarKey}/><span>{child.nickname}</span><ChevronRight size={15}/></button></>}</div>
     </header>}
@@ -150,8 +153,9 @@ export default function App() {
     {page === 'children' && <main className="profiles-page"><span className="eyebrow">HELLO, LITTLE EXPLORER!</span><h1>Hôm nay, ai cùng Pip phiêu lưu?</h1><p className="subtle">Mỗi nhà thám hiểm có hành trình của riêng mình.</p><div className="profiles">{children.map(c => <button className="child-card" key={c.id} disabled={busy} onClick={() => void selectChild(c)}><Pip friend={c.avatarKey}/><strong>{c.nickname}</strong><span>Cùng đi nào <ArrowRight size={15}/></span></button>)}{!creating && <button className="child-card add-child" onClick={() => setCreating(true)}><Plus size={40}/><strong>Thêm nhà thám hiểm</strong></button>}</div>
       {creating && <form className="profile-form" onSubmit={e => void createChild(e)}><h2>Làm quen với Pip nhé!</h2><label>Biệt danh của bé<input value={nickname} onChange={e => setNickname(e.target.value)} maxLength={40} placeholder="Ví dụ: Bông" required autoComplete="off"/></label><div className="avatar-picker" aria-label="Chọn bạn đồng hành">{avatars.map(a => <button key={a} type="button" aria-pressed={avatar === a} className={avatar === a ? 'selected' : ''} onClick={() => setAvatar(a)}><Pip friend={a}/><span>{a}</span></button>)}</div><label>Nhóm tuổi<select value={ageBand} onChange={e => setAgeBand(e.target.value)}><option value="5_6">5–6 tuổi</option><option value="6_7">6–7 tuổi</option><option value="7_8">7–8 tuổi</option></select></label><button className="primary" disabled={busy || !nickname.trim()} type="submit">Sẵn sàng rồi! <ArrowRight size={19}/></button></form>}
       <p className="subtle privacy-note"><ShieldCheck size={15}/> Chỉ cần biệt danh. Không thu âm, không quảng cáo, không thu ngày sinh.</p></main>}
-    {page === 'map' && child && selectedWorld && <main className="map-page"><div className="page-heading"><div><span className="eyebrow">YOUR LITTLE BIG ADVENTURE</span><h1>Đi thôi, {child.nickname}! <span className="sun-symbol">☀</span></h1><p>Một từ mới đang đợi bé ở phía bên kia cầu vồng.</p></div><div className="journey-stat"><span className="stat-icon"><Flag size={22}/></span><div><strong>{progress.length}<span> / {levels.length} màn</span></strong><small>Hành trình của bé</small></div></div></div>
+    {page === 'map' && child && selectedWorld && <main className="map-page"><div className="page-heading"><div><span className="eyebrow">YOUR LITTLE BIG ADVENTURE</span><h1>Đi thôi, {child.nickname}! <span className="sun-symbol">☀</span></h1><p>Một từ mới đang đợi bé ở phía bên kia cầu vồng.</p></div><div className="journey-stat"><span className="stat-icon"><Flag size={22}/></span><div><strong>{classicProgress.length}<span> / {levels.length} màn</span></strong><small>Hành trình của bé</small></div></div></div>
       <div className="builder-entry gb-map-entry"><div><strong><Bell size={22}/> Đuổi hình bắt chữ · Chuông Sao</strong><p>1.000 câu hỏi bằng hình · 10 mức khám phá · Cùng rung Chuông Sao sau 12 câu.</p></div><button className="secondary" onClick={() => navigate('golden-bell')}>Khám phá 1.000 câu hỏi <ArrowRight size={18}/></button></div>
+      <div className="builder-entry"><div><strong>Trốn tìm cùng Momo · Hide & Seek</strong><p>Vạch lá, tung lưới, mở đá phép thuật · 6 cuộc khám phá tiếng Anh.</p></div><button className="secondary" onClick={() => navigate('hide-seek')}>Vào khu rừng <ArrowRight size={18}/></button></div>
       <div className="builder-entry"><div><strong>Vườn bóng phi tiêu</strong><p>Nghe, ngắm và bắn bóng · Ba lượt, ba ngôi sao.</p></div><button className="secondary" onClick={() => navigate('balloon-dart')}>Khám phá 8 màn bóng <ArrowRight size={18}/></button></div><div className="builder-entry"><div><strong>Xưởng chữ phiêu lưu</strong><p>Giải cứu bạn thú, mở cửa và khởi động đoàn tàu bằng những chữ nhỏ.</p></div><button className="secondary" onClick={() => navigate('word-builder')}>Khám phá 8 nhiệm vụ <ArrowRight size={18}/></button></div><div className="map-layout"><section className="adventure-panel"><div className="world-tabs">{worlds.map((w, i) => <button key={w.id} className={i === worldIndex ? 'world-tab selected' : 'world-tab'} onClick={() => setWorldIndex(i)}><span className="world-number">{worldOpen(i) ? `0${i + 1}` : <LockKeyhole size={14}/>}</span><span>{w.name}</span></button>)}</div>
         <div className={`world-scene world-${worldIndex}`}><div className="world-caption"><span className="eyebrow">WORLD 0{worldIndex + 1}</span><h2>{selectedWorld.vi}</h2><p>{worldNotes[worldIndex]}</p></div><Island type={worldIndex} className="map-island"/><div className="scene-cloud cloud-one"/><div className="scene-cloud cloud-two"/><span className="scene-spark sparkle-a">✧</span><span className="scene-spark sparkle-b">✦</span><span className="world-tag"><Pip friend={selectedWorld.hero.toLowerCase()}/><span>Cùng {selectedWorld.hero}</span></span></div>
         <div className="level-trail"><div className="trail-heading"><span><Flag size={17}/> CON ĐƯỜNG KHÁM PHÁ</span><span>{worldLevels.filter(l => progress.some(p => p.levelId === l.id)).length} / {worldLevels.length} màn</span></div><div className="level-nodes">{worldLevels.map((l, i) => { const p = progress.find(p => p.levelId === l.id); const open = unlocked(l, levels, progress); return <div className={`node-wrap ${l.id === currentLevel?.id ? 'current' : ''}`} key={l.id}><button aria-label={`Màn ${l.order}: ${mechanics[l.mechanic]}${p ? `, ${p.bestStars} sao` : open ? ', đã mở' : ', chưa mở'}`} disabled={!open} onClick={() => start(l)} className={`level-node ${p ? 'done' : open ? 'available' : 'locked'} ${l.isBoss ? 'boss' : ''}`}>{p ? <Check/> : !open ? <LockKeyhole size={17}/> : l.isBoss ? <Trophy size={23}/> : i + 1}</button><span className={`node-stars ${p ? 'earned' : ''}`}>{p ? '★'.repeat(p.bestStars) + '☆'.repeat(3 - p.bestStars) : l.isBoss ? 'Word Star' : `${i + 1}`}</span>{l.id === currentLevel?.id && <span className="you-are-here">Bé ở đây</span>}</div>; })}</div></div>
@@ -168,6 +172,7 @@ export default function App() {
     {page === 'balloon-dart' && child && <Suspense fallback={<p className="loading-state">Đang mở vườn bóng…</p>}><BalloonDartGallery childId={child.id} scope={(repo?.owner ?? 'device') + ':' + child.id} muted={muted} onMute={toggleMute} onBack={() => navigate('map')}/></Suspense>}
     {page === 'word-builder' && child && <Suspense fallback={<p className="loading-state">Pip đang chuẩn bị…</p>}><WordBuilderDemoGallery childId={child.id} scope={(repo?.owner ?? 'device') + ':' + child.id} muted={muted} onMute={toggleMute} onBack={() => navigate('map')}/></Suspense>}
     {page === 'golden-bell' && child && repo && <Suspense fallback={<p className="loading-state">Đang chuẩn bị 1.000 câu hỏi Chuông Sao…</p>}><GoldenBellPage child={child} repository={repo} levels={levels} progress={progress} muted={muted} onMute={toggleMute} onBack={() => navigate('map')}/></Suspense>}
+    {page === 'hide-seek' && child && repo && <Suspense fallback={<p className="loading-state">Đang mở khu rừng của Momo…</p>}><HideSeekPage key={repo.owner + child.id} child={child} repository={repo} muted={muted} onMute={toggleMute} onBack={() => { navigate('map'); void repo.progress(child.id).then(setProgress).catch(e => setError(message(e))); }}/></Suspense>}
     {page === 'admin' && repo && <AdminContent repository={repo} onBack={() => navigate('map')} onChanged={async () => { const c = await repo.content(); setLevels(c.levels); }}/>} 
     {gate && <div className="overlay"><form className="modal parent-gate" onSubmit={e => void passGate(e)}><button type="button" className="close-modal" aria-label="Đóng" onClick={() => setGate(false)}><X/></button><ShieldCheck size={35}/><span className="eyebrow">DÀNH CHO NGƯỜI LỚN</span><h2>Mời ba mẹ giúp bé</h2><p>Nhập kết quả để vào khu vực phụ huynh.</p><label>14 + 7 = ?<input value={gateAnswer} onChange={e => setGateAnswer(e.target.value)} inputMode="numeric" autoFocus required aria-label="Kết quả 14 cộng 7"/></label><button type="submit" className="primary">Tiếp tục <ChevronRight size={18}/></button></form></div>}
     {busy && <div className="busy-indicator" role="status"><span/> Pip đang chuẩn bị…</div>}
@@ -182,6 +187,4 @@ function AdminContent({ repository, onBack, onChanged }: { repository: GameRepos
   async function save(e: React.FormEvent) { e.preventDefault(); if (!editing) return; setSaving(true); try { await repository.api(`admin/levels/${editing.id}`, 'PUT', editing); await load(); await onChanged(); setEditing(undefined); setNotice('Đã lưu nội dung và tăng phiên bản.'); } catch (err) { setNotice(message(err)); } finally { setSaving(false); } }
   return <main className="dashboard-page"><button className="text-button" onClick={onBack}><ArrowLeft size={18}/> Bản đồ</button><h1>Quản lý nội dung</h1><p role="status">{notice}</p><label>Lọc thế giới<select value={filter} onChange={e => setFilter(e.target.value)}><option value="">Tất cả</option>{['W01', 'W02', 'W03'].map(w => <option key={w}>{w}</option>)}</select></label><div className="admin-list">{items.filter(l => !filter || l.worldId === filter).map(l => <button className="admin-row" key={l.id} onClick={() => setEditing({ ...l })}><strong>{l.id}</strong><span>{l.instruction}</span><span>{l.mechanic}</span><span>{l.isPublished ? 'Đã xuất bản' : 'Bản nháp'} · v{l.contentVersion}</span><Settings2 size={18}/></button>)}</div>{editing && <div className="overlay"><form className="modal" onSubmit={e => void save(e)}><h2>{editing.id}</h2><label>Hướng dẫn<input required maxLength={300} value={editing.instruction} onChange={e => setEditing({ ...editing, instruction: e.target.value })}/></label><label>Độ khó<input type="number" min={1} max={4} value={editing.difficulty} onChange={e => setEditing({ ...editing, difficulty: Number(e.target.value) })}/></label><label>Kiểu chơi<select value={editing.mechanic} onChange={e => setEditing({ ...editing, mechanic: e.target.value })}>{Object.entries(mechanics).map(([key, title]) => <option value={key} key={key}>{title}</option>)}</select></label><label className="check-label"><input type="checkbox" checked={editing.isPublished} onChange={e => setEditing({ ...editing, isPublished: e.target.checked })}/> Xuất bản</label><button className="primary" disabled={saving}>Lưu nội dung</button><button type="button" className="text-button" onClick={() => setEditing(undefined)}>Hủy</button></form></div>}</main>;
 }
-
-
 

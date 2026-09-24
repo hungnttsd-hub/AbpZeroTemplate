@@ -92,8 +92,9 @@ public class WordyGameAppService : WebHoanTienAppService, IWordyGameAppService
         child.LastPlayedAt = Clock.Now;
         await children.UpdateAsync(child, autoSave: true);
         var level = await levels.GetAsync(input.LevelId);
+        if (level.Mechanic == "hide_seek") throw new UserFriendlyException("Hãy gửi lượt Trốn tìm qua bộ chấm điểm Hide & Seek.");
         // Accept a queued completion even if content was unpublished after the child started.
-        var ordered = (await levels.GetListAsync()).OrderBy(x => x.WorldId).ThenBy(x => x.DisplayOrder).ToList();
+        var ordered = (await levels.GetListAsync(x => x.Mechanic != "hide_seek")).OrderBy(x => x.WorldId).ThenBy(x => x.DisplayOrder).ToList();
         var index = ordered.FindIndex(x => x.Id == level.Id);
         if (index > 0 && !await progress.AnyAsync(x => x.ChildProfileId == child.Id && x.LevelId == ordered[index - 1].Id && x.BestStars >= 1))
             throw new UserFriendlyException("Hãy hoàn thành màn trước để mở màn này.");
@@ -161,7 +162,7 @@ public class WordyGameAppService : WebHoanTienAppService, IWordyGameAppService
     public async Task<List<AdminLevelDto>> GetAdminLevelsAsync(string? worldId = null)
     {
         RequireAdmin();
-        return (await levels.GetListAsync(x => worldId == null || x.WorldId == worldId)).OrderBy(x => x.Id)
+        return (await levels.GetListAsync(x => x.Mechanic != "hide_seek" && (worldId == null || x.WorldId == worldId))).OrderBy(x => x.Id)
             .Select(x => new AdminLevelDto(x.Id, x.WorldId, x.Instruction, x.Difficulty, x.Mechanic, x.IsPublished, x.ContentVersion)).ToList();
     }
     public async Task UpdateLevelAsync(string id, EditLevelInput input)

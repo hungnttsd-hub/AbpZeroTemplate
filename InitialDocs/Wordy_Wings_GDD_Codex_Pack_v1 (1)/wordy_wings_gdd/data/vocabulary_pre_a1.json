@@ -1,0 +1,2249 @@
+[
+  {
+    "term": "red",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "blue",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "yellow",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "green",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "orange",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": "review in W04"
+  },
+  {
+    "term": "pink",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "purple",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "black",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "white",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "brown",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "grey",
+    "world": "W01",
+    "category": "colors",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "circle",
+    "world": "W01",
+    "category": "shapes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "square",
+    "world": "W01",
+    "category": "shapes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "triangle",
+    "world": "W01",
+    "category": "shapes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "star",
+    "world": "W01",
+    "category": "shapes",
+    "part_of_speech": "noun",
+    "notes": "review in W09"
+  },
+  {
+    "term": "heart",
+    "world": "W01",
+    "category": "shapes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "line",
+    "world": "W01",
+    "category": "shapes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "big",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": "review in W09"
+  },
+  {
+    "term": "small",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": "review in W09"
+  },
+  {
+    "term": "long",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": "review in W09"
+  },
+  {
+    "term": "short",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": "review in W09"
+  },
+  {
+    "term": "new",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "old",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "good",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "nice",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "clean",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "dirty",
+    "world": "W01",
+    "category": "size_quality",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "ball",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "box",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": "review in W03"
+  },
+  {
+    "term": "kite",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "toy",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": "review in W03"
+  },
+  {
+    "term": "door",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": "review in W03"
+  },
+  {
+    "term": "book",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": "review in W05"
+  },
+  {
+    "term": "flower",
+    "world": "W01",
+    "category": "objects",
+    "part_of_speech": "noun",
+    "notes": "review in W08"
+  },
+  {
+    "term": "cat",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "dog",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bird",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "fish",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": "review in W04"
+  },
+  {
+    "term": "duck",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "chicken",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": "review in W04"
+  },
+  {
+    "term": "cow",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "horse",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sheep",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "goat",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "mouse",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "rabbit",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "frog",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "monkey",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "tiger",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "lion",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "elephant",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "giraffe",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "crocodile",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "snake",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "spider",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bee",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "butterfly",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bear",
+    "world": "W02",
+    "category": "animals",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "tail",
+    "world": "W02",
+    "category": "features",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "wing",
+    "world": "W02",
+    "category": "features",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "leg",
+    "world": "W02",
+    "category": "features",
+    "part_of_speech": "noun",
+    "notes": "review in W06"
+  },
+  {
+    "term": "eye",
+    "world": "W02",
+    "category": "features",
+    "part_of_speech": "noun",
+    "notes": "review in W06"
+  },
+  {
+    "term": "ear",
+    "world": "W02",
+    "category": "features",
+    "part_of_speech": "noun",
+    "notes": "review in W06"
+  },
+  {
+    "term": "mouth",
+    "world": "W02",
+    "category": "features",
+    "part_of_speech": "noun",
+    "notes": "review in W06"
+  },
+  {
+    "term": "young",
+    "world": "W02",
+    "category": "qualities",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "fast",
+    "world": "W02",
+    "category": "qualities",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "slow",
+    "world": "W02",
+    "category": "qualities",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "happy",
+    "world": "W02",
+    "category": "qualities",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "angry",
+    "world": "W02",
+    "category": "qualities",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "funny",
+    "world": "W02",
+    "category": "qualities",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "house",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "home",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bedroom",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bathroom",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "kitchen",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "living room",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "garden",
+    "world": "W03",
+    "category": "rooms",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bed",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "chair",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "table",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sofa",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "lamp",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "clock",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "mirror",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "cupboard",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "shelf",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "window",
+    "world": "W03",
+    "category": "furniture",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "doll",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "teddy",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "picture",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": "review in W05"
+  },
+  {
+    "term": "radio",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "television",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "phone",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "computer",
+    "world": "W03",
+    "category": "home_objects",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "in",
+    "world": "W03",
+    "category": "prepositions",
+    "part_of_speech": "preposition",
+    "notes": ""
+  },
+  {
+    "term": "on",
+    "world": "W03",
+    "category": "prepositions",
+    "part_of_speech": "preposition",
+    "notes": ""
+  },
+  {
+    "term": "under",
+    "world": "W03",
+    "category": "prepositions",
+    "part_of_speech": "preposition",
+    "notes": ""
+  },
+  {
+    "term": "behind",
+    "world": "W03",
+    "category": "prepositions",
+    "part_of_speech": "preposition",
+    "notes": "review in W07"
+  },
+  {
+    "term": "next to",
+    "world": "W03",
+    "category": "prepositions",
+    "part_of_speech": "preposition",
+    "notes": "review in W07"
+  },
+  {
+    "term": "apple",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "banana",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "lemon",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "lime",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "pear",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "grape",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "watermelon",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "mango",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "pineapple",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "strawberry",
+    "world": "W04",
+    "category": "fruit",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bread",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "cake",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "egg",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "rice",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "meat",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "cheese",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "burger",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sandwich",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "ice cream",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "soup",
+    "world": "W04",
+    "category": "food",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "water",
+    "world": "W04",
+    "category": "drink",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "milk",
+    "world": "W04",
+    "category": "drink",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "juice",
+    "world": "W04",
+    "category": "drink",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "breakfast",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "lunch",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "dinner",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "hungry",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "thirsty",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "like",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "want",
+    "world": "W04",
+    "category": "meal_words",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "school",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": "review in W07"
+  },
+  {
+    "term": "classroom",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "teacher",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "student",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "friend",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": "review in W10"
+  },
+  {
+    "term": "desk",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "board",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "notebook",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "pen",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "pencil",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "ruler",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "eraser",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bag",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "paper",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "question",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "answer",
+    "world": "W05",
+    "category": "school",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "read",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": "review in W10"
+  },
+  {
+    "term": "write",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "draw",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "colour",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "listen",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "look",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "open",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "close",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "sit",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "stand",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "spell",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "say",
+    "world": "W05",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "head",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "hair",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "face",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "nose",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "tooth",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "neck",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "arm",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "hand",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "finger",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "foot",
+    "world": "W06",
+    "category": "body",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "run",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "walk",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "jump",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "hop",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "swim",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "dance",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "sing",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "clap",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "wave",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "sleep",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": "review in W10"
+  },
+  {
+    "term": "eat",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": "review in W10"
+  },
+  {
+    "term": "drink",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "play",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": "review in W10"
+  },
+  {
+    "term": "catch",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "throw",
+    "world": "W06",
+    "category": "actions",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "shirt",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "T-shirt",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "dress",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "skirt",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "trousers",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "shorts",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "shoe",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sock",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "hat",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": "review in W08"
+  },
+  {
+    "term": "jacket",
+    "world": "W06",
+    "category": "clothes",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "can",
+    "world": "W06",
+    "category": "ability",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "cannot",
+    "world": "W06",
+    "category": "ability",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "car",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bus",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "bike",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "train",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "plane",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "boat",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "ship",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "helicopter",
+    "world": "W07",
+    "category": "transport",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "street",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "road",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "park",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "shop",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "hospital",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "station",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "airport",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "zoo",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "beach",
+    "world": "W07",
+    "category": "places",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "left",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "right",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "up",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "down",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "straight",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "here",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "there",
+    "world": "W07",
+    "category": "directions",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "near",
+    "world": "W07",
+    "category": "position",
+    "part_of_speech": "preposition",
+    "notes": ""
+  },
+  {
+    "term": "between",
+    "world": "W07",
+    "category": "position",
+    "part_of_speech": "preposition",
+    "notes": ""
+  },
+  {
+    "term": "in front of",
+    "world": "W07",
+    "category": "position",
+    "part_of_speech": "preposition",
+    "notes": ""
+  },
+  {
+    "term": "sun",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sunny",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "rain",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "rainy",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "cloud",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "cloudy",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "wind",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "windy",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "snow",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "hot",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "cold",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "warm",
+    "world": "W08",
+    "category": "weather",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "day",
+    "world": "W08",
+    "category": "day_time",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "night",
+    "world": "W08",
+    "category": "day_time",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "morning",
+    "world": "W08",
+    "category": "day_time",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "afternoon",
+    "world": "W08",
+    "category": "day_time",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "evening",
+    "world": "W08",
+    "category": "day_time",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "today",
+    "world": "W08",
+    "category": "day_time",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "umbrella",
+    "world": "W08",
+    "category": "weather_items",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "coat",
+    "world": "W08",
+    "category": "weather_items",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "boots",
+    "world": "W08",
+    "category": "weather_items",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "glasses",
+    "world": "W08",
+    "category": "weather_items",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sky",
+    "world": "W08",
+    "category": "nature",
+    "part_of_speech": "noun",
+    "notes": "review in W09"
+  },
+  {
+    "term": "tree",
+    "world": "W08",
+    "category": "nature",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "river",
+    "world": "W08",
+    "category": "nature",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sea",
+    "world": "W08",
+    "category": "nature",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "one",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": "review in W09"
+  },
+  {
+    "term": "two",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": "review in W09"
+  },
+  {
+    "term": "three",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "four",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "five",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "six",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "seven",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "eight",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "nine",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "ten",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "eleven",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "twelve",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "thirteen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "fourteen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "fifteen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sixteen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "seventeen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "eighteen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "nineteen",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "twenty",
+    "world": "W09",
+    "category": "numbers",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "many",
+    "world": "W09",
+    "category": "quantity",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "more",
+    "world": "W09",
+    "category": "quantity",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "less",
+    "world": "W09",
+    "category": "quantity",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "all",
+    "world": "W09",
+    "category": "quantity",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "some",
+    "world": "W09",
+    "category": "quantity",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "same",
+    "world": "W09",
+    "category": "comparison",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "different",
+    "world": "W09",
+    "category": "comparison",
+    "part_of_speech": "adjective",
+    "notes": ""
+  },
+  {
+    "term": "moon",
+    "world": "W09",
+    "category": "space",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "planet",
+    "world": "W09",
+    "category": "space",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "rocket",
+    "world": "W09",
+    "category": "space",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "family",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "mother",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "father",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "mum",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "dad",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "brother",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "sister",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "baby",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "grandmother",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "grandfather",
+    "world": "W10",
+    "category": "family",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "boy",
+    "world": "W10",
+    "category": "people",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "girl",
+    "world": "W10",
+    "category": "people",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "child",
+    "world": "W10",
+    "category": "people",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "children",
+    "world": "W10",
+    "category": "people",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "man",
+    "world": "W10",
+    "category": "people",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "woman",
+    "world": "W10",
+    "category": "people",
+    "part_of_speech": "noun",
+    "notes": ""
+  },
+  {
+    "term": "wake up",
+    "world": "W10",
+    "category": "routine",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "get up",
+    "world": "W10",
+    "category": "routine",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "wash",
+    "world": "W10",
+    "category": "routine",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "go",
+    "world": "W10",
+    "category": "routine",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "come",
+    "world": "W10",
+    "category": "routine",
+    "part_of_speech": "verb",
+    "notes": ""
+  },
+  {
+    "term": "what",
+    "world": "W10",
+    "category": "question_words",
+    "part_of_speech": "question word",
+    "notes": ""
+  },
+  {
+    "term": "where",
+    "world": "W10",
+    "category": "question_words",
+    "part_of_speech": "question word",
+    "notes": ""
+  },
+  {
+    "term": "who",
+    "world": "W10",
+    "category": "question_words",
+    "part_of_speech": "question word",
+    "notes": ""
+  },
+  {
+    "term": "how",
+    "world": "W10",
+    "category": "question_words",
+    "part_of_speech": "question word",
+    "notes": ""
+  },
+  {
+    "term": "which",
+    "world": "W10",
+    "category": "question_words",
+    "part_of_speech": "question word",
+    "notes": ""
+  },
+  {
+    "term": "this",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "that",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "these",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "those",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "my",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "your",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "his",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "her",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "is",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "are",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "has",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "have",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "and",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "but",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "yes",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "no",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "please",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  },
+  {
+    "term": "thank you",
+    "world": "W10",
+    "category": "function",
+    "part_of_speech": "function word",
+    "notes": ""
+  }
+]

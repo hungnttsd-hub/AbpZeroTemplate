@@ -1,7 +1,31 @@
 {
-  "name": "wordy-wings", "private": true, "version": "0.1.0", "type": "module",
-  "scripts": { "test:balloon-dart": "tsc -p tsconfig.balloon-dart-tests.json && node --test tests/balloon-dart.test.mjs", "test:word-builder": "tsc -p tsconfig.word-builder-tests.json && node --test tests/word-builder.test.mjs", "predev": "node scripts/sync-content.mjs", "dev": "vite --host 127.0.0.1", "prebuild": "node scripts/sync-content.mjs", "build": "tsc -b && vite build", "build:host": "npm run build && node scripts/copy-to-host.mjs", "preview": "vite preview --host 127.0.0.1" },
-  "dependencies": { "react": "18.3.1", "react-dom": "18.3.1", "phaser": "3.90.0", "zod": "3.24.2", "lucide-react": "0.468.0" },
-  "devDependencies": { "@types/react": "18.3.18", "@types/react-dom": "18.3.5", "@vitejs/plugin-react": "4.7.0", "typescript": "5.7.3", "vite": "6.4.1" }
+  "name": "wordy-wings",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test:balloon-dart": "tsc -p tsconfig.balloon-dart-tests.json && node --test tests/balloon-dart.test.mjs",
+    "test:word-builder": "tsc -p tsconfig.word-builder-tests.json && node --test tests/word-builder.test.mjs",
+    "predev": "node scripts/sync-content.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "prebuild": "node scripts/sync-content.mjs",
+    "build": "tsc -b && vite build",
+    "build:host": "npm run build && node scripts/copy-to-host.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:hide-seek": "tsc -p tsconfig.hide-seek-tests.json && node scripts/test-hide-seek.cjs"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "phaser": "3.90.0",
+    "zod": "3.24.2",
+    "lucide-react": "0.468.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.7.0",
+    "typescript": "5.7.3",
+    "vite": "6.4.1"
+  }
 }
-

@@ -2,6 +2,7 @@ import rawLevels from '../content/levels.json';
 import rawWorlds from '../content/worlds.json';
 import { levelSchema, starsFor, type Attempt, type Child, type Dashboard, type LevelDefinition, type Mastery, type Progress, type World } from '../types';
 import { storage } from './storage';
+import type { HideSeekArchive } from '../game/hide-seek/store';
 
 export interface Session { userId: string | null; name: string; isAdmin: boolean; csrfToken: string; csrfHeader: string }
 export class ApiError extends Error { constructor(public status: number, message: string) { super(message); } }
@@ -70,6 +71,11 @@ export class GameRepository {
       const p = map.get(a.levelId) ?? { levelId: a.levelId, bestStars: 0, completedCount: 0 };
       p.bestStars = Math.max(p.bestStars, starsFor(a)); p.completedCount++; map.set(a.levelId, p);
     }
+    const hideSeek = await storage.get<HideSeekArchive>(this.key(`hide-seek:${childId}`));
+    for (const [levelId, record] of Object.entries(hideSeek?.history ?? {})) {
+      const existing = map.get(levelId);
+      map.set(levelId, { levelId, bestStars: Math.max(existing?.bestStars ?? 0, record.bestStars), completedCount: Math.max(existing?.completedCount ?? 0, record.completedCount) });
+    }
     return [...map.values()];
   }
   sync(): Promise<number> {
@@ -107,7 +113,17 @@ export class GameRepository {
         words.set(term, word);
       }
     }
-    return { completedLevels: p.length, stars: p.reduce((n, x) => n + x.bestStars, 0), minutes: Math.round(attempts.reduce((n, a) => n + Date.parse(a.completedAt) - Date.parse(a.startedAt), 0) / 6000) / 10,
+    const hideSeek = await storage.get<HideSeekArchive>(this.key(`hide-seek:${childId}`));
+    for (const session of hideSeek?.completed ?? []) {
+      const term = session.state.attempts.at(-1)?.entityId; if (!term) continue;
+      const word = words.get(term) ?? { term, exposureCount: 0, correctCount: 0, incorrectCount: 0, masteryScore: 0 };
+      const independent = session.state.attempts.filter(a => !a.assisted);
+      word.exposureCount++; word.correctCount += independent.filter(a => a.correct).length; word.incorrectCount += independent.filter(a => !a.correct).length;
+      word.masteryScore = Math.round(100 * (.4 * Math.min(word.exposureCount / 4, 1) + .6 * word.correctCount / Math.max(word.correctCount + word.incorrectCount, 1)));
+      words.set(term, word);
+    }
+    const hideSeekMs = (hideSeek?.completed ?? []).reduce((n, s) => n + s.activeDurationMs, 0);
+    return { completedLevels: p.length, stars: p.reduce((n, x) => n + x.bestStars, 0), minutes: Math.round((hideSeekMs + attempts.reduce((n, a) => n + Date.parse(a.completedAt) - Date.parse(a.startedAt), 0)) / 6000) / 10,
       words: [...words.values()], review: [...words.values()].filter(w => w.exposureCount >= 2 && w.masteryScore < 70) };
   }
 }

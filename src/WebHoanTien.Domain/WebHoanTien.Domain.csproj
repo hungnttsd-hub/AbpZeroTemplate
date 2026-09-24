@@ -12,6 +12,7 @@
     <ProjectReference Include="..\WebHoanTien.Domain.Shared\WebHoanTien.Domain.Shared.csproj" />
     <EmbeddedResource Include="../../InitialDocs/wordy_wings_gdd/data/*.json" LogicalName="WordyWings.Content.%(Filename)%(Extension)" />
     <EmbeddedResource Include="../../content/wordy-wings/golden-bell/questions.v1.json" LogicalName="WordyWings.GoldenBell.questions.v1.json" />
+    <EmbeddedResource Include="../../content/wordy-wings/hide-seek/levels.v1.json" LogicalName="WordyWings.HideSeek.levels.v1.json" />
   </ItemGroup>
 
   <ItemGroup>

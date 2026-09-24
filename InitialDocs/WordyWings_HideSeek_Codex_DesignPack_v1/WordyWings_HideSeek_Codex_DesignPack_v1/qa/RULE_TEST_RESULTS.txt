@@ -1,0 +1,42 @@
+PASS 01 Initial state: searching and three stars
+PASS 02 Initial occupants are not revealed
+PASS 03 Target YES completes after feedback
+PASS 04 Target NO costs one star and requests assisted retry
+PASS 05 Distractor NO keeps stars and continues search
+PASS 06 Distractor YES costs a star and continues search
+PASS 07 Correct NO never completes the level
+PASS 08 Invalid tool has no side effect
+PASS 09 Unknown spot has no side effect
+PASS 10 Object remains hidden while cover is revealing
+PASS 11 Reveal completion exposes exactly one occupant
+PASS 12 Stale reveal callback is ignored
+PASS 13 Cannot submit answer before reveal completes
+PASS 14 Cannot start another reveal while a quiz is open
+PASS 15 Answer double tap in feedback is ignored
+PASS 16 Duplicate answer event across different quizzes is ignored
+PASS 17 Resolved distractor cannot be reopened for farming
+PASS 18 Repeated assisted NO never deducts another star
+PASS 19 Assisted YES completes while retaining penalty
+PASS 20 Assisted success is not independent learning evidence
+PASS 21 Three wrong distractors clamp stars at zero
+PASS 22 Target can still be completed at zero stars
+PASS 23 Wrong answer at zero cannot create negative stars
+PASS 24 Pause preserves and blocks a pending question
+PASS 25 Pause blocks a reveal completion callback
+PASS 26 Resume accepts the original pending question
+PASS 27 Rules do not mutate original state
+PASS 28 Scissors feedback uses plural grammar
+PASS 29 Completed state rejects new actions
+PASS 30 Reject missing target entity
+PASS 31 Reject two copies of the target
+PASS 32 Reject duplicate spot ids
+PASS 33 Reject unreachable spot
+PASS 34 Reject duplicate vocabulary ids
+PASS 35 Empty reveal id cannot start a reveal
+PASS 36 Empty answer event id cannot submit a decision
+PASS 37 Acknowledge feedback is idempotent once searching
+PASS 38 Target identity is data driven, not hard coded to cat
+PASS 39 A used reveal id cannot be reused at another spot
+PASS 40 Completion preserves the remaining star value
+
+40 / 40 RULE TESTS PASSED. No Phaser rendering or device tests are included in this result.

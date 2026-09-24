@@ -46,6 +46,7 @@ Dev frontend đã proxy `/api`, `/Account`, `/Legal`, `/connect`, `/Abp`, `/libs
 
 ## Đã triển khai
 
+- **Hide & Seek · Trốn tìm cùng Momo**: 6 màn mẫu, 3 công cụ mở chỗ ẩn, câu hỏi YES/NO, sao thật, lưu/tiếp tục và queue đồng bộ. Mở từ bản đồ. [Gameplay, cấu trúc và thêm màn](hide-seek.md); [kiểm tra ngày 24/09/2026](hide-seek-qa.md).
 - **Đuổi hình bắt chữ · Chuông Sao**: đủ 1.000 câu, 25 dạng, 10 mức khó; 12 câu/lượt, ghi nhớ, xếp câu, hai bước và rung chuông nhận thưởng. Mở từ bản đồ; chơi trên thiết bị không cần backend. Chi tiết và migration ở [golden-bell.md](golden-bell.md).
 - Hồ sơ bé với nickname, avatar Pip/Poki/Lulu/Momo và nhóm tuổi.
 - Bản đồ Rainbow Valley, Animal Island, Happy Home, mỗi world 10 màn.

@@ -47,6 +47,7 @@ public class GameContentSeedContributor : IDataSeedContributor, ITransientDepend
                 Difficulty = item.GetProperty("difficulty").GetInt32(), Instruction = item.GetProperty("instruction").GetString()!,
                 IsBoss = item.GetProperty("isBoss").GetBoolean(), DefinitionJson = item.GetRawText() });
         }
+        await HideSeekContent.EnsureAsync(worlds, levels);
         using var terms = Read("vocabulary_pre_a1.json");
         var knownTerms = (await vocabulary.GetListAsync()).Select(x => x.Term).ToHashSet(StringComparer.Ordinal);
         foreach (var item in terms.RootElement.EnumerateArray().Where(x => new[] { "W01", "W02", "W03" }.Contains(x.GetProperty("world").GetString())))

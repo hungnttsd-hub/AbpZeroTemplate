@@ -1,0 +1,201 @@
+﻿id,worldId,order,mechanic,difficulty,instruction,targetVocabulary,reviewVocabulary,estimatedSeconds,isBoss
+W01-L01,W01,1,word_shot,1,Find the red.,red,green|purple,45,False
+W01-L02,W01,2,balloon_pop,1,Pop the blue.,blue,orange|circle,45,False
+W01-L03,W01,3,drag_sort,1,Put the yellow in the right group.,yellow,pink|square,45,False
+W01-L04,W01,4,word_shot,1,Find the green.,green,purple|triangle,45,False
+W01-L05,W01,5,letter_puzzle,1,Build the word ORANGE.,orange,circle|star,45,False
+W01-L06,W01,6,word_shot,2,Find the pink.,pink,square|big,45,False
+W01-L07,W01,7,drag_sort,2,Put the purple in the right group.,purple,triangle|small,45,False
+W01-L08,W01,8,balloon_pop,2,Pop the circle.,circle,star|ball,45,False
+W01-L09,W01,9,word_shot,2,Find the square.,square,big|box,45,False
+W01-L10,W01,10,boss_challenge,2,Boss review: find triangle and finish the Word Star challenge.,triangle,small|kite,90,True
+W01-L11,W01,11,word_shot,3,Find the star.,star,ball|flower,45,False
+W01-L12,W01,12,adventure_commands,3,Go to big.,big,box|black,45,False
+W01-L13,W01,13,drag_sort,3,Put the small in the right group.,small,kite|white,45,False
+W01-L14,W01,14,letter_puzzle,3,Build the word BALL.,ball,flower|brown,45,False
+W01-L15,W01,15,rescue_mission,3,Rescue the box.,box,black|red,90,False
+W01-L16,W01,16,balloon_pop,4,Pop the kite.,kite,white|blue,45,False
+W01-L17,W01,17,word_shot,4,Find the flower.,flower,brown|yellow,45,False
+W01-L18,W01,18,adventure_commands,4,Find the big black object.,black,red|green,45,False
+W01-L19,W01,19,rescue_mission,4,Find the big white object.,white,blue|orange,90,False
+W01-L20,W01,20,boss_challenge,4,Find the big brown object.,brown,yellow|pink,90,True
+W02-L01,W02,1,word_shot,1,Find the cat.,cat,fish|horse,45,False
+W02-L02,W02,2,balloon_pop,1,Pop the dog.,dog,duck|rabbit,45,False
+W02-L03,W02,3,drag_sort,1,Put the bird in the right group.,bird,cow|frog,45,False
+W02-L04,W02,4,word_shot,1,Find the fish.,fish,horse|monkey,45,False
+W02-L05,W02,5,letter_puzzle,1,Build the word DUCK.,duck,rabbit|tiger,45,False
+W02-L06,W02,6,word_shot,2,Find the cow.,cow,frog|lion,45,False
+W02-L07,W02,7,drag_sort,2,Put the horse in the right group.,horse,monkey|elephant,45,False
+W02-L08,W02,8,balloon_pop,2,Pop the rabbit.,rabbit,tiger|giraffe,45,False
+W02-L09,W02,9,word_shot,2,Find the frog.,frog,lion|crocodile,45,False
+W02-L10,W02,10,boss_challenge,2,Boss review: find monkey and finish the Word Star challenge.,monkey,elephant|snake,90,True
+W02-L11,W02,11,word_shot,3,Find the tiger near the tree.,tiger,giraffe|bee,45,False
+W02-L12,W02,12,adventure_commands,3,Find the lion near the tree.,lion,crocodile|butterfly,45,False
+W02-L13,W02,13,drag_sort,3,Find the elephant near the tree.,elephant,snake|bear,45,False
+W02-L14,W02,14,letter_puzzle,3,Find the giraffe near the tree.,giraffe,bee|mouse,45,False
+W02-L15,W02,15,rescue_mission,3,Find the crocodile near the tree.,crocodile,butterfly|cat,90,False
+W02-L16,W02,16,balloon_pop,4,Find the snake near the tree.,snake,bear|dog,45,False
+W02-L17,W02,17,word_shot,4,Find the bee near the tree.,bee,mouse|bird,45,False
+W02-L18,W02,18,adventure_commands,4,Find the butterfly near the tree.,butterfly,cat|fish,45,False
+W02-L19,W02,19,rescue_mission,4,Find the bear near the tree.,bear,dog|duck,90,False
+W02-L20,W02,20,boss_challenge,4,Find the mouse near the tree.,mouse,bird|cow,90,True
+W03-L01,W03,1,word_shot,1,Find the bed.,bed,sofa|mirror,45,False
+W03-L02,W03,2,balloon_pop,1,Pop the chair.,chair,lamp|door,45,False
+W03-L03,W03,3,drag_sort,1,Put the table in the right place.,table,clock|window,45,False
+W03-L04,W03,4,word_shot,1,Find the sofa.,sofa,mirror|toy,45,False
+W03-L05,W03,5,letter_puzzle,1,Build the word LAMP.,lamp,door|doll,45,False
+W03-L06,W03,6,word_shot,2,Find the clock.,clock,window|teddy,45,False
+W03-L07,W03,7,drag_sort,2,Put the mirror in the right place.,mirror,toy|book,45,False
+W03-L08,W03,8,balloon_pop,2,Pop the door.,door,doll|box,45,False
+W03-L09,W03,9,word_shot,2,Find the window.,window,teddy|kitchen,45,False
+W03-L10,W03,10,boss_challenge,2,Boss review: find toy and finish the Word Star challenge.,toy,book|bedroom,90,True
+W03-L11,W03,11,word_shot,3,Put the toy on the doll.,doll,box|bathroom,45,False
+W03-L12,W03,12,adventure_commands,3,Put the toy under the teddy.,teddy,kitchen|garden,45,False
+W03-L13,W03,13,drag_sort,3,Put the toy on the book.,book,bedroom|in,45,False
+W03-L14,W03,14,letter_puzzle,3,Put the toy under the box.,box,bathroom|under,45,False
+W03-L15,W03,15,rescue_mission,3,Put the toy on the kitchen.,kitchen,garden|bed,90,False
+W03-L16,W03,16,balloon_pop,4,Put the toy under the bedroom.,bedroom,in|chair,45,False
+W03-L17,W03,17,word_shot,4,Put the toy on the bathroom.,bathroom,under|table,45,False
+W03-L18,W03,18,adventure_commands,4,Put the toy under the garden.,garden,bed|sofa,45,False
+W03-L19,W03,19,rescue_mission,4,Find what is in the table.,in,chair|lamp,90,False
+W03-L20,W03,20,boss_challenge,4,Find what is under the table.,under,table|clock,90,True
+W04-L01,W04,1,word_shot,1,Find the apple.,apple,pear|mango,45,False
+W04-L02,W04,2,balloon_pop,1,Pop the banana.,banana,grape|pineapple,45,False
+W04-L03,W04,3,drag_sort,1,Put the orange in the food basket.,orange,watermelon|strawberry,45,False
+W04-L04,W04,4,word_shot,1,Find the pear.,pear,mango|bread,45,False
+W04-L05,W04,5,letter_puzzle,1,Build the word GRAPE.,grape,pineapple|cake,45,False
+W04-L06,W04,6,word_shot,2,Find the watermelon.,watermelon,strawberry|egg,45,False
+W04-L07,W04,7,drag_sort,2,Put the mango in the food basket.,mango,bread|rice,45,False
+W04-L08,W04,8,balloon_pop,2,Pop the pineapple.,pineapple,cake|cheese,45,False
+W04-L09,W04,9,rescue_mission,2,Rescue the strawberry.,strawberry,egg|sandwich,90,False
+W04-L10,W04,10,boss_challenge,2,Boss review: find bread and finish the Word Star challenge.,bread,rice|ice cream,90,True
+W04-L11,W04,11,word_shot,3,Momo wants cake. Give it to Momo.,cake,cheese|water,45,False
+W04-L12,W04,12,adventure_commands,3,Momo wants egg. Give it to Momo.,egg,sandwich|milk,45,False
+W04-L13,W04,13,drag_sort,3,Momo wants rice. Give it to Momo.,rice,ice cream|juice,45,False
+W04-L14,W04,14,letter_puzzle,3,Momo wants cheese. Give it to Momo.,cheese,water|hungry,45,False
+W04-L15,W04,15,rescue_mission,3,Momo wants sandwich. Give it to Momo.,sandwich,milk|apple,90,False
+W04-L16,W04,16,balloon_pop,4,Momo wants ice cream. Give it to Momo.,ice cream,juice|banana,45,False
+W04-L17,W04,17,word_shot,4,Momo wants water. Give it to Momo.,water,hungry|orange,45,False
+W04-L18,W04,18,adventure_commands,4,Momo wants milk. Give it to Momo.,milk,apple|pear,45,False
+W04-L19,W04,19,rescue_mission,4,Momo wants juice. Give it to Momo.,juice,banana|grape,90,False
+W04-L20,W04,20,boss_challenge,4,Momo wants hungry. Give it to Momo.,hungry,orange|watermelon,90,True
+W05-L01,W05,1,word_shot,1,Find the teacher.,teacher,board|pen,45,False
+W05-L02,W05,2,balloon_pop,1,Pop the student.,student,book|pencil,45,False
+W05-L03,W05,3,drag_sort,1,Put the desk in the school bag.,desk,notebook|ruler,45,False
+W05-L04,W05,4,word_shot,1,Find the board.,board,pen|eraser,45,False
+W05-L05,W05,5,letter_puzzle,1,Build the word BOOK.,book,pencil|bag,45,False
+W05-L06,W05,6,word_shot,2,Find the notebook.,notebook,ruler|paper,45,False
+W05-L07,W05,7,drag_sort,2,Put the pen in the school bag.,pen,eraser|read,45,False
+W05-L08,W05,8,balloon_pop,2,Pop the pencil.,pencil,bag|write,45,False
+W05-L09,W05,9,rescue_mission,2,Rescue the ruler.,ruler,paper|draw,90,False
+W05-L10,W05,10,boss_challenge,2,Boss review: find eraser and finish the Word Star challenge.,eraser,read|colour,90,True
+W05-L11,W05,11,word_shot,3,Listen and choose: bag.,bag,write|listen,45,False
+W05-L12,W05,12,adventure_commands,3,Listen and choose: paper.,paper,draw|open,45,False
+W05-L13,W05,13,drag_sort,3,Listen and choose: read.,read,colour|close,45,False
+W05-L14,W05,14,letter_puzzle,3,Listen and choose: write.,write,listen|spell,45,False
+W05-L15,W05,15,rescue_mission,3,Listen and choose: draw.,draw,open|teacher,90,False
+W05-L16,W05,16,balloon_pop,4,Listen and choose: colour.,colour,close|student,45,False
+W05-L17,W05,17,word_shot,4,Listen and choose: listen.,listen,spell|desk,45,False
+W05-L18,W05,18,adventure_commands,4,Listen and choose: open.,open,teacher|board,45,False
+W05-L19,W05,19,rescue_mission,4,Listen and choose: close.,close,student|book,90,False
+W05-L20,W05,20,boss_challenge,4,Listen and choose: spell.,spell,desk|notebook,90,True
+W06-L01,W06,1,word_shot,1,Find head.,head,ear|arm,45,False
+W06-L02,W06,2,balloon_pop,1,Pop the hair.,hair,nose|hand,45,False
+W06-L03,W06,3,drag_sort,1,Put eye with the matching picture.,eye,mouth|finger,45,False
+W06-L04,W06,4,word_shot,1,Find ear.,ear,arm|leg,45,False
+W06-L05,W06,5,letter_puzzle,1,Build the word NOSE.,nose,hand|foot,45,False
+W06-L06,W06,6,word_shot,2,Find mouth.,mouth,finger|run,45,False
+W06-L07,W06,7,drag_sort,2,Put arm with the matching picture.,arm,leg|walk,45,False
+W06-L08,W06,8,balloon_pop,2,Pop the hand.,hand,foot|jump,45,False
+W06-L09,W06,9,rescue_mission,2,Find and help: finger.,finger,run|swim,90,False
+W06-L10,W06,10,boss_challenge,2,Boss review: find leg and finish the Word Star challenge.,leg,walk|dance,90,True
+W06-L11,W06,11,word_shot,3,Touch your foot.,foot,jump|clap,45,False
+W06-L12,W06,12,adventure_commands,3,Show me: run.,run,swim|wave,45,False
+W06-L13,W06,13,drag_sort,3,Show me: walk.,walk,dance|shirt,45,False
+W06-L14,W06,14,letter_puzzle,3,Show me: jump.,jump,clap|hat,45,False
+W06-L15,W06,15,rescue_mission,3,Show me: swim.,swim,wave|head,90,False
+W06-L16,W06,16,balloon_pop,4,Show me: dance.,dance,shirt|hair,45,False
+W06-L17,W06,17,word_shot,4,Show me: clap.,clap,hat|eye,45,False
+W06-L18,W06,18,adventure_commands,4,Show me: wave.,wave,head|ear,45,False
+W06-L19,W06,19,rescue_mission,4,Touch your shirt.,shirt,hair|nose,90,False
+W06-L20,W06,20,boss_challenge,4,Touch your hat.,hat,eye|mouth,90,True
+W07-L01,W07,1,word_shot,1,Find car.,car,train|street,45,False
+W07-L02,W07,2,balloon_pop,1,Pop the bus.,bus,plane|park,45,False
+W07-L03,W07,3,drag_sort,1,Put the bike on the correct route.,bike,boat|shop,45,False
+W07-L04,W07,4,word_shot,1,Find train.,train,street|station,45,False
+W07-L05,W07,5,letter_puzzle,1,Build the word PLANE.,plane,park|airport,45,False
+W07-L06,W07,6,word_shot,2,Find boat.,boat,shop|left,45,False
+W07-L07,W07,7,drag_sort,2,Put the street on the correct route.,street,station|right,45,False
+W07-L08,W07,8,balloon_pop,2,Pop the park.,park,airport|up,45,False
+W07-L09,W07,9,rescue_mission,2,Find and help: shop.,shop,left|down,90,False
+W07-L10,W07,10,boss_challenge,2,Boss review: find station and finish the Word Star challenge.,station,right|straight,90,True
+W07-L11,W07,11,word_shot,3,"Go to the airport, then stop.",airport,up|near,45,False
+W07-L12,W07,12,adventure_commands,3,"Go to the left, then stop.",left,down|between,45,False
+W07-L13,W07,13,drag_sort,3,"Go to the right, then stop.",right,straight|behind,45,False
+W07-L14,W07,14,letter_puzzle,3,"Go to the up, then stop.",up,near|zoo,45,False
+W07-L15,W07,15,rescue_mission,3,"Go to the down, then stop.",down,between|car,90,False
+W07-L16,W07,16,balloon_pop,4,"Go to the straight, then stop.",straight,behind|bus,45,False
+W07-L17,W07,17,word_shot,4,"Go to the near, then stop.",near,zoo|bike,45,False
+W07-L18,W07,18,adventure_commands,4,"Go to the between, then stop.",between,car|train,45,False
+W07-L19,W07,19,rescue_mission,4,"Go to the behind, then stop.",behind,bus|plane,90,False
+W07-L20,W07,20,boss_challenge,4,"Go to the zoo, then stop.",zoo,bike|boat,90,True
+W08-L01,W08,1,word_shot,1,Find the sun.,sun,rainy|wind,45,False
+W08-L02,W08,2,balloon_pop,1,Pop the sunny.,sunny,cloud|windy,45,False
+W08-L03,W08,3,drag_sort,1,Put the rain with the right weather.,rain,cloudy|snow,45,False
+W08-L04,W08,4,word_shot,1,Find the rainy.,rainy,wind|hot,45,False
+W08-L05,W08,5,letter_puzzle,1,Build the word CLOUD.,cloud,windy|cold,45,False
+W08-L06,W08,6,word_shot,2,Find the cloudy.,cloudy,snow|warm,45,False
+W08-L07,W08,7,drag_sort,2,Put the wind with the right weather.,wind,hot|day,45,False
+W08-L08,W08,8,balloon_pop,2,Pop the windy.,windy,cold|night,45,False
+W08-L09,W08,9,rescue_mission,2,Find and help: snow.,snow,warm|morning,90,False
+W08-L10,W08,10,boss_challenge,2,Boss review: find hot and finish the Word Star challenge.,hot,day|umbrella,90,True
+W08-L11,W08,11,word_shot,3,It is cold. Choose the right place or item.,cold,night|coat,45,False
+W08-L12,W08,12,adventure_commands,3,It is warm. Choose the right place or item.,warm,morning|boots,45,False
+W08-L13,W08,13,drag_sort,3,It is day. Choose the right place or item.,day,umbrella|sky,45,False
+W08-L14,W08,14,letter_puzzle,3,It is night. Choose the right place or item.,night,coat|tree,45,False
+W08-L15,W08,15,rescue_mission,3,It is morning. Choose the right place or item.,morning,boots|sun,90,False
+W08-L16,W08,16,balloon_pop,4,It is umbrella. Choose the right place or item.,umbrella,sky|sunny,45,False
+W08-L17,W08,17,word_shot,4,It is coat. Choose the right place or item.,coat,tree|rain,45,False
+W08-L18,W08,18,adventure_commands,4,It is boots. Choose the right place or item.,boots,sun|rainy,45,False
+W08-L19,W08,19,rescue_mission,4,It is sky. Choose the right place or item.,sky,sunny|cloud,90,False
+W08-L20,W08,20,boss_challenge,4,It is tree. Choose the right place or item.,tree,rain|cloudy,90,True
+W09-L01,W09,1,word_shot,1,Find number one.,one,four|seven,45,False
+W09-L02,W09,2,balloon_pop,1,Pop two.,two,five|eight,45,False
+W09-L03,W09,3,drag_sort,1,Put three stars in the box.,three,six|nine,45,False
+W09-L04,W09,4,word_shot,1,Find number four.,four,seven|ten,45,False
+W09-L05,W09,5,letter_puzzle,1,Build the word FIVE.,five,eight|eleven,45,False
+W09-L06,W09,6,word_shot,2,Find number six.,six,nine|twelve,45,False
+W09-L07,W09,7,drag_sort,2,Put seven stars in the box.,seven,ten|thirteen,45,False
+W09-L08,W09,8,balloon_pop,2,Pop eight.,eight,eleven|fourteen,45,False
+W09-L09,W09,9,rescue_mission,2,Find and help: nine.,nine,twelve|fifteen,90,False
+W09-L10,W09,10,boss_challenge,2,Boss review: find ten and finish the Word Star challenge.,ten,thirteen|sixteen,90,True
+W09-L11,W09,11,word_shot,3,Count and choose eleven stars.,eleven,fourteen|seventeen,45,False
+W09-L12,W09,12,adventure_commands,3,Count and choose twelve stars.,twelve,fifteen|eighteen,45,False
+W09-L13,W09,13,drag_sort,3,Count and choose thirteen stars.,thirteen,sixteen|nineteen,45,False
+W09-L14,W09,14,letter_puzzle,3,Count and choose fourteen stars.,fourteen,seventeen|twenty,45,False
+W09-L15,W09,15,rescue_mission,3,Count and choose fifteen stars.,fifteen,eighteen|one,90,False
+W09-L16,W09,16,balloon_pop,4,Count and choose sixteen stars.,sixteen,nineteen|two,45,False
+W09-L17,W09,17,word_shot,4,Count and choose seventeen stars.,seventeen,twenty|three,45,False
+W09-L18,W09,18,adventure_commands,4,Count and choose eighteen stars.,eighteen,one|four,45,False
+W09-L19,W09,19,rescue_mission,4,Count and choose nineteen stars.,nineteen,two|five,90,False
+W09-L20,W09,20,boss_challenge,4,Count and choose twenty stars.,twenty,three|six,90,True
+W10-L01,W10,1,word_shot,1,Find the mother.,mother,sister|boy,45,False
+W10-L02,W10,2,balloon_pop,1,Pop the father.,father,baby|girl,45,False
+W10-L03,W10,3,drag_sort,1,Put the brother in the right group.,brother,friend|wake up,45,False
+W10-L04,W10,4,word_shot,1,Find the sister.,sister,boy|wash,45,False
+W10-L05,W10,5,letter_puzzle,1,Build the word BABY.,baby,girl|eat,45,False
+W10-L06,W10,6,word_shot,2,Find the friend.,friend,wake up|go,45,False
+W10-L07,W10,7,drag_sort,2,Put the boy in the right group.,boy,wash|play,45,False
+W10-L08,W10,8,balloon_pop,2,Pop the girl.,girl,eat|read,45,False
+W10-L09,W10,9,rescue_mission,2,Find and help: wake up.,wake up,go|sleep,90,False
+W10-L10,W10,10,boss_challenge,2,Boss review: find wash and finish the Word Star challenge.,wash,play|what,90,True
+W10-L11,W10,11,word_shot,3,Listen to the mini story and choose: eat.,eat,read|where,45,False
+W10-L12,W10,12,adventure_commands,3,Listen to the mini story and choose: go.,go,sleep|who,45,False
+W10-L13,W10,13,drag_sort,3,Listen to the mini story and choose: play.,play,what|my,45,False
+W10-L14,W10,14,letter_puzzle,3,Listen to the mini story and choose: read.,read,where|your,45,False
+W10-L15,W10,15,rescue_mission,3,Listen to the mini story and choose: sleep.,sleep,who|mother,90,False
+W10-L16,W10,16,balloon_pop,4,Listen to the mini story and choose: what.,what,my|father,45,False
+W10-L17,W10,17,word_shot,4,Listen to the mini story and choose: where.,where,your|brother,45,False
+W10-L18,W10,18,adventure_commands,4,Listen to the mini story and choose: who.,who,mother|sister,45,False
+W10-L19,W10,19,rescue_mission,4,Listen to the mini story and choose: my.,my,father|baby,90,False
+W10-L20,W10,20,boss_challenge,4,Listen to the mini story and choose: your.,your,brother|friend,90,True

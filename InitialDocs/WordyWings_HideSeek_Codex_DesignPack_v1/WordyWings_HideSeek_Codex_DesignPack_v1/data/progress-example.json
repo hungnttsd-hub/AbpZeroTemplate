@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "eventId": "example-event-001",
+  "sessionId": "example-session-001",
+  "levelId": "HS-01",
+  "contentVersion": "1.0.0",
+  "seed": 7429,
+  "status": "completed",
+  "starsRemaining": 2,
+  "activeDurationMs": 58000,
+  "attempts": [
+    {
+      "answerEventId": "example-answer-1",
+      "revealId": "reveal-1",
+      "spotId": "tree",
+      "entityId": "dog",
+      "answer": true,
+      "correct": false,
+      "assisted": false
+    },
+    {
+      "answerEventId": "example-answer-2",
+      "revealId": "reveal-2",
+      "spotId": "bush",
+      "entityId": "cat",
+      "answer": true,
+      "correct": true,
+      "assisted": false
+    }
+  ]
+}

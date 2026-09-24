@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "levelCount": 6,
+  "vocabularyEntityCount": 8,
+  "detailedImages": 36,
+  "annotationImages": 16,
+  "contactSheets": 3,
+  "audioScripts": 37,
+  "runtimeAssetSlotsRequiringProduction": 32,
+  "testedScope": "Schema, content cross-references, reachable spots, image presence/crop bounds, declared availability.",
+  "notTested": "Live game rendering, actual input, ABP endpoints, offline sync, device performance, audio playback."
+}

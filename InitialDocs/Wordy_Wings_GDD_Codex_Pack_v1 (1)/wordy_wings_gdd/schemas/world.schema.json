@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WordyWings World",
+  "type": "object",
+  "required": [
+    "id",
+    "slug",
+    "name",
+    "vi",
+    "theme",
+    "hero",
+    "goal"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "vi": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string"
+    },
+    "hero": {
+      "type": "string"
+    },
+    "palette": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    }
+  }
+}

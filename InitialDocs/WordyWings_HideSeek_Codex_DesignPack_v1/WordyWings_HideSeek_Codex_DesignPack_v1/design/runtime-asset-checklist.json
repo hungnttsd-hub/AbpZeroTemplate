@@ -1,0 +1,532 @@
+[
+  {
+    "key": "hs.background.forest.clean",
+    "type": "background",
+    "recommendedExportPx": [
+      1600,
+      900
+    ],
+    "frames": 1,
+    "references": [
+      "D20",
+      "A01"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": false,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.bush.closed",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D07",
+      "D21",
+      "D22"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.bush.open",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D07",
+      "D21",
+      "D22"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.hollow_log.closed",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D10"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.hollow_log.open",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D10"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.rock.closed",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D08",
+      "D25",
+      "D26"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.rock.open",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D08",
+      "D25",
+      "D26"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.tall_grass.closed",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D09"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.tall_grass.open",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D09"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.tree_hollow.closed",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D06"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.cover.tree_hollow.open",
+    "type": "cover",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 1,
+    "references": [
+      "D06"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.cat",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [
+      "D33"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.dog",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [
+      "D16",
+      "D31"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.tiger",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [
+      "D34"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.scissors",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [
+      "D32"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.apple",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.orange",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.ball",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.object.rabbit",
+    "type": "object",
+    "recommendedExportPx": [
+      384,
+      384
+    ],
+    "frames": 1,
+    "references": [],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.momo.idle",
+    "type": "character",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 4,
+    "references": [
+      "D05",
+      "D35"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.momo.encourage",
+    "type": "character",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 4,
+    "references": [
+      "D05",
+      "D35"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.momo.think",
+    "type": "character",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 3,
+    "references": [
+      "D05",
+      "D35"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.momo.celebrate",
+    "type": "character",
+    "recommendedExportPx": [
+      512,
+      512
+    ],
+    "frames": 6,
+    "references": [
+      "D05",
+      "D35"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.tool.swipe",
+    "type": "tool",
+    "recommendedExportPx": [
+      192,
+      192
+    ],
+    "frames": 1,
+    "references": [
+      "D12"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.tool.net",
+    "type": "tool",
+    "recommendedExportPx": [
+      192,
+      192
+    ],
+    "frames": 1,
+    "references": [
+      "D13"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.tool.berry",
+    "type": "tool",
+    "recommendedExportPx": [
+      192,
+      192
+    ],
+    "frames": 1,
+    "references": [
+      "D14"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.vfx.leaf",
+    "type": "vfx",
+    "recommendedExportPx": [
+      256,
+      256
+    ],
+    "frames": 4,
+    "references": [
+      "A05",
+      "A06",
+      "A07"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.vfx.net_cast",
+    "type": "vfx",
+    "recommendedExportPx": [
+      256,
+      256
+    ],
+    "frames": 4,
+    "references": [
+      "A05",
+      "A06",
+      "A07"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.vfx.net_lift",
+    "type": "vfx",
+    "recommendedExportPx": [
+      256,
+      256
+    ],
+    "frames": 4,
+    "references": [
+      "A05",
+      "A06",
+      "A07"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.vfx.rock_fragment",
+    "type": "vfx",
+    "recommendedExportPx": [
+      256,
+      256
+    ],
+    "frames": 4,
+    "references": [
+      "A05",
+      "A06",
+      "A07"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.vfx.berry_puff",
+    "type": "vfx",
+    "recommendedExportPx": [
+      256,
+      256
+    ],
+    "frames": 6,
+    "references": [
+      "A05",
+      "A06",
+      "A07"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  },
+  {
+    "key": "hs.vfx.sparkle",
+    "type": "vfx",
+    "recommendedExportPx": [
+      256,
+      256
+    ],
+    "frames": 4,
+    "references": [
+      "A05",
+      "A06",
+      "A07"
+    ],
+    "runtimeFileIncluded": false,
+    "status": "requires_layered_export_or_authoring",
+    "alphaRequired": true,
+    "labelBakedIntoImage": false
+  }
+]

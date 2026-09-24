@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WordyWings LevelDefinition",
+  "type": "object",
+  "required": [
+    "id",
+    "worldId",
+    "order",
+    "mechanic",
+    "difficulty",
+    "targetVocabulary",
+    "instruction",
+    "targets",
+    "hintPolicy",
+    "learningObjective",
+    "isBoss"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^W[0-9]{2}-L[0-9]{2}$"
+    },
+    "worldId": {
+      "type": "string",
+      "pattern": "^W[0-9]{2}$"
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99
+    },
+    "title": {
+      "type": "string"
+    },
+    "mechanic": {
+      "enum": [
+        "word_shot",
+        "balloon_pop",
+        "drag_sort",
+        "letter_puzzle",
+        "rescue_mission",
+        "adventure_commands",
+        "boss_challenge"
+      ]
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "targetVocabulary": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reviewVocabulary": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instructionAudioKey": {
+      "type": "string"
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "value",
+          "correct"
+        ],
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "assetKey": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "stars": {
+      "type": "object"
+    },
+    "hintPolicy": {
+      "type": "object",
+      "required": [
+        "afterWrongAttempts",
+        "audioReplay",
+        "visualPulse"
+      ]
+    },
+    "estimatedSeconds": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 300
+    },
+    "learningObjective": {
+      "type": "string"
+    },
+    "reward": {
+      "type": "object"
+    },
+    "isBoss": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

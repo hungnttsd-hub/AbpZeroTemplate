@@ -1,0 +1,30 @@
+[
+  {
+    "purpose": "forest",
+    "mode": "builtin image_gen",
+    "prompt": "Use case: stylized-concept. Asset type: clean runtime background for Wordy Wings Hide & Seek game, landscape 1600x900 composition. Create a polished richly painted 2.5D children's forest clearing: warm honey brown giant tree trunks framing the extreme left and right, dense layered rounded emerald/lime leafy canopy at top and edges, soft teal distant forest and cyan sky in upper middle, warm sunbeams, broad open light grass and sandy winding ground in middle and foreground. Charming hand-painted casual game illustration, rounded smooth organic shapes, soft warm highlights, lush detailed leaves, subtle daisies and tiny mushrooms ONLY around far edges, inviting bright daylight. CRITICAL gameplay requirement: the central area x=320..1510 and y=180..710 must be an OPEN unobstructed clearing for separately rendered hiding spots. No big bush/rock/log in that area. Bottom center open for toolbar. No animals, dragons, people, faces, eyes, silhouettes, fruit, scissors, ball, rabbit, cat, dog or tiger anywhere. No letters, text, logos, signs, buttons, UI, star counters, sparkles pointing at specific spots. Wide coherent environment only; no visible hidden objects. Original art, high quality matching whimsical green forest concept. All hiding objects and character will be separate runtime layers.",
+    "source": "C:/Users/HUNGNT/.codex/generated_images/01a0bf93-fb00-7f41-9eb4-d3b3dfbe34a3/exec-c52087ea-801a-4e6b-af11-75ff196818bf.png",
+    "projectPath": "react/public/art/hide-seek-forest-v1.png"
+  },
+  {
+    "purpose": "entities",
+    "mode": "builtin image_gen",
+    "prompt": "Use case: stylized-concept. Asset type: a clean transparent game vocabulary sprite atlas for Wordy Wings. Create exactly EIGHT separate complete sprites in a strict 4-column by 2-row equal-cell grid on a 2048x1024 canvas, each square cell512x512, each sprite centered inside its own cell with generous60px transparent margin and no overlap. Style polished adorable 2.5D children's casual game, rounded forms, rich hand-painted soft gradients, warm light from upper left, bright colors, crisp silhouettes and large friendly eyes for animals. TOP ROW left-to-right: 1 a full-body sitting orange tabby CAT with POINTED triangular ears, small triangular nose, whiskers and curled tail; 2 a full-body sitting brown and white beagle DOG with FLOPPY ears and happy pink tongue; 3 a full-body sitting orange baby TIGER with ROUND ears and distinct bold black tiger stripes, white cheeks; 4 a pair of safe child SCISSORS with two red plastic oval finger rings and two short blunt rounded silver blades crossed in open V, pivot bolt. BOTTOM ROW left-to-right: 5 a single red APPLE fruit, subtle dimple, short brown stem and one green leaf; 6 a round bright ORANGE citrus fruit with finely dimpled orange peel and a green leaf; 7 a spherical colorful BEACH BALL, glossy curved red blue yellow white panels; 8 a full-body sitting white RABBIT with two long upright ears and pink ear interiors. No backdrop, no floor, no circles/cards behind objects, no shadows beyond sprites, no text, labels, letters, numbers, borders, UI, scenery or props. Genuine transparent alpha around each sprite, not a painted checkerboard. Make each sprite recognizable and equally prominent; keep anatomical distinctions cat/tiger/dog unambiguous. Original art.",
+    "source": "C:/Users/HUNGNT/.codex/generated_images/01a0bf93-fb00-7f41-9eb4-d3b3dfbe34a3/exec-bf65fde1-fb15-4c43-bb7f-ddfc605cfaf9.png",
+    "projectPath": "react/public/art/hide-seek-objects-v1.png"
+  },
+  {
+    "purpose": "closed covers",
+    "mode": "builtin image_gen",
+    "prompt": "A high-quality game inventory atlas of six isolated 3D toy forest props with transparent background, matching adorable children's game characters. Like a sheet of 6 cut-out stickers. 3 columns,2 rows. Equal square cells with generous space, no overlap. Top row: leafy bush with white daisies, mossy round stone, small hollow tree stump with opening filled by leaves. Bottom row: tuft of tall grass, horizontal hollow log with opening filled by leaves, oval cluster of leaves. Bright green foliage, honey brown wood, warm gray stone. Soft modeled rounded toy materials and beautiful gentle lighting. Each prop must have clear clean silhouette, no eyes or animals. Isolated on transparency. No text. No checkerboard. No environment, no ground, no backdrop. This is a sprite sheet, not a scene.",
+    "source": "C:/Users/HUNGNT/.codex/generated_images/01a0bf93-fb00-7f41-9eb4-d3b3dfbe34a3/exec-ebf22617-81db-4cf0-9951-062c11fa0627.png",
+    "projectPath": "react/public/art/hide-seek-covers-v1.png"
+  },
+  {
+    "purpose": "opened covers",
+    "mode": "builtin image_gen",
+    "prompt": "A high-quality game inventory atlas of six isolated 3D toy forest props with transparent background, matching adorable children's game characters. Like a sheet of 6 cut-out stickers. 3 columns, 2 rows. Equal square cells with generous space, no overlap. Top row: leafy bush parted into two low side clusters with a wide empty center; mossy round stone split into two low rounded side pieces with a wide empty center; small hollow tree stump with an empty hollow doorway. Bottom row: tuft of tall grass parted into two side tufts with empty center; horizontal hollow log with an empty entrance; oval cluster of leaves parted into side clusters. Bright green foliage, honey brown wood, warm gray stone. Soft modeled rounded toy materials and beautiful gentle lighting. Each prop must have clear clean silhouette, no eyes or animals. Isolated on transparency. No text. No checkerboard. No environment, no ground, no backdrop. This is a sprite sheet, not a scene. Empty openings in props are completely empty so a game character can be placed there later.",
+    "source": "C:/Users/HUNGNT/.codex/generated_images/01a0bf93-fb00-7f41-9eb4-d3b3dfbe34a3/exec-85f1bd83-7fee-41c1-adf9-0e2e843e4e24.png",
+    "projectPath": "react/public/art/hide-seek-open-covers-v1.png"
+  }
+]

@@ -1,0 +1,631 @@
+{
+  "schemaVersion": "1.0.0",
+  "entities": [
+    {
+      "id": "cat",
+      "label": "cat",
+      "grammar": "singular",
+      "assetKey": "hs.object.cat",
+      "quest": "Find a cat.",
+      "question": "Is this a cat?",
+      "affirmative": "Yes! It is a cat.",
+      "negativeIdentification": "No. It is a cat."
+    },
+    {
+      "id": "dog",
+      "label": "dog",
+      "grammar": "singular",
+      "assetKey": "hs.object.dog",
+      "quest": "Find a dog.",
+      "question": "Is this a dog?",
+      "affirmative": "Yes! It is a dog.",
+      "negativeIdentification": "No. It is a dog."
+    },
+    {
+      "id": "tiger",
+      "label": "tiger",
+      "grammar": "singular",
+      "assetKey": "hs.object.tiger",
+      "quest": "Find a tiger.",
+      "question": "Is this a tiger?",
+      "affirmative": "Yes! It is a tiger.",
+      "negativeIdentification": "No. It is a tiger."
+    },
+    {
+      "id": "scissors",
+      "label": "scissors",
+      "grammar": "plural",
+      "assetKey": "hs.object.scissors",
+      "quest": "Find the scissors.",
+      "question": "Are these scissors?",
+      "affirmative": "Yes! These are scissors.",
+      "negativeIdentification": "No. These are scissors."
+    },
+    {
+      "id": "apple",
+      "label": "apple",
+      "grammar": "singular",
+      "assetKey": "hs.object.apple",
+      "quest": "Find an apple.",
+      "question": "Is this an apple?",
+      "affirmative": "Yes! It is an apple.",
+      "negativeIdentification": "No. It is an apple."
+    },
+    {
+      "id": "orange",
+      "label": "orange",
+      "grammar": "singular",
+      "assetKey": "hs.object.orange",
+      "quest": "Find an orange.",
+      "question": "Is this an orange?",
+      "affirmative": "Yes! It is an orange.",
+      "negativeIdentification": "No. It is an orange."
+    },
+    {
+      "id": "ball",
+      "label": "ball",
+      "grammar": "singular",
+      "assetKey": "hs.object.ball",
+      "quest": "Find a ball.",
+      "question": "Is this a ball?",
+      "affirmative": "Yes! It is a ball.",
+      "negativeIdentification": "No. It is a ball."
+    },
+    {
+      "id": "rabbit",
+      "label": "rabbit",
+      "grammar": "singular",
+      "assetKey": "hs.object.rabbit",
+      "quest": "Find a rabbit.",
+      "question": "Is this a rabbit?",
+      "affirmative": "Yes! It is a rabbit.",
+      "negativeIdentification": "No. It is a rabbit."
+    }
+  ],
+  "levels": [
+    {
+      "id": "HS-01",
+      "mechanic": "hide_seek",
+      "contentVersion": "1.0.0",
+      "targetEntityId": "cat",
+      "difficulty": 1,
+      "initialStars": 3,
+      "shuffleOccupants": true,
+      "tools": [
+        "swipe_leaves",
+        "throw_net",
+        "blast_berry"
+      ],
+      "spots": [
+        {
+          "id": "tree",
+          "kind": "tree_hollow",
+          "entityId": "dog",
+          "allowedTools": [
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 380,
+            "y": 210,
+            "width": 290,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.tree_hollow.closed"
+        },
+        {
+          "id": "bush",
+          "kind": "bush",
+          "entityId": "cat",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 440,
+            "y": 435,
+            "width": 320,
+            "height": 245
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        },
+        {
+          "id": "rock",
+          "kind": "rock",
+          "entityId": "tiger",
+          "allowedTools": [
+            "blast_berry"
+          ],
+          "anchor": {
+            "x": 770,
+            "y": 360,
+            "width": 290,
+            "height": 255
+          },
+          "coverAssetKey": "hs.cover.rock.closed"
+        },
+        {
+          "id": "grass",
+          "kind": "tall_grass",
+          "entityId": "scissors",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1110,
+            "y": 470,
+            "width": 250,
+            "height": 200
+          },
+          "coverAssetKey": "hs.cover.tall_grass.closed"
+        }
+      ]
+    },
+    {
+      "id": "HS-02",
+      "mechanic": "hide_seek",
+      "contentVersion": "1.0.0",
+      "targetEntityId": "dog",
+      "difficulty": 1,
+      "initialStars": 3,
+      "shuffleOccupants": true,
+      "tools": [
+        "swipe_leaves",
+        "throw_net",
+        "blast_berry"
+      ],
+      "spots": [
+        {
+          "id": "tree",
+          "kind": "tree_hollow",
+          "entityId": "cat",
+          "allowedTools": [
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 380,
+            "y": 210,
+            "width": 290,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.tree_hollow.closed"
+        },
+        {
+          "id": "bush",
+          "kind": "bush",
+          "entityId": "ball",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 440,
+            "y": 435,
+            "width": 320,
+            "height": 245
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        },
+        {
+          "id": "rock",
+          "kind": "rock",
+          "entityId": "tiger",
+          "allowedTools": [
+            "blast_berry"
+          ],
+          "anchor": {
+            "x": 770,
+            "y": 360,
+            "width": 290,
+            "height": 255
+          },
+          "coverAssetKey": "hs.cover.rock.closed"
+        },
+        {
+          "id": "grass",
+          "kind": "tall_grass",
+          "entityId": "scissors",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1110,
+            "y": 470,
+            "width": 250,
+            "height": 200
+          },
+          "coverAssetKey": "hs.cover.tall_grass.closed"
+        },
+        {
+          "id": "log",
+          "kind": "hollow_log",
+          "entityId": "dog",
+          "allowedTools": [
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1150,
+            "y": 210,
+            "width": 320,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.hollow_log.closed"
+        }
+      ]
+    },
+    {
+      "id": "HS-03",
+      "mechanic": "hide_seek",
+      "contentVersion": "1.0.0",
+      "targetEntityId": "tiger",
+      "difficulty": 2,
+      "initialStars": 3,
+      "shuffleOccupants": true,
+      "tools": [
+        "swipe_leaves",
+        "throw_net",
+        "blast_berry"
+      ],
+      "spots": [
+        {
+          "id": "tree",
+          "kind": "tree_hollow",
+          "entityId": "dog",
+          "allowedTools": [
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 380,
+            "y": 210,
+            "width": 290,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.tree_hollow.closed"
+        },
+        {
+          "id": "bush",
+          "kind": "bush",
+          "entityId": "scissors",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 440,
+            "y": 435,
+            "width": 320,
+            "height": 245
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        },
+        {
+          "id": "rock",
+          "kind": "rock",
+          "entityId": "cat",
+          "allowedTools": [
+            "blast_berry"
+          ],
+          "anchor": {
+            "x": 770,
+            "y": 360,
+            "width": 290,
+            "height": 255
+          },
+          "coverAssetKey": "hs.cover.rock.closed"
+        },
+        {
+          "id": "grass",
+          "kind": "tall_grass",
+          "entityId": "tiger",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1110,
+            "y": 470,
+            "width": 250,
+            "height": 200
+          },
+          "coverAssetKey": "hs.cover.tall_grass.closed"
+        },
+        {
+          "id": "log",
+          "kind": "hollow_log",
+          "entityId": "orange",
+          "allowedTools": [
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1150,
+            "y": 210,
+            "width": 320,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.hollow_log.closed"
+        }
+      ]
+    },
+    {
+      "id": "HS-04",
+      "mechanic": "hide_seek",
+      "contentVersion": "1.0.0",
+      "targetEntityId": "scissors",
+      "difficulty": 2,
+      "initialStars": 3,
+      "shuffleOccupants": true,
+      "tools": [
+        "swipe_leaves",
+        "throw_net",
+        "blast_berry"
+      ],
+      "spots": [
+        {
+          "id": "tree",
+          "kind": "tree_hollow",
+          "entityId": "ball",
+          "allowedTools": [
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 380,
+            "y": 210,
+            "width": 290,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.tree_hollow.closed"
+        },
+        {
+          "id": "bush",
+          "kind": "bush",
+          "entityId": "dog",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 440,
+            "y": 435,
+            "width": 320,
+            "height": 245
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        },
+        {
+          "id": "rock",
+          "kind": "rock",
+          "entityId": "apple",
+          "allowedTools": [
+            "blast_berry"
+          ],
+          "anchor": {
+            "x": 770,
+            "y": 360,
+            "width": 290,
+            "height": 255
+          },
+          "coverAssetKey": "hs.cover.rock.closed"
+        },
+        {
+          "id": "grass",
+          "kind": "tall_grass",
+          "entityId": "scissors",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1110,
+            "y": 470,
+            "width": 250,
+            "height": 200
+          },
+          "coverAssetKey": "hs.cover.tall_grass.closed"
+        }
+      ]
+    },
+    {
+      "id": "HS-05",
+      "mechanic": "hide_seek",
+      "contentVersion": "1.0.0",
+      "targetEntityId": "apple",
+      "difficulty": 3,
+      "initialStars": 3,
+      "shuffleOccupants": true,
+      "tools": [
+        "swipe_leaves",
+        "throw_net",
+        "blast_berry"
+      ],
+      "spots": [
+        {
+          "id": "tree",
+          "kind": "tree_hollow",
+          "entityId": "cat",
+          "allowedTools": [
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 380,
+            "y": 210,
+            "width": 290,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.tree_hollow.closed"
+        },
+        {
+          "id": "bush",
+          "kind": "bush",
+          "entityId": "orange",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 440,
+            "y": 435,
+            "width": 320,
+            "height": 245
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        },
+        {
+          "id": "rock",
+          "kind": "rock",
+          "entityId": "scissors",
+          "allowedTools": [
+            "blast_berry"
+          ],
+          "anchor": {
+            "x": 770,
+            "y": 360,
+            "width": 290,
+            "height": 255
+          },
+          "coverAssetKey": "hs.cover.rock.closed"
+        },
+        {
+          "id": "grass",
+          "kind": "tall_grass",
+          "entityId": "dog",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1110,
+            "y": 470,
+            "width": 250,
+            "height": 200
+          },
+          "coverAssetKey": "hs.cover.tall_grass.closed"
+        },
+        {
+          "id": "log",
+          "kind": "hollow_log",
+          "entityId": "apple",
+          "allowedTools": [
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1150,
+            "y": 210,
+            "width": 320,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.hollow_log.closed"
+        }
+      ]
+    },
+    {
+      "id": "HS-06",
+      "mechanic": "hide_seek",
+      "contentVersion": "1.0.0",
+      "targetEntityId": "orange",
+      "difficulty": 3,
+      "initialStars": 3,
+      "shuffleOccupants": true,
+      "tools": [
+        "swipe_leaves",
+        "throw_net",
+        "blast_berry"
+      ],
+      "spots": [
+        {
+          "id": "tree",
+          "kind": "tree_hollow",
+          "entityId": "dog",
+          "allowedTools": [
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 380,
+            "y": 210,
+            "width": 290,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.tree_hollow.closed"
+        },
+        {
+          "id": "bush",
+          "kind": "bush",
+          "entityId": "scissors",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 440,
+            "y": 435,
+            "width": 320,
+            "height": 245
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        },
+        {
+          "id": "rock",
+          "kind": "rock",
+          "entityId": "apple",
+          "allowedTools": [
+            "blast_berry"
+          ],
+          "anchor": {
+            "x": 770,
+            "y": 360,
+            "width": 290,
+            "height": 255
+          },
+          "coverAssetKey": "hs.cover.rock.closed"
+        },
+        {
+          "id": "grass",
+          "kind": "tall_grass",
+          "entityId": "cat",
+          "allowedTools": [
+            "swipe_leaves",
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1110,
+            "y": 470,
+            "width": 250,
+            "height": 200
+          },
+          "coverAssetKey": "hs.cover.tall_grass.closed"
+        },
+        {
+          "id": "log",
+          "kind": "hollow_log",
+          "entityId": "tiger",
+          "allowedTools": [
+            "throw_net"
+          ],
+          "anchor": {
+            "x": 1150,
+            "y": 210,
+            "width": 320,
+            "height": 190
+          },
+          "coverAssetKey": "hs.cover.hollow_log.closed"
+        },
+        {
+          "id": "back_bush",
+          "kind": "bush",
+          "entityId": "orange",
+          "allowedTools": [
+            "throw_net",
+            "swipe_leaves"
+          ],
+          "anchor": {
+            "x": 780,
+            "y": 175,
+            "width": 255,
+            "height": 150
+          },
+          "coverAssetKey": "hs.cover.bush.closed"
+        }
+      ]
+    }
+  ]
+}

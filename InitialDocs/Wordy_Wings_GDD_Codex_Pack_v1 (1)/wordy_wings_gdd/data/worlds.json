@@ -1,0 +1,102 @@
+[
+  {
+    "id": "W01",
+    "slug": "rainbow-valley",
+    "name": "Rainbow Valley",
+    "vi": "Thung lũng Cầu Vồng",
+    "theme": "colors, shapes, size, basic objects",
+    "hero": "Pip",
+    "palette": "sunny sky, rainbow, grass, crystals",
+    "goal": "Khôi phục 7 sắc màu bị Mr. Mumble hút khỏi cầu vồng."
+  },
+  {
+    "id": "W02",
+    "slug": "animal-island",
+    "name": "Animal Island",
+    "vi": "Đảo Muông Thú",
+    "theme": "animals, simple descriptions, habitats",
+    "hero": "Poki",
+    "palette": "jungle, waterfalls, bamboo, river",
+    "goal": "Giải cứu các bạn thú bị giấu nhãn tên trong các chiếc hộp mây."
+  },
+  {
+    "id": "W03",
+    "slug": "happy-home",
+    "name": "Happy Home",
+    "vi": "Ngôi Nhà Vui Vẻ",
+    "theme": "rooms, furniture, toys, prepositions",
+    "hero": "Momo",
+    "palette": "cozy home, garden, warm wood, pastel textiles",
+    "goal": "Giúp Momo sắp xếp lại ngôi nhà sau cơn gió làm đồ vật bay khắp nơi."
+  },
+  {
+    "id": "W04",
+    "slug": "yummy-land",
+    "name": "Yummy Land",
+    "vi": "Xứ Sở Ngon Lành",
+    "theme": "food, drink, likes, quantities",
+    "hero": "Momo",
+    "palette": "fruit orchards, bakery, milk river, picnic",
+    "goal": "Nấu bữa tiệc lớn để đánh thức Word Tree đang đói."
+  },
+  {
+    "id": "W05",
+    "slug": "magic-school",
+    "name": "Magic School",
+    "vi": "Trường Học Phép Thuật",
+    "theme": "school objects, classroom actions, letters",
+    "hero": "Lulu",
+    "palette": "treehouse school, books, pencils, art room",
+    "goal": "Sửa cỗ máy chữ cái của Lulu để mở thư viện Word Star."
+  },
+  {
+    "id": "W06",
+    "slug": "action-jungle",
+    "name": "Body & Action Jungle",
+    "vi": "Rừng Vận Động",
+    "theme": "body, clothes, actions, abilities",
+    "hero": "Foxy",
+    "palette": "jungle obstacle course, vines, bridges",
+    "goal": "Vượt giải hội thao rừng và thu hồi các Action Stars."
+  },
+  {
+    "id": "W07",
+    "slug": "adventure-city",
+    "name": "Adventure City",
+    "vi": "Thành Phố Phiêu Lưu",
+    "theme": "transport, places, directions, position",
+    "hero": "Foxy",
+    "palette": "toy city, canal, station, airport, roads",
+    "goal": "Tìm đường qua thành phố để giao 5 bưu kiện chứa Lost Words."
+  },
+  {
+    "id": "W08",
+    "slug": "weather-kingdom",
+    "name": "Weather Kingdom",
+    "vi": "Vương Quốc Thời Tiết",
+    "theme": "weather, clothes, hot/cold, day/night",
+    "hero": "Lulu",
+    "palette": "floating weather islands, windmills, clouds",
+    "goal": "Sửa Weather Wheel để mỗi vùng có lại thời tiết đúng."
+  },
+  {
+    "id": "W09",
+    "slug": "space-numbers",
+    "name": "Space Numbers",
+    "vi": "Không Gian Con Số",
+    "theme": "numbers 1-20, counting, quantity, comparisons",
+    "hero": "Pip",
+    "palette": "moon islands, rockets, stars, nebula",
+    "goal": "Thu thập 20 Number Stars để khởi động tên lửa trở về Story Castle."
+  },
+  {
+    "id": "W10",
+    "slug": "story-castle",
+    "name": "Story Castle",
+    "vi": "Lâu Đài Câu Chuyện",
+    "theme": "family, daily life, simple sentences, integrated review",
+    "hero": "All",
+    "palette": "storybook castle, floating pages, sunset, portals",
+    "goal": "Ghép lại cuốn Great Word Book và giúp Mr. Mumble hiểu rằng từ ngữ vui hơn khi được chia sẻ."
+  }
+]

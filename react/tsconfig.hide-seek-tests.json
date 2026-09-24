@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "target": "ES2022", "module": "CommonJS", "moduleResolution": "Node", "esModuleInterop": true, "resolveJsonModule": true, "strict": true, "skipLibCheck": true, "outDir": ".hide-seek-tests", "rootDir": "." },
+  "include": ["src/game/hide-seek/contracts.ts", "src/game/hide-seek/rules.ts", "src/game/hide-seek/content.ts", "src/game/hide-seek/controller.ts", "src/game/hide-seek/store.ts", "src/game/hide-seek/layout.ts", "tests/hide-seek/rules.test.ts"]
+}

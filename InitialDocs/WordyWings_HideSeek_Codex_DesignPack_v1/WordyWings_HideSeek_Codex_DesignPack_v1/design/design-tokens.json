@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "status": "proposed implementation values",
+    "coordinateSystem": "1600x900 logical units",
+    "notPixelMeasurementsOfSource": true
+  },
+  "palette": {
+    "ink": "#124C3D",
+    "cream": "#FFF4DB",
+    "wood": "#C98B47",
+    "woodShadow": "#8B552F",
+    "leaf": "#61A947",
+    "sky": "#A8DDFA",
+    "yes": "#52B861",
+    "no": "#F26955",
+    "gold": "#FFC949",
+    "panelRim": "#86D4EE"
+  },
+  "radii": {
+    "panel": 32,
+    "button": 24,
+    "tool": 28
+  },
+  "typography": {
+    "family": "reuse project rounded UI font; Noto Sans Rounded only if licensed and provided by project",
+    "quest": 42,
+    "quiz": 34,
+    "button": 32,
+    "toolLabel": 22,
+    "helper": 20,
+    "weight": 700,
+    "noFontFilesIncluded": true
+  },
+  "interaction": {
+    "minimumTouchCssPx": 48,
+    "targetTouchCssPx": 56,
+    "minimumGapCssPx": 12,
+    "swipeFraction": 0.55,
+    "swipeCapDesignPx": 96,
+    "neutralFeedbackMs": 700,
+    "targetRevealMs": 240,
+    "penaltyAnimationMs": 300
+  },
+  "layers": {
+    "background": 0,
+    "object": 20,
+    "cover": 30,
+    "coverVfx": 40,
+    "momo": 50,
+    "hud": 100,
+    "quizScrim": 200,
+    "quizPanel": 210,
+    "pauseScrim": 300,
+    "pausePanel": 310
+  }
+}

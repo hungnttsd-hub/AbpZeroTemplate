@@ -1,0 +1,1047 @@
+{
+  "sources": {
+    "scene": "references/01_selected_scene.png",
+    "board": "references/02_interaction_board.png"
+  },
+  "crops": [
+    {
+      "id": "D01",
+      "title": "Quest header",
+      "file": "images/details/D01_quest_header.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        496,
+        8,
+        1168,
+        139
+      ],
+      "nativeCropSize": [
+        672,
+        131
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Text and replay only. Never show a cat picture beside the quest."
+    },
+    {
+      "id": "D02",
+      "title": "Brand logo",
+      "file": "images/details/D02_brand_logo.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        15,
+        5,
+        255,
+        153
+      ],
+      "nativeCropSize": [
+        240,
+        148
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Keep small. Optional on compact mobile screens."
+    },
+    {
+      "id": "D03",
+      "title": "Session stars",
+      "file": "images/details/D03_stars_counter.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1277,
+        16,
+        1549,
+        123
+      ],
+      "nativeCropSize": [
+        272,
+        107
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Start at 3. Wrong quiz answer: minus 1, minimum 0. Exploration is free."
+    },
+    {
+      "id": "D04",
+      "title": "Pause control",
+      "file": "images/details/D04_pause_button.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1557,
+        13,
+        1659,
+        125
+      ],
+      "nativeCropSize": [
+        102,
+        112
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Pause gameplay, audio and reveal timers; resume the same state."
+    },
+    {
+      "id": "D05",
+      "title": "Momo guide",
+      "file": "images/details/D05_momo_guide.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        31,
+        224,
+        374,
+        643
+      ],
+      "nativeCropSize": [
+        343,
+        419
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Supportive reactions. Do not point to the target hiding spot."
+    },
+    {
+      "id": "D06",
+      "title": "Tree hollow",
+      "file": "images/details/D06_tree_hollow.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        299,
+        186,
+        617,
+        466
+      ],
+      "nativeCropSize": [
+        318,
+        280
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Cover the opening in the initial state. No eye, ear or silhouette leakage."
+    },
+    {
+      "id": "D07",
+      "title": "Front bush",
+      "file": "images/details/D07_front_bush.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        389,
+        438,
+        828,
+        751
+      ],
+      "nativeCropSize": [
+        439,
+        313
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "This source excerpt is POST-REVEAL. The cat must be invisible before reveal."
+    },
+    {
+      "id": "D08",
+      "title": "Rock hiding spot",
+      "file": "images/details/D08_rock_hiding_spot.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        773,
+        316,
+        1130,
+        611
+      ],
+      "nativeCropSize": [
+        357,
+        295
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "The tiger is visible in this concept only. Runtime starts fully covered."
+    },
+    {
+      "id": "D09",
+      "title": "Tall grass",
+      "file": "images/details/D09_tall_grass.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1073,
+        498,
+        1372,
+        724
+      ],
+      "nativeCropSize": [
+        299,
+        226
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Scissors are a distractor. Show their full recognizable silhouette after reveal."
+    },
+    {
+      "id": "D10",
+      "title": "Hollow log",
+      "file": "images/details/D10_hollow_log.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1230,
+        634,
+        1672,
+        888
+      ],
+      "nativeCropSize": [
+        442,
+        254
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Alternative hiding spot. The log itself is not a quiz answer."
+    },
+    {
+      "id": "D11",
+      "title": "Tool tray",
+      "file": "images/details/D11_tool_tray.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        498,
+        733,
+        1170,
+        931
+      ],
+      "nativeCropSize": [
+        672,
+        198
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Three reusable tools; no ammunition, purchases or cooldown penalty."
+    },
+    {
+      "id": "D12",
+      "title": "Swipe Leaves",
+      "file": "images/details/D12_tool_swipe.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        531,
+        754,
+        732,
+        909
+      ],
+      "nativeCropSize": [
+        201,
+        155
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Drag a leaf cover sideways, or use the accessible tap-to-open alternative."
+    },
+    {
+      "id": "D13",
+      "title": "Throw Net",
+      "file": "images/details/D13_tool_net.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        739,
+        754,
+        931,
+        909
+      ],
+      "nativeCropSize": [
+        192,
+        155
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Lift foliage with the net. Do not trap, tighten around or injure an animal."
+    },
+    {
+      "id": "D14",
+      "title": "Blast Berry",
+      "file": "images/details/D14_tool_berry.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        943,
+        748,
+        1146,
+        909
+      ],
+      "nativeCropSize": [
+        203,
+        161
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "A magical foam berry breaks the rock cover only; no realistic explosive effect."
+    },
+    {
+      "id": "D15",
+      "title": "Yes / No panel",
+      "file": "images/details/D15_quiz_panel_reference.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1105,
+        138,
+        1645,
+        458
+      ],
+      "nativeCropSize": [
+        540,
+        320
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Correct source copy to: Is this a cat? Remove the close button while unanswered."
+    },
+    {
+      "id": "D16",
+      "title": "Revealed dog portrait",
+      "file": "images/details/D16_dog_portrait.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1140,
+        188,
+        1297,
+        352
+      ],
+      "nativeCropSize": [
+        157,
+        164
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Allowed only after opening its hiding spot. Do not name the dog before answering."
+    },
+    {
+      "id": "D17",
+      "title": "YES button",
+      "file": "images/details/D17_yes_button.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1308,
+        262,
+        1450,
+        346
+      ],
+      "nativeCropSize": [
+        142,
+        84
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Both choices must be equally prominent. Colour is not an answer hint."
+    },
+    {
+      "id": "D18",
+      "title": "NO button",
+      "file": "images/details/D18_no_button.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1456,
+        262,
+        1606,
+        346
+      ],
+      "nativeCropSize": [
+        150,
+        84
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "For a dog in Find a cat: NO is correct, but does NOT complete the level."
+    },
+    {
+      "id": "D19",
+      "title": "Foreground decoration",
+      "file": "images/details/D19_foreground_stump.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        161,
+        659,
+        431,
+        903
+      ],
+      "nativeCropSize": [
+        270,
+        244
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Decorative, not an invisible interactive obstacle."
+    },
+    {
+      "id": "D20",
+      "title": "Initial scene reference",
+      "file": "images/details/D20_initial_scene_board.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        20,
+        203,
+        599,
+        613
+      ],
+      "nativeCropSize": [
+        579,
+        410
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Closest source to SEARCH state. Correct the source star count to 3 / 3."
+    },
+    {
+      "id": "D21",
+      "title": "Leaves closed",
+      "file": "images/details/D21_leaves_before.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        633,
+        251,
+        856,
+        341
+      ],
+      "nativeCropSize": [
+        223,
+        90
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Keep all occupants hidden until the reveal threshold is reached."
+    },
+    {
+      "id": "D22",
+      "title": "Leaves opened",
+      "file": "images/details/D22_leaves_after.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        873,
+        251,
+        1089,
+        341
+      ],
+      "nativeCropSize": [
+        216,
+        90
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Reveal one object, then ask the yes / no question."
+    },
+    {
+      "id": "D23",
+      "title": "Net cast",
+      "file": "images/details/D23_net_throw.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        633,
+        388,
+        856,
+        483
+      ],
+      "nativeCropSize": [
+        223,
+        95
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Tap tool, then tap bush. Decorative arc; a motor miss never loses a star."
+    },
+    {
+      "id": "D24",
+      "title": "Net lift",
+      "file": "images/details/D24_net_lift.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        875,
+        388,
+        1089,
+        483
+      ],
+      "nativeCropSize": [
+        214,
+        95
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Lift cover, dissolve net, THEN show the occupant."
+    },
+    {
+      "id": "D25",
+      "title": "Berry aim",
+      "file": "images/details/D25_berry_aim.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        633,
+        528,
+        856,
+        615
+      ],
+      "nativeCropSize": [
+        223,
+        87
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Valid rocks only. Unsupported spots gently bounce, with no penalty."
+    },
+    {
+      "id": "D26",
+      "title": "Rock opened",
+      "file": "images/details/D26_rock_opened.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        875,
+        528,
+        1089,
+        615
+      ],
+      "nativeCropSize": [
+        214,
+        87
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Debris moves away from the concealed space, then fades before reveal."
+    },
+    {
+      "id": "D27",
+      "title": "Wrong-answer state reference",
+      "file": "images/details/D27_wrong_answer_board.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1144,
+        216,
+        1662,
+        417
+      ],
+      "nativeCropSize": [
+        518,
+        201
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Charge once per reveal; never once per frame, click listener or retry request."
+    },
+    {
+      "id": "D28",
+      "title": "Correct-answer source reference",
+      "file": "images/details/D28_right_answer_board.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1144,
+        426,
+        1662,
+        636
+      ],
+      "nativeCropSize": [
+        518,
+        210
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Source text is WRONG here: cat + YES must complete the level, not continue searching."
+    },
+    {
+      "id": "D29",
+      "title": "Success payoff",
+      "file": "images/details/D29_success_scene.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        19,
+        710,
+        539,
+        885
+      ],
+      "nativeCropSize": [
+        520,
+        175
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Momo greets the found cat. Keep the current remaining stars; do not refill to 3."
+    },
+    {
+      "id": "D30",
+      "title": "Flow overview",
+      "file": "images/details/D30_flow_strip.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        591,
+        718,
+        1413,
+        909
+      ],
+      "nativeCropSize": [
+        822,
+        191
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Listen -> search -> reveal -> verify -> continue OR finish."
+    },
+    {
+      "id": "D31",
+      "title": "Dog revealed in scene",
+      "file": "images/details/D31_dog_world_reveal.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        541,
+        286,
+        679,
+        411
+      ],
+      "nativeCropSize": [
+        138,
+        125
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "One neutral reveal cue for every object; no correctness cue before an answer."
+    },
+    {
+      "id": "D32",
+      "title": "Scissors revealed",
+      "file": "images/details/D32_scissors_world_reveal.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        1162,
+        531,
+        1287,
+        653
+      ],
+      "nativeCropSize": [
+        125,
+        122
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "For this level: Is this a cat? NO. If scissors are the target: Are these scissors?"
+    },
+    {
+      "id": "D33",
+      "title": "Cat revealed",
+      "file": "images/details/D33_cat_world_reveal.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        491,
+        537,
+        629,
+        655
+      ],
+      "nativeCropSize": [
+        138,
+        118
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Only show after interaction. For Find a cat, YES leads to completion."
+    },
+    {
+      "id": "D34",
+      "title": "Tiger revealed",
+      "file": "images/details/D34_tiger_world_reveal.png",
+      "source": "references/01_selected_scene.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        947,
+        320,
+        1104,
+        450
+      ],
+      "nativeCropSize": [
+        157,
+        130
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Friendly distractor, not a threat. NO correctly rejects it; continue searching."
+    },
+    {
+      "id": "D35",
+      "title": "Momo and target celebration",
+      "file": "images/details/D35_celebration_closeup.png",
+      "source": "references/02_interaction_board.png",
+      "sourceSize": [
+        1672,
+        941
+      ],
+      "sourceBoxPx": [
+        42,
+        722,
+        420,
+        884
+      ],
+      "nativeCropSize": [
+        378,
+        162
+      ],
+      "status": "reference_crop_not_runtime_sprite",
+      "alpha": false,
+      "note": "Reference for pose only; make separate character frames for animation."
+    },
+    {
+      "id": "D36",
+      "title": "Corrected quiz heading",
+      "file": "images/details/D36_quiz_grammar_corrected.png",
+      "source": "images/details/D15_quiz_panel_reference.png",
+      "nativeCropSize": [
+        540,
+        320
+      ],
+      "status": "annotated_reference_not_runtime_sprite",
+      "alpha": false,
+      "note": "Exact heading replacement only. Remove source X button and warning copy in implementation; see visual spec."
+    }
+  ],
+  "plates": [
+    {
+      "id": "A01",
+      "title": "Screen hierarchy and safe interaction",
+      "file": "images/annotated/A01.png",
+      "references": [
+        "D20"
+      ],
+      "notes": [
+        "WORLD: large scene, four neutral hiding spots. Keep the full scene below the quest header.",
+        "HUD: quest + audio replay, 3-star counter, pause. Tools sit at the bottom safe area.",
+        "INITIAL: no animal, scissors, tail, ear, shadow or species sound is visible. Source star count must be corrected to 3.",
+        "MASTER FRAME: 1600 x 900. See layout.json for component rectangles; do not stretch the source bitmap."
+      ]
+    },
+    {
+      "id": "A02",
+      "title": "Quest header: no image answer leak",
+      "file": "images/annotated/A02.png",
+      "references": [
+        "D01"
+      ],
+      "notes": [
+        "Copy: Find a cat. Audio reads exactly the same quest. Keep sentence case.",
+        "Never add a cat thumbnail, silhouette, meow or answer-specific sparkle beside the instruction.",
+        "Replay button: 64 x 64 design units; at least 48 CSS px after scaling on a real device.",
+        "Target text is allowed. Discovering its visual meaning is the point of the level."
+      ]
+    },
+    {
+      "id": "A03",
+      "title": "Stars and scoring",
+      "file": "images/annotated/A03.png",
+      "references": [
+        "D03"
+      ],
+      "notes": [
+        "Begin at 3 / 3. Only a wrong YES / NO answer loses one star.",
+        "No penalty for opening a distractor, missing a swipe, choosing another tool or taking time.",
+        "Clamp at zero. Continue with guided help; no negative scores and no forced restart.",
+        "One charge per reveal. Completing with 1 star displays and saves 1 star, not 3."
+      ]
+    },
+    {
+      "id": "A04",
+      "title": "Hiding layers and object visibility",
+      "file": "images/annotated/A04.png",
+      "references": [
+        "D07"
+      ],
+      "notes": [
+        "This crop shows a REVEALED cat; it is NOT a valid starting background.",
+        "Runtime layers: empty background -> object (invisible) -> closed cover -> reveal VFX.",
+        "Switch the object visible only at reveal completion. Disable its input before that point.",
+        "Every spot uses the same idle motion distribution, independent of its occupant."
+      ]
+    },
+    {
+      "id": "A05",
+      "title": "Swipe Leaves interaction",
+      "file": "images/annotated/A05.png",
+      "references": [
+        "D21",
+        "D22"
+      ],
+      "notes": [
+        "Select leaves tool; drag the cover sideways. Accumulate signed displacement, not back-and-forth rubbing.",
+        "Threshold: 55% of cover width, capped at 96 design units. Release below threshold springs back.",
+        "0-180 ms: cover follows gesture. 180-520 ms: leaves part. 520-820 ms: neutral reveal and quiz.",
+        "Tap-to-open alternative is available. Wrong gesture is never a learning error."
+      ]
+    },
+    {
+      "id": "A06",
+      "title": "Throw Net interaction",
+      "file": "images/annotated/A06.png",
+      "references": [
+        "D23",
+        "D24"
+      ],
+      "notes": [
+        "Select net; tap a compatible bush. Use a deterministic arc to the chosen spot.",
+        "0-360 ms: cast. 360-620 ms: net catches foliage. 620-900 ms: lift and dissolve net.",
+        "Reveal the animal AFTER the net disappears. Never show an animal bound in the net.",
+        "Lock other spots during the short reveal animation; then open the quiz."
+      ]
+    },
+    {
+      "id": "A07",
+      "title": "Blast Berry interaction",
+      "file": "images/annotated/A07.png",
+      "references": [
+        "D25",
+        "D26"
+      ],
+      "notes": [
+        "Select foam berry; tap a rock cover. Aim preview is neutral and not tied to the answer.",
+        "0-280 ms: berry arc. 280-560 ms: soft puff and split rock. 560-1000 ms: debris fades, reveal.",
+        "No realistic explosion, sharp shards, injury or damage to a visible object or animal.",
+        "Keep this effect deterministic with tweens. Full destruction physics is unnecessary."
+      ]
+    },
+    {
+      "id": "A08",
+      "title": "Question panel and input lock",
+      "file": "images/annotated/A08.png",
+      "references": [
+        "D36"
+      ],
+      "notes": [
+        "Question: Is this a cat? Show ONLY the revealed object portrait beside it.",
+        "Before an answer: no object name, green outline, success audio or correctness hint.",
+        "YES and NO are equal-sized controls. Remove the X while the question is unanswered.",
+        "While the panel is active, the world and tool tray cannot receive input."
+      ]
+    },
+    {
+      "id": "A09",
+      "title": "Correct NO on a distractor",
+      "file": "images/annotated/A09.png",
+      "references": [
+        "D16"
+      ],
+      "notes": [
+        "Reveal: dog. Quest: Find a cat. Child chooses NO.",
+        "Feedback: No. It is a dog. Keep all current stars.",
+        "Mark this spot searched, remove its quiz trigger and return to searching.",
+        "This NEVER completes the level. Momo encourages the child to find the cat."
+      ]
+    },
+    {
+      "id": "A10",
+      "title": "Correct YES on the target",
+      "file": "images/annotated/A10.png",
+      "references": [
+        "D33"
+      ],
+      "notes": [
+        "Reveal: cat. Quest: Find a cat. Child chooses YES.",
+        "Feedback: Yes! It is a cat. Set completion state exactly once.",
+        "Play greeting and celebration; retain remaining stars. Offer Next and Play again.",
+        "Never reuse the source storyboard caption saying to continue searching after this answer."
+      ]
+    },
+    {
+      "id": "A11",
+      "title": "Wrong answer and assisted retry",
+      "file": "images/annotated/A11.png",
+      "references": [
+        "D27"
+      ],
+      "notes": [
+        "Wrong YES on dog: lose one star; show No. It is a dog.; return to search.",
+        "Wrong NO on cat: lose one star; explain Yes. It is a cat.; offer an assisted YES retry.",
+        "Repeated NO on that same revealed cat does not drain more stars. No extra learning credit.",
+        "Use atomic processing, revealId and answerEventId to reject duplicate taps and retries."
+      ]
+    },
+    {
+      "id": "A12",
+      "title": "Success pose and payoff",
+      "file": "images/annotated/A12.png",
+      "references": [
+        "D29"
+      ],
+      "notes": [
+        "Target + YES is the only success gate. Searching all spots is not itself a win.",
+        "Momo and the found animal meet. Gentle sparkles, a brief voice cue, then stable result UI.",
+        "No intense flash or unavoidable shaking. Reduced motion uses fades.",
+        "Stars shown in the reference are illustrative; runtime must use the current session value."
+      ]
+    },
+    {
+      "id": "A13",
+      "title": "Tool tray and mobile ergonomics",
+      "file": "images/annotated/A13.png",
+      "references": [
+        "D11"
+      ],
+      "notes": [
+        "Desktop: three tools centred at the bottom. Highlight the selected TOOL, never the hidden answer.",
+        "Mobile landscape: compact floating tray, minimum 48 CSS px per control and safe-area offsets.",
+        "Tap tool -> tap spot is sufficient. Drag precision is optional.",
+        "Unsupported tool on a spot: a neutral bounce and tool hint; no penalty."
+      ]
+    },
+    {
+      "id": "A14",
+      "title": "Objects, plural grammar and feedback",
+      "file": "images/annotated/A14.png",
+      "references": [
+        "D32",
+        "D34"
+      ],
+      "notes": [
+        "Level one distractors: dog, tiger and scissors. All use the same question: Is this a cat?",
+        "If the target is scissors, use Find the scissors. and Are these scissors?",
+        "Scissors are one vocabulary entity despite plural grammar. Store complete authored sentences.",
+        "Do not generate articles or plural questions with simple string concatenation."
+      ]
+    },
+    {
+      "id": "A15",
+      "title": "Art handoff and export boundaries",
+      "file": "images/annotated/A15.png",
+      "references": [
+        "D05"
+      ],
+      "notes": [
+        "These are detailed crops from two flattened concept images, not rigged or transparent game sprites.",
+        "Do not put the whole concept image under invisible click zones. It contains answer leaks.",
+        "Separate empty scenery, covers, objects, Momo frames and UI text before shipping.",
+        "Asset production checklist names every missing runtime texture and animation frame."
+      ]
+    }
+  ],
+  "indexes": [
+    "images/INDEX_01.jpg",
+    "images/INDEX_02.jpg",
+    "images/INDEX_03.jpg"
+  ]
+}
