@@ -28,14 +28,19 @@ canonical CSV v2 bên dưới spec, **mọi giá trị trong row đều là chu�
 trạng thái và boolean. Backend kiểm tra schema, số bảng kê và dùng chung kiểm tra đối soát với CSV.
 
 Mã cho điện thoại được đóng gói từ collector và bộ bắt request của extension, cùng
-`mobile/runner.js`. Sau khi sửa các nguồn này, tạo lại file phát hành bằng:
+`mobile/runner.js`. Bản dấu trang v2 dùng DOM API để tạo bảng điều khiển, báo lỗi khởi động
+bằng hộp thoại và rút gọn mã bằng esbuild (dependency đã có của web). Trang cài đặt có mục
+so sánh URL dấu trang đã lưu với bản v2, không thực thi hay gửi mã lên server.
+Sau khi sửa các nguồn này, tạo lại file phát hành bằng (cần Node và đã chạy `npm ci` trong
+`src/WebHoanTien.Web`):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File Tool/catsback-shopee-sync/mobile/build.ps1
 ```
 
 Đưa cả backend và `wwwroot/tools/shopee-settlements` lên website. Khi cập nhật mã tool, sao chép lại
-URL dấu trang trên điện thoại. Dấu trang chứa mã trực tiếp để không cần tải script khác miền trong
+URL dấu trang trên điện thoại. Trang cài đặt v2 lấy URL đã rút gọn từ `catsback-json-bookmarklet.txt`;
+`bookmarklet.js` giữ bản nguồn đã ghép để tra cứu. Dấu trang chứa mã trực tiếp để không cần tải script khác miền trong
 Shopee; vẫn phụ thuộc việc Chrome/trang Shopee cho phép chạy JavaScript dấu trang. Cần xác nhận
 trên thiết bị Android thực tế trước khi coi luồng mobile đã được kiểm thử.
 

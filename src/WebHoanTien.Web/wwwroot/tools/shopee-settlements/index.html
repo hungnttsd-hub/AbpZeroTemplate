@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CatsBack · Tổng hợp JSON trên Android</title>
   <link rel="stylesheet" href="setup.css">
-  <script src="setup.js" defer></script>
+  <script src="setup.js?v=2" defer></script>
 </head>
 <body>
   <main>
@@ -15,6 +15,7 @@
     <p>Chạy trong tab Shopee trên Chrome Android, tải file JSON rồi tự import vào CatsBack. Không cần máy tính hay Local Helper.</p>
     <section aria-labelledby="install-title">
       <h2 id="install-title">1. Tạo dấu trang CatsBack</h2>
+      <p class="note"><strong>Bản v2:</strong> mã dấu trang đã được rút gọn và có thông báo lỗi khởi động. Nếu bản cũ không hiện bảng điều khiển, hãy sao chép mã mới rồi thay toàn bộ URL của dấu trang đã lưu.</p>
       <ol>
         <li>Bấm <strong>Sao chép mã dấu trang</strong> bên dưới.</li>
         <li>Trong menu ⋮ của Chrome, bấm ngôi sao để lưu trang này.</li>
@@ -42,6 +43,15 @@
     <section>
       <h2>Khi chưa thấy tool</h2>
       <p>Kiểm tra dấu trang đã lưu đầy đủ mã và chọn đúng gợi ý dấu trang trong thanh địa chỉ. Sau mỗi lần tải lại trang Shopee, chạy dấu trang lại. Nếu trình duyệt hoặc chính sách trang chặn JavaScript dấu trang, tool không thể chạy trong tab đó.</p>
+      <details>
+        <summary>Đã thấy “CatsBack OK” nhưng tool vẫn không hiện</summary>
+        <p>Mở chỉnh sửa dấu trang CatsBack JSON, sao chép toàn bộ URL đã lưu rồi dán vào ô dưới. Mục này chỉ so sánh mã trên thiết bị, không chạy mã và không gửi lên server.</p>
+        <label for="saved-code">URL đang lưu trong dấu trang</label>
+        <textarea id="saved-code" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+        <button id="verify" disabled>Kiểm tra mã đã lưu</button>
+        <p id="verify-result" role="status" aria-live="polite"></p>
+        <p>Nếu mã khớp nhưng bảng điều khiển vẫn không hiện, gửi lại thông báo lỗi hoặc ảnh màn hình ngay sau khi chạy dấu trang.</p>
+      </details>
       <p>Tool chỉ đọc dữ liệu bằng phiên Shopee hiện tại và tạo file trên máy. Không yêu cầu sao chép cookie hoặc nhập Client Secret. Bạn tự chọn thời điểm import; dữ liệu import vẫn chờ admin duyệt.</p>
     </section>
   </main>

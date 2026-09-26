@@ -2,8 +2,16 @@ const host = document.createElement("div");
 host.id = "catsback-mobile-settlements";
 host.style.cssText = "position:fixed;z-index:2147483647;bottom:12px;left:12px;width:calc(100% - 24px);max-width:420px;";
 const root = host.attachShadow({ mode: "closed" });
-root.innerHTML = `
-  <style>
+// Build the panel without innerHTML, which can require TrustedHTML on the host page.
+const create = (tag, text = "", attributes = {}, children = []) => {
+  const element = document.createElement(tag);
+  if (text) element.textContent = text;
+  for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
+  element.append(...children);
+  return element;
+};
+const style = create("style");
+style.textContent = `
     :host { color-scheme:light; } * { box-sizing:border-box; }
     section { padding:16px;background:#fff;color:#18232f;border:2px solid #186959;border-radius:16px;font:15px/1.5 system-ui,sans-serif;box-shadow:0 6px 30px #0004;max-height:65vh;overflow:auto; }
     header { display:flex;align-items:center;justify-content:space-between;gap:8px; }
@@ -13,18 +21,25 @@ root.innerHTML = `
     a { display:block;text-align:center;background:#186959;color:#fff;text-decoration:none;margin-top:10px; }
     [hidden] { display:none!important; } .actions { display:flex;gap:8px;flex-wrap:wrap; }
     small { display:block;color:#4b5c65; } #status { white-space:pre-wrap;overflow-wrap:anywhere; }
-  </style>
-  <section aria-label="CatsBack tổng hợp JSON">
-    <header><strong>CatsBack · JSON</strong><button id="toggle" aria-expanded="true">Thu gọn</button></header>
-    <div id="body">
-      <p id="status" role="status" aria-live="polite">Đổi bộ lọc/kỳ hoặc chuyển trang danh sách Billing để Shopee tải lại dữ liệu. Không tải lại toàn bộ tab.</p>
-      <small id="capture">Đang chờ danh sách bảng kê…</small>
-      <p><small>Chỉ tổng hợp danh sách Shopee vừa tải, không tự quét các trang khác. Giữ tab này mở và màn hình sáng khi chạy.</small></p>
-      <div class="actions"><button id="start" disabled>Tổng hợp JSON</button><button id="cancel" hidden>Dừng</button><button id="close">Đóng</button></div>
-      <a id="download" hidden>Tải file JSON</a>
-    </div>
-  </section>`;
-document.documentElement.append(host);
+`;
+root.append(style, create("section", "", { "aria-label": "CatsBack tổng hợp JSON" }, [
+  create("header", "", {}, [
+    create("strong", "CatsBack · JSON v2"),
+    create("button", "Thu gọn", { id: "toggle", "aria-expanded": "true" })
+  ]),
+  create("div", "", { id: "body" }, [
+    create("p", "Đổi bộ lọc/kỳ hoặc chuyển trang danh sách Billing để Shopee tải lại dữ liệu. Không tải lại toàn bộ tab.",
+      { id: "status", role: "status", "aria-live": "polite" }),
+    create("small", "Đang chờ danh sách bảng kê…", { id: "capture" }),
+    create("p", "", {}, [create("small", "Chỉ tổng hợp danh sách Shopee vừa tải, không tự quét các trang khác. Giữ tab này mở và màn hình sáng khi chạy.")]),
+    create("div", "", { class: "actions" }, [
+      create("button", "Tổng hợp JSON", { id: "start", disabled: "" }),
+      create("button", "Dừng", { id: "cancel", hidden: "" }),
+      create("button", "Đóng", { id: "close" })
+    ]),
+    create("a", "Tải file JSON", { id: "download", hidden: "" })
+  ])
+]));
 const get = id => root.getElementById(id);
 let running = false;
 let controller;
@@ -48,6 +63,11 @@ get("toggle").onclick = () => {
   get("toggle").textContent = get("body").hidden ? "Mở" : "Thu gọn";
   get("toggle").setAttribute("aria-expanded", String(!get("body").hidden));
 };
+host.addEventListener("catsback:show", () => {
+  get("body").hidden = false;
+  get("toggle").textContent = "Thu gọn";
+  get("toggle").setAttribute("aria-expanded", "true");
+});
 get("cancel").onclick = () => controller?.abort(new Error("Đã dừng. Chưa tạo file JSON."));
 get("close").onclick = () => {
   if (running) return;
@@ -55,6 +75,7 @@ get("close").onclick = () => {
   if (objectUrl) URL.revokeObjectURL(objectUrl);
   host.remove();
 };
+document.documentElement.append(host);
 get("start").onclick = async () => {
   if (running) return;
   running = true;
