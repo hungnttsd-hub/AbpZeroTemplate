@@ -101,6 +101,13 @@
         <p class="fine-print"><a href="~/templates/shopee-settlement-template.csv" download data-turbo="false">>Tải file CSV mẫu</a></p>
         <button class="button button-primary" type="submit">Import đối soát chờ duyệt</button>
     </form>
+    <form method="post" enctype="multipart/form-data" asp-page-handler="ImportSettlement" class="card-list" data-turbo="false">
+        <label for="shopee-settlement-json">File đối soát JSON từ tool CatsBack</label>
+        <input id="shopee-settlement-json" asp-for="SettlementReport" type="file" accept=".json,application/json" required />
+        <p class="fine-print">Chọn file JSON đã tải về điện thoại. Dữ liệu được kiểm tra và đưa vào hàng chờ duyệt, chưa cộng tiền vào ví.</p>
+        <p class="fine-print"><a href="~/tools/shopee-settlements/index.html" data-turbo="false">Cài tool tổng hợp JSON trên Chrome Android — không cần Local Helper</a></p>
+        <button class="button button-primary" type="submit">Import JSON đối soát</button>
+    </form>
     <p class="fine-print"><a href="/hangfire" data-turbo="false">Mở Hangfire Dashboard</a> · API import: <code>POST /api/app/admin/shopee-reports/import</code>.</p>
 </section>
 

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp;
@@ -53,7 +54,9 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
         var content = await reader.ReadToEndAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(content)) throw Invalid("File đối soát đang trống.");
 
-        var records = ParseCsv(content, DetectDelimiter(content));
+        var records = content.TrimStart().StartsWith("{", StringComparison.Ordinal)
+            ? ParseJson(content)
+            : ParseCsv(content, DetectDelimiter(content));
         if (records.Count < 2) throw Invalid("File đối soát phải có header và ít nhất một dòng dữ liệu.");
         var columns = records[0].Select((value, index) => new { Key = Normalize(value), Index = index })
             .Where(value => !string.IsNullOrWhiteSpace(value.Key))
@@ -274,6 +277,68 @@ public class ShopeeCanonicalSettlementReportParser : ITransientDependency
 
     private static string Value(IReadOnlyList<string> row, int column) =>
         column < row.Count ? row[column].Trim() : string.Empty;
+
+    // JSON feeds the same field, balance and duplicate checks as canonical CSV.
+    private static List<List<string>> ParseJson(string content)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(content);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) throw Invalid("JSON đối soát phải là một object.");
+            EnsureUniqueProperties(root);
+            if (!root.TryGetProperty("schemaVersion", out var schema) ||
+                schema.ValueKind != JsonValueKind.String || schema.GetString() != SchemaVersion)
+                throw Invalid("JSON đối soát phải dùng schema catsback-settlement-v2.");
+            if (!root.TryGetProperty("rows", out var data) || data.ValueKind != JsonValueKind.Array ||
+                data.GetArrayLength() == 0)
+                throw Invalid("JSON đối soát phải có danh sách rows không rỗng.");
+
+            var headers = new List<string>
+            {
+                "schema_version", "source_affiliate_id", "validation_id", "payout_id",
+                "payment_completed_at_utc", "order_completed_from_utc", "order_completed_to_utc",
+                "payment_status", "validation_payout_status", "overall_validation_status",
+                "bill_validation_status", "settlement_cycle", "has_adjustment", "has_clawback",
+                "is_cumulative", "has_bonus", "has_ppp", "bill_eligible_commission",
+                "bill_after_service_fee", "bill_paid_commission", "order_id",
+                "order_eligible_commission", "allocated_service_fee", "allocated_tax", "actual_paid_commission"
+            };
+            var records = new List<List<string>> { headers };
+            var validations = new HashSet<(string, string)>();
+            foreach (var row in data.EnumerateArray())
+            {
+                if (row.ValueKind != JsonValueKind.Object) throw Invalid("Mỗi dòng JSON phải là một object.");
+                EnsureUniqueProperties(row);
+                var values = new List<string>();
+                foreach (var name in headers)
+                {
+                    if (!row.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String)
+                        throw Invalid($"Dòng JSON {records.Count}: {name} phải là chuỗi; hãy xuất lại từ tool CatsBack.");
+                    values.Add(value.GetString()!);
+                }
+                if (values[0] != SchemaVersion) throw Invalid("schema_version của dòng không khớp file JSON.");
+                validations.Add((values[1].Trim(), values[2].Trim()));
+                records.Add(values);
+            }
+            if (!root.TryGetProperty("validationCount", out var count) ||
+                count.ValueKind != JsonValueKind.Number || !count.TryGetInt32(out var expected) ||
+                expected != validations.Count)
+                throw Invalid("Số bảng kê validationCount không khớp dữ liệu JSON.");
+            return records;
+        }
+        catch (JsonException)
+        {
+            throw Invalid("File JSON đối soát không hợp lệ hoặc chưa tải đầy đủ.");
+        }
+    }
+
+    private static void EnsureUniqueProperties(JsonElement value)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var property in value.EnumerateObject())
+            if (!names.Add(property.Name)) throw Invalid($"JSON có trường bị trùng: {property.Name}.");
+    }
 
     private static char DetectDelimiter(string content)
     {

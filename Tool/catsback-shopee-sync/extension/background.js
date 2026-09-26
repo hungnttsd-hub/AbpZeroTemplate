@@ -916,7 +916,7 @@ async function ensureShopeeBillingTab() {
 // Hàm này được inject vào MAIN world của trang billing. Danh sách bảng kê được lấy
 // từ response billing_list do chính trang Shopee đã gọi; chỉ các API chi tiết mới
 // được gọi bổ sung bằng cookie/CSRF/session của tab hiện tại.
-async function collectShopeeSettlementRowsInPage() {
+async function collectShopeeSettlementRowsInPage(options = {}) {
   const SCHEMA_VERSION = "catsback-settlement-v2";
   const MONEY_SCALE = 100000;
   const OUTPUT_SCALE = 10000;
@@ -995,6 +995,8 @@ async function collectShopeeSettlementRowsInPage() {
 
     for (const summary of validationSummaries) {
       const validationId = String(summary.validation_id);
+      options.signal?.throwIfAborted();
+      options.onProgress?.(`Đang đọc bảng kê ${validationSummaries.indexOf(summary) + 1}/${validationSummaries.length} (${validationId})…`);
       const payload = await apiGet("/api/v3/payment/billing_detail", { validation_id: validationId });
       const bill = payload?.data;
       if (!bill || String(bill.validation_id ?? "") !== validationId) {
@@ -1316,6 +1318,7 @@ async function collectShopeeSettlementRowsInPage() {
         response = await fetch(url.toString(), {
           credentials: "include",
           cache: "no-store",
+          signal: options.signal,
           ...requestOptions
         });
       } catch (error) {
@@ -1353,8 +1356,22 @@ async function collectShopeeSettlementRowsInPage() {
   }
 
   async function waitForShopeeRequestSlot() {
+    options.signal?.throwIfAborted();
     const waitMs = Math.max(0, nextShopeeRequestAt - Date.now());
-    if (waitMs > 0) await new Promise(resolve => setTimeout(resolve, waitMs));
+    if (waitMs > 0) {
+      await new Promise((resolve, reject) => {
+        const aborted = () => {
+          clearTimeout(timer);
+          reject(options.signal.reason);
+        };
+        const timer = setTimeout(() => {
+          options.signal?.removeEventListener("abort", aborted);
+          resolve();
+        }, waitMs);
+        options.signal?.addEventListener("abort", aborted, { once: true });
+      });
+    }
+    options.signal?.throwIfAborted();
   }
 
   function scheduleNextShopeeRequest() {

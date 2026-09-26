@@ -2,6 +2,43 @@
 
 Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 
+## Tool Chrome Android: xuất JSON, không cần Local Helper
+
+Trên website CatsBack, mở **Admin → Affiliate → Cài tool tổng hợp JSON trên Chrome Android**
+(`/tools/shopee-settlements/index.html`). Trang này hướng dẫn tạo dấu trang **CatsBack JSON** chứa
+toàn bộ mã tool. Không cần cài extension, chạy máy tính, nhập API key hay Local Helper.
+
+1. Sao chép mã trên trang cài đặt, lưu một dấu trang rồi sửa tên thành `CatsBack JSON` và thay URL bằng mã đó.
+2. Mở `https://affiliate.shopee.vn/payment/billing` trên Chrome Android và đăng nhập.
+3. Tại tab Shopee, gõ `CatsBack JSON` trong thanh địa chỉ và chọn gợi ý dấu trang cùng tên.
+4. Đổi bộ lọc/kỳ hoặc trang danh sách để Shopee phát request `billing_list`. Không reload toàn bộ tab;
+   nếu reload phải chạy lại dấu trang. Có thể thu gọn bảng điều khiển để thao tác trên Shopee.
+5. Bấm **Tổng hợp JSON**, giữ tab mở và màn hình sáng. Sau khi hoàn tất, bấm **Tải file JSON**.
+6. Về Admin → Affiliate → **Import JSON đối soát**, chọn JSON vừa tải. Dữ liệu vẫn vào hàng chờ duyệt.
+
+Tool chỉ lấy danh sách trong response Shopee vừa tải, không tự quét toàn bộ các trang Billing.
+Muốn tổng hợp kỳ/trang khác, đổi bộ lọc rồi chạy lại. File trên 5 MB cần giảm số kỳ được chọn.
+Nếu một request hoặc phép đối soát thất bại, tool không xuất file một phần. Có thể dừng tác vụ
+bằng nút **Dừng**; không gửi JSON, cookie hay thông tin phiên đăng nhập đến server CatsBack khi tổng hợp.
+
+Luồng extension/Local Helper trên máy tính và import CSV/TXT cũ giữ nguyên. JSON dùng envelope
+`{ schemaVersion: "catsback-settlement-v2", exportedAt, validationCount, rows }`;
+`validationCount` đếm các cặp affiliate/validation có dòng trong file. Mỗi row có đủ 25 trường
+canonical CSV v2 bên dưới spec, **mọi giá trị trong row đều là chuỗi**, bao gồm mã ID, số tiền,
+trạng thái và boolean. Backend kiểm tra schema, số bảng kê và dùng chung kiểm tra đối soát với CSV.
+
+Mã cho điện thoại được đóng gói từ collector và bộ bắt request của extension, cùng
+`mobile/runner.js`. Sau khi sửa các nguồn này, tạo lại file phát hành bằng:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Tool/catsback-shopee-sync/mobile/build.ps1
+```
+
+Đưa cả backend và `wwwroot/tools/shopee-settlements` lên website. Khi cập nhật mã tool, sao chép lại
+URL dấu trang trên điện thoại. Dấu trang chứa mã trực tiếp để không cần tải script khác miền trong
+Shopee; vẫn phụ thuộc việc Chrome/trang Shopee cho phép chạy JavaScript dấu trang. Cần xác nhận
+trên thiết bị Android thực tế trước khi coi luồng mobile đã được kiểm thử.
+
 ## Cập nhật trạng thái thanh toán v0.7.7
 
 - Dùng `payment_completed_time`: ngày hợp lệ lớn hơn 0 là **Đã thanh toán**, 0 hoặc trống là **Chờ xử lý**. Ưu tiên dữ liệu `billing_detail` vừa lấy; chỉ fallback sang `billing_list` khi detail thiếu trường. Không quét thêm trang `payout_record`.

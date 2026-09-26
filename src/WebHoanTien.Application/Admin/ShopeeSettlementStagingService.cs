@@ -57,8 +57,8 @@ public class ShopeeSettlementStagingService : ITransientDependency
         if (reportStream is null || !reportStream.CanRead)
             throw Invalid("Không đọc được file đối soát Shopee.");
         var extension = Path.GetExtension(reportFileName).ToLowerInvariant();
-        if (extension is not ".csv" and not ".txt")
-            throw Invalid("Chỉ hỗ trợ file đối soát CSV hoặc TXT.");
+        if (extension is not ".csv" and not ".txt" and not ".json")
+            throw Invalid("Chỉ hỗ trợ file đối soát JSON, CSV hoặc TXT.");
 
         await using var buffer = new MemoryStream();
         await reportStream.CopyToAsync(buffer, cancellationToken);
@@ -240,7 +240,12 @@ public class ShopeeSettlementStagingService : ITransientDependency
         ShopeeSettlementImportSource source, CancellationToken cancellationToken)
     {
         var head = Encoding.UTF8.GetString(bytes, 0, Math.Min(bytes.Length, 4096));
-        if (head.Contains("schema_version", StringComparison.OrdinalIgnoreCase))
+        if (Path.GetExtension(fileName).Equals(".json", StringComparison.OrdinalIgnoreCase) &&
+            !head.TrimStart('\ufeff', ' ', '\r', '\n', '\t').StartsWith("{", StringComparison.Ordinal))
+            throw Invalid("File JSON phải là báo cáo được xuất từ tool CatsBack.");
+        if (Path.GetExtension(fileName).Equals(".json", StringComparison.OrdinalIgnoreCase) ||
+            head.TrimStart('\ufeff', ' ', '\r', '\n', '\t').StartsWith("{", StringComparison.Ordinal) ||
+            head.Contains("schema_version", StringComparison.OrdinalIgnoreCase))
         {
             await using var stream = new MemoryStream(bytes, writable: false);
             var report = await _canonicalParser.ParseAsync(stream, cancellationToken);

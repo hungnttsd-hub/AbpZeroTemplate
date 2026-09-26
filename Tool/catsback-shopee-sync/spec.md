@@ -7,6 +7,19 @@
 - Local Helper tạo CSV, lưu cục bộ và chỉ upload CSV cùng Bearer token CatsBack.
 - Không gửi item name, bank account, Shopee cookie hoặc toàn bộ billing response đến CatsBack.
 
+### Android JSON export
+
+- Tool dấu trang hoạt động trong tab Shopee, không dùng extension API hay Local Helper.
+- Dùng cùng collector/bộ bắt `billing_list` như extension. Người dùng đổi bộ lọc sau khi bật tool
+  để trang Shopee phát response; không tự request danh sách hoặc tự quét các trang Billing.
+- Chỉ tạo file JSON sau khi collector hoàn tất và mọi phép đối soát hợp lệ. JSON chỉ chứa
+  `schemaVersion`, `exportedAt`, `validationCount` và `rows` canonical, không chứa response thô.
+- `validationCount` khớp số cặp `(source_affiliate_id, validation_id)` có dòng trong JSON.
+- JSON v2 yêu cầu đủ 25 trường canonical trên mỗi dòng, tất cả là chuỗi để giữ chính xác ID và tiền.
+  File sai schema, trùng tên trường, thiếu trường hoặc sai kiểu dữ liệu bị từ chối trước khi lưu.
+- Admin import JSON dùng cùng parser kiểm tra tổng tiền/trùng đơn và luồng staging của CSV;
+  import không tự cộng ví. Các ô và luồng import CSV/TXT hiện có vẫn giữ nguyên.
+
 ## Request pacing
 
 - Chỉ một luồng conversion/settlement được chạy tại một thời điểm.
