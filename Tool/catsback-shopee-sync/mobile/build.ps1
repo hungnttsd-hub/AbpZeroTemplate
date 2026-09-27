@@ -35,5 +35,5 @@ $mobile
 [System.IO.Directory]::CreateDirectory($destination) | Out-Null
 [System.IO.File]::WriteAllText((Join-Path $destination 'bookmarklet.js'), $bundle, [System.Text.UTF8Encoding]::new($false))
 & node (Join-Path $PSScriptRoot 'minify.mjs')
-if ($LASTEXITCODE -ne 0) { throw 'Không tạo được mã dấu trang rút gọn. Cài dependencies trong src/WebHoanTien.Web bằng npm ci rồi chạy lại.' }
-Write-Output 'Đã tạo bookmarklet.js và catsback-json-bookmarklet.txt từ collector dùng chung với extension.'
+if ($LASTEXITCODE -ne 0) { throw 'Không tạo được tool và mã tải ngắn. Cài dependencies trong src/WebHoanTien.Web bằng npm ci rồi chạy lại.' }
+Write-Output 'Đã tạo bookmarklet.js, mobile.js và loader-template.txt từ collector dùng chung với extension.'

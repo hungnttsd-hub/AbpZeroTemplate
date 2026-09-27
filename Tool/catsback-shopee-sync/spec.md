@@ -10,6 +10,10 @@
 ### Android JSON export
 
 - Tool dấu trang hoạt động trong tab Shopee, không dùng extension API hay Local Helper.
+- Bản mobile v3 chỉ lưu loader ngắn trong URL dấu trang. Loader tải `mobile.js` từ website CatsBack
+  qua HTTPS, không gửi referrer và không dùng eval. Tool báo lỗi khi tải thất bại/hết 15 giây;
+  vẫn phụ thuộc chính sách của Shopee cho phép tải script khác miền. Cookie Shopee và dữ liệu bảng kê
+  không được truyền trong request tải mã tool. Website cài đặt tạo URL asset theo chính tên miền/đường dẫn của nó.
 - Dùng cùng collector/bộ bắt `billing_list` như extension. Người dùng đổi bộ lọc sau khi bật tool
   để trang Shopee phát response; không tự request danh sách hoặc tự quét các trang Billing.
 - Chỉ tạo file JSON sau khi collector hoàn tất và mọi phép đối soát hợp lệ. JSON chỉ chứa

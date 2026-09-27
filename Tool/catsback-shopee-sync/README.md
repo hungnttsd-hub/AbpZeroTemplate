@@ -5,10 +5,11 @@ Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 ## Tool Chrome Android: xuất JSON, không cần Local Helper
 
 Trên website CatsBack, mở **Admin → Affiliate → Cài tool tổng hợp JSON trên Chrome Android**
-(`/tools/shopee-settlements/index.html`). Trang này hướng dẫn tạo dấu trang **CatsBack JSON** chứa
-toàn bộ mã tool. Không cần cài extension, chạy máy tính, nhập API key hay Local Helper.
+(`/tools/shopee-settlements/index.html`) qua **HTTPS**. Bản v3 tạo dấu trang **CatsBack JSON** chỉ chứa
+mã tải ngắn; toàn bộ logic tổng hợp nằm trong file `mobile.js` trên website CatsBack. Không cần cài
+extension, chạy máy tính, nhập API key hay Local Helper. Dấu trang v1/v2 cũ cần thay URL một lần.
 
-1. Sao chép mã trên trang cài đặt, lưu một dấu trang rồi sửa tên thành `CatsBack JSON` và thay URL bằng mã đó.
+1. Bấm **Sao chép mã tải ngắn** trên trang cài đặt, lưu một dấu trang rồi sửa tên thành `CatsBack JSON` và thay URL bằng mã đó.
 2. Mở `https://affiliate.shopee.vn/payment/billing` trên Chrome Android và đăng nhập.
 3. Tại tab Shopee, gõ `CatsBack JSON` trong thanh địa chỉ và chọn gợi ý dấu trang cùng tên.
 4. Đổi bộ lọc/kỳ hoặc trang danh sách để Shopee phát request `billing_list`. Không reload toàn bộ tab;
@@ -28,9 +29,11 @@ canonical CSV v2 bên dưới spec, **mọi giá trị trong row đều là chu�
 trạng thái và boolean. Backend kiểm tra schema, số bảng kê và dùng chung kiểm tra đối soát với CSV.
 
 Mã cho điện thoại được đóng gói từ collector và bộ bắt request của extension, cùng
-`mobile/runner.js`. Bản dấu trang v2 dùng DOM API để tạo bảng điều khiển, báo lỗi khởi động
-bằng hộp thoại và rút gọn mã bằng esbuild (dependency đã có của web). Trang cài đặt có mục
-so sánh URL dấu trang đã lưu với bản v2, không thực thi hay gửi mã lên server.
+`mobile/runner.js`. `mobile/loader.js` tạo thẻ script tải `mobile.js` qua HTTPS, không dùng eval.
+URL máy chủ được lấy từ chính trang cài đặt, không ghi cứng tên miền trong mã nguồn. Request tải
+script không gửi referrer Shopee. Mã tải chặn thao tác lặp khi đang tải, mở lại bảng đã có và báo lỗi
+sau 15 giây nếu chưa tải xong. Khi đã mở, dữ liệu Shopee và file JSON vẫn xử lý trong tab Shopee.
+Trang cài đặt có mục so sánh URL dấu trang đã lưu với mã tải ngắn, không thực thi hay gửi mã lên server.
 Sau khi sửa các nguồn này, tạo lại file phát hành bằng (cần Node và đã chạy `npm ci` trong
 `src/WebHoanTien.Web`):
 
@@ -38,11 +41,17 @@ Sau khi sửa các nguồn này, tạo lại file phát hành bằng (cần Node
 powershell -ExecutionPolicy Bypass -File Tool/catsback-shopee-sync/mobile/build.ps1
 ```
 
-Đưa cả backend và `wwwroot/tools/shopee-settlements` lên website. Khi cập nhật mã tool, sao chép lại
-URL dấu trang trên điện thoại. Trang cài đặt v2 lấy URL đã rút gọn từ `catsback-json-bookmarklet.txt`;
-`bookmarklet.js` giữ bản nguồn đã ghép để tra cứu. Dấu trang chứa mã trực tiếp để không cần tải script khác miền trong
-Shopee; vẫn phụ thuộc việc Chrome/trang Shopee cho phép chạy JavaScript dấu trang. Cần xác nhận
-trên thiết bị Android thực tế trước khi coi luồng mobile đã được kiểm thử.
+Đưa backend và toàn bộ `wwwroot/tools/shopee-settlements` lên website HTTPS. Các file cần có:
+`index.html`, `setup.js`, `setup.css`, `loader-template.txt`, `mobile.js`;
+`bookmarklet.js` giữ bản nguồn đã ghép để tra cứu. Không còn phát hành URL chứa toàn bộ mã tool.
+Sau khi thay dấu trang cũ bằng mã tải ngắn, cập nhật collector chỉ cần triển khai lại `mobile.js`;
+khi đổi tên miền/đường dẫn website hoặc logic loader, cần sao chép lại URL dấu trang.
+
+Cách tải ngắn cần website CatsBack truy cập được từ điện thoại và Shopee cho phép tải script từ
+miền CatsBack. Có thể bị CSP, Trusted Types hoặc chính sách trình duyệt chặn. Hộp thoại “CatsBack OK”
+chỉ xác nhận JavaScript dấu trang chạy được, không xác nhận việc tải script khác miền. Không tự chuyển
+sang eval hay tìm cách bỏ qua chính sách trang. Cần xác nhận trên thiết bị Android thực tế trước khi
+coi luồng mobile đã được kiểm thử.
 
 ## Cập nhật trạng thái thanh toán v0.7.7
 

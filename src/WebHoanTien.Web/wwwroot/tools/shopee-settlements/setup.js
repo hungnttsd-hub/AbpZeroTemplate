@@ -6,7 +6,7 @@
   button.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(code.value);
-      status.textContent = "Đã sao chép mã v2. Thay toàn bộ URL cũ của dấu trang CatsBack JSON rồi lưu lại.";
+      status.textContent = "Đã sao chép mã tải ngắn. Thay toàn bộ URL cũ của dấu trang CatsBack JSON rồi lưu lại.";
     } catch (_) {
       document.getElementById("manual").open = true;
       code.focus();
@@ -25,30 +25,34 @@
     try {
       const decoded = decodeURIComponent(code.value);
       if (saved === code.value || saved === decoded || decodeURIComponent(saved) === decoded) {
-        result.textContent = "Mã đã lưu khớp bản v2 và không bị thiếu. Quay lại tab Shopee, chạy CatsBack JSON; nếu có thông báo lỗi, gửi lại nguyên nội dung đó.";
+        result.textContent = "Mã tải ngắn đã lưu chính xác. Quay lại tab Shopee, chạy CatsBack JSON; nếu có thông báo lỗi, gửi lại nguyên nội dung đó.";
       } else {
-        result.textContent = "Mã đã lưu không khớp bản v2: có thể còn mã cũ hoặc bị thiếu khi sao chép/lưu. Hãy sao chép mã v2 và thay toàn bộ URL dấu trang, lưu rồi kiểm tra lại.";
+        result.textContent = "Mã đã lưu không khớp: có thể còn mã cũ hoặc bị thiếu khi sao chép/lưu. Hãy sao chép mã tải ngắn và thay toàn bộ URL dấu trang, lưu rồi kiểm tra lại.";
       }
     } catch (_) {
-      result.textContent = "URL chứa phần mã hóa không hợp lệ. Hãy sao chép lại toàn bộ mã v2 vào URL dấu trang.";
+      result.textContent = "URL chứa phần mã hóa không hợp lệ. Hãy sao chép lại mã tải ngắn vào URL dấu trang.";
     }
   });
-  fetch("catsback-json-bookmarklet.txt?v=2", { cache: "no-store" })
+  if (location.protocol !== "https:") {
+    status.textContent = "Mở trang cài đặt này trên website CatsBack qua HTTPS để tạo mã tải tool dùng được từ Shopee.";
+    return;
+  }
+  fetch("loader-template.txt?v=3", { cache: "no-store" })
     .then(response => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.text();
     })
     .then(source => {
-      const bookmarklet = source.trim();
-      if (!bookmarklet.startsWith("javascript:") ||
-          !bookmarklet.endsWith(encodeURIComponent("/*catsback-mobile-v2-end*/"))) {
-        throw new Error("Mã dấu trang v2 chưa đầy đủ.");
+      const placeholder = '"__CATSBACK_MOBILE_URL__"';
+      if (!source.startsWith("/*catsback-loader-v3*/") || source.split(placeholder).length !== 2) {
+        throw new Error("Mẫu mã tải tool không hợp lệ.");
       }
-      // Already minified at build time; no eval or cross-origin script loader.
-      code.value = bookmarklet;
+      const toolUrl = new URL("mobile.js", location.href).href;
+      // Only a short script loader is stored in the bookmark, not the collector.
+      code.value = `javascript:${encodeURIComponent(source.trim().replace(placeholder, JSON.stringify(toolUrl)))}`;
       button.disabled = false;
       verify.disabled = false;
-      status.textContent = "Mã v2 đã sẵn sàng. Nếu đã cài bản trước, cần thay URL dấu trang bằng mã mới này.";
+      status.textContent = `Mã tải ngắn đã sẵn sàng (${code.value.length.toLocaleString("vi-VN")} ký tự). Thay URL dấu trang cũ một lần; những lần sau tool được tải từ website.`;
     })
     .catch(error => {
       status.textContent = `Không tải được mã tool: ${error.message}. Hãy tải lại trang hoặc kiểm tra bản triển khai website.`;

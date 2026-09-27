@@ -784,7 +784,7 @@ style.textContent = `
 `;
 root.append(style, create("section", "", { "aria-label": "CatsBack tổng hợp JSON" }, [
   create("header", "", {}, [
-    create("strong", "CatsBack · JSON v2"),
+    create("strong", "CatsBack · JSON v3"),
     create("button", "Thu gọn", { id: "toggle", "aria-expanded": "true" })
   ]),
   create("div", "", { id: "body" }, [

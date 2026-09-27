@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CatsBack · Tổng hợp JSON trên Android</title>
   <link rel="stylesheet" href="setup.css">
-  <script src="setup.js?v=2" defer></script>
+  <script src="setup.js?v=3" defer></script>
 </head>
 <body>
   <main>
@@ -15,25 +15,25 @@
     <p>Chạy trong tab Shopee trên Chrome Android, tải file JSON rồi tự import vào CatsBack. Không cần máy tính hay Local Helper.</p>
     <section aria-labelledby="install-title">
       <h2 id="install-title">1. Tạo dấu trang CatsBack</h2>
-      <p class="note"><strong>Bản v2:</strong> mã dấu trang đã được rút gọn và có thông báo lỗi khởi động. Nếu bản cũ không hiện bảng điều khiển, hãy sao chép mã mới rồi thay toàn bộ URL của dấu trang đã lưu.</p>
+      <p class="note"><strong>Bản v3 · Mã tải ngắn:</strong> dấu trang chỉ tải tool từ website CatsBack, không còn chứa toàn bộ mã tổng hợp. Thay URL dấu trang cũ bằng mã mới một lần; những lần sau tool được cập nhật từ website.</p>
       <ol>
-        <li>Bấm <strong>Sao chép mã dấu trang</strong> bên dưới.</li>
+        <li>Bấm <strong>Sao chép mã tải ngắn</strong> bên dưới.</li>
         <li>Trong menu ⋮ của Chrome, bấm ngôi sao để lưu trang này.</li>
         <li>Mở phần chỉnh sửa dấu trang: đặt tên <strong>CatsBack JSON</strong>, thay toàn bộ ô URL bằng mã vừa sao chép và lưu lại. URL phải bắt đầu bằng <code>javascript:</code>.</li>
       </ol>
-      <button id="copy" disabled>Sao chép mã dấu trang</button>
+      <button id="copy" disabled>Sao chép mã tải ngắn</button>
       <p id="status" role="status" aria-live="polite">Đang chuẩn bị mã…</p>
       <details id="manual">
         <summary>Xem mã để sao chép thủ công</summary>
         <label for="code">Sao chép toàn bộ nội dung, bao gồm javascript:</label>
-        <textarea id="code" rows="5" readonly spellcheck="false"></textarea>
+        <textarea id="code" rows="3" readonly spellcheck="false"></textarea>
       </details>
     </section>
     <section aria-labelledby="run-title">
       <h2 id="run-title">2. Tổng hợp và tải JSON</h2>
       <ol>
         <li>Mở <a href="https://affiliate.shopee.vn/payment/billing" target="_blank" rel="noopener noreferrer">danh sách bảng kê Shopee</a> và đăng nhập. Nếu cần, bật <strong>Trang web cho máy tính</strong> trong menu Chrome.</li>
-        <li>Ngay tại tab Shopee, chạm thanh địa chỉ, gõ <strong>CatsBack JSON</strong> rồi chọn dấu trang cùng tên trong gợi ý. Bảng điều khiển CatsBack sẽ xuất hiện.</li>
+        <li>Ngay tại tab Shopee, chạm thanh địa chỉ, gõ <strong>CatsBack JSON</strong> rồi chọn dấu trang cùng tên trong gợi ý. Chờ tool tải từ website và mở bảng điều khiển; nếu không tải được, tool sẽ báo lỗi.</li>
         <li>Đổi bộ lọc/kỳ hoặc chuyển trang danh sách để Shopee tải dữ liệu mới. Có thể thu gọn bảng CatsBack để thao tác. <strong>Không tải lại toàn bộ tab</strong>, vì thao tác đó sẽ tắt tool.</li>
         <li>Khi tool báo đã nhận danh sách, bấm <strong>Tổng hợp JSON</strong>. Giữ tab mở, màn hình sáng và không đổi bộ lọc trong lúc chạy.</li>
         <li>Bấm <strong>Tải file JSON</strong>. Về CatsBack → Affiliate → <strong>Import JSON đối soát</strong>, chọn file trong thư mục tải xuống.</li>
@@ -42,7 +42,8 @@
     </section>
     <section>
       <h2>Khi chưa thấy tool</h2>
-      <p>Kiểm tra dấu trang đã lưu đầy đủ mã và chọn đúng gợi ý dấu trang trong thanh địa chỉ. Sau mỗi lần tải lại trang Shopee, chạy dấu trang lại. Nếu trình duyệt hoặc chính sách trang chặn JavaScript dấu trang, tool không thể chạy trong tab đó.</p>
+      <p>Chọn đúng gợi ý dấu trang trong thanh địa chỉ. Sau mỗi lần tải lại trang Shopee, chạy dấu trang lại. Cách này cần kết nối được đến website CatsBack. Nếu báo không tải được tool, kiểm tra mạng và gửi lại thông báo; Shopee cũng có thể chặn mã tải từ website khác.</p>
+      <p>Việc thấy “CatsBack OK” chỉ xác nhận dấu trang chạy được, chưa xác nhận Shopee cho phép tải tool từ CatsBack.</p>
       <details>
         <summary>Đã thấy “CatsBack OK” nhưng tool vẫn không hiện</summary>
         <p>Mở chỉnh sửa dấu trang CatsBack JSON, sao chép toàn bộ URL đã lưu rồi dán vào ô dưới. Mục này chỉ so sánh mã trên thiết bị, không chạy mã và không gửi lên server.</p>
@@ -52,7 +53,7 @@
         <p id="verify-result" role="status" aria-live="polite"></p>
         <p>Nếu mã khớp nhưng bảng điều khiển vẫn không hiện, gửi lại thông báo lỗi hoặc ảnh màn hình ngay sau khi chạy dấu trang.</p>
       </details>
-      <p>Tool chỉ đọc dữ liệu bằng phiên Shopee hiện tại và tạo file trên máy. Không yêu cầu sao chép cookie hoặc nhập Client Secret. Bạn tự chọn thời điểm import; dữ liệu import vẫn chờ admin duyệt.</p>
+      <p>Website CatsBack cung cấp file mã tool; dữ liệu Shopee vẫn được đọc và tạo JSON ngay trong tab Shopee. Không gửi cookie Shopee hay bảng kê về website khi tổng hợp. Bạn tự chọn thời điểm import; dữ liệu import vẫn chờ admin duyệt.</p>
     </section>
   </main>
 </body>
