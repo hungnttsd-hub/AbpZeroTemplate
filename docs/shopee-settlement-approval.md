@@ -34,6 +34,11 @@ Với bảng kê canonical có hoa hồng gốc authoritative, tính riêng từ
 
 CSV cũ chỉ ghi số thực trả sau khấu trừ không có đủ căn cứ suy ra hoa hồng gốc, nên giữ số thực trả.
 Luồng sửa số tiền thủ công dùng cùng công thức và vẫn cho phép nhập 0% rõ ràng.
+Form duyệt thủ công đọc số bằng `InvariantCulture`, theo định dạng dấu chấm thập phân
+của HTML `input type="number"`, không chấp nhận dấu phân tách hàng nghìn. Không dùng
+model binding theo ngôn ngữ giao diện cho ba trường tiền/tỷ lệ, tránh `0.98` bị đọc
+thành `98` khi giao diện tiếng Việt. Kiểm tra giới hạn tiền, tỷ lệ và tổng tỷ lệ
+vẫn được thực hiện trong dịch vụ duyệt trước khi chốt tiền.
 
 Hiển thị, số tiền xem trước và duyệt dùng chung `ShopeeSettlementAmounts`. Số tiền gốc từ file
 được giữ đến khi duyệt; khi duyệt lưu các trường `Original*`, tỷ lệ mặc định hoặc tỷ lệ nhập tay

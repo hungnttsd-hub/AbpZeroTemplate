@@ -1,6 +1,8 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Volo.Abp;
@@ -67,13 +69,28 @@ public class IndexModel : PageModel
                 (RecordPageNumber - 1) * RecordPageSize, RecordPageSize, input);
     }
 
-    public async Task<IActionResult> OnPostApproveAsync(Guid recordId, bool useManualAmounts, AdminShopeeSettlementManualInput manual)
+    public async Task<IActionResult> OnPostApproveAsync(Guid recordId, bool useManualAmounts)
     {
         try
         {
             if (useManualAmounts && !ModelState.IsValid)
                 return BadRequest(new { success = false, error = "Vui lòng nhập đủ hoa hồng, thuế và phí hợp lệ." });
-            var result = await _settlements.ApproveAsync(recordId, useManualAmounts ? manual : null);
+            AdminShopeeSettlementManualInput? manual = null;
+            if (useManualAmounts)
+            {
+                var form = await Request.ReadFormAsync();
+                if (!TryReadManualDecimal(form, "manual.GrossCommission", out var gross) ||
+                    !TryReadManualDecimal(form, "manual.TaxPercent", out var tax) ||
+                    !TryReadManualDecimal(form, "manual.ServiceFeePercent", out var fee))
+                    return BadRequest(new { success = false, error = "Vui lòng nhập đủ hoa hồng, thuế và phí hợp lệ." });
+                manual = new AdminShopeeSettlementManualInput
+                {
+                    GrossCommission = gross,
+                    TaxPercent = tax,
+                    ServiceFeePercent = fee
+                };
+            }
+            var result = await _settlements.ApproveAsync(recordId, manual);
             return new JsonResult(new
             {
                 success = true,
@@ -140,6 +157,18 @@ public class IndexModel : PageModel
         {
             return BadRequest(new { success = false, error = ErrorMessage(exception) });
         }
+    }
+
+    private static bool TryReadManualDecimal(IFormCollection form, string field, out decimal value)
+    {
+        value = 0m;
+        var values = form[field];
+        // HTML number inputs submit a dot decimal separator regardless of UI language.
+        // The Vietnamese form binder treats that dot as grouping (0.98 becomes 98).
+        // Disallow grouping instead of guessing a culture for monetary values.
+        return values.Count == 1 && decimal.TryParse(values[0],
+            NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+            CultureInfo.InvariantCulture, out value);
     }
 
     private static string ErrorMessage(BusinessException exception) => exception.Code switch
