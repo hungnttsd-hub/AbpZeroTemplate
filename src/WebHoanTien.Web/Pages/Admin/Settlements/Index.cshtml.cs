@@ -19,7 +19,9 @@ public class IndexModel : PageModel
     private readonly IAdminShopeeSettlementApprovalAppService _settlements;
 
     [BindProperty(SupportsGet = true)] public string? Filter { get; set; }
-    [BindProperty(SupportsGet = true)] public ShopeeSettlementBatchStatus? Status { get; set; }
+    [BindProperty(SupportsGet = true)] public bool? IsApproved { get; set; }
+    [BindProperty(SupportsGet = true)] public bool? IsShopeePaid { get; set; }
+    [BindProperty(SupportsGet = true)] public string? AffiliateId { get; set; }
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     [BindProperty(SupportsGet = true)] public Guid? BatchId { get; set; }
     [BindProperty(SupportsGet = true)] public bool AllRecords { get; set; }
@@ -37,17 +39,21 @@ public class IndexModel : PageModel
 
     public IndexModel(IAdminShopeeSettlementApprovalAppService settlements) => _settlements = settlements;
 
+    private AdminShopeeSettlementBatchListInput CurrentFilters() => new()
+    {
+        Filter = Filter,
+        IsApproved = IsApproved,
+        IsShopeePaid = IsShopeePaid,
+        AffiliateId = AffiliateId
+    };
+
     public async Task OnGetAsync()
     {
         PageNumber = Math.Max(1, PageNumber);
         RecordPageNumber = Math.Max(1, RecordPageNumber);
-        var input = new AdminShopeeSettlementBatchListInput
-        {
-            Filter = Filter,
-            Status = Status,
-            SkipCount = (PageNumber - 1) * BatchPageSize,
-            MaxResultCount = BatchPageSize
-        };
+        var input = CurrentFilters();
+        input.SkipCount = (PageNumber - 1) * BatchPageSize;
+        input.MaxResultCount = BatchPageSize;
         Data = await _settlements.GetListAsync(input);
         if (AllRecords || !BatchId.HasValue)
         {
@@ -58,7 +64,7 @@ public class IndexModel : PageModel
         }
         if (!AllRecords && BatchId.HasValue)
             Details = await _settlements.GetAsync(BatchId.Value,
-                (RecordPageNumber - 1) * RecordPageSize, RecordPageSize);
+                (RecordPageNumber - 1) * RecordPageSize, RecordPageSize, input);
     }
 
     public async Task<IActionResult> OnPostApproveAsync(Guid recordId, bool useManualAmounts, AdminShopeeSettlementManualInput manual)
@@ -91,7 +97,7 @@ public class IndexModel : PageModel
     {
         try
         {
-            var result = await _settlements.ApproveAllAsync(batchId);
+            var result = await _settlements.ApproveAllAsync(batchId, CurrentFilters());
             return new JsonResult(new
             {
                 success = true,

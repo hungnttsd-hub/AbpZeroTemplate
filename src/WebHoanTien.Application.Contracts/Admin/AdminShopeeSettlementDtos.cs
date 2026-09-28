@@ -24,6 +24,9 @@ public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRe
 {
     [StringLength(256)] public string? Filter { get; set; }
     public ShopeeSettlementBatchStatus? Status { get; set; }
+    public bool? IsApproved { get; set; }
+    public bool? IsShopeePaid { get; set; }
+    [StringLength(128)] public string? AffiliateId { get; set; }
 }
 
 public sealed class AdminShopeeSettlementSummaryDto
@@ -81,6 +84,8 @@ public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Gu
     public bool HasPpp { get; set; }
     public string ExternalOrderId { get; set; } = string.Empty;
     public decimal DefaultGrossCommission { get; set; }
+    public bool UsesDefaultTax { get; set; }
+    public bool UsesDefaultServiceFee { get; set; }
     public decimal EligibleCommission { get; set; }
     public decimal AllocatedServiceFee { get; set; }
     public decimal AllocatedTax { get; set; }
@@ -144,8 +149,9 @@ public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
     Task<PagedResultDto<AdminShopeeSettlementRecordDto>> GetRecordsAsync(
         AdminShopeeSettlementBatchListInput input, int skipCount = 0, int maxResultCount = 50);
     Task<AdminShopeeSettlementBatchDetailsDto> GetAsync(Guid batchId, int skipCount = 0,
-        int maxResultCount = 50);
+        int maxResultCount = 50, AdminShopeeSettlementBatchListInput? input = null);
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId, AdminShopeeSettlementManualInput? manual = null);
-    Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId);
+    Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId,
+        AdminShopeeSettlementBatchListInput? input = null);
     Task<AdminShopeeSettlementRefreshResultDto> RefreshMatchesAsync(Guid batchId);
 }

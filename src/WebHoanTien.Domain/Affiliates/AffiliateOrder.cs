@@ -33,8 +33,7 @@ public class AffiliateOrder : FullAuditedAggregateRoot<Guid>
 
     public void Update(AffiliateOrderStatus status, string? shopType, decimal purchaseAmount, decimal netCommission, decimal userCommission)
     {
-        if (Status == AffiliateOrderStatus.Settled && status is not AffiliateOrderStatus.Cancelled
-            and not AffiliateOrderStatus.Refunded and not AffiliateOrderStatus.Rejected)
+        if (Status == AffiliateOrderStatus.Settled || SettledAt.HasValue)
         {
             return;
         }
@@ -51,9 +50,7 @@ public class AffiliateOrder : FullAuditedAggregateRoot<Guid>
     public void Settle(decimal settledNetCommission, decimal settledUserCommission, string settlementReference,
         DateTime settledAt)
     {
-        if (Status == AffiliateOrderStatus.Settled) return;
-        if (Status != AffiliateOrderStatus.Completed)
-            throw new BusinessException(WebHoanTienDomainErrorCodes.AffiliateOrderSettlementInvalidState);
+        if (Status == AffiliateOrderStatus.Settled || SettledAt.HasValue) return;
         if (settledNetCommission < 0m || settledUserCommission < 0m || settledUserCommission > settledNetCommission)
             throw new BusinessException(WebHoanTienDomainErrorCodes.InvalidShopeeSettlementReport);
 

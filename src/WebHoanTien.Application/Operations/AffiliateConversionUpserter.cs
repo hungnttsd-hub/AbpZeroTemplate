@@ -7,6 +7,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Guids;
 using Volo.Abp.Timing;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Admin;
 using WebHoanTien.Integrations;
 using WebHoanTien.Notifications;
 
@@ -29,6 +30,7 @@ public class AffiliateConversionUpserter : ITransientDependency
     private readonly CustomerNotificationManager _notificationManager;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
+    private readonly ShopeeSettlementMatcher _settlementMatcher;
 
     public AffiliateConversionUpserter(IRepository<AffiliateTracking, Guid> trackings,
         IRepository<AffiliateConversion, Guid> conversions, IRepository<AffiliateOrder, Guid> orders,
@@ -36,7 +38,7 @@ public class AffiliateConversionUpserter : ITransientDependency
         IRepository<AffiliateOrderItemAttribution, Guid> attributions,
         AffiliateCommissionRuleManager ruleManager, AffiliateUserShareRateResolver shareRateResolver,
         AffiliateCommissionCalculator calculator, CustomerNotificationManager notificationManager,
-        IGuidGenerator guidGenerator, IClock clock)
+        IGuidGenerator guidGenerator, IClock clock, ShopeeSettlementMatcher settlementMatcher)
     {
         _trackings = trackings;
         _conversions = conversions;
@@ -49,6 +51,7 @@ public class AffiliateConversionUpserter : ITransientDependency
         _notificationManager = notificationManager;
         _guidGenerator = guidGenerator;
         _clock = clock;
+        _settlementMatcher = settlementMatcher;
     }
 
     public async Task<AffiliateConversionUpsertResult> UpsertAsync(AffiliatePlatform platform,
@@ -118,7 +121,7 @@ public class AffiliateConversionUpserter : ITransientDependency
             var sourceKeys = sourceOrder.Items.SelectMany(item => item.Attributions.Select(attribution =>
                     AttributionKey(item.ExternalItemId, item.ModelId, attribution.AttributionValue)))
                 .ToHashSet(StringComparer.Ordinal);
-            if (previousStatus == AffiliateOrderStatus.Settled)
+            if (previousStatus == AffiliateOrderStatus.Settled || order.SettledAt.HasValue)
             {
                 var existingItemById = existingItems.ToDictionary(x => x.Id);
                 var existingKeys = existingAttributions.Where(x => existingItemById.ContainsKey(x.OrderItemId))
@@ -286,6 +289,8 @@ public class AffiliateConversionUpserter : ITransientDependency
         conversion.ChangeStatus(source.Status, _clock.Now);
         await _conversions.UpdateAsync(conversion, autoSave: true);
         await _shareRateResolver.RecalculateUnsettledOrdersAsync(affectedUserIds, platform);
+        if (platform == AffiliatePlatform.Shopee)
+            await _settlementMatcher.RefreshForOrdersAsync(sourceOrderIds);
 
         return new AffiliateConversionUpsertResult(inserted,
             hasMatchedAttribution, matchedItemCount,

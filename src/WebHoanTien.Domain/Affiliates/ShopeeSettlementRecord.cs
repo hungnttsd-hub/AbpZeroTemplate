@@ -46,8 +46,14 @@ public class ShopeeSettlementRecord : CreationAuditedAggregateRoot<Guid>
         Issue = issue;
     }
 
-    public void SetUnmatched(string issue)
+    public void SetUnmatched(string issue, bool clearMatch = false)
     {
+        if (clearMatch)
+        {
+            AffiliateOrderId = null;
+            AffiliateConversionId = null;
+            UserId = null;
+        }
         Status = ShopeeSettlementRecordStatus.Unmatched;
         Issue = issue;
     }

@@ -5,7 +5,7 @@
 
     function previewManual(form) {
         const panel = form.querySelector('[data-manual-amounts]');
-        if (!panel) return null;
+        if (!panel || panel.disabled) return null;
         const inputs = ['gross', 'tax', 'fee'].map(key => panel.querySelector(`[data-manual-${key}]`));
         inputs[2].setCustomValidity(Number(inputs[1].value) + Number(inputs[2].value) > 100
             ? 'Tổng tỷ lệ thuế và phí không được vượt quá 100%.' : '');
@@ -25,6 +25,13 @@
         return net;
     }
     document.querySelectorAll('[data-approve-record]').forEach(previewManual);
+    document.addEventListener('change', event => {
+        if (!event.target.matches('[data-manual-toggle]')) return;
+        const form = event.target.closest('[data-approve-record]');
+        const panel = form.querySelector('[data-manual-amounts]');
+        panel.hidden = panel.disabled = !event.target.checked;
+        previewManual(form);
+    });
     document.addEventListener('input', event => {
         const form = event.target.closest('[data-approve-record]');
         if (form) previewManual(form);
@@ -134,13 +141,13 @@
         if (!form) return;
         event.preventDefault();
         const bulk = form.hasAttribute("data-approve-all");
-        const manual = form.querySelector("[data-manual-amounts]");
+        const manual = form.querySelector("[data-manual-amounts]:not(:disabled)");
         if (manual && !form.reportValidity()) return;
         const amount = manual ? previewManual(form) : bulk ? Number(form.dataset.amount) || 0 : Number(form.closest("[data-settlement-record]")?.dataset.paid) || 0;
         const confirmed = await window.CatsBackModal.confirm({
             variant: "info",
             title: bulk ? "Duyệt các đơn Shopee đã thanh toán?" : "Duyệt đơn đối soát?",
-            message: bulk ? "Chỉ duyệt các đơn Shopee đã thanh toán. Đơn chưa thanh toán cần nhập hoa hồng, thuế và phí rồi duyệt riêng." : amount > 0
+            message: bulk ? "Duyệt các đơn Shopee đã thanh toán trong batch phù hợp với bộ lọc hiện tại, trên tất cả các trang, dù trạng thái đơn chưa hoàn thành. Khoản thuế/phí Shopee chưa trừ sẽ áp mặc định; khoản đã trừ giữ nguyên. Đơn Shopee chưa thanh toán cần duyệt riêng." : amount > 0
                 ? `Thao tác sẽ cộng tiền vào ví người dùng. Tổng hoa hồng tương ứng: ${money.format(amount)}đ.`
                 : "Thao tác sẽ dùng giá trị đối soát đang hiển thị để cộng tiền vào ví người dùng.",
             cancelText: "Kiểm tra lại",
@@ -167,9 +174,13 @@
                 headers: { "X-Requested-With": "XMLHttpRequest" },
                 credentials: "same-origin"
             }));
-            if (manual) {
+            if (manual || bulk || document.querySelector('.admin-settlement-shell[data-filtered="true"]')) {
                 notify(payload.message);
-                window.setTimeout(() => window.location.reload(), 700);
+                // Re-read the filtered totals and records after an approval changes membership.
+                const url = new URL(window.location.href);
+                url.searchParams.delete('RecordPageNumber');
+                url.searchParams.delete('PageNumber');
+                window.setTimeout(() => window.location.assign(url.href), 700);
                 return;
             }
             if (Number(payload.result?.approvedCount) === 0 || Number(payload.result?.skippedCount) > 0) {
