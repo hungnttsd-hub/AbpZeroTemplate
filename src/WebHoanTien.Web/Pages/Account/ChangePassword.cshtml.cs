@@ -6,18 +6,24 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Volo.Abp.Auditing;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
+using WebHoanTien.IdentityExtensions;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
 
 namespace WebHoanTien.Web.Pages.Account;
 
 [Authorize]
+[DisableAuditing]
 public class ChangePasswordModel : PageModel
 {
     private readonly IdentityUserManager _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly ICurrentUser _currentUser;
+
+    public bool HasPassword { get; private set; }
+    public bool HasGoogleLogin { get; private set; }
 
     [BindProperty]
     [Required(ErrorMessage = "Vui lòng nhập mật khẩu hiện tại.")]
@@ -49,7 +55,7 @@ public class ChangePasswordModel : PageModel
     public async Task<IActionResult> OnGetAsync()
     {
         var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-        if (await _userManager.HasPasswordAsync(user))
+        if (await LoadPasswordStateAsync(user))
         {
             return Page();
         }
@@ -61,26 +67,35 @@ public class ChangePasswordModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid)
-        {
-            return Page();
-        }
-
         var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-        if (!await _userManager.HasPasswordAsync(user))
+        if (!await LoadPasswordStateAsync(user))
         {
             TempData["PasswordUnavailableMessage"] =
                 "Tài khoản này chưa có mật khẩu đăng nhập trên CatBack. Hãy quản lý phương thức đăng nhập của bạn.";
             return RedirectToPage("/Account/Profile");
         }
 
-        if (string.Equals(CurrentPassword, NewPassword, StringComparison.Ordinal))
+        // Only the stored password state determines whether the current password is required.
+        if (!HasPassword)
+        {
+            ModelState.Remove(nameof(CurrentPassword));
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return Page();
+        }
+
+        if (HasPassword && string.Equals(CurrentPassword, NewPassword, StringComparison.Ordinal))
         {
             ModelState.AddModelError(nameof(NewPassword), "Mật khẩu mới phải khác mật khẩu hiện tại.");
             return Page();
         }
 
-        var result = await _userManager.ChangePasswordAsync(user, CurrentPassword, NewPassword);
+        // Add the local credential to the same user without modifying external logins.
+        var result = HasPassword
+            ? await _userManager.ChangePasswordAsync(user, CurrentPassword, NewPassword)
+            : await _userManager.AddPasswordAsync(user, NewPassword);
         if (!result.Succeeded)
         {
             if (result.Errors.Any(x => string.Equals(x.Code, "PasswordMismatch", StringComparison.OrdinalIgnoreCase)))
@@ -98,11 +113,20 @@ public class ChangePasswordModel : PageModel
             return Page();
         }
 
-        // ChangePasswordAsync refreshes the security stamp. Refresh the current cookie
+        // Both password operations refresh the security stamp. Refresh the current cookie
         // so this browser stays signed in while other stale sessions can be invalidated.
         await _signInManager.RefreshSignInAsync(user);
 
-        TempData["PasswordStatusMessage"] = "Đổi mật khẩu thành công.";
+        TempData["PasswordStatusMessage"] = (HasPassword ? "Đổi mật khẩu thành công." : "Đặt mật khẩu thành công.")
+            + (HasGoogleLogin ? " Bạn có thể đăng nhập bằng username/email và mật khẩu hoặc tiếp tục với Google." : string.Empty);
         return RedirectToPage("/Account/Profile");
+    }
+
+    private async Task<bool> LoadPasswordStateAsync(IdentityUser user)
+    {
+        HasPassword = await _userManager.HasPasswordAsync(user);
+        HasGoogleLogin = (await _userManager.GetLoginsAsync(user)).Any(login =>
+            string.Equals(login.LoginProvider, "Google", StringComparison.OrdinalIgnoreCase));
+        return !user.IsAnonymous() && (HasPassword || HasGoogleLogin);
     }
 }

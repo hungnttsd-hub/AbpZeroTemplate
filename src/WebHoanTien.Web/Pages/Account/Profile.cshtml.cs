@@ -29,6 +29,7 @@ public class ProfileModel : PageModel
     public CustomerProfileDto Profile { get; private set; } = new();
     public IReadOnlyList<PayoutBank> Banks => PayoutBankCatalog.Banks;
     public bool CanChangePassword { get; private set; }
+    public bool HasPassword { get; private set; }
     public bool CanEditContactEmail { get; private set; }
     public string LoginEmail { get; private set; } = string.Empty;
 
@@ -260,8 +261,9 @@ public class ProfileModel : PageModel
         Profile = await _customerProfileAppService.GetAsync();
 
         var user = await _userManager.GetByIdAsync(_currentUser.GetId());
-        CanChangePassword = await _userManager.HasPasswordAsync(user);
-        CanEditContactEmail = CanChangePassword && !Profile.HasGoogleLogin;
+        HasPassword = await _userManager.HasPasswordAsync(user);
+        CanChangePassword = !user.IsAnonymous() && (HasPassword || Profile.HasGoogleLogin);
+        CanEditContactEmail = HasPassword && !Profile.HasGoogleLogin;
         LoginEmail = user.IsUserNameRegistration() ? user.GetLoginEmail() ?? string.Empty : string.IsNullOrWhiteSpace(user.GetLoginEmail())
             ? user.Email ?? string.Empty
             : user.GetLoginEmail()!;

@@ -74,7 +74,7 @@
                 }
                 @if (Model.CanChangePassword)
                 {
-                    <a class="profile-text-link" href="/Account/ChangePassword">Đổi mật khẩu</a>
+                    <a class="profile-text-link" href="/Account/ChangePassword">@(Model.HasPassword ? "Đổi mật khẩu" : "Đặt mật khẩu")</a>
                     <span aria-hidden="true"> · </span>
                 }
                 @* <a class="profile-text-link" href="/Account/Manage">Quản lý phương thức đăng nhập</a>   *@          
