@@ -22,6 +22,6 @@ public static class WebHoanTienConsts
     public const int NotificationMessageMaxLength = 700;
     public const int NotificationActionUrlMaxLength = 500;
     public const int NotificationEventKeyMaxLength = 256;
-    public const string TermsVersion = "2026-08-18";
-    public const string PrivacyVersion = "2026-08-18";
+    public const string TermsVersion = "2026-10-03";
+    public const string PrivacyVersion = "2026-10-03";
 }

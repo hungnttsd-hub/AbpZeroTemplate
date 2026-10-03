@@ -1,3 +1,79 @@
 @page
-@{ ViewData["Title"] = "Điều khoản sử dụng"; }
-<article class="page-shell legal"><span class="eyebrow">Phiên bản @WebHoanTienConsts.TermsVersion</span><h1>Điều khoản sử dụng</h1><p>Đây là bản dự thảo Phase 1. CatBack cung cấp công cụ tạo link tiếp thị liên kết và hiển thị dữ liệu do nền tảng đối tác cung cấp.</p><h2>Ghi nhận hoa hồng</h2><p>Shopee quyết định tính hợp lệ, trạng thái và giá trị hoa hồng. Số liệu ước tính không phải cam kết thanh toán.</p><h2>Hành vi bị cấm</h2><p>Không lạm dụng, gian lận, tự động hóa trái phép hoặc cố truy cập dữ liệu của người khác.</p><h2>Liên hệ</h2><p>Gửi câu hỏi tới support@webhoantien.com.</p></article>
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@{ ViewData["Title"] = "Terms of Service — Điều khoản sử dụng"; }
+<article class="page-shell cb-public-page">
+    <header class="cb-public-heading">
+        <a class="cb-public-back" href="/">← Trang chủ</a>
+        <span class="eyebrow">Cập nhật / Phiên bản @WebHoanTienConsts.TermsVersion</span>
+        <h1>Terms of Service</h1>
+        <p>Điều khoản sử dụng dịch vụ CatBack</p>
+    </header>
+    <p>Các điều khoản này quy định việc sử dụng website và tính năng CatBack. Khi tạo tài khoản hoặc xác nhận chấp thuận, bạn đồng ý với các điều khoản và <a href="/Legal/Privacy">Chính sách quyền riêng tư</a>. Nếu không đồng ý, bạn có thể ngừng sử dụng dịch vụ và liên hệ về việc xử lý tài khoản, dữ liệu hoặc giao dịch còn lại.</p>
+    <nav class="cb-public-toc" aria-label="Mục lục điều khoản">
+        <a href="#service">Dịch vụ</a><a href="#account">Tài khoản</a><a href="#cashback">Hoàn tiền</a><a href="#platforms">Nền tảng bên thứ ba</a><a href="#contact">Liên hệ</a>
+    </nav>
+    <section id="service">
+        <h2>1. Phạm vi dịch vụ</h2>
+        <p>CatBack cung cấp công cụ tạo link tiếp thị liên kết, theo dõi đơn hàng được ghi nhận, hiển thị hoa hồng và chia sẻ một phần hoa hồng hợp lệ với người dùng. CatBack hiện hỗ trợ Shopee; các nền tảng khác chỉ được hỗ trợ khi có thông báo và tính năng tương ứng.</p>
+        <p>CatBack không phải người bán hay đơn vị vận chuyển. Hợp đồng mua hàng, thanh toán, đổi trả và bảo hành được thực hiện giữa bạn với người bán hoặc sàn theo điều kiện riêng của họ.</p>
+    </section>
+    <section id="account">
+        <h2>2. Điều kiện sử dụng và trách nhiệm tài khoản</h2>
+        <p>Bạn cần từ đủ 16 tuổi và đáp ứng điều kiện về năng lực giao kết theo pháp luật áp dụng. Nếu chưa đủ năng lực tự giao kết, việc sử dụng phải có sự đồng ý và giám sát phù hợp của người đại diện hợp pháp. Các yêu cầu riêng của sàn thương mại điện tử vẫn áp dụng.</p>
+        <ul>
+            <li>Cung cấp thông tin chính xác và chỉ sử dụng tài khoản, thông tin nhận tiền mà bạn có quyền sử dụng.</li>
+            <li>Bảo quản thông tin đăng nhập, thiết bị và mã khôi phục; thông báo khi nghi ngờ có truy cập trái phép.</li>
+            <li>Tài khoản ẩn danh phụ thuộc vào thông tin thiết bị và mã khôi phục. Mất cả hai có thể khiến CatBack không đủ căn cứ xác minh để khôi phục quyền truy cập.</li>
+            <li>Không cho người khác sử dụng tài khoản để thực hiện hành vi gian lận hoặc vi phạm điều khoản.</li>
+        </ul>
+    </section>
+    <section id="cashback">
+        <h2>3. Điều kiện ghi nhận hoa hồng và hoàn tiền</h2>
+        <ul>
+            <li>Đơn hàng cần được nền tảng ghi nhận qua đường dẫn tiếp thị liên kết hợp lệ và đáp ứng điều kiện của chương trình tại thời điểm mua.</li>
+            <li>Nền tảng quyết định tính hợp lệ, giá trị và trạng thái hoa hồng. Dữ liệu có thể được cập nhật hoặc điều chỉnh sau khi đơn hàng phát sinh.</li>
+            <li>Số tiền ước tính, tỷ lệ quảng bá và trạng thái chờ không phải cam kết thanh toán. Tỷ lệ chia sẻ áp dụng trên hoa hồng hợp lệ, không phải trên giá trị toàn bộ đơn hàng.</li>
+            <li>Đơn bị hủy, hoàn trả, gian lận, mất ghi nhận tiếp thị liên kết hoặc không đáp ứng chính sách có thể bị từ chối hoặc điều chỉnh hoàn tiền.</li>
+            <li>Việc mở link, mua hàng và đối soát có thể chịu ảnh hưởng của cookie, thiết bị, các lượt nhấp khác và quy tắc của nền tảng. CatBack không bảo đảm mọi đơn mua đều được ghi nhận.</li>
+        </ul>
+        <p>Nếu thấy sai lệch, hãy gửi mã đơn và thông tin liên quan qua <a href="/Contact">trang liên hệ</a> để CatBack kiểm tra dữ liệu có sẵn.</p>
+    </section>
+    <section>
+        <h2>4. Số dư và yêu cầu rút tiền</h2>
+        <p>Ví CatBack hiển thị khoản hoàn tiền và lịch sử ghi nhận trong dịch vụ. Số dư chờ đối soát chưa phải số tiền có thể rút. Yêu cầu rút tiền được xử lý theo số dư khả dụng và các điều kiện hiển thị tại thời điểm gửi yêu cầu.</p>
+        <p>Bạn chịu trách nhiệm kiểm tra ngân hàng, số tài khoản và tên người nhận. CatBack có thể yêu cầu làm rõ thông tin hoặc tạm giữ xử lý khi có sai lệch, dấu hiệu gian lận hay tranh chấp; không cam kết thời gian chuyển khoản cố định khi còn phụ thuộc ngân hàng hoặc đối soát.</p>
+    </section>
+    <section id="platforms">
+        <h2>5. Nền tảng bên thứ ba và TikTok Shop</h2>
+        <p>Việc dùng Shopee, Google, TikTok hoặc dịch vụ liên quan phải tuân thủ điều khoản của nhà cung cấp đó. CatBack là dịch vụ độc lập, không tự nhận là đơn vị thuộc sở hữu hoặc được các nền tảng này bảo trợ.</p>
+        <p>Tích hợp TikTok Shop đang được chuẩn bị và chưa khả dụng trên website. Khi được triển khai, tính năng chỉ hoạt động trong phạm vi API, quyền truy cập và chính sách được TikTok cho phép. CatBack sẽ công bố điều kiện và cách xử lý dữ liệu trước khi cung cấp chức năng mới.</p>
+    </section>
+    <section>
+        <h2>6. Hành vi không được phép</h2>
+        <ul>
+            <li>Tạo giao dịch, lượt nhấp hoặc hồ sơ giả nhằm nhận hoa hồng không hợp lệ.</li>
+            <li>Mạo danh, chiếm đoạt tài khoản hoặc truy cập dữ liệu của người khác.</li>
+            <li>Khai thác lỗ hổng, vượt qua giới hạn truy cập, can thiệp số dư hoặc gây gián đoạn hệ thống.</li>
+            <li>Thu thập dữ liệu hay tự động hóa trái phép; dùng dịch vụ để vi phạm pháp luật, quyền sở hữu trí tuệ hoặc chính sách nền tảng.</li>
+        </ul>
+    </section>
+    <section>
+        <h2>7. Nội dung và sở hữu trí tuệ</h2>
+        <p>Thương hiệu, giao diện và nội dung do CatBack tạo được bảo vệ theo pháp luật áp dụng. Quyền đối với tên, hình ảnh sản phẩm, nhãn hiệu và nội dung của bên thứ ba thuộc chủ sở hữu tương ứng. Việc sử dụng dịch vụ không chuyển giao những quyền này cho người dùng.</p>
+    </section>
+    <section>
+        <h2>8. Gián đoạn, giới hạn và chấm dứt sử dụng</h2>
+        <p>Dịch vụ có thể gián đoạn để bảo trì hoặc do sự cố ngoài khả năng kiểm soát. CatBack có thể giới hạn hoặc tạm ngừng tài khoản khi cần bảo vệ hệ thống, điều tra vi phạm hoặc thực hiện yêu cầu hợp lệ; người dùng có thể liên hệ để được giải thích và đề nghị xem xét.</p>
+        <p>Bạn có thể yêu cầu đóng tài khoản qua <a href="/Contact#data-requests">kênh tiếp nhận yêu cầu dữ liệu</a>. Các đơn và khoản thanh toán còn lại cần được xem xét theo kết quả đối soát và nghĩa vụ liên quan.</p>
+        <p>CatBack chịu trách nhiệm đối với hoạt động cung cấp dịch vụ của mình theo pháp luật áp dụng. CatBack không kiểm soát chất lượng hàng hóa, giao hàng, sự sẵn có của API hoặc quyết định ghi nhận hoa hồng của nền tảng. Không nội dung nào ở đây loại trừ quyền của người tiêu dùng hay trách nhiệm không được phép loại trừ theo pháp luật.</p>
+    </section>
+    <section>
+        <h2>9. Thay đổi và giải quyết phản ánh</h2>
+        <p>Điều khoản được cập nhật trên trang này với số phiên bản tương ứng. Thay đổi cần sự chấp thuận sẽ được thông báo hoặc yêu cầu xác nhận khi tiếp tục sử dụng. Việc giải quyết giao dịch đã phát sinh căn cứ điều kiện áp dụng cho giao dịch đó và chính sách đối soát của nền tảng.</p>
+        <p>Khi có tranh chấp, vui lòng liên hệ CatBack để hai bên kiểm tra thông tin và tìm cách giải quyết. Nếu không đạt được thống nhất, các bên có thể sử dụng cơ chế giải quyết tranh chấp theo pháp luật Việt Nam áp dụng.</p>
+    </section>
+    <section id="contact">
+        <h2>10. Liên hệ</h2>
+        <partial name="/Pages/Shared/_PublicContactDetails.cshtml" />
+    </section>
+</article>

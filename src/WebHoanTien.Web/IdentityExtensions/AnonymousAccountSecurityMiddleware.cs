@@ -9,6 +9,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Security.Claims;
 using WebHoanTien.IdentityExtensions;
+using WebHoanTien.Web.Integrations;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
 
 namespace WebHoanTien.Web.IdentityExtensions;
@@ -20,6 +21,10 @@ public class AnonymousAccountSecurityMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path.Value ?? "";
+        // Public OAuth status pages do not access account data. An expired anonymous
+        // session must not turn an external callback into a login redirect.
+        if (TikTokShopOAuthRoutes.IsPublicEndpoint(path))
+        { await _next(context); return; }
         if (path.StartsWith("/Account/", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/api/account", StringComparison.OrdinalIgnoreCase))
         { context.Response.Headers.CacheControl = "no-store"; context.Response.Headers["Referrer-Policy"] = "no-referrer"; }
         if (context.User.Identity?.IsAuthenticated == true && Guid.TryParse(context.User.FindFirst(AbpClaimTypes.UserId)?.Value, out var id))

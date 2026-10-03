@@ -1,3 +1,79 @@
 @page
-@{ ViewData["Title"] = "Chính sách riêng tư"; }
-<article class="page-shell legal"><span class="eyebrow">Phiên bản @WebHoanTienConsts.PrivacyVersion</span><h1>Chính sách riêng tư</h1><p>Đây là bản dự thảo Phase 1, mô tả dữ liệu cần thiết để vận hành tính năng affiliate.</p><h2>Dữ liệu được xử lý</h2><p>Tài khoản, thông tin tài khoản ngân hàng do người dùng cung cấp để nhận tiền, link đã tạo, mã tracking ẩn danh, đơn/hoa hồng do Shopee trả về và log bảo mật tối thiểu. Thông tin nhận tiền không được đưa vào link affiliate hoặc gửi cho Shopee.</p><h2>Giới hạn lưu trữ</h2><p>Raw payload đã lọc cùng IP và User-Agent được xóa hoặc ẩn danh sau 90 ngày.</p><h2>Không đưa định danh vào Shopee sub-ID</h2><p>sub-ID chỉ chứa token ngẫu nhiên, không chứa email, Google ID hoặc UserId.</p></article>
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@{ ViewData["Title"] = "Privacy Policy — Chính sách quyền riêng tư"; }
+<article class="page-shell cb-public-page">
+    <header class="cb-public-heading">
+        <a class="cb-public-back" href="/">← Trang chủ</a>
+        <span class="eyebrow">Cập nhật / Phiên bản @WebHoanTienConsts.PrivacyVersion</span>
+        <h1>Privacy Policy</h1>
+        <p>Chính sách quyền riêng tư của CatBack</p>
+    </header>
+    <p>Chính sách này giải thích cách CatBack xử lý dữ liệu khi bạn truy cập website, tạo tài khoản, tạo link tiếp thị liên kết, theo dõi đơn hàng và yêu cầu nhận hoàn tiền. Chính sách áp dụng cho dịch vụ CatBack; website của sàn thương mại điện tử và các nhà cung cấp đăng nhập có chính sách riêng.</p>
+    <nav class="cb-public-toc" aria-label="Mục lục chính sách quyền riêng tư">
+        <a href="#data">Dữ liệu thu thập</a><a href="#purpose">Mục đích sử dụng</a><a href="#sharing">Chia sẻ dữ liệu</a><a href="#tiktok">TikTok / TikTok Shop</a><a href="#retention">Lưu trữ</a><a href="#rights">Quyền của bạn</a>
+    </nav>
+    <section>
+        <h2>1. Dịch vụ và đầu mối liên hệ</h2>
+        <partial name="/Pages/Shared/_PublicContactDetails.cshtml" />
+    </section>
+    <section id="data">
+        <h2>2. Dữ liệu được thu thập</h2>
+        <ul>
+            <li><strong>Tài khoản:</strong> tên đăng nhập, tên hiển thị, email nếu được cung cấp, thông tin xác thực và lịch sử chấp thuận điều khoản. Với đăng nhập Google, CatBack xử lý định danh và thông tin hồ sơ được cho phép để tạo hoặc liên kết tài khoản.</li>
+            <li><strong>Tài khoản ẩn danh:</strong> mã tài khoản, thông tin phiên hoặc thiết bị và dữ liệu phục vụ khôi phục tài khoản. Bạn cần bảo quản mã khôi phục để giữ quyền truy cập.</li>
+            <li><strong>Hoạt động tiếp thị liên kết:</strong> đường dẫn sản phẩm hoặc cửa hàng, mã theo dõi, lượt nhấp, mã đơn hàng, trạng thái, giá trị đơn và hoa hồng được cung cấp qua báo cáo hoặc kết nối được phép của nền tảng.</li>
+            <li><strong>Hoàn tiền:</strong> ngân hàng, số tài khoản, tên người nhận do bạn cung cấp, số dư, lịch sử biến động ví và yêu cầu rút tiền.</li>
+            <li><strong>Dữ liệu kỹ thuật:</strong> địa chỉ IP, thông tin trình duyệt (User-Agent), cookie, thông tin phiên, nhật ký vận hành và bảo mật cần thiết.</li>
+            <li><strong>Hỗ trợ:</strong> nội dung email, thông tin liên hệ và tài liệu bạn chủ động gửi để giải quyết yêu cầu.</li>
+        </ul>
+        <p>CatBack không yêu cầu mật khẩu tài khoản Shopee, TikTok, Google hoặc mật khẩu/OTP ngân hàng để hỗ trợ người dùng.</p>
+    </section>
+    <section id="purpose">
+        <h2>3. Mục đích xử lý</h2>
+        <ul>
+            <li>Đăng nhập, duy trì phiên, liên kết và khôi phục tài khoản.</li>
+            <li>Tạo đường dẫn, gắn giao dịch được ghi nhận với đúng tài khoản, hiển thị trạng thái và đối soát hoa hồng.</li>
+            <li>Ghi nhận số dư, xử lý rút tiền và giải quyết sai lệch hoặc khiếu nại.</li>
+            <li>Gửi thông tin cần thiết về tài khoản, đơn hàng, bảo mật và thay đổi dịch vụ.</li>
+            <li>Phát hiện gian lận, bảo vệ dịch vụ và thực hiện nghĩa vụ pháp lý áp dụng.</li>
+        </ul>
+        <p>Dữ liệu được xử lý trong phạm vi cần thiết để cung cấp dịch vụ bạn yêu cầu, theo sự đồng ý khi áp dụng hoặc để thực hiện nghĩa vụ pháp lý. Nếu không cung cấp thông tin cần thiết, một số chức năng như đăng nhập hoặc rút tiền có thể không thực hiện được.</p>
+    </section>
+    <section>
+        <h2>4. Cookie và bộ nhớ trên thiết bị</h2>
+        <p>CatBack sử dụng cookie để xác thực, duy trì phiên và bảo vệ yêu cầu gửi tới máy chủ. Bộ nhớ trình duyệt và bộ nhớ đệm của ứng dụng web hỗ trợ các tùy chọn giao diện, cài đặt ứng dụng và tải tài nguyên.</p>
+        <p>Bạn có thể quản lý hoặc xóa dữ liệu này trong trình duyệt. Việc xóa cookie có thể đăng xuất tài khoản; với tài khoản ẩn danh, hãy lưu mã khôi phục trước khi xóa dữ liệu thiết bị. Khi mở link mua hàng, sàn có thể dùng cookie và cơ chế theo dõi riêng để ghi nhận tiếp thị liên kết.</p>
+    </section>
+    <section id="sharing">
+        <h2>5. Bên nhận dữ liệu</h2>
+        <p>Dữ liệu cần thiết có thể được xử lý bởi nhà cung cấp hạ tầng lưu trữ, email, dịch vụ đăng nhập, ngân hàng thực hiện chuyển khoản và nền tảng tiếp thị liên kết để cung cấp chức năng tương ứng. Dữ liệu cũng có thể được cung cấp cho cơ quan có thẩm quyền theo yêu cầu hợp lệ.</p>
+        <p>Thông tin tài khoản ngân hàng không được đưa vào link affiliate hoặc gửi cho Shopee để theo dõi đơn hàng. Mã sub-ID dùng để theo dõi Shopee là token ngẫu nhiên, không chứa email, Google ID hay UserId trực tiếp.</p>
+        <p>CatBack không bán dữ liệu cá nhân. Khi sử dụng nhà cung cấp có hạ tầng ở nước ngoài, dữ liệu có thể được xử lý ngoài Việt Nam trong phạm vi cần thiết cho dịch vụ và theo yêu cầu pháp luật áp dụng.</p>
+    </section>
+    <section id="tiktok">
+        <h2>6. Dữ liệu TikTok / TikTok Shop</h2>
+        <p><strong>Trạng thái hiện tại:</strong> CatBack chưa cung cấp kết nối tài khoản hoặc tính năng TikTok Shop API trên website. Việc giới thiệu kế hoạch tích hợp không có nghĩa là CatBack đã được TikTok phê duyệt hay đang thu thập dữ liệu tài khoản TikTok qua API.</p>
+        <p>Khi tính năng được triển khai, CatBack sẽ cập nhật chính sách để nêu rõ loại dữ liệu, quyền truy cập, mục đích và cách ngắt kết nối. Chỉ dữ liệu trong phạm vi được nền tảng cấp phép và được chủ tài khoản ủy quyền khi cần mới được sử dụng cho tính năng đã công bố.</p>
+        <p>Bạn có thể liên hệ CatBack để yêu cầu giải thích, ngừng xử lý hoặc xóa dữ liệu liên quan. CatBack không yêu cầu bạn gửi mật khẩu TikTok hay token truy cập qua kênh hỗ trợ.</p>
+    </section>
+    <section id="retention">
+        <h2>7. Thời gian lưu trữ và bảo vệ dữ liệu</h2>
+        <p>Dữ liệu tài khoản và giao dịch được giữ trong thời gian cần thiết để vận hành tài khoản, đối soát hoàn tiền, xử lý yêu cầu, giải quyết tranh chấp và đáp ứng nghĩa vụ pháp lý. Khi không còn mục đích lưu giữ hợp lệ, dữ liệu được xóa hoặc ẩn danh.</p>
+        <p>Đối với dữ liệu affiliate thuộc cơ chế dọn dẹp định kỳ, raw payload đã lọc cùng IP và User-Agent của lượt nhấp được xóa hoặc ẩn danh theo thời hạn @WebHoanTienConsts.RetentionDays ngày. Mốc này không áp dụng chung cho toàn bộ hồ sơ tài khoản và giao dịch tài chính.</p>
+        <p>CatBack áp dụng xác thực tài khoản, phân quyền và các biện pháp bảo vệ thông tin xác thực để hạn chế truy cập trái phép. Không có hệ thống truyền hoặc lưu trữ dữ liệu nào bảo đảm an toàn tuyệt đối; vui lòng báo qua <a href="/Contact">kênh liên hệ</a> nếu phát hiện sự cố.</p>
+    </section>
+    <section id="rights">
+        <h2>8. Quyền và lựa chọn của bạn</h2>
+        <p>Bạn có thể yêu cầu biết, truy cập, chỉnh sửa hoặc xóa dữ liệu cá nhân; rút lại sự đồng ý, hạn chế hoặc phản đối việc xử lý theo điều kiện pháp luật áp dụng. Bạn cũng có thể yêu cầu đóng tài khoản hoặc gửi khiếu nại về quyền riêng tư.</p>
+        <p>Gửi yêu cầu theo <a href="/Contact#data-requests">hướng dẫn yêu cầu dữ liệu và xóa tài khoản</a>. CatBack cần xác minh người yêu cầu để tránh tiết lộ hoặc xóa dữ liệu của người khác, và sẽ phản hồi về phạm vi có thể thực hiện cũng như dữ liệu phải giữ lại nếu có. Việc rút lại sự đồng ý không làm mất hiệu lực của việc xử lý hợp lệ đã thực hiện trước đó.</p>
+    </section>
+    <section>
+        <h2>9. Người chưa thành niên</h2>
+        <p>Dịch vụ không hướng tới trẻ em dưới 16 tuổi. Nếu cho rằng dữ liệu của trẻ em được cung cấp mà chưa có sự cho phép phù hợp, hãy liên hệ CatBack để xem xét và xử lý.</p>
+    </section>
+    <section>
+        <h2>10. Thay đổi chính sách</h2>
+        <p>Phiên bản cập nhật được công bố trên trang này. Khi thay đổi ảnh hưởng đáng kể đến phạm vi xử lý hoặc cần sự chấp thuận mới, CatBack sẽ thông báo hoặc yêu cầu xác nhận trước khi áp dụng việc xử lý tương ứng.</p>
+        <p>Đọc thêm <a href="/Legal/Terms">Terms of Service</a> và <a href="/About">Giới thiệu CatBack</a>.</p>
+    </section>
+</article>

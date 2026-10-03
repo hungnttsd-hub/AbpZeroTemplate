@@ -177,6 +177,7 @@
     <script src="~/catback-account.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <link rel="stylesheet" href="~/catback-spa.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/customer-desktop.css" asp-append-version="true" data-turbo-track="reload" />
+    <link rel="stylesheet" href="~/public-information.css" asp-append-version="true" data-turbo-track="reload" />
     <script src="~/catback-spa.js" asp-append-version="true" data-turbo-track="reload"></script>
     <script src="~/libs/@@hotwired/turbo/turbo.es2017-umd.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/catback-modal.js" asp-append-version="true" data-turbo-track="reload" defer></script>
@@ -359,9 +360,9 @@
         <a class="@(isAccountActive ? "is-active" : null)" href="/Account/Profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg><span>Tài khoản</span></a>
     </nav>
 }
-<footer class="site-footer">
-    <div><strong>CatBack</strong><p>Nền tảng chia sẻ hoa hồng tiếp thị liên kết.</p></div>
-    <div class="footer-links"><a href="/Legal/Terms">Điều khoản</a><a href="/Legal/Privacy">Riêng tư</a><a href="mailto:support@webhoantien.com">Liên hệ</a></div>
+<footer class="site-footer cb-public-footer">
+    <div><strong>CatBack</strong><p>Nền tảng chia sẻ hoa hồng tiếp thị liên kết.</p><small>© @DateTime.Now.Year CatBack</small></div>
+    <partial name="/Pages/Shared/_PublicNavigation.cshtml" />
 </footer>
 @await RenderSectionAsync("Scripts", required: false)
 </body>

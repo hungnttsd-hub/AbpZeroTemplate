@@ -6,6 +6,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using WebHoanTien.Affiliates;
+using WebHoanTien.Web.Integrations;
 
 namespace WebHoanTien.Web.IdentityExtensions;
 
@@ -58,6 +59,9 @@ public class LegalConsentMiddleware
     }
 
     private static bool IsExempt(PathString path) =>
+        TikTokShopOAuthRoutes.IsPublicEndpoint(path.Value) ||
+        path.Equals(new PathString("/About")) || path.Equals(new PathString("/About/")) ||
+        path.Equals(new PathString("/Contact")) || path.Equals(new PathString("/Contact/")) ||
         path.StartsWithSegments("/Account/AnonymousSuccess") || path.StartsWithSegments("/Account/Recovery") ||
         path.StartsWithSegments("/Account/UpgradeConfirmation") || path.StartsWithSegments("/api/account/device/current") ||
         path.StartsWithSegments("/api/account/anonymous") || path.StartsWithSegments("/Legal") || path.StartsWithSegments("/Account/InitialPassword") ||
