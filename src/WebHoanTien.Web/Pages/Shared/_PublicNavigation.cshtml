@@ -1,0 +1,18 @@
+@{
+    var path = (Context.Request.Path.Value ?? "/").TrimEnd('/');
+    var links = new[]
+    {
+        (Url: "/", Label: "Trang chủ"),
+        (Url: "/About", Label: "Giới thiệu CatBack"),
+        (Url: "/Legal/Privacy", Label: "Privacy Policy"),
+        (Url: "/Legal/Terms", Label: "Terms of Service"),
+        (Url: "/Contact", Label: "Contact")
+    };
+}
+<nav class="cb-public-navigation" aria-label="Thông tin CatBack">
+    @foreach (var link in links)
+    {
+        var active = path.Equals(link.Url.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
+        <a href="@link.Url" aria-current="@(active ? "page" : null)">@link.Label</a>
+    }
+</nav>

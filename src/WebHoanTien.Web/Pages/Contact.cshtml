@@ -1,0 +1,40 @@
+@page
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@inject Microsoft.Extensions.Configuration.IConfiguration PublicConfiguration
+@{
+    ViewData["Title"] = "Contact — Liên hệ CatBack";
+    var supportEmail = PublicConfiguration["PublicSite:SupportEmail"];
+}
+<article class="page-shell cb-public-page">
+    <header class="cb-public-heading">
+        <a class="cb-public-back" href="/">← Trang chủ</a>
+        <span class="eyebrow">CatBack Support</span>
+        <h1>Contact — Liên hệ</h1>
+        <p>Liên hệ CatBack về tài khoản, đơn hàng, hoàn tiền, quyền riêng tư hoặc hợp tác tích hợp.</p>
+    </header>
+    <partial name="/Pages/Shared/_PublicContactDetails.cshtml" />
+    <div class="cb-public-actions"><a class="button button-dark" href="mailto:@supportEmail">Gửi email cho CatBack</a><a class="button button-ghost" href="/huong-dan">Xem hướng dẫn</a></div>
+    <p>Bạn có thể gửi email trực tiếp mà không cần đăng nhập CatBack. Nếu nút gửi email không mở ứng dụng thư, hãy sao chép địa chỉ email ở trên vào dịch vụ email bạn đang dùng.</p>
+    <section aria-labelledby="contact-support">
+        <h2 id="contact-support">Hỗ trợ tài khoản, đơn hàng và rút tiền</h2>
+        <p>Ghi tiêu đề “Hỗ trợ CatBack” và mô tả vấn đề, thời điểm xảy ra, tên tài khoản hoặc email liên hệ. Với đơn hàng hoặc yêu cầu rút tiền, cung cấp mã liên quan nếu có; ảnh chụp nên che thông tin không cần thiết.</p>
+        <p>CatBack hỗ trợ việc ghi nhận hoa hồng và hoàn tiền trên dịch vụ. Vấn đề về giao hàng, chất lượng sản phẩm, đổi trả hoặc thanh toán đơn mua sắm cần được xử lý với người bán hoặc sàn nơi bạn đặt hàng.</p>
+    </section>
+    <section id="data-requests" aria-labelledby="contact-data">
+        <h2 id="contact-data">Yêu cầu về dữ liệu cá nhân và xóa tài khoản</h2>
+        <ol>
+            <li>Gửi email với tiêu đề “Yêu cầu dữ liệu CatBack” hoặc “Xóa tài khoản CatBack”.</li>
+            <li>Nêu tên tài khoản hoặc email đã liên kết và phạm vi yêu cầu: truy cập, chỉnh sửa, xóa dữ liệu, đóng tài khoản hoặc rút lại sự đồng ý.</li>
+            <li>CatBack sẽ trao đổi để xác minh quyền sở hữu tài khoản trước khi thực hiện. Nếu dùng tài khoản ẩn danh, nêu rõ tình trạng này để được hướng dẫn xác minh phù hợp.</li>
+        </ol>
+        <p>Việc xóa tài khoản có thể làm mất quyền truy cập lịch sử và các tính năng dịch vụ. Nếu có đơn hàng hoặc khoản rút tiền đang xử lý, CatBack sẽ trao đổi về cách giải quyết; dữ liệu cần cho đối soát, xử lý tranh chấp hoặc nghĩa vụ pháp lý có thể được giữ lại trong phạm vi cần thiết. Xem <a href="/Legal/Privacy#retention">chính sách lưu trữ dữ liệu</a>.</p>
+    </section>
+    <section aria-labelledby="contact-partners">
+        <h2 id="contact-partners">Hợp tác và tích hợp nền tảng</h2>
+        <p>Gửi email với tiêu đề “Hợp tác CatBack”, kèm tên đơn vị, thông tin liên hệ và nội dung đề xuất. Các trao đổi về TikTok Shop API cũng được tiếp nhận qua kênh này.</p>
+    </section>
+    <aside class="cb-public-note">
+        <strong>Bảo vệ thông tin tài khoản</strong>
+        <p>Không gửi mật khẩu, mã OTP, mã khôi phục tài khoản, thông tin đăng nhập ngân hàng hoặc khóa truy cập API qua email hỗ trợ.</p>
+    </aside>
+</article>

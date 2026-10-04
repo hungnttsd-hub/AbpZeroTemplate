@@ -1,0 +1,34 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration PublicConfiguration
+@{
+    var operatorName = PublicConfiguration["PublicSite:OperatorName"];
+    var supportEmail = PublicConfiguration["PublicSite:SupportEmail"];
+    var registrationNumber = PublicConfiguration["PublicSite:CompanyRegistrationNumber"];
+    var certificatePeriod = PublicConfiguration["PublicSite:CertificateEffectivePeriod"];
+    var registeredAddress = PublicConfiguration["PublicSite:RegisteredAddress"];
+    var businessScope = PublicConfiguration["PublicSite:BusinessScope"];
+}
+<dl class="cb-public-contact-details">
+    <div><dt>Dịch vụ</dt><dd>CatBack — Nền tảng chia sẻ hoa hồng tiếp thị liên kết</dd></div>
+    @if (!string.IsNullOrWhiteSpace(operatorName))
+    {
+        <div><dt>Đơn vị vận hành / Tên pháp lý</dt><dd>@operatorName</dd></div>
+    }
+    @if (!string.IsNullOrWhiteSpace(registrationNumber))
+    {
+        <div><dt>Mã số doanh nghiệp (Company registration number)</dt><dd>@registrationNumber</dd></div>
+    }
+    @if (!string.IsNullOrWhiteSpace(registeredAddress))
+    {
+        <div><dt>Địa chỉ đăng ký</dt><dd>@registeredAddress</dd></div>
+    }
+    @if (!string.IsNullOrWhiteSpace(certificatePeriod))
+    {
+        <div><dt>Thời hạn hiệu lực giấy chứng nhận</dt><dd>@(string.Equals(certificatePeriod, "Permanent", StringComparison.OrdinalIgnoreCase) ? "Không thời hạn (Permanent)" : certificatePeriod)</dd></div>
+    }
+    @if (!string.IsNullOrWhiteSpace(businessScope))
+    {
+        <div><dt>Ngành nghề kinh doanh</dt><dd>@businessScope</dd></div>
+    }
+    <div><dt>Email hỗ trợ &amp; quyền riêng tư</dt><dd><a href="mailto:@supportEmail">@supportEmail</a></dd></div>
+    <div><dt>Kênh liên hệ</dt><dd><a href="/Contact">Trang liên hệ CatBack</a></dd></div>
+</dl>

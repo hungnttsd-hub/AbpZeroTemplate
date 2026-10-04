@@ -29,6 +29,11 @@ packages/
 !**/packages/build/
 
 # Node / frontend
+# Local downloaded toolchains and generated Android files
+/.tools/
+/android/**/.gradle/
+/android/**/build/
+
 **/node_modules/
 **/npm-debug.log*
 **/yarn-debug.log*

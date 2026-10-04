@@ -1,0 +1,48 @@
+@page
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@{
+    ViewData["Title"] = "Giới thiệu CatBack";
+}
+<article class="page-shell cb-public-page">
+    <header class="cb-public-heading">
+        <a class="cb-public-back" href="/">← Trang chủ</a>
+        <span class="eyebrow">Mua sắm thông minh cùng CatBack</span>
+        <h1>Giới thiệu CatBack</h1>
+        <p>Biến những lần mua sắm thành cơ hội nhận lại một phần hoa hồng tiếp thị liên kết.</p>
+    </header>
+    <section aria-labelledby="about-service">
+        <h2 id="about-service">CatBack là gì?</h2>
+        <p>CatBack là dịch vụ giúp người dùng tạo đường dẫn mua sắm tiếp thị liên kết, theo dõi đơn hàng được ghi nhận và nhận phần hoàn tiền từ hoa hồng hợp lệ. Bạn mua hàng trên sàn thương mại điện tử; CatBack cung cấp công cụ theo dõi và chia sẻ hoa hồng sau đối soát.</p>
+        <p>CatBack hiện hỗ trợ link sản phẩm và cửa hàng Shopee. Khoản hoàn tiền được tính từ hoa hồng mà nền tảng xác nhận, không phải toàn bộ giá trị đơn hàng.</p>
+    </section>
+    <section aria-labelledby="about-how">
+        <h2 id="about-how">Cách CatBack hoạt động</h2>
+        <ol class="cb-public-steps">
+            <li><strong>Tạo link mua sắm.</strong> Dán link sản phẩm hoặc cửa hàng được hỗ trợ vào công cụ trên trang chủ.</li>
+            <li><strong>Mua hàng trên sàn.</strong> Mở link CatBack đã tạo và hoàn tất mua hàng theo điều kiện của chương trình tiếp thị liên kết.</li>
+            <li><strong>Theo dõi đơn và hoa hồng.</strong> Xem trạng thái đơn hàng, số tiền dự kiến và kết quả ghi nhận trong tài khoản CatBack.</li>
+            <li><strong>Nhận hoàn tiền.</strong> Khi hoa hồng đủ điều kiện sau đối soát, số tiền được ghi nhận vào ví CatBack để bạn gửi yêu cầu rút về tài khoản ngân hàng.</li>
+        </ol>
+        <p><a href="/huong-dan">Xem hướng dẫn sử dụng chi tiết →</a></p>
+    </section>
+    <section class="cb-public-note" aria-labelledby="about-tiktok">
+        <h2 id="about-tiktok">Định hướng tích hợp TikTok Shop</h2>
+        <p>CatBack đang chuẩn bị mở rộng sang TikTok Shop, hướng tới hỗ trợ link tiếp thị liên kết và theo dõi dữ liệu đơn hàng, hoa hồng trong phạm vi API được cấp phép. Tính năng này chưa được cung cấp trên website hiện tại.</p>
+        <p>Việc cung cấp tính năng phụ thuộc vào phê duyệt, quyền truy cập và chính sách của TikTok Shop. Phạm vi dữ liệu và quyền cần thiết sẽ được công bố khi tích hợp được triển khai; người dùng chỉ cấp quyền qua luồng ủy quyền chính thức khi cần.</p>
+    </section>
+    <section aria-labelledby="about-transparency">
+        <h2 id="about-transparency">Minh bạch về hoàn tiền và dữ liệu</h2>
+        <ul>
+            <li>Số tiền ước tính có thể thay đổi; chỉ hoa hồng hợp lệ đã đối soát mới là cơ sở ghi nhận hoàn tiền.</li>
+            <li>Đơn bị hủy, hoàn trả hoặc không đáp ứng điều kiện của nền tảng có thể không được hoàn tiền.</li>
+            <li>CatBack không bán hàng, thu tiền đơn mua sắm hay xử lý vận chuyển. Các việc này được thực hiện bởi người bán và sàn thương mại điện tử.</li>
+            <li>CatBack là dịch vụ độc lập. Tên Shopee, TikTok và TikTok Shop thuộc chủ sở hữu tương ứng; việc đề cập không đồng nghĩa với bảo trợ hoặc chứng nhận đối tác.</li>
+        </ul>
+        <p>Tìm hiểu cách dữ liệu được xử lý tại <a href="/Legal/Privacy">Privacy Policy</a> và điều kiện dịch vụ tại <a href="/Legal/Terms">Terms of Service</a>.</p>
+    </section>
+    <section aria-labelledby="about-contact">
+        <h2 id="about-contact">Thông tin doanh nghiệp và liên hệ</h2>
+        <partial name="/Pages/Shared/_PublicContactDetails.cshtml" />
+    </section>
+    <div class="cb-public-actions"><a class="button button-dark" href="/#link-form">Tạo link hoàn tiền</a><a class="button button-ghost" href="/Contact">Liên hệ CatBack</a></div>
+</article>
