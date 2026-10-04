@@ -14,6 +14,10 @@
   const prepareAnchor = (anchor) => {
     if (!(anchor instanceof HTMLAnchorElement)) return null;
 
+    // Preserve the policy when preparing mobile links, including direct iPhone navigation.
+    anchor.relList.add('noreferrer');
+    anchor.referrerPolicy = 'no-referrer';
+
     if (isAndroid) {
       anchor.removeAttribute('target');
       return 'android';

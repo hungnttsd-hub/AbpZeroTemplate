@@ -42,6 +42,10 @@ public class AffiliateRedirectController : Controller
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> GoAsync(string trackingToken)
     {
+        // Also covers shared /go links opened outside CatBack. Do not forward the
+        // referring page to Shopee; affiliate attribution stays in the target URL.
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+
         var navigation = await ResolveNavigationAsync(trackingToken);
         if (navigation.ErrorResult is not null) return navigation.ErrorResult;
 
