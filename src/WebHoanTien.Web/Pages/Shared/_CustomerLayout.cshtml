@@ -1,4 +1,6 @@
 @using Microsoft.AspNetCore.Authorization
+@using System.Linq
+@using WebHoanTien.TikTokAffiliate
 @using Volo.Abp.Identity
 @using Volo.Abp.Users
 @using WebHoanTien.Notifications
@@ -8,6 +10,8 @@
 @inject ICustomerNotificationAppService CustomerNotifications
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var canAccessTikTokAffiliate = isAuthenticated &&
+        (await AuthorizationService.AuthorizeAsync(User, TikTokAffiliateAccess.Policy)).Succeeded;
     var userName = CurrentUser.UserName?.Trim() ?? User.Identity?.Name?.Trim();
     var displayedUserName = CurrentUser.Name?.Trim();
 
@@ -93,13 +97,14 @@
         (Url: "/Account/Profile", Label: "Tài khoản & cài đặt", Icon: "fa-regular fa-user", IsActive: isAccountActive, ShowBadge: false),
         (Url: "/#link-form", Label: "Tạo link hoàn tiền", Icon: "fa-solid fa-link", IsActive: false, ShowBadge: false),
         (Url: "/Links", Label: "Link đã tạo", Icon: "fa-solid fa-clock-rotate-left", IsActive: isLinksActive, ShowBadge: false),
+        (Url: "/tiktok-affiliate", Label: "TikTok Affiliate", Icon: "fa-brands fa-tiktok", IsActive: currentPath.StartsWith("/tiktok-affiliate", StringComparison.OrdinalIgnoreCase), ShowBadge: false),
         (Url: "/Orders", Label: "Đơn hàng", Icon: "fa-solid fa-bag-shopping", IsActive: isOrdersActive, ShowBadge: false),
         (Url: "/Wallet", Label: "Ví tiền", Icon: "fa-solid fa-wallet", IsActive: isWalletOverviewActive, ShowBadge: false),
         (Url: "/Wallet/Withdraw", Label: "Rút tiền", Icon: "fa-solid fa-money-bill-transfer", IsActive: isWithdrawActive, ShowBadge: false),
         (Url: "/Wallet/History", Label: "Lịch sử ví", Icon: "fa-solid fa-file-lines", IsActive: isWalletHistoryActive, ShowBadge: false),
         (Url: "/Notifications", Label: "Thông báo", Icon: "fa-regular fa-bell", IsActive: isNotificationsActive, ShowBadge: true),
         (Url: "/huong-dan", Label: "Hướng dẫn", Icon: "fa-regular fa-circle-question", IsActive: isGuideActive, ShowBadge: false)
-    };
+    }.Where(item => item.Url != "/tiktok-affiliate" || canAccessTikTokAffiliate).ToArray();
 }
 <!doctype html>
 <html lang="vi">
@@ -178,6 +183,7 @@
     <link rel="stylesheet" href="~/catback-spa.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/customer-desktop.css" asp-append-version="true" data-turbo-track="reload" />
     <link rel="stylesheet" href="~/public-information.css" asp-append-version="true" data-turbo-track="reload" />
+    @await RenderSectionAsync("Styles", required: false)
     <script src="~/catback-spa.js" asp-append-version="true" data-turbo-track="reload"></script>
     <script src="~/libs/@@hotwired/turbo/turbo.es2017-umd.js" asp-append-version="true" data-turbo-track="reload" defer></script>
     <script src="~/catback-modal.js" asp-append-version="true" data-turbo-track="reload" defer></script>
@@ -204,6 +210,7 @@
     {
         CurrentPath = currentPath,
         IsAuthenticated = isAuthenticated,
+        CanAccessTikTokAffiliate = canAccessTikTokAffiliate,
         DisplayName = displayedUserName,
         Initial = userInitial,
         UnreadNotificationCount = unreadNotificationCount,

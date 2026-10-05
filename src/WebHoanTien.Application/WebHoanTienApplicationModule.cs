@@ -16,6 +16,8 @@ using WebHoanTien.Integrations;
 using WebHoanTien.Integrations.Shopee;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Admin;
+using WebHoanTien.TikTokAffiliate;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebHoanTien;
 
@@ -33,6 +35,18 @@ public class WebHoanTienApplicationModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
+        Configure<AuthorizationOptions>(options => options.AddPolicy(TikTokAffiliateAccess.Policy,
+            policy => policy.RequireAuthenticatedUser().AddRequirements(new TikTokAffiliateAccessRequirement())));
+        context.Services.AddScoped<IAuthorizationHandler, TikTokAffiliateAuthorizationHandler>();
+        context.Services.AddMemoryCache();
+        context.Services.AddSingleton<TikTokAffiliateDemoStore>();
+        var tikTokMode = configuration["TikTokAffiliate:Mode"] ?? "Mock";
+        if (string.Equals(tikTokMode, "Mock", StringComparison.OrdinalIgnoreCase))
+            context.Services.AddTransient<ITikTokAffiliateService, TikTokAffiliateMockService>();
+        else if (string.Equals(tikTokMode, "Api", StringComparison.OrdinalIgnoreCase))
+            context.Services.AddTransient<ITikTokAffiliateService, TikTokAffiliateApiService>();
+        else
+            throw new InvalidOperationException("TikTokAffiliate:Mode must be Mock or Api.");
         context.Services.Configure<ShopeeAffiliateOptions>(configuration.GetSection(ShopeeAffiliateOptions.SectionName));
         context.Services.AddHttpClient("ShopeeProductData", client =>
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:ProductDataTimeoutSeconds", 10), 1, 120)));

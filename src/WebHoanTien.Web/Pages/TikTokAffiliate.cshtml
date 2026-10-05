@@ -1,0 +1,93 @@
+@page "/tiktok-affiliate"
+@model WebHoanTien.Web.Pages.TikTokAffiliateModel
+@{
+    ViewData["Title"] = "TikTok Affiliate";
+    ViewData["BodyClass"] = "catback-tiktok-page";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/tiktok-affiliate.css" asp-append-version="true" />
+}
+<section class="customer-dashboard tt-workspace" data-tiktok-affiliate>
+    <div class="cb-mobile-page-header tt-mobile-header">
+        <partial name="/Pages/Shared/_CustomerHeader.cshtml" model="@(new WebHoanTien.Web.Pages.Shared.CustomerHeaderModel { Title = "TikTok Affiliate", BackUrl = "/", BackLabel = "Quay về CatBack" })" />
+    </div>
+    <header class="tt-hero">
+        <div><p class="tt-eyebrow">CATBACK · CREATOR COLLABORATIONS</p><h1>TikTok Affiliate</h1><p>Connect your Creator profile. Explore products. Create and manage affiliate links.</p></div>
+        <span class="tt-market"><span aria-hidden="true">🇻🇳</span> Vietnam</span>
+    </header>
+    @if (Model.Integration.IsDemo)
+    {
+        <div class="tt-demo-banner" role="note"><span class="tt-demo-badge">Demo Mode</span><p>Demo Mode - TikTok Creator integration is using test data while Creator testing access is being enabled.</p></div>
+    }
+    else if (!Model.Integration.IsAvailable)
+    {
+        <div class="tt-demo-banner" role="note"><strong>API integration pending</strong><p>The live Creator API adapter is not available yet. No TikTok data is loaded.</p></div>
+    }
+    <div class="tt-tabs" role="tablist" aria-label="TikTok Affiliate sections">
+        <button id="tt-tab-overview" type="button" role="tab" aria-selected="true" aria-controls="tt-overview" data-tt-tab="overview">Overview</button>
+        <button id="tt-tab-links" type="button" role="tab" aria-selected="false" aria-controls="tt-links" tabindex="-1" data-tt-tab="links">Generated Links <span data-tt-link-count>0</span></button>
+        <button id="tt-tab-orders" type="button" role="tab" aria-selected="false" aria-controls="tt-orders" tabindex="-1" data-tt-tab="orders">Affiliate Orders</button>
+    </div>
+    <p class="tt-feedback" data-tt-feedback role="status" aria-live="polite" hidden></p>
+    <section id="tt-overview" role="tabpanel" aria-labelledby="tt-tab-overview" class="tt-overview-grid">
+        <div class="tt-flow">
+            <section class="cb-card tt-card" aria-labelledby="tt-creator-heading">
+                <header class="tt-card-heading"><span class="tt-step">01</span><div><h2 id="tt-creator-heading">Creator Connection</h2><p>Your Creator identity for this workspace</p></div><span class="tt-status" data-tt-connection-status>Not connected</span></header>
+                <div class="tt-connection">
+                    <div class="tt-avatar" aria-hidden="true"><i class="fa-brands fa-tiktok"></i></div>
+                    <div class="tt-creator-copy"><h3 data-tt-creator-name>Connect your TikTok Creator</h3><p data-tt-creator-description>Start by connecting a Creator profile.</p><small data-tt-creator-id hidden></small></div>
+                </div>
+                <button class="tt-button" type="button" data-tt-connect>Connect TikTok Creator <span aria-hidden="true">→</span></button>
+                <p class="tt-caption" data-tt-connection-note></p>
+            </section>
+            <section class="cb-card tt-card" aria-labelledby="tt-product-heading">
+                <header class="tt-card-heading"><span class="tt-step">02</span><div><h2 id="tt-product-heading">Product Lookup</h2><p>Check product details and affiliate commission</p></div></header>
+                <form data-tt-product-form data-turbo="false" method="post" asp-page-handler="Product">
+                    @Html.AntiForgeryToken()
+                    <label for="tt-product-url">TikTok Shop product URL</label>
+                    <div class="tt-input-row"><input id="tt-product-url" name="productUrl" type="url" autocomplete="off" inputmode="url" maxlength="2048" placeholder="Paste a TikTok Shop product URL" required disabled /><button class="tt-button" type="submit" data-tt-check disabled>Check Product</button></div>
+                    @if (Model.Integration.IsDemo)
+                    {
+                        <button class="tt-text-button" type="button" data-tt-example disabled>Use demo product <span aria-hidden="true">↗</span></button>
+                    }
+                </form>
+                <p class="tt-caption" data-tt-product-hint>Connect your Creator to enable product lookup.</p>
+                <div class="tt-product" data-tt-product hidden>
+                    <img data-tt-product-image alt="Product preview" width="160" height="160" />
+                    <div><span class="tt-label" data-tt-product-source></span><h3 data-tt-product-title></h3><p data-tt-product-shop></p><strong class="tt-price" data-tt-product-price></strong><div class="tt-commission"><span>Affiliate commission</span><strong data-tt-product-commission></strong></div></div>
+                </div>
+            </section>
+            <section class="cb-card tt-card" aria-labelledby="tt-generate-heading">
+                <header class="tt-card-heading"><span class="tt-step">03</span><div><h2 id="tt-generate-heading">Affiliate Link Generation</h2><p>Create a sharing link for your checked product</p></div></header>
+                <button type="button" class="tt-button tt-generate" data-tt-generate disabled>Generate Affiliate Link <span aria-hidden="true">↗</span></button>
+                <p class="tt-caption" data-tt-generate-hint>Check a product to continue.</p>
+                <div class="tt-link-result" data-tt-result hidden>
+                    <strong class="tt-success"><span aria-hidden="true">✓</span> Affiliate link generated successfully.</strong>
+                    <p class="tt-caption" data-tt-link-note></p>
+                    <label for="tt-sharing-link">Affiliate Sharing Link</label>
+                    <div class="tt-input-row"><input id="tt-sharing-link" type="text" readonly /><button class="tt-button tt-button-secondary" type="button" data-tt-copy-result>Copy Link</button></div>
+                    <div class="tt-result-footer"><small data-tt-link-time></small><button type="button" class="tt-text-button" data-tt-show-links>View generated links →</button></div>
+                </div>
+            </section>
+        </div>
+        <aside class="tt-review-guide cb-card">
+            <span class="tt-label">CREATOR WORKSPACE</span><h2>From product<br />to sharing link.</h2>
+            <ol><li><strong>Connect Creator</strong><span>Review the connected profile and market.</span></li><li><strong>Check a product</strong><span>See product details and commission.</span></li><li><strong>Generate & copy</strong><span>Keep your sharing links in one place.</span></li></ol>
+            <div class="tt-guide-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><p data-tt-guide-note></p></div>
+        </aside>
+    </section>
+    <section id="tt-links" role="tabpanel" aria-labelledby="tt-tab-links" class="cb-card tt-card tt-list-panel" hidden>
+        <header class="tt-list-heading"><div><span class="tt-label">LINK LIBRARY</span><h2>Generated Links</h2><p data-tt-history-note></p></div><button type="button" class="tt-button tt-button-secondary" data-tt-show-overview>Create a link →</button></header>
+        <div class="tt-empty" data-tt-links-empty><i class="fa-solid fa-link" aria-hidden="true"></i><h3>No generated links yet</h3><p>Connect your Creator, check a product and generate your first sharing link.</p></div>
+        <div class="tt-table-scroll" data-tt-links-table hidden><table><thead><tr><th scope="col">Product</th><th scope="col">Created At</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead><tbody data-tt-links-body></tbody></table></div>
+    </section>
+    <section id="tt-orders" role="tabpanel" aria-labelledby="tt-tab-orders" class="cb-card tt-card tt-list-panel" hidden>
+        <header class="tt-list-heading"><div><span class="tt-label">COLLABORATION ACTIVITY</span><h2>Affiliate Orders</h2><p data-tt-orders-note></p></div><span class="tt-status" data-tt-orders-count>0 orders</span></header>
+        <div class="tt-empty" data-tt-orders-empty><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><h3>Connect a Creator to continue</h3><p>Your affiliate orders will appear here.</p></div>
+        <div class="tt-table-scroll" data-tt-orders-table hidden><table><thead><tr><th scope="col">Order ID</th><th scope="col">Product</th><th scope="col">Order Amount</th><th scope="col">Affiliate Commission</th><th scope="col">Status</th><th scope="col">Created At</th></tr></thead><tbody data-tt-orders-body></tbody></table></div>
+    </section>
+    <script type="application/json" data-tt-initial>@Html.Raw(Model.InitialStateJson)</script>
+</section>
+@section Scripts {
+    <script src="~/tiktok-affiliate.js" asp-append-version="true"></script>
+}

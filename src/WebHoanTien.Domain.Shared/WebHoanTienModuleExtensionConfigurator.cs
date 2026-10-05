@@ -2,6 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using Volo.Abp.Identity;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Threading;
+using Volo.Abp.Localization;
+using WebHoanTien.Localization;
+using WebHoanTien.TikTokAffiliate;
 
 namespace WebHoanTien;
 
@@ -37,6 +40,15 @@ public static class WebHoanTienModuleExtensionConfigurator
 
     private static void ConfigureExtraProperties()
     {
+        ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
+            identity.ConfigureUser(user => user.AddOrUpdateProperty<bool>(
+                TikTokAffiliateAccess.UserProperty, property =>
+                {
+                    property.DefaultValue = false;
+                    property.DisplayName = LocalizableString.Create<WebHoanTienResource>("IsTiktokDemo");
+                    // Administrators edit this through Identity user management only.
+                    property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
+                })));
         /* You can configure extra properties for the
          * entities defined in the modules used by your application.
          *

@@ -1,4 +1,8 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Volo.Abp.Security.Claims;
+using WebHoanTien.TikTokAffiliate;
 using WebHoanTien.Localization;
 using WebHoanTien.Permissions;
 using Volo.Abp.Identity.Web.Navigation;
@@ -9,11 +13,11 @@ namespace WebHoanTien.Web.Menus;
 
 public class WebHoanTienMenuContributor : IMenuContributor
 {
-    public Task ConfigureMenuAsync(MenuConfigurationContext context)
+    public async Task ConfigureMenuAsync(MenuConfigurationContext context)
     {
         if (context.Menu.Name != StandardMenus.Main)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var l = context.GetLocalizer<WebHoanTienResource>();
@@ -24,6 +28,11 @@ public class WebHoanTienMenuContributor : IMenuContributor
             "Customer.Wallet", l["Menu:Wallet"], "~/Wallet", "fas fa-wallet", 10));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Customer.Orders", l["Menu:MyOrders"], "~/Orders", "fas fa-receipt", 20));
+        var authorization = context.ServiceProvider.GetRequiredService<IAuthorizationService>();
+        var principal = context.ServiceProvider.GetRequiredService<ICurrentPrincipalAccessor>().Principal;
+        if ((await authorization.AuthorizeAsync(principal, TikTokAffiliateAccess.Policy)).Succeeded)
+            context.Menu.Items.Add(new ApplicationMenuItem(
+                "Customer.TikTokAffiliate", "TikTok Affiliate", "~/tiktok-affiliate", "fab fa-tiktok", 25));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Customer.Account", l["Menu:Account"], "~/Account/Profile", "fas fa-user", 30));
         context.Menu.Items.Add(new ApplicationMenuItem(
@@ -48,6 +57,5 @@ public class WebHoanTienMenuContributor : IMenuContributor
         var administration = context.Menu.GetAdministration();
         administration.SetSubItemOrder(IdentityMenuNames.GroupName, 1);
         administration.SetSubItemOrder(SettingManagementMenuNames.GroupName, 2);
-        return Task.CompletedTask;
     }
 }

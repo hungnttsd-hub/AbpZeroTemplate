@@ -4,6 +4,7 @@ public sealed class CustomerDesktopShellModel
 {
     public string CurrentPath { get; init; } = "/";
     public bool IsAuthenticated { get; init; }
+    public bool CanAccessTikTokAffiliate { get; init; }
     public string DisplayName { get; init; } = "Tài khoản";
     public string Initial { get; init; } = "C";
     public int UnreadNotificationCount { get; init; }

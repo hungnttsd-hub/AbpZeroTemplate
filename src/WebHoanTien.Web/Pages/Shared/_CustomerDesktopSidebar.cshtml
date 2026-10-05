@@ -1,4 +1,5 @@
 @model WebHoanTien.Web.Pages.Shared.CustomerDesktopShellModel
+@using System.Linq
 @{
     var path = Model.CurrentPath.TrimEnd('/');
     bool IsPath(string prefix) => path.Equals(prefix, StringComparison.OrdinalIgnoreCase) ||
@@ -8,13 +9,14 @@
         (Url: "/", Label: "Trang chủ", Icon: "", Active: path.Length == 0 || IsPath("/Index")),
         (Url: "/Orders", Label: "Đơn hàng", Icon: "/catback/icons/shopping-bag.svg", Active: IsPath("/Orders")),
         (Url: "/Links", Label: "Link đã tạo", Icon: "/catback/icons/link-dark.svg", Active: IsPath("/Links") || IsPath("/LinkResult")),
+        (Url: "/tiktok-affiliate", Label: "TikTok Affiliate", Icon: "/catback/icons/link-dark.svg", Active: IsPath("/tiktok-affiliate")),
         (Url: "/Wallet", Label: "Ví hoàn tiền", Icon: "/notification-icons/wallet.svg", Active: path.Equals("/Wallet", StringComparison.OrdinalIgnoreCase) || IsPath("/Wallet/Index")),
         (Url: "/Wallet/Withdraw", Label: "Rút tiền", Icon: "/notification-icons/bank.svg", Active: IsPath("/Wallet/Withdraw")),
         (Url: "/Wallet/History", Label: "Lịch sử ví", Icon: "/orders-icons/clock.svg", Active: IsPath("/Wallet/History")),
         (Url: "/Notifications", Label: "Thông báo", Icon: "/notification-icons/bell.svg", Active: IsPath("/Notifications")),
         (Url: "/huong-dan", Label: "Hướng dẫn", Icon: "/orders-icons/shield-check.svg", Active: IsPath("/huong-dan") || IsPath("/Guide")),
         (Url: "/Account/Profile", Label: "Tài khoản & cài đặt", Icon: "/notification-icons/filters.svg", Active: IsPath("/Account"))
-    };
+    }.Where(item => item.Url != "/tiktok-affiliate" || Model.CanAccessTikTokAffiliate).ToArray();
 }
 <aside class="cb-desktop-only cb-desktop-sidebar" hidden aria-label="Điều hướng CatBack">
     <a class="cb-desktop-brand" href="/" aria-label="CatBack — Trang chủ">
