@@ -37,6 +37,16 @@ public class TikTokAffiliateModel : PageModel
         creator = await _service.ConnectCreator(), orders = await _service.SearchAffiliateOrders()
     });
     public Task<IActionResult> OnPostProductAsync(string productUrl) => Execute(() => _service.GetProduct(productUrl));
+    public Task<IActionResult> OnPostDisconnectAsync() => Execute(async () =>
+    {
+        await _service.DisconnectCreator();
+        return new { creator = await _service.GetCreatorProfile(), orders = await _service.SearchAffiliateOrders() };
+    });
+    public Task<IActionResult> OnPostDeleteLinkAsync(string productId) => Execute(async () =>
+    {
+        await _service.DeleteGeneratedLink(productId);
+        return await _service.GetGeneratedLinks();
+    });
     public Task<IActionResult> OnPostGenerateAsync(string productId) => Execute(async () => new
     {
         link = await _service.GenerateAffiliateLink(productId), links = await _service.GetGeneratedLinks()

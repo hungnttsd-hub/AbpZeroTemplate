@@ -26,6 +26,7 @@ using WebHoanTien.Web.IdentityExtensions;
 using Volo.Abp.Auditing;
 using Volo.Abp.Users;
 using IdentityUser = Volo.Abp.Identity.IdentityUser;
+using WebHoanTien.TikTokAffiliate;
 
 namespace WebHoanTien.Web.Controllers;
 
@@ -143,7 +144,7 @@ public class GoogleIdentityLoginController : AbpController
                 var upgraded = await _anonymousSession.TransactionAsync(() => _anonymousSession.Accounts.UpgradeGoogleAsync(
                     CurrentUser.GetId(), email, payload.Subject, payload.Picture));
                 await _anonymousSession.SignInAsync(upgraded);
-                return Ok(new { redirectUrl = GetSafeReturnUrl(returnUrl) });
+                return Ok(new { redirectUrl = GetLoginReturnUrl(upgraded, returnUrl) });
             }
             catch (UserFriendlyException ex) { return Conflict(new { message = ex.Message }); }
         }
@@ -241,7 +242,14 @@ public class GoogleIdentityLoginController : AbpController
         await _dynamicClaimsCache.ClearAsync(user.Id, user.TenantId);
         await _signInManager.SignInAsync(user, isPersistent: true);
 
-        return Ok(new { redirectUrl = GetSafeReturnUrl(returnUrl) });
+        return Ok(new { redirectUrl = GetLoginReturnUrl(user, returnUrl) });
+    }
+
+    private string GetLoginReturnUrl(IdentityUser user, string? returnUrl)
+    {
+        return user.GetProperty<bool>(TikTokAffiliateAccess.UserProperty)
+            ? "/tiktok-affiliate"
+            : GetSafeReturnUrl(returnUrl);
     }
 
     private string GetSafeReturnUrl(string? returnUrl)

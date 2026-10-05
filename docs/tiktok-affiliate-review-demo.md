@@ -9,6 +9,7 @@
 - User phải có extra property bool **IsTiktokDemo = true** mới thấy navigation và được truy cập trang/handler/service TikTok Affiliate. Giá trị thiếu hoặc false đều bị từ chối; admin cũng không tự được bypass.
 - Admin mở **Quản lý người dùng** (`/Identity/Users`) → tạo/sửa user → checkbox **Cho phép TikTok Affiliate demo (IsTiktokDemo)** → Lưu. Checkbox được dựng bởi form extension chuẩn của ABP và lưu cùng create/update user qua quyền quản lý user hiện có.
 - Giá trị mặc định false. User không được chỉnh trường này qua profile/registration vì `AllowUserToEdit = false`.
+- Sau khi đăng nhập thành công bằng mật khẩu hoặc Google, user có **IsTiktokDemo = true** được chuyển tới `/tiktok-affiliate`, ưu tiên hơn return URL của lần đăng nhập. User khác giữ nguyên luồng chuyển hướng hiện có. Đăng nhập thất bại không chuyển tới trang demo.
 - Trường lưu trong `AbpUsers.ExtraProperties` bằng cơ chế extension ABP; không cần cột vật lý hoặc migration database. Backend kiểm tra giá trị đã lưu và user đang active, không lấy quyền từ cookie claim. Bỏ checkbox sẽ chặn ở request tiếp theo; refresh trang để cập nhật navigation đang mở.
 
 `src/WebHoanTien.Web/appsettings.json` mặc định:
@@ -27,6 +28,8 @@ Không cần app secret, CreatorAccessToken hoặc kết nối TikTok thật tro
 4. Bấm **Generate Affiliate Link**. Có trạng thái “Generating TikTok affiliate link...”, rồi kết quả và **Copy Link**. Link chứa `affiliate_id=demo`, được ghi rõ không do TikTok phát hành và không dùng được để attribution thật.
 5. Chọn **Generated Links** để xem lịch sử, thời gian, trạng thái, mở link demo hoặc sao chép. Mở link demo vẫn điều hướng sang URL TikTok; điều này không tạo tracking thật.
 6. Chọn **Affiliate Orders**: ba đơn giả lập TK100001/Pending, TK100002/Settled, TK100003/Cancelled. Commission và trạng thái không có tác động tài chính.
+
+Để làm lại walkthrough, bấm **Disconnect TikTok Creator** trên Overview: ngắt kết nối demo, xóa trạng thái product đã check và kết quả link đang hiển thị, ẩn orders cho tới khi kết nối lại. Không đăng xuất CatBack hoặc tác động tài khoản TikTok thật. Lịch sử link được giữ; bấm **Delete Link** trong Generated Links để xóa từng link demo của tài khoản hiện tại. Sau khi xóa có thể tạo lại link với thời gian mới. Hai thao tác dùng POST/antiforgery và vẫn yêu cầu IsTiktokDemo; adapter Api hiện chưa hỗ trợ hai thao tác này.
 
 Các view nên chụp khi thực hiện review: Overview chưa kết nối; Overview đã có product và link; Generated Links; Affiliate Orders. Banner Demo Mode phải hiện trong mỗi ảnh. Chưa chụp screenshots hoặc chạy trình duyệt tự động trong lần triển khai này.
 

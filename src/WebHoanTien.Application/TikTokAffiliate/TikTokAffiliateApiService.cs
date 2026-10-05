@@ -20,6 +20,8 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
     public Task<IReadOnlyList<TikTokAffiliateOrderDto>> SearchAffiliateOrders() =>
         Task.FromResult<IReadOnlyList<TikTokAffiliateOrderDto>>(Array.Empty<TikTokAffiliateOrderDto>());
     public Task<TikTokCreatorDto> ConnectCreator() => throw Unavailable();
+    public Task DisconnectCreator() => throw Unavailable();
+    public Task DeleteGeneratedLink(string productId) => throw Unavailable();
     public Task<TikTokProductDto> GetProduct(string productUrl) => throw Unavailable();
     public Task<TikTokGeneratedLinkDto> GenerateAffiliateLink(string productId) => throw Unavailable();
     private static UserFriendlyException Unavailable() => new(

@@ -10,9 +10,11 @@ public interface ITikTokAffiliateService : IApplicationService
     Task<TikTokAffiliateIntegrationDto> GetIntegrationInfo();
     Task<TikTokCreatorDto?> GetCreatorProfile();
     Task<TikTokCreatorDto> ConnectCreator();
+    Task DisconnectCreator();
     Task<TikTokProductDto> GetProduct(string productUrl);
     Task<TikTokGeneratedLinkDto> GenerateAffiliateLink(string productId);
     Task<IReadOnlyList<TikTokGeneratedLinkDto>> GetGeneratedLinks();
+    Task DeleteGeneratedLink(string productId);
     Task<IReadOnlyList<TikTokAffiliateOrderDto>> SearchAffiliateOrders();
 }
 

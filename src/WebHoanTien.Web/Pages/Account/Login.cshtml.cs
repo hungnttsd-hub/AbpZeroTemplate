@@ -20,6 +20,7 @@ using IdentityUser = Volo.Abp.Identity.IdentityUser;
 using WebHoanTien.IdentityExtensions;
 using Volo.Abp.Users;
 using Volo.Abp.Auditing;
+using WebHoanTien.TikTokAffiliate;
 
 namespace WebHoanTien.Web.Pages.Account;
 
@@ -97,7 +98,9 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
                 await IdentityDynamicClaimsPrincipalContributorCache.ClearAsync(linkedUser.Id, linkedUser.TenantId);
             }
 
-            return await RedirectSafelyAsync(returnUrl, returnUrlHash);
+            return linkedUser?.GetProperty<bool>(TikTokAffiliateAccess.UserProperty) == true
+                ? LocalRedirect("/tiktok-affiliate")
+                : await RedirectSafelyAsync(returnUrl, returnUrlHash);
         }
 
         var externalEmail = GetExternalEmail(loginInfo);
@@ -149,7 +152,9 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
 
             await IdentityDynamicClaimsPrincipalContributorCache.ClearAsync(localUser.Id, localUser.TenantId);
             await SignInManager.SignInAsync(localUser, isPersistent: true);
-            return await RedirectSafelyAsync(returnUrl, returnUrlHash);
+            return localUser.GetProperty<bool>(TikTokAffiliateAccess.UserProperty)
+                ? LocalRedirect("/tiktok-affiliate")
+                : await RedirectSafelyAsync(returnUrl, returnUrlHash);
         }
 
         return RedirectToPage("./Login", new
@@ -205,7 +210,7 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
 
         if (!LinkExternalLogin || result is not RedirectResult || pendingLogin is null || localUser is null)
         {
-            return result;
+            return await ApplyDemoLoginRedirectAsync(result);
         }
 
         var addLoginResult = await UserManager.AddLoginAsync(localUser, pendingLogin);
@@ -224,7 +229,22 @@ public class LoginModel : Volo.Abp.Account.Web.Pages.Account.LoginModel
         }
 
         await IdentityDynamicClaimsPrincipalContributorCache.ClearAsync(localUser.Id, localUser.TenantId);
-        return result;
+        return await ApplyDemoLoginRedirectAsync(result);
+    }
+
+    private async Task<IActionResult> ApplyDemoLoginRedirectAsync(IActionResult result)
+    {
+        // SignInManager updates HttpContext.User only after establishing the session.
+        // Keep validation errors and any unfinished authentication steps unchanged.
+        if (result is not RedirectResult && result is not LocalRedirectResult)
+            return result;
+        if (!SignInManager.IsSignedIn(HttpContext.User))
+            return result;
+
+        var signedInUser = await UserManager.GetUserAsync(HttpContext.User);
+        return signedInUser?.GetProperty<bool>(TikTokAffiliateAccess.UserProperty) == true
+            ? LocalRedirect("/tiktok-affiliate")
+            : result;
     }
 
     private async Task<IActionResult> LinkErrorPageAsync(string message)

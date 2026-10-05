@@ -23,6 +23,9 @@
     function enableWorkflow() {
       const connected = !!state.creator;
       find('[data-tt-connect]').disabled = connected || busy;
+      const disconnect = find('[data-tt-disconnect]');
+      if (disconnect) { disconnect.hidden = !connected; disconnect.disabled = busy; }
+      root.querySelectorAll('[data-tt-delete-link]').forEach(button => { button.disabled = busy; });
       find('#tt-product-url').disabled = !connected || busy;
       find('[data-tt-check]').disabled = !connected || busy;
       const example = find('[data-tt-example]');
@@ -102,6 +105,19 @@
         const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Copy Link';
         button.setAttribute('aria-label', `Copy link for ${link.productTitle}`); button.addEventListener('click', () => copy(link.sharingLink));
         container.append(button); actions.append(container); body.append(row);
+        if (isDemo) {
+          const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Delete Link';
+          remove.dataset.ttDeleteLink = ''; remove.disabled = busy;
+          remove.setAttribute('aria-label', `Delete demo link for ${link.productTitle}`);
+          remove.addEventListener('click', () => run(remove, 'Deleting...', async () => {
+            state.links = await request('DeleteLink', { productId: link.productId });
+            if (generatedLink?.productId === link.productId) {
+              generatedLink = null; find('[data-tt-result]').hidden = true; find('#tt-sharing-link').value = '';
+            }
+            renderLinks(); feedback('Demo link deleted. You can generate it again.', 'success');
+          }));
+          container.append(remove);
+        }
       });
     }
     function renderOrders() {
@@ -139,6 +155,12 @@
     }));
     const clearProduct = () => { productRevision++; product = null; generatedLink = null; find('[data-tt-product]').hidden = true;
       find('[data-tt-result]').hidden = true; text('[data-tt-generate-hint]', 'Check a product to continue.'); enableWorkflow(); };
+    find('[data-tt-disconnect]')?.addEventListener('click', () => run(find('[data-tt-disconnect]'), 'Disconnecting...', async () => {
+      const result = await request('Disconnect', {}); state.creator = result.creator; state.orders = result.orders;
+      clearProduct(); find('#tt-product-url').value = ''; find('#tt-sharing-link').value = '';
+      renderCreator(); renderOrders();
+      feedback('Demo Creator disconnected. Connect again to restart the walkthrough. Generated links remain available to delete.', 'success');
+    }));
     find('#tt-product-url').addEventListener('input', clearProduct);
     find('[data-tt-example]')?.addEventListener('click', () => { find('#tt-product-url').value = state.integration.sampleProductUrl || ''; clearProduct(); find('#tt-product-url').focus(); });
     find('[data-tt-product-form]').addEventListener('submit', event => {

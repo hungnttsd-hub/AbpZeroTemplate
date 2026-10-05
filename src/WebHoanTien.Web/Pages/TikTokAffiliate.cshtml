@@ -38,6 +38,10 @@
                     <div class="tt-creator-copy"><h3 data-tt-creator-name>Connect your TikTok Creator</h3><p data-tt-creator-description>Start by connecting a Creator profile.</p><small data-tt-creator-id hidden></small></div>
                 </div>
                 <button class="tt-button" type="button" data-tt-connect>Connect TikTok Creator <span aria-hidden="true">→</span></button>
+                @if (Model.Integration.IsDemo)
+                {
+                    <button class="tt-button tt-button-secondary" type="button" data-tt-disconnect hidden>Disconnect TikTok Creator</button>
+                }
                 <p class="tt-caption" data-tt-connection-note></p>
             </section>
             <section class="cb-card tt-card" aria-labelledby="tt-product-heading">

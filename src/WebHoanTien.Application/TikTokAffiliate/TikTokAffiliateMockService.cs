@@ -61,7 +61,11 @@ public class TikTokAffiliateMockService : WebHoanTienAppService, ITikTokAffiliat
               url.AbsolutePath.TrimEnd('/') == $"/view/product/{ProductId}"))
             throw new UserFriendlyException("Review Demo chỉ hỗ trợ sản phẩm mẫu. Chọn ‘Use demo product’ để dùng URL hợp lệ.");
         await Task.Delay(450);
-        lock (state.Sync) state.ProductChecked = true;
+        lock (state.Sync)
+        {
+            RequireConnected(state);
+            state.ProductChecked = true;
+        }
         return Product;
     }
 
@@ -77,6 +81,9 @@ public class TikTokAffiliateMockService : WebHoanTienAppService, ITikTokAffiliat
         await Task.Delay(900);
         lock (state.Sync)
         {
+            RequireConnected(state);
+            if (!state.ProductChecked)
+                throw new UserFriendlyException("Hãy kiểm tra sản phẩm trước khi tạo affiliate link.");
             // Repeated clicks are idempotent for this single-product review fixture.
             var existing = state.Links.FirstOrDefault(link => link.ProductId == productId);
             if (existing is not null) return existing;
@@ -92,6 +99,24 @@ public class TikTokAffiliateMockService : WebHoanTienAppService, ITikTokAffiliat
     {
         var state = State;
         lock (state.Sync) return Task.FromResult<IReadOnlyList<TikTokGeneratedLinkDto>>(state.Links.ToArray());
+    }
+
+    public Task DisconnectCreator()
+    {
+        var state = State;
+        lock (state.Sync)
+        {
+            state.Connected = false;
+            state.ProductChecked = false;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteGeneratedLink(string productId)
+    {
+        var state = State;
+        lock (state.Sync) state.Links.RemoveAll(link => link.ProductId == productId);
+        return Task.CompletedTask;
     }
 
     public Task<IReadOnlyList<TikTokAffiliateOrderDto>> SearchAffiliateOrders()
