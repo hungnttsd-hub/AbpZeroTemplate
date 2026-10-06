@@ -1,4 +1,4 @@
-# Settlement sync specification v0.7.7
+# Settlement sync specification v0.7.8
 
 ## Boundary
 
@@ -34,7 +34,9 @@
 
 Mọi bill có `validation_id` hợp lệ trong response `billing_list` đều được đưa vào báo cáo. Các mã trạng thái, `payout_id` và `payment_completed_time` được giữ nguyên để admin tham khảo; quyền quyết định duyệt không bị khóa theo trạng thái Shopee.
 
-Bill có adjustment, clawback, bonus settlement, PPP hoặc cumulative payment vẫn được lưu và hiển thị cảnh báo. Quá trình tổng hợp vẫn fail closed nếu trang conversion thiếu/trùng `checkout_id`, tổng nguồn lệch quá `max(1 VND, 0.01%)`, hoặc số checkout vượt 10.000. Mỗi order bắt buộc có `order_sn`.
+Bill có adjustment, clawback, bonus settlement, PPP hoặc cumulative payment vẫn được lưu và hiển thị cảnh báo. Quá trình tổng hợp vẫn fail closed nếu dòng thiếu `checkout_id`, cùng cặp `(checkout_id, order_sn)` bị lặp, tổng nguồn lệch quá `max(1 VND, 0.01%)`, hoặc số dòng vượt 10.000. Mỗi order bắt buộc có `order_sn`.
+
+`validation_detail/v2` có thể trả nhiều dòng cùng `checkout_id` nhưng chứa các đơn khác nhau; mỗi dòng có `affiliate_net_commission` riêng. Giữ nguyên những dòng này để phân bổ, không bỏ trùng theo checkout hoặc gộp rồi dùng hoa hồng của một dòng. `total_count` được đối chiếu với số dòng nhận về, không phải số checkout duy nhất. Kiểm tra trùng áp dụng cho từng đơn, kể cả khi hai dòng chỉ giao nhau một phần danh sách đơn; lỗi chỉ rõ trang/dòng của hai lần xuất hiện. Dòng không có đơn vẫn bị chặn nếu lặp cùng checkout.
 
 Bill đã có `payout_id` được đối chiếu thêm bằng GraphQL `payoutDetail`. Tool fail closed nếu `payout_id`, affiliate, validation, tổng sau phí dịch vụ (`billCommissionAmount`), tổng thuế và tổng thực nhận do Shopee trả về không cân bằng. Không suy ra thuế từ `payable_total_commission_amount = 0` của bill Pending.
 

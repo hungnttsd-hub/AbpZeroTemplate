@@ -1,4 +1,4 @@
-# CatsBack Shopee Sync v0.7.7
+# CatsBack Shopee Sync v0.7.8
 
 Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 
@@ -52,6 +52,13 @@ miền CatsBack. Có thể bị CSP, Trusted Types hoặc chính sách trình du
 chỉ xác nhận JavaScript dấu trang chạy được, không xác nhận việc tải script khác miền. Không tự chuyển
 sang eval hay tìm cách bỏ qua chính sách trang. Cần xác nhận trên thiết bị Android thực tế trước khi
 coi luồng mobile đã được kiểm thử.
+
+## Sửa nhận diện checkout trùng v0.7.8
+
+- Shopee có thể trả nhiều dòng cùng `checkout_id` cho các đơn khác nhau ngay trong một trang. Collector giữ từng dòng và hoa hồng riêng; chỉ chặn khi cùng cặp checkout/đơn bị lặp, với vị trí trang/dòng cụ thể.
+- Giữ kiểm tra đủ số dòng theo `total_count` và đối chiếu tổng hoa hồng với bảng kê; không bỏ dòng để vượt qua lỗi.
+- Reload extension tại `chrome://extensions`, kiểm tra popup hiển thị **v0.7.8**, rồi tổng hợp lại. Local Helper không cần cập nhật cho thay đổi này. Bản mobile dùng chung collector, cần triển khai lại các asset đã build.
+- Tool JSON sau cập nhật hiển thị **CatsBack · JSON v3 (0.7.8)**. Sau khi triển khai website, bấm **Đóng** bảng tool cũ rồi chạy lại dấu trang để tải bản mới; chạy lại dấu trang khi bảng còn mở chỉ hiện lại bản đang chạy. Với dấu trang loader v3 hiện tại, không cần thay URL dấu trang.
 
 ## Cập nhật trạng thái thanh toán v0.7.7
 

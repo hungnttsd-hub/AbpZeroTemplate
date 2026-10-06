@@ -921,7 +921,7 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
   const MONEY_SCALE = 100000;
   const OUTPUT_SCALE = 10000;
   const MAX_VALIDATIONS = 2000;
-  const MAX_CHECKOUTS_PER_BILL = 10000;
+  const MAX_VALIDATION_ROWS_PER_BILL = 10000;
   const PAGE_SIZE = 100;
   // Giữ nhịp cố định cho toàn bộ API Shopee của một lần tổng hợp. Các vòng lặp
   // phía dưới đã chạy tuần tự; khoảng nghỉ ngẫu nhiên này ngăn request nối đuôi
@@ -1048,8 +1048,8 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       }
 
       const checkouts = await getValidationCheckouts(completedFrom, completedTo, validationId);
-      if (checkouts.length > MAX_CHECKOUTS_PER_BILL) {
-        throw new Error(`Bảng kê ${validationId}: vượt giới hạn ${MAX_CHECKOUTS_PER_BILL} checkout.`);
+      if (checkouts.length > MAX_VALIDATION_ROWS_PER_BILL) {
+        throw new Error(`Bảng kê ${validationId}: vượt giới hạn ${MAX_VALIDATION_ROWS_PER_BILL} dòng dữ liệu.`);
       }
       const orderWeights = buildOrderWeights(checkouts, sourceAffiliateId, validationId);
       const sourceEligibleRaw = orderWeights.reduce((sum, order) => sum + order.weightRaw, 0);
@@ -1410,7 +1410,7 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
     const checkouts = [];
     let pageNum = 1;
     let totalCount = null;
-    const seenCheckoutIds = new Set();
+    const seenCheckoutOrders = new Map();
 
     while (true) {
       const payload = await apiGet("/api/v3/report/validation_detail/v2", {
@@ -1425,8 +1425,8 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       if (!Number.isInteger(reportedTotal) || reportedTotal < 0) {
         throw new Error(`Bảng kê ${validationId}: total_count không hợp lệ.`);
       }
-      if (reportedTotal > MAX_CHECKOUTS_PER_BILL) {
-        throw new Error(`Bảng kê ${validationId}: có ${reportedTotal} checkout, vượt giới hạn ${MAX_CHECKOUTS_PER_BILL}.`);
+      if (reportedTotal > MAX_VALIDATION_ROWS_PER_BILL) {
+        throw new Error(`Bảng kê ${validationId}: có ${reportedTotal} dòng dữ liệu, vượt giới hạn ${MAX_VALIDATION_ROWS_PER_BILL}.`);
       }
       if (totalCount === null) totalCount = reportedTotal;
       else if (reportedTotal !== totalCount) throw new Error(`Bảng kê ${validationId}: total_count thay đổi trong lúc tải.`);
@@ -1435,14 +1435,34 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
         if (checkouts.length < totalCount) throw new Error(`Bảng kê ${validationId}: Shopee trả thiếu trang dữ liệu.`);
         break;
       }
-      for (const checkout of page) {
+      for (const [rowIndex, checkout] of page.entries()) {
         const checkoutId = String(checkout?.checkout_id ?? "").trim();
         if (!checkoutId) throw new Error(`Bảng kê ${validationId}: có checkout thiếu checkout_id.`);
-        if (seenCheckoutIds.has(checkoutId)) {
-          throw new Error(`Bảng kê ${validationId}: checkout_id ${checkoutId} bị trùng giữa các trang.`);
+        // Shopee can split one checkout into rows containing different orders,
+        // each with its own affiliate_net_commission. Preserve those rows and
+        // reject overlapping orders, including overlaps within the same page.
+        const orders = Array.isArray(checkout?.orders) ? checkout.orders : [];
+        const orderIds = orders.map(order => {
+          const orderId = String(order?.order_sn ?? "").trim();
+          if (!orderId) throw new Error(`Bảng kê ${validationId}: có đơn thiếu order_sn.`);
+          return orderId;
+        });
+        // Keep duplicate detection for empty checkout rows as well.
+        if (orderIds.length === 0) orderIds.push("");
+        for (const orderId of orderIds) {
+          const key = JSON.stringify([checkoutId, orderId]);
+          const previous = seenCheckoutOrders.get(key);
+          if (previous) {
+            const subject = orderId ? `đơn ${orderId}` : "dòng không có đơn";
+            throw new Error(
+              `Bảng kê ${validationId}: checkout_id ${checkoutId}, ${subject} bị trùng ` +
+              `(trang ${previous.pageNum}, dòng ${previous.rowNum} và trang ${pageNum}, dòng ${rowIndex + 1}).`
+            );
+          }
+          seenCheckoutOrders.set(key, { pageNum, rowNum: rowIndex + 1 });
         }
-        seenCheckoutIds.add(checkoutId);
       }
+      // total_count counts response rows, not distinct checkout IDs.
       checkouts.push(...page);
       if (checkouts.length >= totalCount) break;
       pageNum += 1;
@@ -1450,7 +1470,7 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
     }
 
     if (checkouts.length !== totalCount) {
-      throw new Error(`Bảng kê ${validationId}: nhận ${checkouts.length}/${totalCount} checkout.`);
+      throw new Error(`Bảng kê ${validationId}: nhận ${checkouts.length}/${totalCount} dòng dữ liệu.`);
     }
     return checkouts;
   }
