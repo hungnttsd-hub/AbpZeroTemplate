@@ -8,6 +8,30 @@ const clearLockBtn = document.getElementById("clearLock");
 const exportSettlementsBtn = document.getElementById("exportSettlements");
 const importSettlementsBtn = document.getElementById("importSettlements");
 const settlementResultEl = document.getElementById("settlementResult");
+const downloadSettlementLogBtn = document.getElementById("downloadSettlementLog");
+const settlementLogStatusEl = document.getElementById("settlementLogStatus");
+
+downloadSettlementLogBtn.addEventListener("click", async () => {
+  try {
+    const { lastSettlementDiagnostics } = await chrome.storage.local.get("lastSettlementDiagnostics");
+    if (!lastSettlementDiagnostics) return;
+    await chrome.downloads.download({
+      url: "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lastSettlementDiagnostics, null, 2)),
+      filename: `CatsBackSettlements/catsback-diagnostics-${lastSettlementDiagnostics.completedAt.replace(/[:.]/g, "-")}.json`,
+      saveAs: true
+    });
+  } catch (_) {
+    settlementLogStatusEl.textContent = "Không tải được log. Hãy thử lại hoặc lấy file trong thư mục logs của Local Helper.";
+  }
+});
+
+async function refreshSettlementLog() {
+  const data = await chrome.storage.local.get(["lastSettlementDiagnostics", "lastSettlementDiagnosticsSaved"]);
+  downloadSettlementLogBtn.hidden = !data.lastSettlementDiagnostics;
+  settlementLogStatusEl.textContent = !data.lastSettlementDiagnostics ? "" : data.lastSettlementDiagnosticsSaved
+    ? "Đã lưu log tại local-helper/logs/settlement-diagnostics-latest.json."
+    : "Log đang lưu trong extension. Bấm Tải log chẩn đoán để lấy file.";
+}
 
 refresh();
 
@@ -70,12 +94,15 @@ async function refresh() {
   importSettlementsBtn.disabled = Boolean(data?.isRunning);
   const hasPersistedLock = Boolean(data?.syncLockAt);
   clearLockBtn.style.display = hasPersistedLock && !data?.isRunning ? "block" : "none";
+  await refreshSettlementLog();
 }
 
 async function runSettlementAction(action) {
   const isImport = action === "import";
   exportSettlementsBtn.disabled = true;
   importSettlementsBtn.disabled = true;
+  downloadSettlementLogBtn.hidden = true;
+  settlementLogStatusEl.textContent = "";
   settlementResultEl.textContent = isImport
     ? "Đang lấy toàn bộ bảng kê trong danh sách và gửi về CatsBack..."
     : "Đang lấy toàn bộ bảng kê trong danh sách và tổng hợp CSV...";
@@ -99,5 +126,6 @@ async function runSettlementAction(action) {
   } finally {
     exportSettlementsBtn.disabled = false;
     importSettlementsBtn.disabled = false;
+    await refreshSettlementLog();
   }
 }

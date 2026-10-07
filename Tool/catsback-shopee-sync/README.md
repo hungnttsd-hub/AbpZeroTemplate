@@ -1,4 +1,4 @@
-# CatsBack Shopee Sync v0.7.8
+# CatsBack Shopee Sync v0.7.10
 
 Tool gồm Chrome extension và Local Helper chạy trên Windows/Node.js 18+.
 
@@ -53,6 +53,22 @@ chỉ xác nhận JavaScript dấu trang chạy được, không xác nhận vi�
 sang eval hay tìm cách bỏ qua chính sách trang. Cần xác nhận trên thiết bị Android thực tế trước khi
 coi luồng mobile đã được kiểm thử.
 
+## Thuế PIT và VAT v0.7.10
+
+- Đọc riêng `whtTotalAmount` (PIT) và `vatTotalAmount` từ query mà giao diện Shopee đang dùng. Với tài khoản cá nhân trong nước/cá nhân kinh doanh, tổng khấu trừ bằng PIT + VAT; không cộng thêm `taxTotalAmount` và không tính lại theo tỷ lệ cố định.
+- Đối chiếu tổng sau phí − tổng khấu trừ = số tiền sau thuế của kỳ. Trường bắt buộc thiếu/null/trống phải dừng. Canonical CSV/JSON vẫn dùng cột `allocated_tax` tổng hợp; số tiền sau thuế của kỳ đang xử lý không biến thành trạng thái đã thanh toán.
+- Log ghi thêm loại tài khoản, PIT, VAT và tỷ lệ nguồn để tra cứu. Nguồn xác minh mapping nằm trong `spec.md`.
+- Cập nhật extension và Local Helper, chạy lại `local-helper/run.cmd`, reload extension để thấy **0.7.10**. Với tool JSON: triển khai asset web, đóng bảng tool cũ và mở lại dấu trang để thấy **JSON v3 (0.7.10)**.
+
+## Log chẩn đoán thanh toán v0.7.9
+
+- Cập nhật cả `extension` và `local-helper`, chạy lại `local-helper/run.cmd` rồi reload extension tại `chrome://extensions`. Popup và Helper hiển thị **0.7.9**.
+- Sau mỗi lượt collector hoàn tất hoặc báo lỗi, extension lưu log vào Chrome storage và gửi bản chẩn đoán đã lọc đến Helper. File nằm tại `local-helper/logs/settlement-diagnostics-latest.json`; `helper.log` có dòng `SETTLEMENT_DIAGNOSTICS` xác nhận việc lưu. File được thay thế ở lần chạy tiếp theo, nên lấy ngay sau khi gặp lỗi.
+- Nút **Tải log chẩn đoán** trong popup lấy bản log từ Chrome storage, kể cả khi Helper cũ hoặc không ghi được file. Mở lại popup vẫn tải được log lần gần nhất. Lỗi trước khi collector chạy (ví dụ Helper offline) không tạo được log collector mới.
+- Tool JSON có cùng nút **Tải log chẩn đoán**, kể cả khi tổng hợp thất bại. Triển khai lại asset web, đóng tool cũ và mở lại dấu trang để thấy **JSON v3 (0.7.9)**. Tải log trước khi đóng hoặc chạy lượt mới; JSON đối soát và log là hai file riêng biệt, không import file log.
+- Log giữ tối đa 60 sự kiện cuối: mã bảng kê/kỳ thanh toán, số trang/dòng, các tổng tiền được chọn, phép đối soát và số request/retry. Giá trị gốc được giữ dưới dạng chuỗi số; `<missing>`, `<null>`, `<empty>`, `<invalid>` và `<unsafe-number>` phân biệt dữ liệu không dùng được với `"0"`. `moneyScale = 100000` cho tiền gốc Shopee, `outputScale = 10000` cho các trường `*Units`.
+- Không ghi response đầy đủ, URL, cookie, token, tên tài khoản, thông tin ngân hàng hoặc thông báo tự do của API. Log không được upload đến CatsBack. Việc ghi log không thay đổi cách tính tiền hoặc bỏ kiểm tra đối soát.
+
 ## Sửa nhận diện checkout trùng v0.7.8
 
 - Shopee có thể trả nhiều dòng cùng `checkout_id` cho các đơn khác nhau ngay trong một trang. Collector giữ từng dòng và hoa hồng riêng; chỉ chặn khi cùng cặp checkout/đơn bị lặp, với vị trí trang/dòng cụ thể.
@@ -85,7 +101,7 @@ Các request chi tiết luôn chạy tuần tự và nghỉ ngẫu nhiên 1,8–
 
 Mọi `validation_id` trong response `billing_list` đều được tổng hợp, không lọc theo trạng thái thanh toán. CSV giữ nguyên `payment_status`, `validation_payout_status`, trạng thái validation và các cờ điều chỉnh. Website hiển thị trạng thái Shopee để admin tự quyết định duyệt cộng ví; trạng thái nhà cung cấp không tự động ẩn nút duyệt.
 
-Khi Shopee đã sinh `payout_id`, số thuế lấy từ `taxTotalAmount` của kỳ thanh toán kể cả lúc bảng kê còn Pending và `payable_total_commission_amount` của từng bill vẫn bằng 0. Tool phân bổ tổng thuế cho toàn bộ validation trong cùng payout trước, sau đó mới phân bổ xuống từng đơn. Vì vậy tổng `allocated_tax` và `actual_paid_commission` khớp đúng số sau thuế Shopee hiển thị, không bị lệch do làm tròn riêng từng bảng kê. Bảng kê chưa có `payout_id` chưa có số thuế authoritative nên tiếp tục để thuế bằng 0.
+Khi Shopee đã sinh `payout_id`, số thuế lấy từ chi tiết kỳ thanh toán kể cả lúc bảng kê còn Pending và `payable_total_commission_amount` của từng bill vẫn bằng 0. Với tài khoản cá nhân trong nước/cá nhân kinh doanh, dùng PIT + VAT từ `whtTotalAmount` và `vatTotalAmount`; các loại tài khoản khác giữ kiểm tra tổng cũ theo `taxTotalAmount`. Tool phân bổ tổng thuế cho toàn bộ validation trong cùng payout trước, sau đó mới phân bổ xuống từng đơn. Tổng `allocated_tax` và `actual_paid_commission` được đối chiếu với số sau thuế Shopee trả về. Bảng kê chưa có `payout_id` chưa có số thuế authoritative nên tiếp tục để thuế bằng 0.
 
 CSV dùng schema `catsback-settlement-v2`. `validation_id`, `payout_id` và mã đơn luôn được giữ dưới dạng chuỗi. Website vẫn đọc được file v1 cũ.
 

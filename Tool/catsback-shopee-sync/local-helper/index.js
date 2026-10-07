@@ -5,7 +5,7 @@ const os = require("os");
 const crypto = require("crypto");
 const http = require("http");
 
-const APP_VERSION = "0.7.7";
+const APP_VERSION = "0.7.10";
 const APP_DIR = __dirname;
 const CONFIG_PATH = path.join(APP_DIR, "config.json");
 const EXAMPLE_CONFIG_PATH = path.join(APP_DIR, "config.example.json");
@@ -578,6 +578,54 @@ function expandEnv(value) {
     .replace(/%HOME%/gi, os.homedir());
 }
 
+function validateSettlementDiagnostics(body) {
+  const timestamp = value => typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value));
+  if (body?.schemaVersion !== "catsback-settlement-diagnostics-v1" ||
+      body.moneyScale !== 100000 || body.outputScale !== 10000 ||
+      typeof body.toolVersion !== "string" || !/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(body.toolVersion) ||
+      !timestamp(body.startedAt) || !timestamp(body.completedAt) ||
+      !["succeeded", "failed"].includes(body.status) ||
+      !Number.isSafeInteger(body.requestCount) || body.requestCount < 0 ||
+      !Number.isSafeInteger(body.retryCount) || body.retryCount < 0 ||
+      !Array.isArray(body.events) || body.events.length > 60) {
+    throw new Error("Log chẩn đoán không đúng định dạng.");
+  }
+  const allowedFields = new Set([
+    "validationId", "payoutId", "returnedPayoutId", "eligibleTotalCommissionAmount",
+    "billCommissionAmount", "payableTotalCommissionAmount", "paymentCompletedTime",
+    "paymentStatus", "validationPayoutStatus", "taxTotalAmount", "totalPaymentAmount",
+    "validationCount", "beforeTaxUnits", "taxUnits", "paidUnits", "differenceUnits", "eligibleRawSum",
+    "pageNum", "totalCount", "rowCount", "attempt", "httpStatus", "apiCode", "graphErrorCount",
+    "accountType", "whtTotalAmount", "vatTotalAmount", "whtRate", "vatRate"
+  ]);
+  const events = body.events.map(entry => {
+    if (!timestamp(entry?.at) || ![
+      "bill_request", "bill_detail", "validation_page", "payout_request", "payout_detail",
+      "payout_balance", "payout_balance_mismatch", "request_network_error", "request_response", "response_status",
+      "payout_individual_tax", "payout_legacy_tax"
+    ].includes(entry.event) ||
+        !entry.data || typeof entry.data !== "object" || Array.isArray(entry.data)) {
+      throw new Error("Sự kiện chẩn đoán không hợp lệ.");
+    }
+    const data = {};
+    for (const [key, value] of Object.entries(entry.data)) {
+      if (!allowedFields.has(key) || typeof value !== "string" ||
+          (!/^-?\d{1,40}(\.\d{1,10})?$/.test(value) &&
+           !["<missing>", "<null>", "<empty>", "<invalid>", "<unsafe-number>"].includes(value))) {
+        throw new Error("Trường chẩn đoán không hợp lệ.");
+      }
+      data[key] = value;
+    }
+    return { at: entry.at, event: entry.event, data };
+  });
+  // Reconstruct the allowlisted envelope; never persist arbitrary request fields.
+  return { schemaVersion: body.schemaVersion, toolVersion: body.toolVersion,
+    moneyScale: body.moneyScale, outputScale: body.outputScale,
+    startedAt: body.startedAt, completedAt: body.completedAt, status: body.status,
+    requestCount: body.requestCount, retryCount: body.retryCount, events };
+}
+
 function startSettingsServer(port) {
   const server = http.createServer(async (req, res) => {
     try {
@@ -627,6 +675,21 @@ function startSettingsServer(port) {
           tokenType: token.tokenType,
           expiresAtUtc: new Date(token.expiresAtMs).toISOString()
         });
+      }
+
+      if (req.method === "POST" && url.pathname === "/api/settlements/diagnostics") {
+        const diagnostic = validateSettlementDiagnostics(await readJsonBody(req, 128 * 1024));
+        await fsp.mkdir(LOG_DIR, { recursive: true });
+        const filePath = path.join(LOG_DIR, "settlement-diagnostics-latest.json");
+        const tempPath = path.join(LOG_DIR, `settlement-diagnostics-${crypto.randomUUID()}.tmp`);
+        try {
+          await fsp.writeFile(tempPath, JSON.stringify(diagnostic, null, 2), "utf8");
+          await fsp.rename(tempPath, filePath);
+        } finally {
+          await fsp.unlink(tempPath).catch(() => {});
+        }
+        await log(`SETTLEMENT_DIAGNOSTICS status=${diagnostic.status} version=${diagnostic.toolVersion} file=${filePath}`);
+        return sendJson(res, 200, { ok: true });
       }
 
       if (req.method === "POST" &&
@@ -816,7 +879,7 @@ function settingsHtml(port) {
 <style>
 body{font-family:Arial,sans-serif;max-width:820px;margin:32px auto;padding:0 18px;color:#1f2937}h1{font-size:24px}h2{font-size:18px;margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb}label{display:block;font-weight:600;margin-top:16px}input{box-sizing:border-box;width:100%;margin-top:6px;padding:10px;border:1px solid #d1d5db;border-radius:8px}.row{display:flex;gap:16px}.row>div{flex:1}.check{display:flex;gap:8px;align-items:center;font-weight:400}.check input{width:auto;margin:0}button{margin-top:20px;padding:10px 16px;border:0;border-radius:8px;background:#111827;color:#fff;cursor:pointer}button.secondary{background:#e5e7eb;color:#111827;margin-left:8px}.hint{font-size:12px;color:#6b7280;margin-top:4px;line-height:1.45}.status{margin-top:16px;padding:10px 12px;background:#f3f4f6;border-radius:8px;white-space:pre-wrap}</style></head>
 <body>
-<h1>CatsBack Sync Helper Settings v0.7.7</h1>
+<h1>CatsBack Sync Helper Settings v${APP_VERSION}</h1>
 <p>Helper tu lay Bearer token ngan han bang Client ID/Client Secret. Access token chi duoc giu trong RAM va tu refresh khi het han.</p>
 <label>CatsBack API Base URL<input id="apiBaseUrl"></label>
 <div class="row"><div><label>Client ID<input id="clientId" autocomplete="off"></label></div><div><label>Client Secret<input id="clientSecret" type="password" autocomplete="new-password" placeholder="De trong de giu secret cu"></label></div></div>

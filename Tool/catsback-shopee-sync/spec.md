@@ -1,11 +1,18 @@
-# Settlement sync specification v0.7.8
+# Settlement sync specification v0.7.10
 
 ## Boundary
 
 - Shopee cookies, CSRF token và response thô chỉ tồn tại trong MAIN world của tab Shopee.
-- Extension chỉ chuyển canonical settlement rows sang `127.0.0.1:32145`.
+- Extension chuyển canonical settlement rows và log chẩn đoán theo allowlist sang `127.0.0.1:32145`.
 - Local Helper tạo CSV, lưu cục bộ và chỉ upload CSV cùng Bearer token CatsBack.
 - Không gửi item name, bank account, Shopee cookie hoặc toàn bộ billing response đến CatsBack.
+
+### Diagnostic log
+
+- Schema riêng `catsback-settlement-diagnostics-v1`, không phải JSON đối soát. Collector trả log cả khi thành công và khi lỗi; giữ tối đa 60 sự kiện cuối, phiên bản tool, thời gian, trạng thái và số request/retry.
+- Chỉ chọn các mã ID, số dòng/trang và trường tiền cần chẩn đoán. Tiền gốc dùng scale 100000, tiền phân bổ dùng scale 10000. Thiếu/null/trống/không hợp lệ/số không an toàn được đánh dấu riêng, không đổi thành số 0 trong log.
+- Extension giữ log lần gần nhất trong Chrome storage để tải từ popup. Helper nhận `POST /api/settlements/diagnostics` tối đa 128 KiB, kiểm tra schema và allowlist, ghi đè `logs/settlement-diagnostics-latest.json` qua file tạm và ghi thông báo vào `helper.log`. Không gửi log lên CatsBack. Helper không ghi được log không chặn kết quả collector.
+- Mobile chỉ tạo link tải Blob log trong tab, không gửi log đến Helper. Log có thể tải ngay khi collector trả lỗi; đóng bảng hoặc chạy lần mới sẽ thu hồi Blob cũ. Không ghi raw response, URL, header, cookie, token, thông tin ngân hàng hay nội dung lỗi tự do của API.
 
 ### Android JSON export
 
@@ -50,10 +57,18 @@ Bill đã có `payout_id` được đối chiếu thêm bằng GraphQL `payoutDe
 - Tổng authoritative của bill:
   - eligible: `eligible_total_commission_amount`
   - sau phí dịch vụ: `bill_commission_amount`
-  - bill đã có `payout_id`, dù đã trả hay đang xử lý: tổng thuế và thực nhận lấy từ `paymentPayout.taxTotalAmount` và `paymentPayout.totalPaymentAmount` của `payoutDetail`
+  - bill đã có `payout_id`, dù đã trả hay đang xử lý: thực nhận theo kỳ lấy từ `paymentPayout.totalPaymentAmount` của `payoutDetail`. Với `accountType` 3 (localIndividual) hoặc 5 (businessIndividual), tổng thuế khấu trừ lấy từ `whtTotalAmount` (PIT) + `vatTotalAmount`, không cộng thêm `taxTotalAmount`. Các loại tài khoản 1/2/4 giữ đối soát bằng `taxTotalAmount`; không mặc định VAT của doanh nghiệp là khoản khấu trừ.
   - bill đã thanh toán chưa có `payout_id` (luồng cũ): thực trả sau thuế lấy từ `payable_total_commission_amount`
   - bill chưa thanh toán và chưa có `payout_id`: chưa có thuế kỳ thanh toán để phân bổ, nên thuế bằng 0
 - Tổng thuế được phân bổ deterministic cho các validation trong cùng `payout_id` theo `eligibleTotalCommissionAmount`, rồi phân bổ xuống order theo số tiền sau phí. Phí dịch vụ và thuế đều làm tròn 4 chữ số thập phân và giữ residual để tổng cuối cùng khớp tuyệt đối với Shopee.
+- Không tính lại thuế bằng tỷ lệ cố định 5%/10%, không suy ra thuế bằng chênh lệch hai tổng. Thiếu/null/trống trường thuế được chọn hoặc tổng tiền của kỳ phải dừng; không đổi thành 0. Tổng PIT/VAT vẫn được ghi vào cột `allocated_tax` hiện có. Ngày thanh toán bằng 0 vẫn là đang xử lý dù đã có số tiền sau thuế.
+
+### Nguồn mapping PIT/VAT, kiểm tra ngày 07-10-2026
+
+- Query `PayoutDetailQuery` của trang Shopee VN yêu cầu `accountType`, `whtTotalAmount`, `vatTotalAmount`, `whtRate`, `vatRate` trong `paymentPayout`: [bundle API của Shopee, module 28510](https://deo.shopeemobile.com/shopee/shopee-affiliate-live-vn/static/js/9341.06f3237e.js).
+- Giao diện VN hiển thị WHT/PIT và VAT riêng, trừ cả hai cho localIndividual/businessIndividual; VAT có cách cộng/trừ khác với tài khoản doanh nghiệp: [bundle chi tiết thanh toán](https://deo.shopeemobile.com/shopee/shopee-affiliate-live-vn/static/js/payout_record_detail.d1881075.js).
+- Giá trị enum tài khoản 3/5 được xác minh từ module 40745: [bundle app](https://deo.shopeemobile.com/shopee/shopee-affiliate-live-vn/static/js/app.335c9e26.js). Đây là bằng chứng mapping giao diện/API, không phải giả định thuế suất pháp luật.
+- Ảnh người dùng của kỳ `17351990636261005`: PIT 1.148đ + VAT 1.148đ; 22.745đ − 2.296đ = 20.449đ. Log 0.7.9 cho thấy `taxTotalAmount = 0`, nên trường tổng cũ không đủ cho kỳ này.
 
 ## Canonical CSV columns
 

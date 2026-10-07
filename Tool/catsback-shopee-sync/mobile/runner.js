@@ -24,7 +24,7 @@ style.textContent = `
 `;
 root.append(style, create("section", "", { "aria-label": "CatsBack tổng hợp JSON" }, [
   create("header", "", {}, [
-    create("strong", "CatsBack · JSON v3 (0.7.8)"),
+    create("strong", "CatsBack · JSON v3 (0.7.10)"),
     create("button", "Thu gọn", { id: "toggle", "aria-expanded": "true" })
   ]),
   create("div", "", { id: "body" }, [
@@ -37,13 +37,15 @@ root.append(style, create("section", "", { "aria-label": "CatsBack tổng hợp 
       create("button", "Dừng", { id: "cancel", hidden: "" }),
       create("button", "Đóng", { id: "close" })
     ]),
-    create("a", "Tải file JSON", { id: "download", hidden: "" })
+    create("a", "Tải file JSON", { id: "download", hidden: "" }),
+    create("a", "Tải log chẩn đoán", { id: "download-log", hidden: "" })
   ])
 ]));
 const get = id => root.getElementById(id);
 let running = false;
 let controller;
 let objectUrl;
+let diagnosticUrl;
 let wakeLock;
 let latestCapture;
 const updateCapture = () => {
@@ -73,6 +75,7 @@ get("close").onclick = () => {
   if (running) return;
   clearInterval(captureTimer);
   if (objectUrl) URL.revokeObjectURL(objectUrl);
+  if (diagnosticUrl) URL.revokeObjectURL(diagnosticUrl);
   host.remove();
 };
 document.documentElement.append(host);
@@ -84,6 +87,8 @@ get("start").onclick = async () => {
   get("close").disabled = true;
   get("cancel").hidden = false;
   get("download").hidden = true;
+  get("download-log").hidden = true;
+  if (diagnosticUrl) { URL.revokeObjectURL(diagnosticUrl); diagnosticUrl = null; }
   if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
   get("status").textContent = "Đang tổng hợp. Giữ nguyên bộ lọc và tab Shopee…";
   try {
@@ -92,6 +97,12 @@ get("start").onclick = async () => {
       signal: controller.signal,
       onProgress: message => { get("status").textContent = message; }
     });
+    if (report?.diagnostics) {
+      diagnosticUrl = URL.createObjectURL(new Blob([JSON.stringify(report.diagnostics, null, 2)], { type: "application/json;charset=utf-8" }));
+      get("download-log").href = diagnosticUrl;
+      get("download-log").download = `catsback-diagnostics-${report.diagnostics.completedAt.replace(/[:.]/g, "-")}.json`;
+      get("download-log").hidden = false;
+    }
     controller.signal.throwIfAborted();
     if (!report?.ok) throw new Error(report?.error || "Không tổng hợp được dữ liệu.");
     if (!report.rows?.length) throw new Error("Danh sách vừa tải không có đơn hàng để xuất. Chọn kỳ khác rồi thử lại.");

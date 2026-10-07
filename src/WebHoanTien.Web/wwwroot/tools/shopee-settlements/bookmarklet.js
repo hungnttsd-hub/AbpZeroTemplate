@@ -116,9 +116,14 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
     query PayoutDetailQuery($payoutId: String) {
       payoutDetail(payoutId: $payoutId) {
         paymentPayout {
+          accountType
           affiliateId
           payoutId
           taxTotalAmount
+          whtTotalAmount
+          vatTotalAmount
+          whtRate
+          vatRate
           totalPaymentAmount
         }
         payoutValidationInfo {
@@ -135,6 +140,33 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
   let shopeeRequestCount = 0;
   let shopeeRetryCount = 0;
   let shopeeCsrfToken = "";
+  const diagnostics = {
+    schemaVersion: "catsback-settlement-diagnostics-v1",
+    toolVersion: "0.7.10",
+    moneyScale: MONEY_SCALE,
+    outputScale: OUTPUT_SCALE,
+    startedAt: new Date().toISOString(),
+    events: []
+  };
+
+  // Explicit numeric fields only: never retain headers, URLs, free-text API
+  // errors, account information, or whole Shopee responses in diagnostics.
+  function recordDiagnostic(event, fields) {
+    const data = {};
+    for (const [key, value] of Object.entries(fields)) {
+      data[key] = value === undefined ? "<missing>" : value === null ? "<null>" : value === "" ? "<empty>" :
+        typeof value === "number" && !Number.isSafeInteger(value) ? "<unsafe-number>" :
+        (typeof value === "number" || typeof value === "string") && /^-?\d{1,40}(\.\d{1,10})?$/.test(String(value))
+          ? String(value) : "<invalid>";
+    }
+    diagnostics.events.push({ at: new Date().toISOString(), event, data });
+    if (diagnostics.events.length > 60) diagnostics.events.shift();
+  }
+
+  function finishDiagnostics(status) {
+    return { ...diagnostics, status, completedAt: new Date().toISOString(),
+      requestCount: shopeeRequestCount, retryCount: shopeeRetryCount };
+  }
 
   try {
     if (location.hostname !== "affiliate.shopee.vn") {
@@ -176,8 +208,17 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       const validationId = String(summary.validation_id);
       options.signal?.throwIfAborted();
       options.onProgress?.(`Đang đọc bảng kê ${validationSummaries.indexOf(summary) + 1}/${validationSummaries.length} (${validationId})…`);
+      recordDiagnostic("bill_request", { validationId });
       const payload = await apiGet("/api/v3/payment/billing_detail", { validation_id: validationId });
       const bill = payload?.data;
+      recordDiagnostic("bill_detail", {
+        validationId, payoutId: bill?.payout_id,
+        eligibleTotalCommissionAmount: bill?.eligible_total_commission_amount,
+        billCommissionAmount: bill?.bill_commission_amount,
+        payableTotalCommissionAmount: bill?.payable_total_commission_amount,
+        paymentCompletedTime: bill?.payment_completed_time,
+        paymentStatus: bill?.payment_status, validationPayoutStatus: bill?.validation_payout_status
+      });
       if (!bill || String(bill.validation_id ?? "") !== validationId) {
         throw new Error(`Bảng kê ${validationId}: Shopee trả về sai validation_id.`);
       }
@@ -310,10 +351,11 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       candidateCount: candidates.length,
       shopeeRequestCount,
       shopeeRetryCount,
+      diagnostics: finishDiagnostics("succeeded"),
       rows
     };
   } catch (error) {
-    return { ok: false, error: error?.message || String(error) };
+    return { ok: false, error: error?.message || String(error), diagnostics: finishDiagnostics("failed") };
   }
 
   async function waitForBillingListNetworkCapture(timeoutMs) {
@@ -372,10 +414,22 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
   async function getPayoutTaxUnits(payoutId, validationId, sourceAffiliateId, eligibleRaw, cache) {
     let allocation = cache.get(payoutId);
     if (!allocation) {
+      recordDiagnostic("payout_request", { payoutId, validationId });
       const payload = await apiPostGraphql("payoutDetail", PAYOUT_DETAIL_QUERY, { payoutId });
       const detail = payload?.data?.payoutDetail;
       const paymentPayout = detail?.paymentPayout;
       const payoutValidationInfo = detail?.payoutValidationInfo;
+      recordDiagnostic("payout_detail", {
+        payoutId, validationId, returnedPayoutId: paymentPayout?.payoutId,
+        accountType: paymentPayout?.accountType,
+        taxTotalAmount: paymentPayout?.taxTotalAmount,
+        whtTotalAmount: paymentPayout?.whtTotalAmount,
+        vatTotalAmount: paymentPayout?.vatTotalAmount,
+        whtRate: paymentPayout?.whtRate, vatRate: paymentPayout?.vatRate,
+        totalPaymentAmount: paymentPayout?.totalPaymentAmount,
+        billCommissionAmount: payoutValidationInfo?.billCommissionAmount,
+        validationCount: Array.isArray(payoutValidationInfo?.validation) ? payoutValidationInfo.validation.length : undefined
+      });
       if (!paymentPayout || !payoutValidationInfo) {
         throw new Error(`Kỳ thanh toán ${payoutId}: Shopee không trả về chi tiết thuế.`);
       }
@@ -409,16 +463,37 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
         };
       }).sort((left, right) => left.validationId.localeCompare(right.validationId, "en"));
 
-      const payoutTaxUnits = rawToOutputUnits(
-        moneyRaw(paymentPayout.taxTotalAmount, `Kỳ thanh toán ${payoutId}: taxTotalAmount`)
-      );
+      const accountType = optionalSafeInteger(paymentPayout.accountType);
+      if (![1, 2, 3, 4, 5].includes(accountType)) {
+        throw new Error(`Kỳ thanh toán ${payoutId}: accountType thiếu hoặc không được hỗ trợ.`);
+      }
+      // Verified against Shopee's VN payout UI: for localIndividual (3) and
+      // businessIndividual (5), WHT/PIT and VAT are both deductions. The legacy
+      // taxTotalAmount can be zero while these component amounts are nonzero.
+      // Other account types retain the legacy reconciliation; VAT can be an
+      // addition or excluded for them, so never blindly sum its absolute value.
+      const usesIndividualTaxes = accountType === 3 || accountType === 5;
+      const payoutTaxRaw = usesIndividualTaxes
+        ? requiredPayoutMoney(paymentPayout.whtTotalAmount, payoutId, "whtTotalAmount") +
+          requiredPayoutMoney(paymentPayout.vatTotalAmount, payoutId, "vatTotalAmount")
+        : requiredPayoutMoney(paymentPayout.taxTotalAmount, payoutId, "taxTotalAmount");
+      const payoutTaxUnits = rawToOutputUnits(moneyRaw(payoutTaxRaw, `Kỳ thanh toán ${payoutId}: tổng thuế`));
+      recordDiagnostic(usesIndividualTaxes ? "payout_individual_tax" : "payout_legacy_tax", {
+        payoutId, accountType, taxUnits: payoutTaxUnits
+      });
       const payoutBeforeTaxUnits = rawToOutputUnits(
-        moneyRaw(payoutValidationInfo.billCommissionAmount, `Kỳ thanh toán ${payoutId}: billCommissionAmount`)
+        requiredPayoutMoney(payoutValidationInfo.billCommissionAmount, payoutId, "billCommissionAmount")
       );
       const payoutPaidUnits = rawToOutputUnits(
-        moneyRaw(paymentPayout.totalPaymentAmount, `Kỳ thanh toán ${payoutId}: totalPaymentAmount`)
+        requiredPayoutMoney(paymentPayout.totalPaymentAmount, payoutId, "totalPaymentAmount")
       );
+      recordDiagnostic("payout_balance", {
+        payoutId, validationId, beforeTaxUnits: payoutBeforeTaxUnits, taxUnits: payoutTaxUnits,
+        paidUnits: payoutPaidUnits, differenceUnits: payoutBeforeTaxUnits - payoutTaxUnits - payoutPaidUnits,
+        eligibleRawSum: entries.reduce((sum, entry) => sum + entry.eligibleRaw, 0)
+      });
       if (payoutBeforeTaxUnits - payoutTaxUnits !== payoutPaidUnits) {
+        recordDiagnostic("payout_balance_mismatch", { payoutId, validationId });
         throw new Error(
           `Kỳ thanh toán ${payoutId}: tổng sau phí ${formatUnits(payoutBeforeTaxUnits)}, ` +
           `thuế ${formatUnits(payoutTaxUnits)}, thực nhận ${formatUnits(payoutPaidUnits)} không cân bằng.`
@@ -446,6 +521,13 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       throw new Error(`Bảng kê ${validationId}: tổng hợp lệ không khớp chi tiết kỳ thanh toán ${payoutId}.`);
     }
     return validationAllocation.taxUnits;
+  }
+
+  function requiredPayoutMoney(value, payoutId, field) {
+    if ((typeof value !== "number" && typeof value !== "string") || String(value).trim() === "") {
+      throw new Error(`Kỳ thanh toán ${payoutId}: thiếu hoặc không hợp lệ ${field}; không tự coi là 0.`);
+    }
+    return moneyRaw(value, `Kỳ thanh toán ${payoutId}: ${field}`);
   }
 
   async function apiGet(path, query) {
@@ -502,6 +584,7 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
         });
       } catch (error) {
         lastFailure = error?.message || String(error);
+        recordDiagnostic("request_network_error", { attempt: attempt + 1 });
         scheduleNextShopeeRequest();
         if (attempt + 1 >= REQUEST_MAX_ATTEMPTS) {
           throw new Error(`Shopee API ${apiName} không kết nối được sau ${REQUEST_MAX_ATTEMPTS} lần: ${lastFailure}`);
@@ -512,6 +595,7 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       }
 
       scheduleNextShopeeRequest();
+      recordDiagnostic("request_response", { httpStatus: response.status, attempt: attempt + 1 });
       if (isRetryableStatus(response.status) && attempt + 1 < REQUEST_MAX_ATTEMPTS) {
         shopeeRetryCount += 1;
         const retryAfter = retryAfterMs(response.headers.get("retry-after"));
@@ -528,6 +612,10 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
         throw new Error("Phiên đăng nhập Shopee đã hết hạn. Hãy đăng nhập lại rồi chạy lại tool.");
       }
       const payload = await response.json();
+      recordDiagnostic("response_status", {
+        apiCode: payload?.code,
+        graphErrorCount: Array.isArray(payload?.errors) ? payload.errors.length : 0
+      });
       return payload;
     }
 
@@ -600,6 +688,7 @@ async function collectShopeeSettlementRowsInPage(options = {}) {
       });
       const data = payload?.data || {};
       const page = Array.isArray(data.list) ? data.list : [];
+      recordDiagnostic("validation_page", { validationId, pageNum, totalCount: data.total_count, rowCount: page.length });
       const reportedTotal = rawNumber(data.total_count ?? 0, "total_count");
       if (!Number.isInteger(reportedTotal) || reportedTotal < 0) {
         throw new Error(`Bảng kê ${validationId}: total_count không hợp lệ.`);
@@ -804,7 +893,7 @@ style.textContent = `
 `;
 root.append(style, create("section", "", { "aria-label": "CatsBack tổng hợp JSON" }, [
   create("header", "", {}, [
-    create("strong", "CatsBack · JSON v3 (0.7.8)"),
+    create("strong", "CatsBack · JSON v3 (0.7.10)"),
     create("button", "Thu gọn", { id: "toggle", "aria-expanded": "true" })
   ]),
   create("div", "", { id: "body" }, [
@@ -817,13 +906,15 @@ root.append(style, create("section", "", { "aria-label": "CatsBack tổng hợp 
       create("button", "Dừng", { id: "cancel", hidden: "" }),
       create("button", "Đóng", { id: "close" })
     ]),
-    create("a", "Tải file JSON", { id: "download", hidden: "" })
+    create("a", "Tải file JSON", { id: "download", hidden: "" }),
+    create("a", "Tải log chẩn đoán", { id: "download-log", hidden: "" })
   ])
 ]));
 const get = id => root.getElementById(id);
 let running = false;
 let controller;
 let objectUrl;
+let diagnosticUrl;
 let wakeLock;
 let latestCapture;
 const updateCapture = () => {
@@ -853,6 +944,7 @@ get("close").onclick = () => {
   if (running) return;
   clearInterval(captureTimer);
   if (objectUrl) URL.revokeObjectURL(objectUrl);
+  if (diagnosticUrl) URL.revokeObjectURL(diagnosticUrl);
   host.remove();
 };
 document.documentElement.append(host);
@@ -864,6 +956,8 @@ get("start").onclick = async () => {
   get("close").disabled = true;
   get("cancel").hidden = false;
   get("download").hidden = true;
+  get("download-log").hidden = true;
+  if (diagnosticUrl) { URL.revokeObjectURL(diagnosticUrl); diagnosticUrl = null; }
   if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
   get("status").textContent = "Đang tổng hợp. Giữ nguyên bộ lọc và tab Shopee…";
   try {
@@ -872,6 +966,12 @@ get("start").onclick = async () => {
       signal: controller.signal,
       onProgress: message => { get("status").textContent = message; }
     });
+    if (report?.diagnostics) {
+      diagnosticUrl = URL.createObjectURL(new Blob([JSON.stringify(report.diagnostics, null, 2)], { type: "application/json;charset=utf-8" }));
+      get("download-log").href = diagnosticUrl;
+      get("download-log").download = `catsback-diagnostics-${report.diagnostics.completedAt.replace(/[:.]/g, "-")}.json`;
+      get("download-log").hidden = false;
+    }
     controller.signal.throwIfAborted();
     if (!report?.ok) throw new Error(report?.error || "Không tổng hợp được dữ liệu.");
     if (!report.rows?.length) throw new Error("Danh sách vừa tải không có đơn hàng để xuất. Chọn kỳ khác rồi thử lại.");
