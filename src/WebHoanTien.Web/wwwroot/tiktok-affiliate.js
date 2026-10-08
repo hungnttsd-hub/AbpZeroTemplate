@@ -21,8 +21,8 @@
       el.hidden = !message; el.textContent = message; el.dataset.kind = kind;
     }
     function enableWorkflow() {
-      const connected = !!state.creator;
-      find('[data-tt-connect]').disabled = connected || busy;
+      const connected = !!state.creator && isDemo;
+      find('[data-tt-connect]').disabled = !!state.creator || busy || !isDemo;
       const disconnect = find('[data-tt-disconnect]');
       if (disconnect) { disconnect.hidden = !connected; disconnect.disabled = busy; }
       root.querySelectorAll('[data-tt-delete-link]').forEach(button => { button.disabled = busy; });
@@ -30,7 +30,7 @@
       find('[data-tt-check]').disabled = !connected || busy;
       const example = find('[data-tt-example]');
       if (example) example.disabled = !connected || busy;
-      find('[data-tt-generate]').disabled = !product || busy;
+      find('[data-tt-generate]').disabled = !product || busy || !isDemo;
     }
     async function request(handler, values = null) {
       const options = { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } };

@@ -1,48 +1,163 @@
+using System;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Volo.Abp;
 using Volo.Abp.Auditing;
+using Volo.Abp.MultiTenancy;
 using Volo.Abp.Uow;
+using Volo.Abp.Users;
+using WebHoanTien.TikTokAffiliate;
 using WebHoanTien.Web.Integrations;
 
 namespace WebHoanTien.Web.Controllers;
 
-[AllowAnonymous]
 [DisableAuditing]
 [UnitOfWork(IsDisabled = true)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class TikTokShopOAuthController : Controller
 {
-    [HttpGet(TikTokShopOAuthRoutes.Callback)]
-    [HttpHead(TikTokShopOAuthRoutes.Callback)]
-    public IActionResult Callback()
+    private const string StateCookie = "CatBack.TikTokCreator.State";
+    private readonly TikTokCreatorOAuthClient _client;
+    private readonly TikTokCreatorConnection _connection;
+    private readonly IDistributedCache _cache;
+    private readonly IDataProtector _stateProtector;
+    private readonly ICurrentUser _user;
+    private readonly ICurrentTenant _tenant;
+    private readonly IAuthorizationService _authorization;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<TikTokShopOAuthController> _logger;
+    private string Owner => $"{_tenant.Id}:{_user.GetId()}:{_client.AppKey}";
+
+    public TikTokShopOAuthController(TikTokCreatorOAuthClient client, TikTokCreatorConnection connection,
+        IDistributedCache cache, IDataProtectionProvider protection, ICurrentUser user, ICurrentTenant tenant,
+        IAuthorizationService authorization, IConfiguration configuration, ILogger<TikTokShopOAuthController> logger)
     {
-        SetPrivateHeaders();
-
-        // Registration preparation only: no authorization flow has been initiated, so no
-        // callback can be trusted. Do not bind, store, echo or exchange code/state values.
-        if (Request.QueryString.HasValue)
-            return LocalRedirect(TikTokShopOAuthRoutes.Result);
-
-        return View("Status", new TikTokShopOAuthStatusModel(
-            "TikTok Shop — CatBack",
-            "Đây là địa chỉ chuyển hướng dành cho kết nối TikTok Shop với CatBack. Tính năng kết nối đang được chuẩn bị; truy cập trang này không cấp quyền hoặc liên kết tài khoản.",
-            IsCallbackResult: false));
+        _client = client; _connection = connection; _cache = cache; _user = user; _tenant = tenant;
+        _authorization = authorization; _configuration = configuration; _logger = logger;
+        _stateProtector = protection.CreateProtector("CatBack.TikTokCreator.State.v1");
     }
 
+    [Authorize(TikTokAffiliateAccess.Policy)]
+    [HttpPost("/api/tiktok-shop/oauth/connect")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Connect()
+    {
+        SetPrivateHeaders();
+        try
+        {
+            if (!_client.IsConfigured)
+                throw new UserFriendlyException("Chưa cấu hình TikTokShop.AppKey và TikTokShop.AppSecret trên máy chủ CatBack.");
+            var callback = _configuration["TikTokShop:RedirectUrl"]
+                ?? _configuration["App:SelfUrl"]?.TrimEnd('/') + TikTokShopOAuthRoutes.Callback;
+            if (!Uri.TryCreate(callback, UriKind.Absolute, out var uri) || uri.Scheme != "https"
+                || uri.AbsolutePath != TikTokShopOAuthRoutes.Callback || !string.IsNullOrEmpty(uri.Query)
+                || !string.IsNullOrEmpty(uri.Fragment) || !string.IsNullOrEmpty(uri.UserInfo))
+                throw new UserFriendlyException("Redirect URL phải là URL HTTPS callback CatBack đã đăng ký với TikTok.");
+            if (!Request.IsHttps || !uri.Authority.Equals(Request.Host.Value, StringComparison.OrdinalIgnoreCase))
+                throw new UserFriendlyException("Hãy thử kết nối trên domain HTTPS đã đăng ký Redirect URL, để TikTok trả về đúng phiên CatBack.");
+            if (Request.Cookies.TryGetValue(StateCookie, out var previousState) && previousState.Length == 64)
+                await _cache.RemoveAsync(StateKey(previousState));
+            var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+            await _cache.SetStringAsync(StateKey(state), _stateProtector.Protect(Owner),
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15) });
+            Response.Cookies.Append(StateCookie, state, StateCookieOptions(DateTimeOffset.UtcNow.AddMinutes(15)));
+            return Redirect(_client.AuthorizationUrl(state));
+        }
+        catch (UserFriendlyException ex) { return Failure(ex.Message); }
+    }
+
+    [AllowAnonymous]
+    [HttpGet(TikTokShopOAuthRoutes.Callback)]
+    [HttpHead(TikTokShopOAuthRoutes.Callback)]
+    public async Task<IActionResult> Callback()
+    {
+        SetPrivateHeaders();
+        // Keep the endpoint reachable for TikTok URL validation without accepting unsolicited codes.
+        if (HttpMethods.IsHead(Request.Method) || !Request.QueryString.HasValue)
+            return View("Status", new TikTokShopOAuthStatusModel("TikTok Shop — CatBack",
+                "Địa chỉ nhận kết quả cấp quyền TikTok Creator. Hãy bắt đầu từ nút kết nối trong CatBack.", false));
+        try
+        {
+            if (!_user.IsAuthenticated || !(await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.Policy)).Succeeded)
+                throw new UserFriendlyException("Phiên CatBack đã hết hạn hoặc không có quyền TikTok. Đăng nhập lại rồi bắt đầu kết nối từ CatBack.");
+            var stateValues = Request.Query["state"];
+            var state = stateValues.Count == 1 ? stateValues[0] : null;
+            if (state is null || state.Length != 64 || !Request.Cookies.TryGetValue(StateCookie, out var cookie)
+                || cookie.Length != 64 || !CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(state), Encoding.UTF8.GetBytes(cookie)))
+                throw new UserFriendlyException("Không xác minh được phiên cấp quyền (state). Hãy kết nối lại từ CatBack.");
+            var cached = await _cache.GetStringAsync(StateKey(state));
+            if (cached is null || !string.Equals(_stateProtector.Unprotect(cached), Owner, StringComparison.Ordinal))
+                throw new UserFriendlyException("Phiên cấp quyền đã hết hạn hoặc đã được sử dụng. Hãy kết nối lại.");
+            await _cache.RemoveAsync(StateKey(state));
+            Response.Cookies.Delete(StateCookie, StateCookieOptions(null));
+            if (Request.Query.ContainsKey("error"))
+                throw new UserFriendlyException("TikTok chưa cấp quyền Creator hoặc bạn đã từ chối. Hãy kiểm tra điều kiện Creator và quyền beta của app.");
+            var codeValues = Request.Query["code"];
+            var code = codeValues.Count == 1 ? codeValues[0] : null;
+            if (string.IsNullOrWhiteSpace(code) || code == "null" || code.Length > 2048)
+                throw new UserFriendlyException("TikTok không trả về mã cấp quyền hợp lệ. Chưa có kết nối nào được xác nhận.");
+            var key = Request.Query["app_key"];
+            if (key.Count > 1 || (key.Count == 1 && key[0] != _client.AppKey))
+                throw new UserFriendlyException("App key trong callback không khớp CatBack.");
+            await _connection.Complete(code);
+            TempData["TikTokCreatorConnected"] = true;
+            TempData["TikTokCreatorMessage"] = "Kết nối Creator Vietnam thành công. CatBack đã đổi code lấy Creator token và đọc hồ sơ bằng TikTok API thật.";
+            return LocalRedirect(TikTokShopOAuthRoutes.Result);
+        }
+        catch (UserFriendlyException ex) { return Failure(ex.Message); }
+        catch (Exception ex)
+        {
+            // Never log an exception object/message that might contain token request query values.
+            var reference = Guid.NewGuid().ToString("N");
+            _logger.LogWarning("TikTok OAuth failed: reference {Reference}, exception type {Type}", reference, ex.GetType().Name);
+            return Failure("Chưa xác nhận kết nối Creator. Hãy bắt đầu lại. Mã hỗ trợ: " + reference);
+        }
+    }
+
+    [Authorize(TikTokAffiliateAccess.Policy)]
+    [HttpPost("/api/tiktok-shop/oauth/disconnect")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Disconnect()
+    {
+        SetPrivateHeaders();
+        await _connection.Disconnect();
+        if (Request.Cookies.TryGetValue(StateCookie, out var state) && state.Length == 64)
+            await _cache.RemoveAsync(StateKey(state));
+        Response.Cookies.Delete(StateCookie, StateCookieOptions(null));
+        return LocalRedirect("/tiktok-affiliate");
+    }
+
+    [AllowAnonymous]
     [HttpGet(TikTokShopOAuthRoutes.Result)]
     [HttpHead(TikTokShopOAuthRoutes.Result)]
     public IActionResult Result()
     {
         SetPrivateHeaders();
-        Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-        return View("Status", new TikTokShopOAuthStatusModel(
-            "Chưa hoàn tất kết nối TikTok Shop",
-            "CatBack chưa bật luồng ủy quyền TikTok Shop. Tài khoản chưa được liên kết và mã ủy quyền chưa được sử dụng để lấy token. Vui lòng quay lại CatBack hoặc liên hệ hỗ trợ.",
-            IsCallbackResult: true));
+        var message = TempData["TikTokCreatorMessage"] as string;
+        var connected = TempData["TikTokCreatorConnected"] is true;
+        return View("Status", new TikTokShopOAuthStatusModel(connected ? "Đã kết nối TikTok Creator" : "Chưa hoàn tất kết nối TikTok Creator",
+            message ?? "Không có kết quả cấp quyền trong phiên này. Hãy bắt đầu kết nối từ CatBack.", true, connected));
     }
 
+    private IActionResult Failure(string message)
+    {
+        TempData["TikTokCreatorConnected"] = false;
+        TempData["TikTokCreatorMessage"] = message;
+        return LocalRedirect(TikTokShopOAuthRoutes.Result);
+    }
+    private static string StateKey(string state) => "CatBack:TikTokCreator:state:" +
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(state)));
+    private static CookieOptions StateCookieOptions(DateTimeOffset? expires) => new()
+    { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, IsEssential = true, Path = "/", Expires = expires };
     private void SetPrivateHeaders()
     {
         Response.Headers.CacheControl = "no-store";
@@ -50,8 +165,8 @@ public class TikTokShopOAuthController : Controller
         Response.Headers["X-Robots-Tag"] = "noindex, nofollow";
         Response.Headers["X-Content-Type-Options"] = "nosniff";
         Response.Headers["Content-Security-Policy"] =
-            "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+            "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
     }
 }
 
-public sealed record TikTokShopOAuthStatusModel(string Title, string Description, bool IsCallbackResult);
+public sealed record TikTokShopOAuthStatusModel(string Title, string Description, bool IsCallbackResult, bool IsConnected = false);

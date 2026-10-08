@@ -17,14 +17,21 @@ namespace WebHoanTien.Web.Pages;
 public class TikTokAffiliateModel : PageModel
 {
     private readonly ITikTokAffiliateService _service;
+    private readonly ITikTokCreatorConnection _connection;
+    public TikTokCreatorDto? LiveCreator { get; private set; }
+    public string? LiveConnectionError { get; private set; }
+    public bool LiveOAuthConfigured => _connection.IsConfigured;
     public TikTokAffiliateIntegrationDto Integration { get; private set; } = new("Mock", true, null);
     public string InitialStateJson { get; private set; } = "{}";
-    public TikTokAffiliateModel(ITikTokAffiliateService service) => _service = service;
+    public TikTokAffiliateModel(ITikTokAffiliateService service, ITikTokCreatorConnection connection)
+    { _service = service; _connection = connection; }
 
     public async Task OnGetAsync()
     {
         Integration = await _service.GetIntegrationInfo();
-        var creator = await _service.GetCreatorProfile();
+        try { LiveCreator = await _connection.GetProfile(); }
+        catch (UserFriendlyException ex) { LiveConnectionError = ex.Message; }
+        var creator = Integration.IsDemo ? await _service.GetCreatorProfile() : LiveCreator;
         var links = await _service.GetGeneratedLinks();
         var orders = await _service.SearchAffiliateOrders();
         InitialStateJson = JsonSerializer.Serialize(new { integration = Integration, creator, links, orders },

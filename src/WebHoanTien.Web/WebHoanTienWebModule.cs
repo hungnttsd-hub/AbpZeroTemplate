@@ -4,6 +4,7 @@ using WebHoanTien.Web.Seo;
 using System.Linq;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.RateLimiting;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -32,6 +33,8 @@ using WebHoanTien.Localization;
 using WebHoanTien.Web.Menus;
 using WebHoanTien.Web.Operations;
 using WebHoanTien.Web.IdentityExtensions;
+using WebHoanTien.Web.Integrations;
+using WebHoanTien.TikTokAffiliate;
 using WebHoanTien.Operations;
 using WebHoanTien.Affiliates;
 using Microsoft.OpenApi.Models;
@@ -152,6 +155,11 @@ public class WebHoanTienWebModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.AddTransient<ITikTokCreatorConnection, TikTokCreatorConnection>();
+        context.Services.AddHttpClient(TikTokCreatorOAuthClient.HttpClientName,
+            client => client.Timeout = TimeSpan.FromSeconds(20))
+            .RemoveAllLoggers()
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
         var connectionString = configuration.GetConnectionString("Default")

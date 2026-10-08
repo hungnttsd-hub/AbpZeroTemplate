@@ -1,5 +1,7 @@
 # TikTok Affiliate — Review Demo
 
+**Cập nhật 08/10/2026:** đã bổ sung card thử Creator OAuth thật, riêng với demo. Callback hiện đổi code lấy token và xác minh hồ sơ qua API nếu phiên cấp quyền hợp lệ. Adapter Api hỗ trợ hồ sơ, các chức năng product/link/orders thật vẫn chưa triển khai. Xem [hướng dẫn OAuth trial](tiktok-creator-oauth-trial.md); các mô tả adapter chưa gọi API bên dưới ghi lại giai đoạn demo ban đầu.
+
 ## Mở module
 
 Đăng nhập CatBack bằng luồng xác thực hiện có, chọn **TikTok Affiliate** trong sidebar desktop hoặc menu tài khoản trên mobile, hoặc mở `/tiktok-affiliate`.

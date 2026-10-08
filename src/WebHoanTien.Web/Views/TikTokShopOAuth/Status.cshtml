@@ -18,11 +18,11 @@
         <p class="eyebrow">TikTok Shop</p>
         <h1>@Model.Title</h1>
         <p>@Model.Description</p>
-        @if (Model.IsCallbackResult)
+        @if (Model.IsCallbackResult && !Model.IsConnected)
         {
             <p class="notice" role="status">Chưa có kết nối được xác nhận. Không cần gửi mã ủy quyền hoặc mật khẩu cho bộ phận hỗ trợ.</p>
         }
-        <nav class="actions" aria-label="Điều hướng"><a class="button" href="/">Về trang chủ</a><a href="/Contact">Liên hệ hỗ trợ</a></nav>
+        <nav class="actions" aria-label="Điều hướng"><a class="button" href="/tiktok-affiliate">Về TikTok Affiliate</a><a href="/Contact">Liên hệ hỗ trợ</a></nav>
         <footer><a href="/About">Giới thiệu CatBack</a><a href="/Legal/Privacy">Privacy Policy</a><a href="/Legal/Terms">Terms of Service</a></footer>
     </main>
 </body>
