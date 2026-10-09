@@ -17,15 +17,19 @@
 `src/WebHoanTien.Web/appsettings.json` mặc định:
 
 ```json
-"TikTokAffiliate": { "Mode": "Mock" }
+"TikTokAffiliate": { "Mode": "Mock", "ShowDemoLabel": true }
 ```
 
 Không cần app secret, CreatorAccessToken hoặc kết nối TikTok thật trong chế độ này. Đây là demo cho review, không phải bằng chứng TikTok đã cấp Creator testing account hoặc đã chấp thuận app.
 
+### Bật/tắt nhãn Demo
+
+`TikTokAffiliate:ShowDemoLabel` điều khiển banner/nhãn Demo Mode trên dashboard và trang cấp quyền, badge Demo ở header, chữ DEMO trong tiêu đề, cùng nhãn sản phẩm động. Mặc định `true` kể cả khi không khai báo; đặt `false` để ẩn. Có thể ghi đè trong cấu hình môi trường bằng `TikTokAffiliate__ShowDemoLabel=false`. Nạp lại trang sau khi ứng dụng nhận cấu hình mới; nếu thay biến môi trường thì restart ứng dụng. Cấu hình này chỉ điều khiển hiển thị nhãn, không đổi `Mode`, luồng OAuth, dữ liệu hay nội dung giải thích mô phỏng. Chữ DEMO có sẵn trong ảnh sản phẩm không bị chỉnh sửa.
+
 ## Walkthrough khoảng 1–2 phút
 
 1. Overview: chỉ vào banner **Demo Mode** và giải thích toàn bộ profile/product/link/order đều là dữ liệu thử.
-2. Bấm **Connect TikTok Creator**. Profile `CatBack Demo Creator`, `@catback_demo`, market VN xuất hiện. Giao diện ghi rõ đây là kết nối giả lập, không phải OAuth thật.
+2. Bấm **Kết nối TikTok Creator thật**: TikTok mở ở tab mới trong chế độ Mock; đăng nhập trên giao diện chính thức của TikTok. Khi tới màn hình cấp quyền Creator trên TikTok, quay về tab CatBack và bấm **Tiếp tục với màn hình cấp quyền demo**. Trang `/tiktok-affiliate/demo/authorize` mở thẳng phần cấp quyền, không có form đăng nhập hay xác nhận tài khoản giả lập. Xem quyền demo, tích đồng ý rồi bấm **Đồng ý và tiếp tục**; sau màn hình thành công, bấm **Quay về CatBack** để dùng hồ sơ minh họa `@catback_demo`. Bấm **Từ chối** để trở về mà không đổi trạng thái kết nối. Có thể mở riêng màn hình demo từ banner để trình diễn phần cấp quyền.
 3. Bấm **Use demo product**, sau đó **Check Product**. Service nhận URL `https://shop.tiktok.com/vn/pdp/1736327643619493458` và trả Crocs Classic Clog / Demo Official Store / 1.290.000 VND / commission 8% (103.200 VND). Hình sản phẩm là minh họa cục bộ có nhãn DEMO PRODUCT.
 4. Bấm **Generate Affiliate Link**. Có trạng thái “Generating TikTok affiliate link...”, rồi kết quả và **Copy Link**. Link chứa `affiliate_id=demo`, được ghi rõ không do TikTok phát hành và không dùng được để attribution thật.
 5. Chọn **Generated Links** để xem lịch sử, thời gian, trạng thái, mở link demo hoặc sao chép. Mở link demo vẫn điều hướng sang URL TikTok; điều này không tạo tracking thật.
@@ -33,11 +37,13 @@ Không cần app secret, CreatorAccessToken hoặc kết nối TikTok thật tro
 
 Để làm lại walkthrough, bấm **Disconnect TikTok Creator** trên Overview: ngắt kết nối demo, xóa trạng thái product đã check và kết quả link đang hiển thị, ẩn orders cho tới khi kết nối lại. Không đăng xuất CatBack hoặc tác động tài khoản TikTok thật. Lịch sử link được giữ; bấm **Delete Link** trong Generated Links để xóa từng link demo của tài khoản hiện tại. Sau khi xóa có thể tạo lại link với thời gian mới. Hai thao tác dùng POST/antiforgery và vẫn yêu cầu IsTiktokDemo; adapter Api hiện chưa hỗ trợ hai thao tác này.
 
-Các view nên chụp khi thực hiện review: Overview chưa kết nối; Overview đã có product và link; Generated Links; Affiliate Orders. Banner Demo Mode phải hiện trong mỗi ảnh. Chưa chụp screenshots hoặc chạy trình duyệt tự động trong lần triển khai này.
+Các view nên chụp khi thực hiện review: Overview chưa kết nối; Overview đã có product và link; Generated Links; Affiliate Orders. Để hiện banner Demo Mode trong ảnh review, đặt `ShowDemoLabel = true`. Chưa chụp screenshots hoặc chạy trình duyệt tự động trong lần triển khai này.
 
 ## Hành vi và giới hạn demo
 
 - Page và service dùng authentication hiện có. POST handler sử dụng antiforgery của Razor Pages; không có API anonymous để tạo dữ liệu.
+- Trang cấp quyền mô phỏng và mọi handler của trang chỉ khả dụng khi `IsDemo = true` (mode Mock), vẫn yêu cầu policy `IsTiktokDemo`. Danh sách quyền là mô tả chức năng demo, không phải danh sách scope API đã được TikTok cấp. Handler kết nối trực tiếp trước đây trên dashboard đã được bỏ; luồng giao diện đi qua màn hình xác nhận đồng ý. Luồng OAuth thật vẫn dùng card riêng và endpoint riêng.
+- Đăng nhập và OAuth thật giữ nguyên các endpoint/token/state hiện có. CatBack không thể thay nội dung hoặc phát hiện bước đăng nhập trên domain TikTok; việc chuyển sang màn hình cấp quyền demo là thao tác thủ công giữa hai tab, không tự động chuyển hướng. Mở demo không chứng minh đăng nhập TikTok thành công. Trang demo chỉ cập nhật trạng thái Mock, không đổi code lấy token và không đọc phiên TikTok. Không dùng `state=catback_test_123456` làm OAuth state thật. Công cụ đọc web chưa truy cập được URL tham khảo, nên giao diện mô phỏng chưa được đối chiếu chính xác với màn hình TikTok hiện hành.
 - Mỗi tenant/tài khoản có trạng thái Creator, product đã check và lịch sử link riêng trong memory cache. Refresh trang giữ trạng thái kết nối/lịch sử trong cùng app process.
 - Trạng thái hết hạn sau 2 giờ không hoạt động, tối đa 8 giờ hoặc khi process restart. Nhiều instance không chia sẻ trạng thái mock. Chưa có database migration.
 - Chỉ hỗ trợ fixture Product ID được cung cấp, với hai dạng URL PDP `/vn/pdp/{id}` và `/view/product/{id}` trên HTTPS `shop.tiktok.com`. Không lookup URL bên ngoài; không gán dữ liệu Crocs cho ID khác.

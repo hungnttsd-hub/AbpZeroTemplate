@@ -7,6 +7,7 @@
     const find = selector => root.querySelector(selector);
     const state = JSON.parse(find('[data-tt-initial]').textContent);
     const isDemo = state.integration.isDemo;
+    const showDemoLabel = state.showDemoLabel !== false;
     let product = null;
     let generatedLink = null;
     let productRevision = 0;
@@ -63,7 +64,7 @@
       text('[data-tt-creator-id]', creator?.creatorId || ''); find('[data-tt-creator-id]').hidden = !creator;
       const status = find('[data-tt-connection-status]');
       status.textContent = creator ? 'Connected' : 'Not connected'; status.classList.toggle('is-connected', !!creator);
-      text('[data-tt-connect]', creator ? 'Creator Connected ✓' : 'Connect TikTok Creator →');
+      text('[data-tt-connect]', creator ? 'Creator Connected ✓' : isDemo ? 'Mở màn hình cấp quyền demo →' : 'Connect TikTok Creator →');
       text('[data-tt-product-hint]', creator ? (isDemo ? 'Use the demo product to explore this workflow. Product data is simulated.' : 'Paste a product URL to continue.') : 'Connect your Creator to enable product lookup.');
       enableWorkflow();
     }
@@ -149,10 +150,9 @@
         event.preventDefault(); selectTab(tabs[index].dataset.ttTab, true);
       });
     });
-    find('[data-tt-connect]').addEventListener('click', () => run(find('[data-tt-connect]'), 'Connecting Creator...', async () => {
-      const result = await request('Connect', {}); state.creator = result.creator; state.orders = result.orders;
-      renderCreator(); renderOrders(); feedback(isDemo ? 'Demo Creator connected. No real TikTok account was authorized.' : 'Creator connected.', 'success');
-    }));
+    find('[data-tt-connect]').addEventListener('click', () => {
+      if (isDemo && !busy && !state.creator) window.location.assign('/tiktok-affiliate/demo/authorize');
+    });
     const clearProduct = () => { productRevision++; product = null; generatedLink = null; find('[data-tt-product]').hidden = true;
       find('[data-tt-result]').hidden = true; text('[data-tt-generate-hint]', 'Check a product to continue.'); enableWorkflow(); };
     find('[data-tt-disconnect]')?.addEventListener('click', () => run(find('[data-tt-disconnect]'), 'Disconnecting...', async () => {
@@ -169,7 +169,7 @@
         const checked = await request('Product', { productUrl: find('#tt-product-url').value });
         if (revision !== productRevision) return;
         product = checked; text('[data-tt-product-title]', product.title); text('[data-tt-product-shop]', product.shopName);
-        text('[data-tt-product-source]', isDemo ? 'DEMO PRODUCT' : 'PRODUCT');
+        text('[data-tt-product-source]', isDemo && showDemoLabel ? 'DEMO PRODUCT' : 'PRODUCT');
         text('[data-tt-product-price]', currency(product.price, product.currency));
         text('[data-tt-product-commission]', `${new Intl.NumberFormat('vi-VN', { style: 'percent' }).format(product.commissionRate)} · ${currency(product.price * product.commissionRate, product.currency)}`);
         const image = find('[data-tt-product-image]'); image.src = product.imageUrl; image.alt = `${product.title}${isDemo ? ' — demo illustration' : ''}`;
@@ -185,7 +185,7 @@
     find('[data-tt-copy-result]').addEventListener('click', () => generatedLink && copy(generatedLink.sharingLink));
     find('[data-tt-show-links]').addEventListener('click', () => selectTab('links', true));
     find('[data-tt-show-overview]').addEventListener('click', () => selectTab('overview', true));
-    text('[data-tt-connection-note]', isDemo ? 'Demo connection only. This does not authorize or connect a real TikTok account.' : 'Use the official Creator authorization flow when live integration is available.');
+    text('[data-tt-connection-note]', isDemo ? `${showDemoLabel ? 'Demo Mode · ' : ''}Đăng nhập trên TikTok bằng nút kết nối thật phía trên. Trang demo chỉ mô phỏng bước cấp quyền và không xác minh tài khoản TikTok thật.` : 'Use the official Creator authorization flow when live integration is available.');
     text('[data-tt-link-note]', isDemo ? 'Demo link only — not issued by TikTok and not valid for affiliate attribution.' : 'Your affiliate sharing link is ready to copy.');
     text('[data-tt-guide-note]', isDemo ? 'Review Demo uses sample profiles, products, links and orders. No real TikTok data or transactions are involved.' : state.integration.isAvailable ? 'Creator data is available within the permissions granted through official authorization.' : 'Live integration is pending. Creator data will be available after official authorization.');
     text('[data-tt-history-note]', isDemo ? 'Demo links only. History is temporary and separate from live affiliate data.' : 'Your generated affiliate sharing links.');

@@ -32,7 +32,13 @@ public class ShopeeAddLiveTagProductDataProvider : IAffiliateProvider
 
         var separator = string.IsNullOrWhiteSpace(endpoint.Query) ? "?" : "&";
         var requestUri = endpoint.AbsoluteUri + separator + "item_id=" + Uri.EscapeDataString(itemId);
-        using var response = await _httpClientFactory.CreateClient("ShopeeProductData").GetAsync(requestUri, cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+        if (!string.IsNullOrWhiteSpace(_options.ProductDataApiKey))
+        {
+            request.Headers.Add("X-API-Key", _options.ProductDataApiKey.Trim());
+        }
+
+        using var response = await _httpClientFactory.CreateClient("ShopeeProductData").SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         await using var body = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var document = await JsonDocument.ParseAsync(body, cancellationToken: cancellationToken);

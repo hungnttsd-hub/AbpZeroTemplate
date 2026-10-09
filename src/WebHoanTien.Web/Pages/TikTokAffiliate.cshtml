@@ -15,9 +15,9 @@
         <div><p class="tt-eyebrow">CATBACK · CREATOR COLLABORATIONS</p><h1>TikTok Affiliate</h1><p>Connect your Creator profile. Explore products. Create and manage affiliate links.</p></div>
         <span class="tt-market"><span aria-hidden="true">🇻🇳</span> Vietnam</span>
     </header>
-    @if (Model.Integration.IsDemo)
+    @if (Model.Integration.IsDemo && Model.ShowDemoLabel)
     {
-        <div class="tt-demo-banner" role="note"><span class="tt-demo-badge">Demo Mode</span><p>Demo Mode - TikTok Creator integration is using test data while Creator testing access is being enabled.</p></div>
+        <div class="tt-demo-banner" role="note"><span class="tt-demo-badge">Demo Mode</span><p>Đăng nhập trên TikTok bằng nút kết nối thật bên dưới. Chỉ màn hình cấp quyền được mô phỏng tại CatBack.<br /><a href="/tiktok-affiliate/demo/authorize" data-turbo="false">Mở màn hình cấp quyền Creator demo →</a></p></div>
     }
     else if (!Model.Integration.IsAvailable)
     {
@@ -37,10 +37,15 @@
         {
             <p>Chưa xác nhận kết nối Creator thật. Kết nối demo ở bên dưới không cấp quyền TikTok.</p>
         }
-        <form method="post" action="/api/tiktok-shop/oauth/connect" data-turbo="false">
+        <form method="post" action="/api/tiktok-shop/oauth/connect" data-turbo="false" target="@(Model.Integration.IsDemo ? "_blank" : null)" rel="noopener noreferrer">
             @Html.AntiForgeryToken()
             <button class="tt-button" type="submit" disabled="@(!Model.LiveOAuthConfigured)">@(Model.LiveCreator is null ? "Kết nối TikTok Creator thật" : "Cấp lại quyền TikTok Creator") →</button>
         </form>
+        @if (Model.Integration.IsDemo)
+        {
+            <p class="tt-caption">TikTok mở ở tab mới; bạn đăng nhập trực tiếp trên TikTok. Khi tới màn hình cấp quyền Creator, quay về tab này để tiếp tục phần demo. CatBack không tự chuyển trang hoặc đọc phiên đăng nhập trên domain TikTok.</p>
+            <a class="tt-button tt-button-secondary" href="/tiktok-affiliate/demo/authorize" data-turbo="false">Tiếp tục với màn hình cấp quyền demo →</a>
+        }
         @if (Model.LiveCreator is not null || Model.LiveConnectionError is not null)
         {
             <form method="post" action="/api/tiktok-shop/oauth/disconnect" data-turbo="false">
@@ -57,6 +62,10 @@
         <button id="tt-tab-orders" type="button" role="tab" aria-selected="false" aria-controls="tt-orders" tabindex="-1" data-tt-tab="orders">Affiliate Orders</button>
     </div>
     <p class="tt-feedback" data-tt-feedback role="status" aria-live="polite" hidden></p>
+    @if (Model.DemoAuthMessage is not null)
+    {
+        <p class="tt-caption" role="status">@Model.DemoAuthMessage</p>
+    }
     <section id="tt-overview" role="tabpanel" aria-labelledby="tt-tab-overview" class="tt-overview-grid">
         <div class="tt-flow">
             <section class="cb-card tt-card" aria-labelledby="tt-creator-heading">
@@ -65,7 +74,7 @@
                     <div class="tt-avatar" aria-hidden="true"><i class="fa-brands fa-tiktok"></i></div>
                     <div class="tt-creator-copy"><h3 data-tt-creator-name>Connect your TikTok Creator</h3><p data-tt-creator-description>Start by connecting a Creator profile.</p><small data-tt-creator-id hidden></small></div>
                 </div>
-                <button class="tt-button" type="button" data-tt-connect>Connect TikTok Creator <span aria-hidden="true">→</span></button>
+                <button class="tt-button" type="button" data-tt-connect>Mở màn hình cấp quyền demo <span aria-hidden="true">→</span></button>
                 @if (Model.Integration.IsDemo)
                 {
                     <button class="tt-button tt-button-secondary" type="button" data-tt-disconnect hidden>Disconnect TikTok Creator</button>
