@@ -20,15 +20,20 @@
   }
 
   let finished = false;
+  let removalTimer;
+  const removeLaunchScreen = () => {
+    finished = true;
+    window.clearTimeout(removalTimer);
+    root.remove();
+    document.documentElement.classList.remove(pendingClass);
+  };
+
   const finish = () => {
     if (finished) return;
     finished = true;
     root.classList.add('is-leaving');
 
-    window.setTimeout(() => {
-      root.remove();
-      document.documentElement.classList.remove(pendingClass);
-    }, reduceMotion ? 0 : 450);
+    removalTimer = window.setTimeout(removeLaunchScreen, reduceMotion ? 0 : 450);
   };
 
   const finishAfterFirstPaint = () => {
@@ -45,7 +50,18 @@
 
   Promise.race([artworkReady, artworkTimeout]).then(finishAfterFirstPaint);
 
-  document.addEventListener('turbo:before-cache', finish, { once: true });
-  document.addEventListener('turbo:before-render', finish, { once: true });
+  // Remove synchronously before a snapshot or body replacement; an exit timer
+  // could otherwise leave a pending splash in the restored page.
+  document.addEventListener('turbo:before-cache', removeLaunchScreen, { once: true });
+  document.addEventListener('turbo:before-render', removeLaunchScreen, { once: true });
+  window.addEventListener('pagehide', removeLaunchScreen, { once: true });
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) removeLaunchScreen();
+  });
+  root.addEventListener('animationend', (event) => {
+    if (event.target === root && event.animationName === 'cb-launch-safety-exit') {
+      removeLaunchScreen();
+    }
+  });
   window.setTimeout(finish, 3200);
 })();

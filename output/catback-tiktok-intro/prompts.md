@@ -1,0 +1,25 @@
+# CatBack TikTok Shop introduction assets
+
+## Intro image 1 — revision 2
+
+Built-in image_gen edit: remove all Shopee text from image 1. Replace the speech bubble with “Giao diện CatBack minh họa”, title with “Dán liên kết sản phẩm”, input placeholder with “Nhập liên kết sản phẩm...” and button with “Tạo liên kết →”. Preserve mascot, layout, headline, planned features and development labels. Export as `01-catback-gioi-thieu-5x3-v2.png`, exactly 1600 × 960 pixels. Images 2 and 3 already contain no Shopee text.
+
+## Intro exports — 5:3
+
+The three `-5x3.png` files are PNG exports at exactly 1600 × 960 pixels, below 10 MB. Layouts were adapted using the built-in image_gen tool, then exported to the required pixel dimensions. Original assets remain unchanged.
+
+Adaptation prompt for each original image: Edit this existing CatBack marketing image only to meet the Intro upload aspect ratio. Output a landscape canvas with width:height 5:3, requested pixel dimensions 1600 × 960. Reflow naturally, preserve mascot identity, Vietnamese copy, planned-function/developing labels and brand palette; no text cropping, fake statistics, extra features or endorsement claims.
+
+Generated using the built-in image_gen tool. No CLI fallback. All TikTok Shop capabilities are labelled planned/developing; no mock order or financial records are presented as real data. The UI insert in image 1 derives from an existing historical Shopee screenshot in the project; it is not evidence of live TikTok integration.
+
+## Prompt 1
+
+Use case: ads-marketing. Create ONE polished landscape 16:9 Vietnamese product introduction image for CatBack, crisp high resolution. Input image 1 is the EXACT current CatBack logo mascot: teal-hatted white cat holding gold coins. Preserve identity; no replacement mascot. Image 2 is a historical screenshot of the project's real existing Shopee UI. Use ONLY a faithful crop of its link input form (the white card with Dán link Shopee tại đây, input and teal button), no top promo, no wallet, no balances or percentages, remove red annotation rectangle. Composite that crop in a simple phone frame at right, label it clearly 'Giao diện CatBack hiện có (Shopee)'. Do NOT fabricate a TikTok screenshot or claim this is current live UI. Left logo and strong headline EXACT 'CatBack – Nền tảng hỗ trợ tiếp thị liên kết TikTok Shop'. Below three concise feature lines under conspicuous heading 'CHỨC NĂNG DỰ KIẾN': 'Khám phá sản phẩm', 'Tạo liên kết', 'Theo dõi đơn hàng'. Footer exact 'Tích hợp TikTok Shop đang được phát triển'. Airy premium SaaS marketing composition, white and pale mint background, navy headings, teal accents, softly rounded cards. Excellent Vietnamese accents. No numbers, commissions, revenue, successful authorizations, fake orders, official TikTok endorsement or badges. No TikTok logo. Only design elements from CatBack. One image, no collage of multiple output posters.
+
+## Prompt 2
+
+Use case: ads-marketing. Create ONE polished square Vietnamese marketing poster for CatBack, crisp high resolution, same navy teal mint brand palette, spacious white background and subtle translucent teal shapes. Input image is existing CatBack teal-hatted white cat holding gold coins; preserve exact recognizable identity. Top logo + 'CatBack'. Headline exact 'CatBack – Nền tảng hỗ trợ tiếp thị liên kết TikTok Shop'. Large prominent pill 'CHỨC NĂNG DỰ KIẾN'. Three spacious feature cards with clean simple symbolic icons and exact text: 'Khám phá sản phẩm' / 'Tìm kiếm sản phẩm phù hợp'; 'Tạo liên kết' / 'Hỗ trợ tạo liên kết tiếp thị'; 'Theo dõi đơn hàng' / 'Theo dõi trạng thái và hoa hồng'. Footer 'Tích hợp TikTok Shop đang được phát triển'. These are planned features, not available feature claims. No UI screenshots, no mock statistics, no money amounts, no order rows, no percentage claims, no official TikTok logos/endorsement. Elegant typography with accurate Vietnamese diacritics. One final poster only.
+
+## Prompt 3
+
+Use case: infographic-diagram. Create ONE polished landscape 16:9 Vietnamese CatBack product workflow marketing image, sharp large readable text. Existing reference is correct CatBack logo: teal-hatted white cat with coins, preserve identity and place at upper left with brand CatBack. Title exact 'CatBack – Nền tảng hỗ trợ tiếp thị liên kết TikTok Shop'. Secondary label prominently 'QUY TRÌNH DỰ KIẾN'. Four simple symbolic connected cards, no software UI impersonation: 'Kết nối TikTok' subtitle 'Đăng nhập trên TikTok chính thức'; 'Khám phá sản phẩm' subtitle 'Chọn sản phẩm phù hợp'; 'Tạo liên kết' subtitle 'Chia sẻ liên kết tiếp thị'; 'Theo dõi đơn hàng' subtitle 'Theo dõi trạng thái và hoa hồng'. Keep each card evenly spaced, navy text, mint and teal icons, pale white/mint background, small gold brand accents matching logo. Bottom visible exact 'Tích hợp TikTok Shop đang được phát triển'. No fake success state, no claims enabled authorization, no invented tokens, no revenue or percentages, no order data, no TikTok logo or partner certification. One final image, premium understated visual polish.

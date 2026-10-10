@@ -36,11 +36,9 @@ html.cb-pwa-launch-document body {
 
 .cb-launch-screen--handoff {
   display: none;
-}
-
-html.cb-pwa-launch-pending,
-html.cb-pwa-launch-pending body {
-  overflow: hidden;
+  /* Contain gestures on the splash itself. Its CSS safety exit must leave the
+     page scrollable even if the launch script fails to clear the pending class. */
+  touch-action: none;
   overscroll-behavior: none;
 }
 
