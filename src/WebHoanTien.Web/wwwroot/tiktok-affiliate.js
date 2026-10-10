@@ -237,12 +237,12 @@
         find('#tt-sharing-link').value = url;
         text('[data-tt-result-title]', productUrlOnly ? 'Đã lưu link sản phẩm gốc.' : 'Đã tạo liên kết tiếp thị.');
         text('[data-tt-result-note]', productUrlOnly
-          ? 'Sản phẩm dùng thông tin mặc định. Chưa tạo link affiliate qua RioHub.'
+            ? 'Liên kết đã được lưu trong tài khoản CatBack của bạn.'
           : 'Liên kết đã được lưu trong tài khoản CatBack của bạn.');
         text('[data-tt-link-time]', 'Đã lưu lúc ' + date(generatedLink.createdAt) + ' (giờ Việt Nam)');
         find('[data-tt-result]').hidden = false; find('[data-tt-result-placeholder]').hidden = true;
         renderProduct(generatedLink); renderLinks();
-        feedback(productUrlOnly ? 'Đã lấy thông tin mặc định và lưu link sản phẩm.' : 'Đã tạo và lưu liên kết TikTok.', 'success');
+          feedback(productUrlOnly ? 'Đã tạo và lưu liên kết TikTok.' : 'Đã tạo và lưu liên kết TikTok.', 'success');
       });
     });
     find('[data-tt-copy-result]').addEventListener('click', () => generatedLink && copy(generatedLink.sharingLink));
