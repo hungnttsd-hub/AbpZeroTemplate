@@ -11,22 +11,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="turbo-visit-control" content="reload" />
-    <title>@(Model.ShowDemoLabel ? "Demo Mode · " : "")Cấp quyền TikTok Creator — CatBack</title>
+    <title>@(Model.ShowDemoLabel ? "Chế độ mô phỏng · " : "")Cấp quyền nhà sáng tạo TikTok — CatBack</title>
     <link rel="stylesheet" href="~/tiktok-creator-demo.css" asp-append-version="true" />
 </head>
 <body>
     @if (Model.ShowDemoLabel)
     {
-        <div class="demo-banner" role="note"><strong>DEMO MODE</strong><span>Trang mô phỏng của CatBack · Không phải trang TikTok chính thức · Không cấp quyền thật</span></div>
+        <div class="demo-banner" role="note"><strong>CHẾ ĐỘ MÔ PHỎNG</strong><span>Trang mô phỏng của CatBack · Không phải trang TikTok chính thức · Không cấp quyền thật</span></div>
     }
     <header class="site-header">
-        <a class="tiktok-brand" href="/tiktok-affiliate" aria-label="Quay về CatBack TikTok Affiliate"><span class="music-mark" aria-hidden="true">♪</span><span>TikTok <small>Shop</small></span></a>
-        <span class="header-label">Creator authorization @if (Model.ShowDemoLabel) { <span class="demo-tag">Demo</span> }</span>
+        <a class="tiktok-brand" href="/tiktok-affiliate" aria-label="Quay về CatBack Tiếp thị liên kết TikTok"><span class="music-mark" aria-hidden="true">♪</span><span>TikTok <small>Shop</small></span></a>
+        <span class="header-label">Cấp quyền nhà sáng tạo @if (Model.ShowDemoLabel) { <span class="demo-tag">Mô phỏng</span> }</span>
     </header>
     <main>
         <nav class="progress" aria-label="Tiến trình cấp quyền demo">
             <ol>
-                <li class="@(isSuccess ? "complete" : "current")" aria-current="@(!isSuccess ? "step" : null)"><span>1</span>Cấp quyền Creator</li>
+                <li class="@(isSuccess ? "complete" : "current")" aria-current="@(!isSuccess ? "step" : null)"><span>1</span>Cấp quyền nhà sáng tạo</li>
                 <li class="@(isSuccess ? "current" : "")" aria-current="@(isSuccess ? "step" : null)"><span>2</span>Hoàn tất</li>
             </ol>
         </nav>
@@ -42,17 +42,17 @@
             }
             @if (!isSuccess)
             {
-                <p class="eyebrow">YÊU CẦU CẤP QUYỀN@(Model.ShowDemoLabel ? " · DEMO" : "")</p>
+                <p class="eyebrow">YÊU CẦU CẤP QUYỀN@(Model.ShowDemoLabel ? " · MÔ PHỎNG" : "")</p>
                 <h1 id="auth-title">Cho phép CatBack<br />kết nối với bạn?</h1>
-                <p class="intro">Xem những thông tin CatBack sẽ sử dụng<br class="desktop-break" /> trong trải nghiệm Creator demo.</p>
+                <p class="intro">Xem những thông tin CatBack sẽ sử dụng<br class="desktop-break" /> trong trải nghiệm nhà sáng tạo demo.</p>
                 <div class="selected-account"><span class="mini-avatar" aria-hidden="true">C</span><span>@@catback_demo</span><span class="demo-tag">Dữ liệu minh họa</span><a href="/tiktok-affiliate">Quay lại</a></div>
                 <p class="fine-print">Đăng nhập được thực hiện trên TikTok. Trang demo này không xác minh phiên đăng nhập TikTok và chỉ sử dụng hồ sơ minh họa.</p>
                 <p class="permissions-heading">Các quyền trong bản mô phỏng</p>
                 <ul class="permissions">
-                    <li><span class="permission-icon" aria-hidden="true">◎</span><div><strong>Xem hồ sơ Creator</strong><p>Tên hiển thị, tên người dùng và thị trường.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
-                    <li><span class="permission-icon" aria-hidden="true">▧</span><div><strong>Khám phá sản phẩm affiliate</strong><p>Thông tin sản phẩm và hoa hồng mẫu.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
+                    <li><span class="permission-icon" aria-hidden="true">◎</span><div><strong>Xem hồ sơ nhà sáng tạo</strong><p>Tên hiển thị, tên người dùng và thị trường.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
+                    <li><span class="permission-icon" aria-hidden="true">▧</span><div><strong>Khám phá sản phẩm tiếp thị liên kết</strong><p>Thông tin sản phẩm và hoa hồng mẫu.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
                     <li><span class="permission-icon" aria-hidden="true">↗</span><div><strong>Tạo và quản lý link chia sẻ</strong><p>Tạo link minh họa cho sản phẩm demo.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
-                    <li><span class="permission-icon" aria-hidden="true">≡</span><div><strong>Xem đơn hàng affiliate</strong><p>Đơn hàng và trạng thái hoa hồng giả lập.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
+                    <li><span class="permission-icon" aria-hidden="true">≡</span><div><strong>Xem đơn hàng tiếp thị liên kết</strong><p>Đơn hàng và trạng thái hoa hồng giả lập.</p></div><span class="permission-check" aria-hidden="true">✓</span></li>
                 </ul>
                 <form method="post" asp-page-handler="Authorize" data-demo-form>
                     <label class="consent"><input asp-for="Consent" required /><span>Tôi đồng ý kết nối tài khoản mẫu và sử dụng dữ liệu giả lập trong CatBack.</span></label>
@@ -64,18 +64,18 @@
             else
             {
                 <div class="success-mark" aria-hidden="true">✓</div>
-                <p class="eyebrow">@(Model.ShowDemoLabel ? "KẾT NỐI DEMO HOÀN TẤT" : "KẾT NỐI HOÀN TẤT")</p>
+                <p class="eyebrow">@(Model.ShowDemoLabel ? "KẾT NỐI MÔ PHỎNG HOÀN TẤT" : "KẾT NỐI HOÀN TẤT")</p>
                 <h1 id="auth-title">Bạn đã sẵn sàng!</h1>
-                <p class="intro">Tài khoản Creator mẫu đã được kết nối với CatBack. Tiếp tục khám phá sản phẩm và tạo link affiliate demo.</p>
-                <div class="connected-account"><span class="mini-avatar" aria-hidden="true">C</span><div><strong>CatBack Demo Creator</strong><span>@@catback_demo · Việt Nam</span></div><span class="connected-badge">Đã kết nối</span></div>
+                <p class="intro">Tài khoản nhà sáng tạo mẫu đã được kết nối với CatBack. Tiếp tục khám phá sản phẩm và tạo liên kết tiếp thị mẫu.</p>
+                <div class="connected-account"><span class="mini-avatar" aria-hidden="true">C</span><div><strong>Nhà sáng tạo mẫu CatBack</strong><span>@@catback_demo · Việt Nam</span></div><span class="connected-badge">Đã kết nối</span></div>
                 <div class="info-note"><span aria-hidden="true">ⓘ</span><p>Chỉ trạng thái demo tại CatBack được cập nhật. Không có tài khoản TikTok thật nào được cấp quyền.</p></div>
                 <a class="button primary" href="/tiktok-affiliate">Quay về CatBack <span aria-hidden="true">→</span></a>
-                <p class="fine-print">Bạn có thể ngắt kết nối và chạy lại demo từ trang TikTok Affiliate.</p>
+                <p class="fine-print">Bạn có thể ngắt kết nối và chạy lại demo từ trang Tiếp thị liên kết TikTok.</p>
             }
         </section>
         <p class="page-note"><span aria-hidden="true">◇</span> Trải nghiệm mô phỏng được xây dựng bởi CatBack</p>
     </main>
-    <footer><span>CatBack · Creator connection demo</span><nav aria-label="Thông tin CatBack"><a href="/Legal/Terms">Điều khoản CatBack</a><a href="/Legal/Privacy">Quyền riêng tư</a><span>Tiếng Việt</span></nav></footer>
+    <footer><span>CatBack · Mô phỏng kết nối nhà sáng tạo</span><nav aria-label="Thông tin CatBack"><a href="/Legal/Terms">Điều khoản CatBack</a><a href="/Legal/Privacy">Quyền riêng tư</a><span>Tiếng Việt</span></nav></footer>
     <script src="~/tiktok-creator-demo.js" asp-append-version="true"></script>
 </body>
 </html>

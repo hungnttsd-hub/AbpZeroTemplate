@@ -32,7 +32,7 @@ public class WebHoanTienMenuContributor : IMenuContributor
         var principal = context.ServiceProvider.GetRequiredService<ICurrentPrincipalAccessor>().Principal;
         if ((await authorization.AuthorizeAsync(principal, TikTokAffiliateAccess.Policy)).Succeeded)
             context.Menu.Items.Add(new ApplicationMenuItem(
-                "Customer.TikTokAffiliate", "TikTok Affiliate", "~/tiktok-affiliate", "fab fa-tiktok", 25));
+                "Customer.TikTokAffiliate", "Tiếp thị liên kết TikTok", "~/tiktok-affiliate", "fab fa-tiktok", 25));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Customer.Account", l["Menu:Account"], "~/Account/Profile", "fas fa-user", 30));
         context.Menu.Items.Add(new ApplicationMenuItem(

@@ -43,15 +43,15 @@ public class TikTokCreatorConnection : ITikTokCreatorConnection, ITransientDepen
         if (ciphertext is null) return null;
         TikTokCreatorTokens? tokens;
         try { tokens = JsonSerializer.Deserialize<TikTokCreatorTokens>(Protector.Unprotect(ciphertext)); }
-        catch (CryptographicException) { await Disconnect(); throw new UserFriendlyException("Phiên kết nối Creator không còn đọc được. Hãy kết nối lại."); }
-        catch (JsonException) { await Disconnect(); throw new UserFriendlyException("Phiên kết nối Creator không hợp lệ. Hãy kết nối lại."); }
+        catch (CryptographicException) { await Disconnect(); throw new UserFriendlyException("Phiên kết nối nhà sáng tạo không còn đọc được. Hãy kết nối lại."); }
+        catch (JsonException) { await Disconnect(); throw new UserFriendlyException("Phiên kết nối nhà sáng tạo không hợp lệ. Hãy kết nối lại."); }
         if (tokens is null || tokens.RefreshExpiresAt <= DateTimeOffset.UtcNow)
         { await Disconnect(); return null; }
         if (tokens.AccessExpiresAt <= DateTimeOffset.UtcNow.AddMinutes(1))
         {
             var refreshed = await _client.Refresh(tokens.RefreshToken);
             if (!string.Equals(refreshed.OpenId, tokens.OpenId, StringComparison.Ordinal))
-                throw new UserFriendlyException("Danh tính Creator thay đổi khi làm mới token. Hãy kết nối lại.");
+                throw new UserFriendlyException("Danh tính nhà sáng tạo thay đổi khi làm mới mã truy cập. Hãy kết nối lại.");
             tokens = refreshed;
             await Save(tokens);
         }

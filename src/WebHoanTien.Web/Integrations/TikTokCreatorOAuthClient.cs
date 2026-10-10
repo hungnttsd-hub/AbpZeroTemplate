@@ -49,12 +49,12 @@ public class TikTokCreatorOAuthClient : ITransientDependency
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         var data = await Send(request, "token_" + operation);
         if (!data.TryGetProperty("user_type", out var type) || !type.TryGetInt32(out var userType) || userType != 1)
-            throw new UserFriendlyException("TikTok trả về token không phải Creator. Không thể dùng Seller token cho kết nối này.");
+            throw new UserFriendlyException("TikTok trả về mã truy cập không thuộc nhà sáng tạo. Không thể dùng mã truy cập của nhà bán hàng cho kết nối này.");
         var scopes = data.TryGetProperty("granted_scopes", out var granted) && granted.ValueKind == JsonValueKind.Array
             ? granted.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).ToArray()
             : Array.Empty<string>();
         if (!scopes.Contains("creator.affiliate.info", StringComparer.Ordinal))
-            throw new UserFriendlyException("Creator chưa cấp quyền creator.affiliate.info. Hãy cấp lại quyền hồ sơ đang được app yêu cầu.");
+            throw new UserFriendlyException("Nhà sáng tạo chưa cấp quyền creator.affiliate.info. Hãy cấp lại quyền hồ sơ mà ứng dụng yêu cầu.");
         var tokens = new TikTokCreatorTokens(RequiredString(data, "access_token"), RequiredString(data, "refresh_token"),
             RequiredString(data, "open_id"), RequiredTimestamp(data, "access_token_expire_in"),
             RequiredTimestamp(data, "refresh_token_expire_in"), scopes);
@@ -67,7 +67,7 @@ public class TikTokCreatorOAuthClient : ITransientDependency
     {
         EnsureConfigured();
         if (!tokens.GrantedScopes.Contains("creator.affiliate.info", StringComparer.Ordinal))
-            throw new UserFriendlyException("Token hiện tại thiếu quyền đọc hồ sơ Creator.");
+            throw new UserFriendlyException("Mã truy cập hiện tại thiếu quyền đọc hồ sơ nhà sáng tạo.");
         const string path = "/affiliate_creator/202508/profiles";
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
         var input = AppSecret + path + "app_key" + AppKey + "timestamp" + timestamp + AppSecret;
@@ -81,7 +81,7 @@ public class TikTokCreatorOAuthClient : ITransientDependency
         var data = await Send(request, "creator_profile");
         var region = RequiredString(data, "selection_region");
         if (!string.Equals(region, "VN", StringComparison.OrdinalIgnoreCase))
-            throw new UserFriendlyException("Creator này không có selection region VN, chưa phù hợp thị trường Vietnam của CatBack.");
+            throw new UserFriendlyException("Thị trường đã chọn của nhà sáng tạo không phải Việt Nam, chưa phù hợp với thị trường của CatBack.");
         var username = RequiredString(data, "username");
         return new(RequiredString(data, "creator_user_open_id"), username, username, region, "CONNECTED");
     }
@@ -93,15 +93,20 @@ public class TikTokCreatorOAuthClient : ITransientDependency
             using var response = await _clients.CreateClient(HttpClientName).SendAsync(request);
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             var root = json.RootElement;
-            var requestId = root.TryGetProperty("request_id", out var rid) && rid.ValueKind == JsonValueKind.String
+            var requestId = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("request_id", out var rid) && rid.ValueKind == JsonValueKind.String
                 ? new string((rid.GetString() ?? "").Where(char.IsAsciiLetterOrDigit).Take(100).ToArray()) : "";
-            var code = root.TryGetProperty("code", out var c) && c.TryGetInt32(out var number) ? number : -1;
+            var code = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("code", out var c)
+                && c.ValueKind == JsonValueKind.Number && c.TryGetInt32(out var number) ? number : -1;
             // Never log request URI, credentials, raw response or platform message.
             _logger.LogInformation("TikTok Creator stage {Stage}: HTTP {Status}, code {Code}, request_id {RequestId}",
                 stage, (int)response.StatusCode, code, requestId);
+            if (stage is "token_get" or "token_refresh")
+                _logger.LogInformation(new EventId(41001, "TikTokTokenResponseDiagnostic"),
+                    "TikTok token diagnostic {Stage}: HTTP {Status}, code {Code}, request_id {RequestId}, summary {TokenSummary}",
+                    stage, (int)response.StatusCode, code, requestId, TikTokTokenDiagnostics.Describe(root));
             if (!response.IsSuccessStatusCode || code != 0)
                 throw new UserFriendlyException($"TikTok chưa hoàn tất bước {stage} (HTTP {(int)response.StatusCode}, mã {code}, request_id {requestId}). " +
-                    "Nếu đang beta, hãy gửi mã và request_id này cho TikTok để kiểm tra quyền app/Creator. Không gửi token hoặc mã ủy quyền.");
+                    "Nếu đang thử nghiệm, hãy gửi mã lỗi và request_id này cho TikTok để kiểm tra quyền của ứng dụng và nhà sáng tạo. Không gửi mã truy cập hoặc mã ủy quyền.");
             if (!root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
                 throw new UserFriendlyException("TikTok trả về phản hồi không có dữ liệu hợp lệ.");
             return data.Clone();

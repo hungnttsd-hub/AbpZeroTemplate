@@ -26,5 +26,5 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
     public Task<TikTokProductDto> GetProduct(string productUrl) => throw Unavailable();
     public Task<TikTokGeneratedLinkDto> GenerateAffiliateLink(string productId) => throw Unavailable();
     private static UserFriendlyException Unavailable() => new(
-        "TikTok Creator API chưa được triển khai. Kết nối thật sẽ khả dụng sau khi hoàn tất quyền truy cập Creator và tích hợp API.");
+        "Chức năng này chưa được tích hợp với API TikTok thật. Hiện CatBack chỉ hỗ trợ cấp quyền và đọc hồ sơ nhà sáng tạo.");
 }

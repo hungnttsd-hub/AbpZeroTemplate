@@ -13,9 +13,9 @@ public class TikTokAffiliateMockService : WebHoanTienAppService, ITikTokAffiliat
 {
     private const string ProductId = "1736327643619493458";
     private static readonly TikTokCreatorDto Creator = new("demo_creator_vn_001", "catback_demo",
-        "CatBack Demo Creator", "VN", "CONNECTED");
+        "Nhà sáng tạo mẫu CatBack", "VN", "CONNECTED");
     private static readonly TikTokProductDto Product = new(ProductId, "Crocs Classic Clog",
-        "Demo Official Store", 1290000m, "VND", 0.08m, "/demo/tiktok-product-01.jpg");
+        "Cửa hàng mẫu", 1290000m, "VND", 0.08m, "/demo/tiktok-product-01.jpg");
     private static readonly IReadOnlyList<TikTokAffiliateOrderDto> Orders = Array.AsReadOnly(new[]
     {
         new TikTokAffiliateOrderDto("TK100001", "Crocs Classic", 1290000m, 103200m, "VND", "Pending",
@@ -59,7 +59,7 @@ public class TikTokAffiliateMockService : WebHoanTienAppService, ITikTokAffiliat
             !url.IdnHost.Equals("shop.tiktok.com", StringComparison.OrdinalIgnoreCase) ||
             !(url.AbsolutePath.TrimEnd('/') == $"/vn/pdp/{ProductId}" ||
               url.AbsolutePath.TrimEnd('/') == $"/view/product/{ProductId}"))
-            throw new UserFriendlyException("Review Demo chỉ hỗ trợ sản phẩm mẫu. Chọn ‘Use demo product’ để dùng URL hợp lệ.");
+            throw new UserFriendlyException("Bản mô phỏng chỉ hỗ trợ sản phẩm mẫu. Chọn ‘Dùng sản phẩm mẫu’ để dùng liên kết hợp lệ.");
         await Task.Delay(450);
         lock (state.Sync)
         {
@@ -76,14 +76,14 @@ public class TikTokAffiliateMockService : WebHoanTienAppService, ITikTokAffiliat
         {
             RequireConnected(state);
             if (productId != ProductId || !state.ProductChecked)
-                throw new UserFriendlyException("Hãy kiểm tra sản phẩm trước khi tạo affiliate link.");
+                throw new UserFriendlyException("Hãy kiểm tra sản phẩm trước khi tạo liên kết tiếp thị.");
         }
         await Task.Delay(900);
         lock (state.Sync)
         {
             RequireConnected(state);
             if (!state.ProductChecked)
-                throw new UserFriendlyException("Hãy kiểm tra sản phẩm trước khi tạo affiliate link.");
+                throw new UserFriendlyException("Hãy kiểm tra sản phẩm trước khi tạo liên kết tiếp thị.");
             // Repeated clicks are idempotent for this single-product review fixture.
             var existing = state.Links.FirstOrDefault(link => link.ProductId == productId);
             if (existing is not null) return existing;
