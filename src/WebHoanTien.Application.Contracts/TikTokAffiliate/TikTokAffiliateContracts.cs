@@ -22,9 +22,13 @@ public sealed record TikTokAffiliateIntegrationDto(string Mode, bool IsDemo, str
     bool IsAvailable = true);
 public sealed record TikTokCreatorDto(string CreatorId, string Username, string DisplayName,
     string Market, string Status);
-public sealed record TikTokProductDto(string ProductId, string Title, string ShopName, decimal Price,
-    string Currency, decimal CommissionRate, string ImageUrl);
+public sealed record TikTokProductDto(string ProductId, string Title, string ShopName, decimal? Price,
+    string Currency, decimal? CommissionRate, string ImageUrl, string? CommissionSource = null,
+    decimal? CommissionAmount = null);
 public sealed record TikTokGeneratedLinkDto(string ProductId, string ProductTitle, string SharingLink,
-    DateTimeOffset CreatedAt, string Status);
-public sealed record TikTokAffiliateOrderDto(string OrderId, string Product, decimal OrderAmount,
-    decimal AffiliateCommission, string Currency, string Status, DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt, string Status, Guid? TrackingId = null, string? DirectLink = null,
+    TikTokProductDto? Product = null);
+public sealed record TikTokAffiliateOrderDto(string OrderId, string Product, decimal? OrderAmount,
+    decimal? AffiliateCommission, string Currency, string Status, DateTimeOffset CreatedAt,
+    string? SkuId = null, decimal? EstimatedCommission = null, decimal? ActualCommission = null,
+    DateTimeOffset? SettledAt = null, string? ProductId = null, string Source = "RioHub");

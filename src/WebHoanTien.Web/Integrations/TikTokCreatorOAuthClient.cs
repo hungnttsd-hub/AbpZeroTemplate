@@ -86,6 +86,131 @@ public class TikTokCreatorOAuthClient : ITransientDependency
         return new(RequiredString(data, "creator_user_open_id"), username, username, region, "CONNECTED");
     }
 
+
+    public async Task<string> GetLink(
+        TikTokCreatorTokens tokens,
+        string productId,
+        string? campaignId = null)
+    {
+        EnsureConfigured();
+
+        if (string.IsNullOrWhiteSpace(productId))
+            throw new UserFriendlyException("Product ID không được để trống.");
+
+        if (!tokens.GrantedScopes.Contains(
+            "creator.affiliate.share_link.read",
+            StringComparer.Ordinal))
+        {
+            throw new UserFriendlyException(
+                "Mã truy cập thiếu quyền tạo liên kết tiếp thị.");
+        }
+
+        const string path =
+            "/affiliate_creator/202505/affiliate_sharing_links/general_publishers/generate_batch";
+
+        // 1. Tạo JSON Body
+        var payload = new Dictionary<string, object>
+        {
+            ["material"] = new
+            {
+                ids = new[] { productId },
+                type = "PRODUCT"
+            }
+        };
+
+        if (!string.IsNullOrWhiteSpace(campaignId))
+            payload["campaign_id"] = campaignId;
+
+        var body = JsonSerializer.Serialize(payload);
+        var bodyBytes = Encoding.UTF8.GetBytes(body);
+
+        // 2. Timestamp
+        var timestamp = DateTimeOffset.UtcNow
+            .ToUnixTimeSeconds()
+            .ToString(CultureInfo.InvariantCulture);
+
+        // 3. Tạo chữ ký HMAC SHA256
+        var input =
+            AppSecret +
+            path +
+            "app_key" + AppKey +
+            "timestamp" + timestamp +
+            body +
+            AppSecret;
+
+        var sign = Convert.ToHexString(
+            HMACSHA256.HashData(
+                Encoding.UTF8.GetBytes(AppSecret),
+                Encoding.UTF8.GetBytes(input)
+            )
+        ).ToLowerInvariant();
+
+        // 4. Tạo URL
+        var url = QueryHelpers.AddQueryString(
+            "https://open-api.tiktokglobalshop.com" + path,
+            new Dictionary<string, string?>
+            {
+                ["app_key"] = AppKey,
+                ["timestamp"] = timestamp,
+                ["sign"] = sign
+            });
+
+        // 5. Gửi POST request
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+        request.Headers.Add(
+            "x-tts-access-token",
+            tokens.AccessToken);
+
+        request.Content = new ByteArrayContent(bodyBytes);
+        request.Content.Headers.ContentType =
+            new System.Net.Http.Headers.MediaTypeHeaderValue(
+                "application/json");
+
+        // Giả định Send() trả về JsonElement của "data"
+        var data = await Send(request, "creator_generate_general_link");
+
+        // 6. Đọc link TikTok trả về
+        if (data.ValueKind == JsonValueKind.Object &&
+            data.TryGetProperty("sharing_links", out var links) &&
+            links.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in links.EnumerateArray())
+            {
+                if (item.TryGetProperty("material_id", out var id) &&
+                    id.GetString() == productId &&
+                    item.TryGetProperty("sharing_link", out var link))
+                {
+                    var affiliateLink = link.GetString();
+
+                    if (!string.IsNullOrWhiteSpace(affiliateLink))
+                        return affiliateLink;
+                }
+            }
+        }
+
+        // 7. Kiểm tra sản phẩm tạo link thất bại
+        if (data.ValueKind == JsonValueKind.Object &&
+            data.TryGetProperty("failed_materials", out var failed) &&
+            failed.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in failed.EnumerateArray())
+            {
+                if (item.TryGetProperty("material_id", out var id) &&
+                    id.GetString() == productId &&
+                    item.TryGetProperty("fail_reason", out var reason))
+                {
+                    throw new UserFriendlyException(
+                        $"Không thể tạo link: {reason.GetString()}");
+                }
+            }
+        }
+
+        throw new UserFriendlyException(
+            "TikTok không trả về liên kết tiếp thị cho sản phẩm.");
+    }
+
+
     private async Task<JsonElement> Send(HttpRequestMessage request, string stage)
     {
         try

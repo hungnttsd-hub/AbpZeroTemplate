@@ -12,6 +12,37 @@ public static class AffiliateModelBuilderExtensions
         Check.NotNull(builder, nameof(builder));
         const string schema = WebHoanTienConsts.AffiliateDbSchema;
 
+        builder.Entity<RioHubOrderSku>(b =>
+        {
+            b.ToTable("RioHubOrderSku", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.CreatorUsername).HasMaxLength(100).IsRequired();
+            b.Property(x => x.OrderId).HasMaxLength(128).IsRequired();
+            b.Property(x => x.SkuId).HasMaxLength(128).IsRequired();
+            b.Property(x => x.ProductId).HasMaxLength(128);
+            b.Property(x => x.ProductName).HasMaxLength(1000);
+            b.Property(x => x.SubId).HasMaxLength(128);
+            b.Property(x => x.TraceId).HasMaxLength(256);
+            b.Property(x => x.TraceType).HasMaxLength(32);
+            b.Property(x => x.Currency).HasMaxLength(16).IsRequired();
+            b.Property(x => x.SettlementStatus).HasMaxLength(128);
+            // Unconstrained PostgreSQL numeric preserves decimal precision without money rounding.
+            b.Property(x => x.EstimatedCommission).HasColumnType("numeric");
+            b.Property(x => x.ActualCommission).HasColumnType("numeric");
+            b.Property(x => x.ProviderJson).HasColumnType("jsonb").IsRequired();
+            b.HasIndex(x => new { x.CreatorUsername, x.OrderId, x.SkuId }).IsUnique();
+            b.HasIndex(x => new { x.CreatorUsername, x.SubId });
+            b.HasIndex(x => new { x.CreatorUsername, x.Status });
+        });
+
+        builder.Entity<RioHubSyncCursor>(b =>
+        {
+            b.ToTable("RioHubSyncCursor", schema);
+            b.ConfigureByConvention();
+            b.Property(x => x.CreatorUsername).HasMaxLength(100).IsRequired();
+            b.HasIndex(x => x.CreatorUsername).IsUnique();
+        });
+
         builder.Entity<AffiliateTracking>(b =>
         {
             b.ToTable("Tracking", schema);

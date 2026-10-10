@@ -66,6 +66,14 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostPrepareAsync()
     {
+        // The home form is Shopee-only; other pages keep their existing TikTok integration.
+        if (TikTokAffiliateUrl.TryNormalize(LinkUrl, out _, out _))
+        {
+            Error = "Trang chủ hiện chỉ hỗ trợ link Shopee.";
+            if (IsAjaxRequest()) return BadRequest(new { success = false, error = Error });
+            await LoadDashboardAsync();
+            return Page();
+        }
         var validation = await _links.ValidateAsync(new ValidateAffiliateUrlInput
         {
             Url = LinkUrl,
@@ -100,10 +108,14 @@ public class IndexModel : PageModel
                         link = new
                         {
                             id = result.Id,
+                            platform = result.Platform.ToString(),
+                            isProductUrlFallback = result.IsProductUrlFallback,
                             targetType = result.TargetType.ToString(),
                             productName = result.ProductName,
                             shopId = result.ShopId,
                             imageUrl = result.ImageUrl,
+                            productPriceLabel = result.ProductPrice.HasValue ? result.ProductPrice.Value.ToString("N0") + "₫" : null,
+                            creatorCommissionLabel = result.CreatorCommissionAmount.HasValue ? result.CreatorCommissionAmount.Value.ToString("N0") + "₫" : null,
                             estimatedCommissionLabel = result.EstimatedCommission.HasValue
                                 ? result.EstimatedCommission.Value.ToString("N0") + "₫"
                                 : null,
@@ -209,6 +221,8 @@ public class IndexModel : PageModel
 
     internal static string SuccessMessageFor(AffiliateTrackingDto result)
     {
+        if (result.IsProductUrlFallback)
+            return "Đã lấy thông tin mặc định và lưu link sản phẩm gốc; chưa tạo link affiliate qua RioHub.";
         var targetLabel = result.TargetType == AffiliateLinkTargetType.Shop ? "Link cửa hàng" : "Link";
         return result.WasRestored
             ? $"{targetLabel} đã được đưa trở lại danh sách của bạn."

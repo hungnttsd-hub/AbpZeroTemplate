@@ -7,7 +7,7 @@ using Volo.Abp;
 namespace WebHoanTien.TikTokAffiliate;
 
 [Authorize(TikTokAffiliateAccess.Policy)]
-[RemoteService(false)]
+//[RemoteService(false)]
 public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliateService
 {
     private readonly ITikTokCreatorConnection _connection;
@@ -16,6 +16,7 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
     public Task<TikTokAffiliateIntegrationDto> GetIntegrationInfo() => Task.FromResult(
         new TikTokAffiliateIntegrationDto("Api", false, null, IsAvailable: false));
     public Task<TikTokCreatorDto?> GetCreatorProfile() => _connection.GetProfile();
+    public async Task<string?> GetLink(string productId) => await _connection.GetLink(productId);
     public Task<IReadOnlyList<TikTokGeneratedLinkDto>> GetGeneratedLinks() =>
         Task.FromResult<IReadOnlyList<TikTokGeneratedLinkDto>>(Array.Empty<TikTokGeneratedLinkDto>());
     public Task<IReadOnlyList<TikTokAffiliateOrderDto>> SearchAffiliateOrders() =>

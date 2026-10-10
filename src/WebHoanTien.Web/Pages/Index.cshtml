@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "CatBack — Mua sắm Shopee thông minh";
     ViewData["BodyClass"] = "catback-link-page";
+    ViewData["ShowTikTokShop"] = false;
 }
 <section class="customer-dashboard cb-home-dashboard">
     <section class="dashboard-hero" aria-labelledby="dashboard-hero-title">
@@ -63,17 +64,18 @@
 
     <div class="dashboard-grid">
         <div class="dashboard-main">
-            <form method="post" asp-page-handler="Prepare" class="cb-card dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
+            <form method="post" asp-page-handler="Prepare" class="cb-card dashboard-create-card" id="link-form" data-ajax-create data-turbo="false" data-tiktok-enabled="false">
+                <partial name="/Pages/Shared/_AffiliatePlatformPicker.cshtml" model="Model.LinkUrl" />
                 <div class="dashboard-create-heading">
                     <span class="dashboard-create-icon" aria-hidden="true"><img src="~/catback/icons/link.svg" alt="" /></span>
-                    <div><h2>Dán link Shopee tại đây <span aria-hidden="true">✦</span></h2></div>
+                    <div><h2><span data-platform-title>Dán link Shopee tại đây</span> <span aria-hidden="true">✦</span></h2></div>
                 </div>
                 <p class="affiliate-auto-detect-note">
                     <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 6.2h.01"/></svg>
-                    Nhận cả link sản phẩm và link cửa hàng — CatBack tự động nhận diện.
+                    <span data-platform-note>Nhận cả link sản phẩm và link cửa hàng — CatBack tự động nhận diện.</span>
                 </p>
                 <a class="dashboard-guide-link" href="/huong-dan#tao-link-hoan-tien">Xem hướng dẫn <span aria-hidden="true">›</span></a>
-                <label class="sr-only" id="affiliate-url-label" for="affiliate-url">Link sản phẩm hoặc cửa hàng Shopee</label>
+                <label class="sr-only" id="affiliate-url-label" for="affiliate-url" data-platform-url-label>Link sản phẩm hoặc cửa hàng Shopee</label>
                 <div class="dashboard-input-shell">
                     <span aria-hidden="true"><img src="~/catback/icons/link-dark.svg" alt="" /></span>
                     <input asp-for="LinkUrl" id="affiliate-url" type="url" inputmode="url" autocomplete="url"
@@ -85,9 +87,10 @@
                 @if (Model.CreatedLink?.TargetType is AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop)
                 {
                     var createdIsShop = Model.CreatedLink.TargetType == AffiliateLinkTargetType.Shop;
+                    var createdIsTikTok = Model.CreatedLink.Platform == AffiliatePlatform.TikTok;
                     var createdFallbackTitle = createdIsShop && !string.IsNullOrWhiteSpace(Model.CreatedLink.ShopId)
                         ? $"Shop #{Model.CreatedLink.ShopId}"
-                        : createdIsShop ? "Cửa hàng Shopee" : "Sản phẩm Shopee";
+                        : createdIsShop ? "Cửa hàng Shopee" : createdIsTikTok ? "Sản phẩm TikTok Shop" : "Sản phẩm Shopee";
                     var createdTitle = !string.IsNullOrWhiteSpace(Model.CreatedLink.ProductName)
                         ? Model.CreatedLink.ProductName
                         : createdFallbackTitle;
@@ -108,6 +111,20 @@
                                     <span class="affiliate-target-badge">Link cửa hàng</span>
                                     <small data-affiliate-stable-url>@($"{Request.Host}{Request.PathBase}{Model.CreatedLink.RedirectUrl}")</small>
                                 }
+                                else if (createdIsTikTok)
+                                {
+                                    <span class="affiliate-inline-estimate">
+                                        @if (Model.CreatedLink.CreatorCommissionAmount.HasValue)
+                                        {
+                                            <text>Giá @(Model.CreatedLink.ProductPrice?.ToString("N0"))₫ · Hoa hồng Creator @(Model.CreatedLink.CreatorCommissionAmount.Value.ToString("N0"))₫</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Link TikTok Shop đã sẵn sàng</text>
+                                        }
+                                    </span>
+                                    <small data-affiliate-stable-url>@($"{Request.Host}{Request.PathBase}{Model.CreatedLink.RedirectUrl}")</small>
+                                }
                                 else if (Model.CreatedLink.EstimatedCommission.HasValue)
                                 {
                                     <span class="affiliate-inline-estimate">Hoàn lại dự kiến @Model.CreatedLink.EstimatedCommission.Value.ToString("N0")₫</span>
@@ -125,8 +142,8 @@
                         <a class="affiliate-inline-buy-button" href="@Model.CreatedLink.RedirectUrl" target="_blank"
                            data-iphone-external-url="@Model.CreatedLink.DirectUrl"
                            data-iphone-track-url="@(Model.CreatedLink.RedirectUrl + "/click")"
-                           data-turbo="false" rel="nofollow sponsored noopener noreferrer" referrerpolicy="no-referrer">@(createdIsShop ? "Vào Shop mua hàng" : "Mua ngay") <span>→</span></a>
-                        <p class="affiliate-inline-result-hint"><img src="~/catback/icons/shield-check.svg" alt="" />@(createdIsShop ? "Mở shop trên Shopee để thêm nhiều sản phẩm vào giỏ hàng trong cùng một lần mua." : "Mở sản phẩm trên Shopee và hoàn tất đơn trong cùng phiên để được ghi nhận hoàn tiền.")</p>
+                           data-turbo="false" rel="nofollow sponsored noopener noreferrer" referrerpolicy="no-referrer">@(createdIsShop ? "Vào Shop mua hàng" : createdIsTikTok ? "Mua trên TikTok" : "Mua ngay") <span>→</span></a>
+                        <p class="affiliate-inline-result-hint"><img src="~/catback/icons/shield-check.svg" alt="" />@(Model.CreatedLink.IsProductUrlFallback ? "Link sản phẩm gốc, chưa tạo link affiliate qua RioHub." : createdIsShop ? "Mở shop trên Shopee để thêm nhiều sản phẩm vào giỏ hàng trong cùng một lần mua." : createdIsTikTok ? "Mở link để xem sản phẩm và mua hàng trên TikTok Shop." : "Mở sản phẩm trên Shopee và hoàn tất đơn trong cùng phiên để được ghi nhận hoàn tiền.")</p>
                     </div>
                 }
                 <button class="dashboard-create-button" type="submit" id="create-button" hidden="@(Model.CreatedLink?.TargetType is AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop ? "hidden" : null)">Tạo link hoàn tiền <span>→</span></button>
@@ -169,7 +186,7 @@
                     <div class="dashboard-empty dashboard-link-empty">
                         <img src="~/catback/icons/empty-box.svg" alt="" />
                         <h3>Bạn chưa có link nào</h3>
-                        <p>Dán link Shopee để nhận hoàn tiền ngay!</p>
+                        <p>Dán link Shopee để bắt đầu.</p>
                         <div class="dashboard-link-empty-actions">
                             <button type="button" data-focus-link-input>Dán link ngay</button>
                             <a href="/huong-dan#tao-link-hoan-tien">Hướng dẫn tạo link <span>›</span></a>
@@ -184,11 +201,13 @@
                         var isNew = item.Id == Model.CreatedLinkId;
                         var isShop = item.TargetType == AffiliateLinkTargetType.Shop;
                         var isProduct = item.TargetType == AffiliateLinkTargetType.Product;
+                        var isTikTok = item.Platform == AffiliatePlatform.TikTok;
+                        var platformName = isTikTok ? "TikTok Shop" : "Shopee";
                         var shopFallback = !string.IsNullOrWhiteSpace(item.ShopId) ? $"Shop #{item.ShopId}" : "Cửa hàng Shopee";
                         var cardTitle = isShop
                             ? !string.IsNullOrWhiteSpace(item.ProductName) ? item.ProductName : shopFallback
-                            : isProduct ? item.ProductName ?? "Sản phẩm Shopee" : "Link Shopee";
-                        var buyLabel = isShop ? "Vào Shop" : isProduct ? "Mua ngay" : "Mở Shopee";
+                            : isProduct ? item.ProductName ?? $"Sản phẩm {platformName}" : $"Link {platformName}";
+                        var buyLabel = isShop ? "Vào Shop" : isTikTok ? "Mở TikTok" : isProduct ? "Mua ngay" : "Mở Shopee";
                         var fallbackImage = isShop ? "/catback/icons/shop-placeholder.svg" : "/catback/icons/shopping-bag.svg";
                         <article class="affiliate-link-card @(isShop ? "is-shop-link" : !isProduct ? "is-legacy-link" : string.Empty) @(isNew ? "is-new" : string.Empty) @(item.IsHidden ? "is-hidden" : string.Empty)" id="@(isNew ? "latest-link" : string.Empty)" data-link-id="@item.Id" data-target-type="@item.TargetType">
                             <div class="affiliate-product-image">
@@ -206,7 +225,7 @@
                                 <h3>@cardTitle</h3>
                                 @if (isProduct)
                                 {
-                                    <p class="affiliate-store">Sản phẩm từ Shopee</p>
+                                    <p class="affiliate-store">Sản phẩm từ @platformName</p>
                                 }
                                 else if (isShop)
                                 {
@@ -222,7 +241,7 @@
                                 {
                                     <span class="affiliate-hidden-badge">Đã ẩn</span>
                                 }
-                                @if (isProduct)
+                                @if (isProduct && !isTikTok)
                                 {
                                     @if (item.EstimatedCommission.HasValue)
                                     {
@@ -232,6 +251,14 @@
                                     {
                                         <p class="affiliate-estimate unavailable">Chưa có ước tính hoa hồng</p>
                                     }
+                                }
+                                @if (isTikTok && item.CreatorCommissionAmount.HasValue)
+                                {
+                                    <p class="affiliate-estimate">Giá @(item.ProductPrice?.ToString("N0"))₫ · Hoa hồng Creator @(item.CreatorCommissionAmount.Value.ToString("N0"))₫</p>
+                                }
+                                @if (item.IsProductUrlFallback)
+                                {
+                                    <p class="affiliate-link-meta" data-product-url-note>Link sản phẩm gốc · Chưa tạo affiliate qua RioHub</p>
                                 }
                             </div>
                             <div class="affiliate-link-actions">
@@ -326,7 +353,7 @@
         </div>
 
         <aside class="dashboard-sidebar">
-            <section class="cb-card affiliate-guide" id="how">
+            <section class="cb-card affiliate-guide" id="how" data-shopee-guide>
                 <h2><i class="cb-desktop-only fa-solid fa-book-open" hidden aria-hidden="true"></i>Để chắc chắn được tính hoa hồng</h2>
                 <ol>
                     <li><span>1</span><p>Bấm <strong>Mua ngay</strong> hoặc <strong>Vào Shop mua hàng</strong> để sang Shopee rồi đặt hàng.</p></li>
@@ -345,7 +372,7 @@
         <span class="eyebrow">Về dịch vụ</span>
         <h2 id="home-about-title">CatBack — Mua sắm và nhận lại hoa hồng</h2>
         <p>CatBack giúp bạn tạo link mua sắm Shopee, theo dõi đơn hàng và nhận một phần hoa hồng hợp lệ sau đối soát. Bạn mua hàng trên sàn; khoản hoàn tiền được quản lý trong tài khoản CatBack.</p>
-        <p>Số tiền dự kiến có thể thay đổi theo kết quả ghi nhận của nền tảng. TikTok Shop đang được chuẩn bị tích hợp và chưa khả dụng.</p>
+        <p>Số tiền dự kiến có thể thay đổi theo kết quả ghi nhận của nền tảng.</p>
     </div>
     <div class="cb-public-actions"><a class="button button-ghost" href="/About">Giới thiệu CatBack</a><a class="button button-ghost" href="/Contact">Liên hệ hỗ trợ</a></div>
 </section>

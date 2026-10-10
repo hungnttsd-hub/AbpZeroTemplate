@@ -1,0 +1,66 @@
+@page "/tiktok-affiliate/authorize"
+@model WebHoanTien.Web.Pages.TikTokCreatorAuthorizeModel
+@{
+    Layout = null;
+    var permissions = new[]
+    {
+        (Title: "Affiliate Information", Description: "The application will be able to access your TikTok Shop Affiliate information, including...", Expand: true),
+        (Title: "Read Showcase Products", Description: "The application will be able to access the products in your showcase.", Expand: false),
+        (Title: "Manage Showcase Products", Description: "The application will be able to manage the creator's showcase products, including ad...", Expand: true),
+        (Title: "Read Creator Affiliate Collaborations", Description: "The application will be able to get your collaborations, including getting the collabora...", Expand: true),
+        (Title: "Manage Affiliate Tracking Links", Description: "The application will be able to generate TikTok Shop Affiliate tracking links for you.", Expand: false),
+        (Title: "Read Affiliate Share Link", Description: "Allows the application to generate commissionable and trackable links on behalf of af...", Expand: true)
+    };
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Authorization · CatBack</title>
+    <link rel="icon" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/libs/@@fortawesome/fontawesome-free/css/all.css" />
+    <link rel="stylesheet" href="~/tiktok-creator-authorize.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="authorization-header">
+        <div class="authorization-brand"><i class="fa-brands fa-tiktok" aria-hidden="true"></i><span>TikTok Shop<small>Open Platform</small></span></div>
+        <span class="authorization-language" aria-disabled="true">English <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+    </header>
+    <main>
+        <h1>Authorization</h1>
+        <p class="authorization-local-note" lang="vi">Trang kết nối tại CatBack. Thao tác này lưu trạng thái tại CatBack, không cấp quyền TikTok thật.</p>
+        <form class="authorization-card" method="post" asp-page-handler="Authorize" data-turbo="false">
+            @Html.AntiForgeryToken()
+            <div class="authorization-apps" aria-label="CatBack and TikTok">
+                <img src="~/pwa-icon-512.png" width="60" height="60" alt="CatBack" />
+                <i class="fa-solid fa-arrow-right-arrow-left authorization-exchange" aria-hidden="true"></i>
+                <div class="authorization-tiktok"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></div>
+            </div>
+            <p class="authorization-intro">CatBack is requesting access to your account to receive the following data via API</p>
+            <div class="authorization-permissions" aria-label="Permission overview">
+                <label class="authorization-select-all"><input type="checkbox" checked data-authorization-select-all /> <span>Select all</span></label>
+                @foreach (var permission in permissions)
+                {
+                    <div class="authorization-permission">
+                        <input type="checkbox" checked data-authorization-permission aria-label="@permission.Title" />
+                        <div><p>@permission.Title</p><small>@permission.Description</small></div>
+                        @if (permission.Expand)
+                        {
+                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                        }
+                    </div>
+                }
+            </div>
+            <label class="authorization-acknowledgement"><input type="checkbox" /><span>I acknowledge that by clicking "Authorize", the data, as described above, will immediately and automatically be shared with DIMACO ADVERTISING AND</span></label>
+            @if (Model.Error is not null)
+            {
+                <p class="authorization-error" role="alert" lang="vi">@Model.Error</p>
+            }
+            <div class="authorization-actions"><button type="button" disabled>Reject</button><button type="submit" class="authorization-submit">Authorize</button></div>
+        </form>
+    </main>
+    <script src="~/tiktok-creator-authorize.js" asp-append-version="true"></script>
+</body>
+</html>

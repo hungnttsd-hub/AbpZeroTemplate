@@ -1,0 +1,19 @@
+@model string
+@{
+    var showTikTokShop = ViewData["ShowTikTokShop"] is not false;
+    var isTikTok = showTikTokShop && TikTokAffiliateUrl.TryNormalize(Model, out _, out _);
+}
+<fieldset class="affiliate-platform-picker" data-platform-picker>
+    <legend class="sr-only">Chọn sàn mua sắm</legend>
+    <label>
+        <input type="radio" name="linkPlatform" value="Shopee" checked="@(!isTikTok)" />
+        <span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Shopee</span>
+    </label>
+    @if (showTikTokShop)
+    {
+        <label>
+            <input type="radio" name="linkPlatform" value="TikTok" checked="@isTikTok" />
+            <span><i class="fa-brands fa-tiktok" aria-hidden="true"></i> TikTok Shop</span>
+        </label>
+    }
+</fieldset>

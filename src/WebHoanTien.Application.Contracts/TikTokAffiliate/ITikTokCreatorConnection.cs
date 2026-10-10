@@ -7,5 +7,6 @@ public interface ITikTokCreatorConnection
 {
     bool IsConfigured { get; }
     Task<TikTokCreatorDto?> GetProfile();
+    Task<string> GetLink(string productId);
     Task Disconnect();
 }

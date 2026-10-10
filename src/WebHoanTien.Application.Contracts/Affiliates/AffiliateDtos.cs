@@ -37,6 +37,7 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
 {
     public bool IsExisting { get; set; }
     public bool WasRestored { get; set; }
+    public bool IsProductUrlFallback { get; set; }
     public AffiliatePlatform Platform { get; set; }
     public AffiliateLinkTargetType TargetType { get; set; }
     public string TrackingToken { get; set; } = string.Empty;
@@ -47,6 +48,8 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
     public string? ProductName { get; set; }
     public string? ImageUrl { get; set; }
     public decimal? EstimatedCommission { get; set; }
+    public decimal? ProductPrice { get; set; }
+    public decimal? CreatorCommissionAmount { get; set; }
     public int ClickCount { get; set; }
     public DateTime? LastClickedAt { get; set; }
     public bool IsHidden { get; set; }

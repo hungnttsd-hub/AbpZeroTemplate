@@ -9,10 +9,10 @@ Ngày đối chiếu: 08/10/2026 (Asia/Bangkok).
 ## Phạm vi triển khai
 
 - Nút **Kết nối TikTok Creator thật** riêng trên `/tiktok-affiliate`, chỉ cho user được policy IsTiktokDemo cho phép. Nút demo và dữ liệu demo giữ độc lập.
-- POST `/api/tiktok-shop/oauth/connect` dùng antiforgery, sinh state ngẫu nhiên 256 bit, gắn với tenant/user/app và cookie HttpOnly/Secure/Lax. State hết hạn 15 phút và được xóa trước khi đổi code. Bắt đầu lại hủy state trước đó của trình duyệt.
+- POST `/api/tiktok-shop/oauth/connect` nhận Username TikTok từ form workspace có antiforgery. `hungnttsd` đi qua hai trang kết nối cục bộ; username khác dùng luồng thật. State ngẫu nhiên 256 bit gắn với tenant/user/app/username và cookie HttpOnly/Secure/Lax. State hết hạn 15 phút và được xóa trước khi đổi code. Bắt đầu lại hủy state trước đó của trình duyệt.
 - GET `/api/tiktok-shop/oauth/callback` vẫn cho TikTok kiểm tra URL bằng HEAD hoặc GET không query. Callback có code phải kiểm tra phiên CatBack, policy và state trước khi gửi code tới TikTok.
 - Đổi code bằng Get Access Token, đúng `grant_type=authorized_code`. Chỉ nhận `user_type=1` và `granted_scopes` chứa `creator.affiliate.info`.
-- Gọi Get Creator Profile `GET /affiliate_creator/202508/profiles`, ký HMAC-SHA256 theo tài liệu, đọc `creator_user_open_id`, `username`, `selection_region`. Chỉ xác nhận kết nối khi profile API thành công và region VN. Dùng username làm nhãn tên vì response hiện hành không cung cấp displayName theo DTO CatBack.
+- Gọi Get Creator Profile `GET /affiliate_creator/202508/profiles`, ký HMAC-SHA256 theo tài liệu, đọc `creator_user_open_id`, `username`, `selection_region`. Chỉ xác nhận kết nối khi profile API thành công, region VN và username khớp lựa chọn. Username khác thì xóa token và báo lỗi. Dùng username làm nhãn tên vì response hiện hành không cung cấp displayName theo DTO CatBack. Callback thành công về `/tiktok-affiliate`; endpoint Result chỉ còn dùng cho thông báo lỗi.
 - Token và refresh token được mã hóa bằng Data Protection, purpose gắn tenant/user/app key, lưu trong cache đã cấu hình. Phiên thử tối đa 8 giờ mỗi lần lưu, giới hạn bởi refresh expiry; cache không bền vững sẽ mất khi restart. Refresh kiểm tra lại user type, scope và open_id. Đây chưa phải token store lâu dài phục vụ production.
 - Kết quả callback chuyển về URL không có query. Không xuất token/code/secret ra UI hoặc log. Client HTTP riêng tắt logger mặc định và redirect, chỉ log stage/HTTP/code/request_id, không ghi response message hoặc exception message có thể chứa thông tin nhạy cảm.
 - Ngắt kết nối tại CatBack xóa token cục bộ và pending state; không thu hồi authorization tại TikTok. Muốn thu hồi quyền cần thao tác trên TikTok.
@@ -22,7 +22,7 @@ Ngày đối chiếu: 08/10/2026 (Asia/Bangkok).
 
 Điền `TikTokShop.AppKey`, `TikTokShop.AppSecret` trong file secrets trên máy chủ đang chạy. App Secret không đưa vào chat, Git hoặc trình duyệt. File secrets cục bộ có giá trị không chứng minh server production đã nạp cùng cấu hình; application nạp secrets lúc startup.
 
-Redirect URL trong Partner Center phải trùng `https://catback.id.vn/api/tiktok-shop/oauth/callback`. Code đọc `TikTokShop.RedirectUrl` nếu đặt, nếu không dùng `App.SelfUrl` + callback path. Bắt đầu kết nối trên cùng domain HTTPS để cookie/state và phiên CatBack trở lại đúng server. Không chạy từ localhost với callback trỏ production; không sửa Redirect URL đã đăng ký bằng suy đoán.
+Redirect URL trong Partner Center phải trùng `https://catback.id.vn/api/tiktok-shop/oauth/callback`. Code đọc `TikTokShop.RedirectUrl` nếu đặt, nếu không dùng `App.SelfUrl` + callback path. Nếu bắt đầu từ localhost hoặc host/port khác, POST kết nối chuyển sang workspace HTTPS trên domain callback và điền sẵn username; đăng nhập CatBack trên domain đó nếu cần rồi bấm Kết nối để mở TikTok Creator authorization thật. Không tạo state/token ở localhost cho callback production. Khi host/port đã khớp, không chặn chỉ vì backend nhận HTTP sau proxy kết thúc TLS: state cookie vẫn Secure và callback cấu hình vẫn bắt buộc HTTPS. Không sửa Redirect URL đã đăng ký bằng suy đoán.
 
 1. Triển khai code mới lên domain callback đã đăng ký và restart với cấu hình secrets đúng.
 2. Đăng nhập CatBack bằng tài khoản IsTiktokDemo=true.

@@ -35,6 +35,7 @@ using WebHoanTien.Web.Operations;
 using WebHoanTien.Web.IdentityExtensions;
 using WebHoanTien.Web.Integrations;
 using WebHoanTien.TikTokAffiliate;
+using WebHoanTien.Integrations.RioHub;
 using WebHoanTien.Operations;
 using WebHoanTien.Affiliates;
 using Microsoft.OpenApi.Models;
@@ -555,5 +556,12 @@ public class WebHoanTienWebModule : AbpModule
             "affiliate-retention-daily",
             job => job.ExecuteAsync(new AffiliateRetentionJobArgs()),
             retentionCron);
+
+        var rioHub = context.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RioHubOptions>>().Value;
+        if (rioHub.Enabled && rioHub.SyncEnabled)
+            RecurringJob.AddOrUpdate<RioHubOrderSyncJob>(
+                "riohub-tiktok-orders", job => job.ExecuteAsync(System.Threading.CancellationToken.None), rioHub.SyncCron);
+        else
+            RecurringJob.RemoveIfExists("riohub-tiktok-orders");
     }
 }

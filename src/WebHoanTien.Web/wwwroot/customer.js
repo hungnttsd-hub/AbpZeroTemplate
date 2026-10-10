@@ -5,7 +5,9 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   const clearButton = document.getElementById('affiliate-url-clear');
   const urlStatus = document.getElementById('url-status');
   const dashboardLinks = document.querySelector('.dashboard-links');
-  const createButtonContent = createButton?.innerHTML;
+  let createButtonContent = createButton?.innerHTML;
+  const platformInputs = Array.from(linkForm?.querySelectorAll('[data-platform-picker] input') || []);
+  let creatingLink = false;
 
   const closeActionSheet = (sheet) => {
     if (!sheet) return;
@@ -28,6 +30,50 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     urlStatus.textContent = message;
     urlStatus.dataset.state = state;
   };
+
+  const detectInputPlatform = () => {
+    try {
+      const host = new URL(linkInput?.value.trim()).hostname.toLowerCase();
+      if (host === 'tiktok.com' || host.endsWith('.tiktok.com')) return 'TikTok';
+      if (['shopee.vn', 'www.shopee.vn', 's.shopee.vn', 'shope.ee', 'vn.shp.ee'].includes(host)) return 'Shopee';
+    } catch { /* The URL can still be incomplete while typing. */ }
+    return null;
+  };
+
+  const syncPlatform = () => {
+    const isTikTok = platformInputs.some((input) => input.checked && input.value === 'TikTok');
+    const title = linkForm?.querySelector('[data-platform-title]');
+    const note = linkForm?.querySelector('[data-platform-note]');
+    const label = linkForm?.querySelector('[data-platform-url-label]');
+    if (title) title.textContent = isTikTok ? 'Dán link TikTok Shop tại đây' : 'Dán link Shopee tại đây';
+    if (note) note.textContent = isTikTok
+      ? 'Dán link sản phẩm TikTok Shop để tạo link mua hàng. Thông tin hoàn tiền TikTok sẽ được cập nhật sau.'
+      : 'Nhận cả link sản phẩm và link cửa hàng — CatBack tự động nhận diện.';
+    if (label) label.textContent = isTikTok ? 'Link sản phẩm TikTok Shop' : 'Link sản phẩm hoặc cửa hàng Shopee';
+    if (linkInput) linkInput.placeholder = isTikTok
+      ? 'Dán link sản phẩm TikTok Shop...'
+      : 'Dán link sản phẩm hoặc cửa hàng Shopee...';
+    if (createButton && !creatingLink) {
+      const arrow = document.createElement('span');
+      arrow.textContent = '→';
+      createButton.replaceChildren(document.createTextNode(isTikTok ? 'Tạo link TikTok ' : 'Tạo link hoàn tiền '), arrow);
+      createButtonContent = createButton.innerHTML;
+    }
+    document.querySelectorAll('[data-shopee-guide]').forEach((guide) => { guide.hidden = isTikTok; });
+    document.querySelectorAll('[data-tiktok-guide]').forEach((guide) => { guide.hidden = !isTikTok; });
+    const guideLink = linkForm?.querySelector('.dashboard-guide-link');
+    if (guideLink) guideLink.hidden = isTikTok;
+  };
+
+  platformInputs.forEach((input) => input.addEventListener('change', () => {
+    if (creatingLink) return;
+    if (linkInput) linkInput.value = '';
+    clearInlineResult();
+    showUrlStatus('', 'idle');
+    syncClearButton();
+    syncPlatform();
+    linkInput?.focus();
+  }, { signal }));
 
   const showVisibilityError = (message) => {
     if (window.CatsBackModal?.info) {
@@ -137,11 +183,14 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const actionSheetId = getActionSheetId(linkId);
     const targetType = link.targetType || 'Product';
     const isShop = targetType === 'Shop';
+    const isTikTok = link.platform === 'TikTok';
+    const platformName = isTikTok ? 'TikTok Shop' : 'Shopee';
     const title = isShop
       ? (link.productName || (link.shopId ? `Shop #${link.shopId}` : 'Cửa hàng Shopee'))
-      : (link.productName || 'Sản phẩm Shopee');
+      : (link.productName || `Sản phẩm ${platformName}`);
     card.dataset.linkId = linkId;
     card.dataset.targetType = targetType;
+    card.dataset.platform = link.platform || 'Shopee';
     card.classList.remove('is-hidden', 'is-removing');
     card.classList.toggle('is-shop-link', isShop);
     card.classList.remove('is-legacy-link');
@@ -171,7 +220,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
       targetBadge?.insertAdjacentElement('afterend', linkMeta);
     }
     if (store) {
-      store.textContent = 'Sản phẩm từ Shopee';
+      store.textContent = `Sản phẩm từ ${platformName}`;
       store.hidden = isShop;
     }
     if (targetBadge) {
@@ -183,19 +232,37 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
       linkMeta.hidden = !isShop;
     }
 
-    const estimate = card.querySelector('.affiliate-estimate');
+    let estimate = card.querySelector('.affiliate-estimate');
+    if (!estimate && isTikTok && link.creatorCommissionLabel) {
+      estimate = document.createElement('p');
+      estimate.className = 'affiliate-estimate';
+      card.querySelector('.affiliate-link-details')?.appendChild(estimate);
+    }
     if (estimate) {
-      estimate.hidden = isShop;
-      estimate.textContent = link.estimatedCommissionLabel
+      estimate.hidden = isShop || (isTikTok && !link.creatorCommissionLabel);
+      estimate.textContent = isTikTok
+        ? `Giá ${link.productPriceLabel} · Hoa hồng Creator ${link.creatorCommissionLabel}`
+        : link.estimatedCommissionLabel
         ? `Hoàn lại dự kiến ${link.estimatedCommissionLabel}`
         : 'Chưa có ước tính hoa hồng';
-      estimate.classList.toggle('unavailable', !link.estimatedCommissionLabel);
+      estimate.classList.toggle('unavailable', !isTikTok && !link.estimatedCommissionLabel);
+    }
+    let productUrlNote = card.querySelector('[data-product-url-note]');
+    if (!productUrlNote && link.isProductUrlFallback) {
+      productUrlNote = document.createElement('p');
+      productUrlNote.className = 'affiliate-link-meta';
+      productUrlNote.dataset.productUrlNote = '';
+      card.querySelector('.affiliate-link-details')?.appendChild(productUrlNote);
+    }
+    if (productUrlNote) {
+      productUrlNote.hidden = !link.isProductUrlFallback;
+      productUrlNote.textContent = 'Link sản phẩm gốc · Chưa tạo affiliate qua RioHub';
     }
 
     const buyButton = card.querySelector('.affiliate-buy-button');
     if (buyButton) {
       buyButton.href = link.redirectUrl;
-      buyButton.textContent = isShop ? 'Vào Shop' : 'Mua ngay';
+      buyButton.textContent = isShop ? 'Vào Shop' : isTikTok ? 'Mở TikTok' : 'Mua ngay';
       buyButton.target = '_blank';
       buyButton.dataset.iphoneExternalUrl = link.directUrl || '';
       buyButton.dataset.iphoneTrackUrl = link.redirectUrl ? `${link.redirectUrl}/click` : '';
@@ -234,12 +301,13 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const fragment = template.content.cloneNode(true);
     const result = fragment.querySelector('[data-affiliate-inline-result]');
     const isShop = link.targetType === 'Shop';
+    const isTikTok = link.platform === 'TikTok';
     const fallbackImage = isShop
       ? '/catback/icons/shop-placeholder.svg'
       : '/catback/icons/shopping-bag.svg';
     const title = isShop
       ? (link.productName || (link.shopId ? `Shop #${link.shopId}` : 'Cửa hàng Shopee'))
-      : (link.productName || 'Sản phẩm Shopee');
+      : (link.productName || (isTikTok ? 'Sản phẩm TikTok Shop' : 'Sản phẩm Shopee'));
     result?.classList.add(isShop ? 'is-shop' : 'is-product');
     const titleElement = result?.querySelector('[data-affiliate-title]');
     if (titleElement) titleElement.textContent = title;
@@ -260,7 +328,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const stableUrl = new URL(link.redirectUrl, window.location.origin).href;
     const stableUrlElement = result?.querySelector('[data-affiliate-stable-url]');
     if (stableUrlElement) {
-      if (isShop) {
+      if (isShop || isTikTok) {
         stableUrlElement.textContent = stableUrl.replace(/^https?:\/\//, '');
         stableUrlElement.hidden = false;
       } else {
@@ -270,18 +338,25 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const estimateElement = result?.querySelector('[data-affiliate-estimate]');
     if (estimateElement) {
       estimateElement.hidden = isShop;
-      estimateElement.classList.toggle('unavailable', !link.estimatedCommissionLabel);
-      estimateElement.textContent = link.estimatedCommissionLabel
+      estimateElement.classList.toggle('unavailable', !isTikTok && !link.estimatedCommissionLabel);
+      estimateElement.textContent = isTikTok
+        ? link.creatorCommissionLabel
+          ? `Giá ${link.productPriceLabel} · Hoa hồng Creator ${link.creatorCommissionLabel}`
+          : 'Link TikTok Shop đã sẵn sàng'
+        : link.estimatedCommissionLabel
         ? `Hoàn lại dự kiến ${link.estimatedCommissionLabel}`
         : 'Chưa có ước tính hoa hồng';
     }
     const copyButton = result?.querySelector('[data-copy-url]');
     if (copyButton) copyButton.dataset.copyUrl = link.redirectUrl;
     const buyLabel = result?.querySelector('[data-affiliate-buy-label]');
-    if (buyLabel) buyLabel.textContent = isShop ? 'Vào Shop mua hàng' : 'Mua ngay';
+    if (buyLabel) buyLabel.textContent = isShop ? 'Vào Shop mua hàng' : isTikTok ? 'Mua trên TikTok' : 'Mua ngay';
     const hint = result?.querySelector('[data-affiliate-hint]');
     if (hint) hint.textContent = isShop
       ? 'Mở shop trên Shopee để thêm nhiều sản phẩm vào giỏ hàng trong cùng một lần mua.'
+      : isTikTok ? link.isProductUrlFallback
+        ? 'Link sản phẩm gốc, chưa tạo link affiliate qua RioHub.'
+        : 'Mở link để xem sản phẩm và mua hàng trên TikTok Shop.'
       : 'Mở sản phẩm trên Shopee và hoàn tất đơn trong cùng phiên để được ghi nhận hoàn tiền.';
     const buyButton = result?.querySelector('.affiliate-inline-buy-button');
     if (buyButton) {
@@ -398,6 +473,11 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   };
 
   linkInput?.addEventListener('input', () => {
+    const detectedPlatform = detectInputPlatform();
+    if (detectedPlatform && platformInputs.some((input) => input.value === detectedPlatform)) {
+      platformInputs.forEach((input) => { input.checked = input.value === detectedPlatform; });
+      syncPlatform();
+    }
     syncClearButton();
     if (linkForm?.querySelector('[data-affiliate-inline-result]')) clearInlineResult();
     if (urlStatus?.dataset.state !== 'idle') showUrlStatus('', 'idle');
@@ -410,10 +490,21 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     linkInput.focus();
   }, { signal });
   syncClearButton();
+  syncPlatform();
 
   linkForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (linkForm.dataset.tiktokEnabled === 'false' && detectInputPlatform() === 'TikTok') {
+      showUrlStatus('Trang chủ hiện chỉ hỗ trợ link Shopee.', 'error');
+      return;
+    }
     if (!createButton || !linkForm.checkValidity() || createButton.disabled) return;
+
+    const formData = new FormData(linkForm);
+    creatingLink = true;
+    platformInputs.forEach((input) => { input.disabled = true; });
+    if (linkInput) linkInput.readOnly = true;
+    if (clearButton) clearButton.disabled = true;
 
     window.CatBackLoading?.setButtonLoading(createButton, true, { text: 'Đang tạo link...' });
     if (!window.CatBackLoading) {
@@ -423,7 +514,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     try {
       const response = await fetch(linkForm.action, {
         method: 'POST',
-        body: new FormData(linkForm),
+        body: formData,
         credentials: 'same-origin',
         headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }
       });
@@ -441,6 +532,10 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     } catch (error) {
       showUrlStatus(error.message || 'Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.', 'error');
     } finally {
+      creatingLink = false;
+      platformInputs.forEach((input) => { input.disabled = false; });
+      if (linkInput) linkInput.readOnly = false;
+      if (clearButton) clearButton.disabled = false;
       window.CatBackLoading?.setButtonLoading(createButton, false);
       if (!window.CatBackLoading) {
         createButton.disabled = false;

@@ -6,9 +6,8 @@
 .tt-hero h1 { font-size: clamp(28px, 3vw, 38px); letter-spacing: -.045em; margin: 0 0 10px; }
 .tt-hero p:not(.tt-eyebrow) { color: var(--muted, #7d6873); max-width: 590px; font-size: 14px; margin: 0; }
 .tt-market { border: 1px solid var(--surface-border, #d4eaf3); border-radius: 30px; padding: 10px 16px; background: white; font-size: 13px; white-space: nowrap; }
-.tt-demo-banner { display: flex; align-items: center; gap: 14px; border: 1px solid #d4e4f0; background: #f3f8fc; padding: 13px 16px; border-radius: 15px; }
-.tt-demo-banner p { margin: 0; color: #526e88; font-size: 12px; line-height: 1.6; }
-.tt-demo-badge { white-space: nowrap; border-radius: 20px; padding: 5px 10px; font-size: 11px; font-weight: 800; background: #dcebf6; color: #406484; }
+.tt-service-banner { border: 1px solid #d4e4f0; background: #f3f8fc; padding: 13px 16px; border-radius: 15px; }
+.tt-service-banner p { margin: 6px 0 0; color: #526e88; font-size: 12px; line-height: 1.6; }
 .tt-tabs { display: flex; gap: 6px; border-bottom: 1px solid #d4eaf3; margin: 22px 0; overflow-x: auto; }
 .tt-tabs button { border: 0; border-bottom: 3px solid transparent; background: transparent; padding: 15px 16px; white-space: nowrap; color: #647d8f; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .tt-tabs button[aria-selected=true] { border-color: #068e94; color: #075b81; }
@@ -45,6 +44,7 @@
 .tt-text-button { border: 0; padding: 0; background: transparent; color: #08768e; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 .tt-product { border-top: 1px solid #dce7e9; margin-top: 20px; padding-top: 20px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; align-items: center; }
 .tt-product img { width: 150px; height: 150px; object-fit: cover; border-radius: 16px; background: #edf6f8; }
+.tt-product.has-no-image { grid-template-columns: minmax(0, 1fr); }
 .tt-product .tt-label { font-size: 10px; display: inline-block; margin-bottom: 7px; }
 .tt-price { font-size: 22px; display: block; margin: 12px 0; letter-spacing: -.03em; }
 .tt-commission { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; background: #e8f7fa; border-radius: 9px; padding: 10px; color: #075b81; }
@@ -71,6 +71,7 @@
 .tt-table-scroll th { text-align: left; font-weight: 700; padding: 14px 12px; white-space: nowrap; color: #647d8f; background: #f2f9fc; }
 .tt-table-scroll td { border-bottom: 1px solid #dce7e9; padding: 18px 12px; white-space: nowrap; }
 .tt-table-scroll td:first-child { font-weight: 700; }
+.tt-table-scroll td.tt-order-product { min-width: 200px; max-width: 300px; white-space: normal; overflow-wrap: anywhere; }
 .tt-table-scroll small { display: block; font-weight: 400; font-size: 10px; color: #647d8f; margin-top: 5px; }
 .tt-table-actions { display: flex; align-items: center; gap: 12px; }
 .tt-table-actions a, .tt-table-actions button { color: #075b81; font: inherit; font-weight: 700; background: transparent; border: 0; padding: 4px; cursor: pointer; text-decoration: none; }
@@ -82,7 +83,7 @@
 @media (max-width: 600px) {
   .tt-workspace { padding: 0 14px; margin-top: 12px; } .tt-mobile-header { display: flex; margin-bottom: 20px; align-items: center; gap: 12px; }
   .tt-hero { align-items: start; gap: 10px; } .tt-hero h1 { display: none; } .tt-hero .tt-eyebrow { font-size: 9px; } .tt-hero p:not(.tt-eyebrow) { font-size: 12px; }
-  .tt-market { padding: 7px 9px; font-size: 11px; } .tt-demo-banner { align-items: flex-start; gap: 10px; } .tt-demo-banner p { font-size: 10px; }
+  .tt-market { padding: 7px 9px; font-size: 11px; } .tt-service-banner p { font-size: 10px; }
   .tt-tabs button { padding: 14px 10px; font-size: 12px; } .tt-card { padding: 18px; } .tt-card-heading { flex-wrap: wrap; gap: 10px; } .tt-card-heading h2 { font-size: 16px; }
   .tt-card-heading > .tt-status { margin-left: 46px; } .tt-input-row { flex-wrap: wrap; } .tt-input-row .tt-button { width: 100%; }
   .tt-product { grid-template-columns: 100px minmax(0, 1fr); gap: 12px; } .tt-product img { width: 100px; height: 110px; } .tt-product h3 { font-size: 14px; }

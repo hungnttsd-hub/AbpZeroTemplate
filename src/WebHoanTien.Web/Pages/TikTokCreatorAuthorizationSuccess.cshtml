@@ -1,0 +1,34 @@
+@page "/tiktok-affiliate/authorization-success"
+@model WebHoanTien.Web.Pages.TikTokCreatorAuthorizationSuccessModel
+@{
+    Layout = null;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Authorization successful · CatBack</title>
+    <link rel="icon" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/libs/@@fortawesome/fontawesome-free/css/all.css" />
+    <link rel="stylesheet" href="~/tiktok-creator-authorize.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="authorization-header">
+        <div class="authorization-brand"><i class="fa-brands fa-tiktok" aria-hidden="true"></i><span>TikTok Shop<small>Open Platform</small></span></div>
+        <span class="authorization-language" aria-disabled="true">English <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+    </header>
+    <main class="authorization-success-main">
+        <h1>Authorization</h1>
+        <section class="authorization-card authorization-success-card" aria-labelledby="authorization-success-title">
+            <img class="authorization-success-icon" src="~/tiktok-authorization-success.svg" width="120" height="120" alt="" />
+            <h2 id="authorization-success-title">Authorization successful</h2>
+            <p class="authorization-success-description">You'll be redirected to the app or service. This may<br class="authorization-success-break" /> take a few seconds.</p>
+            <a class="authorization-success-done" href="/tiktok-affiliate" data-authorization-done data-turbo="false">Done(<span data-authorization-countdown aria-live="polite">5</span>)</a>
+            <noscript><p class="authorization-no-script" lang="vi">Bấm Done để quay về màn hình kết nối thành công.</p></noscript>
+        </section>
+    </main>
+    <script src="~/tiktok-authorization-success.js" asp-append-version="true"></script>
+</body>
+</html>

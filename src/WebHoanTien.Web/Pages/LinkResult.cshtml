@@ -3,10 +3,12 @@
 @{
     var isShop = Model.Tracking.TargetType == AffiliateLinkTargetType.Shop;
     var isProduct = Model.Tracking.TargetType == AffiliateLinkTargetType.Product;
+    var isTikTok = Model.Tracking.Platform == AffiliatePlatform.TikTok;
+    var platformName = isTikTok ? "TikTok Shop" : "Shopee";
     var shopFallback = !string.IsNullOrWhiteSpace(Model.Tracking.ShopId) ? $"Shop #{Model.Tracking.ShopId}" : "Cửa hàng Shopee";
     var resultTitle = isShop
         ? !string.IsNullOrWhiteSpace(Model.Tracking.ProductName) ? Model.Tracking.ProductName : shopFallback
-        : isProduct ? Model.Tracking.ProductName ?? "Sản phẩm Shopee của bạn" : "Link Shopee";
+        : isProduct ? Model.Tracking.ProductName ?? $"Sản phẩm {platformName} của bạn" : $"Link {platformName}";
     var shopImage = !string.IsNullOrWhiteSpace(Model.Tracking.ImageUrl)
         ? Model.Tracking.ImageUrl
         : "/catback/icons/shop-placeholder.svg";
@@ -29,6 +31,15 @@
             <h1>@resultTitle</h1>
             <p class="muted">Link cũ chưa phân loại. Link chuyển hướng vẫn tiếp tục hoạt động.</p>
         }
+        else if (isTikTok)
+        {
+            <h1>@resultTitle</h1>
+            <p class="muted">@(Model.Tracking.IsProductUrlFallback ? "Link sản phẩm gốc đã sẵn sàng; chưa tạo link affiliate qua RioHub." : "Link TikTok Shop của bạn đã sẵn sàng.")</p>
+            @if (Model.Tracking.CreatorCommissionAmount.HasValue)
+            {
+                <p class="estimate">Giá @(Model.Tracking.ProductPrice?.ToString("N0"))₫ · Hoa hồng Creator @(Model.Tracking.CreatorCommissionAmount.Value.ToString("N0"))₫</p>
+            }
+        }
         else if (Model.Tracking.EstimatedCommission.HasValue)
         {
             <h1>@resultTitle</h1>
@@ -43,8 +54,8 @@
         <a class="button button-dark button-wide" href="@Model.Tracking.RedirectUrl" target="_blank"
            data-iphone-external-url="@Model.Tracking.DirectUrl"
            data-iphone-track-url="@(Model.Tracking.RedirectUrl + "/click")"
-           data-turbo="false" rel="nofollow sponsored noopener noreferrer" referrerpolicy="no-referrer">@(isShop ? "Vào Shop mua hàng →" : isProduct ? "Mua trên Shopee →" : "Mở Shopee →")</a>
-        <p class="fine-print">Hãy hoàn tất đơn trong cùng phiên sau khi mở link. Shopee quyết định việc ghi nhận và xác thực hoa hồng.</p>
+           data-turbo="false" rel="nofollow sponsored noopener noreferrer" referrerpolicy="no-referrer">@(isShop ? "Vào Shop mua hàng →" : isTikTok ? "Mua trên TikTok →" : isProduct ? "Mua trên Shopee →" : "Mở Shopee →")</a>
+        <p class="fine-print">@(isTikTok ? "Mở link để xem sản phẩm và mua hàng trên TikTok Shop." : "Hãy hoàn tất đơn trong cùng phiên sau khi mở link. Shopee quyết định việc ghi nhận và xác thực hoa hồng.")</p>
     </div>
     <p class="center"><a href="/Links">Xem các link đã tạo</a> · <a href="/Orders">Đơn của tôi</a></p>
 </section>

@@ -69,6 +69,13 @@ public class AffiliateRedirectController : Controller
     {
         var tracking = (await _trackings.GetListAsync(x => x.TrackingToken == trackingToken &&
             x.Status == AffiliateTrackingStatus.Active)).FirstOrDefault();
+        if (tracking is not null && tracking.Platform == AffiliatePlatform.TikTok)
+        {
+            if (!TikTokAffiliateUrl.TryNormalize(tracking.AffiliateUrl, out _, out _))
+                return AffiliateNavigation.Failed(NotFound());
+            return AffiliateNavigation.Succeeded(tracking,
+                new ResolvedAffiliateId(string.Empty, null), tracking.AffiliateUrl!);
+        }
         if (tracking is null || tracking.Platform != AffiliatePlatform.Shopee ||
             !_normalizer.TryNormalize(tracking.NormalizedUrl, out var normalizedUrl, out _))
             return AffiliateNavigation.Failed(NotFound());

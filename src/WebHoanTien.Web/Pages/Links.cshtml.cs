@@ -74,10 +74,14 @@ public class LinksModel : PageModel
                 link = new
                 {
                     id = result.Id,
+                    platform = result.Platform.ToString(),
+                    isProductUrlFallback = result.IsProductUrlFallback,
                     targetType = result.TargetType.ToString(),
                     productName = result.ProductName,
                     shopId = result.ShopId,
                     imageUrl = result.ImageUrl,
+                    productPriceLabel = result.ProductPrice.HasValue ? result.ProductPrice.Value.ToString("N0") + "₫" : null,
+                    creatorCommissionLabel = result.CreatorCommissionAmount.HasValue ? result.CreatorCommissionAmount.Value.ToString("N0") + "₫" : null,
                     estimatedCommissionLabel = result.EstimatedCommission.HasValue
                         ? result.EstimatedCommission.Value.ToString("N0") + "₫"
                         : null,

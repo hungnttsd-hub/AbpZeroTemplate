@@ -759,3 +759,49 @@ body.pwa-install-open { overflow: hidden; }
   .affiliate-inline-result-summary { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 8px; }
   .affiliate-inline-result-image { width: 48px; height: 48px; }
 }
+/* Platform picker shared by the home and saved-links forms. */
+.affiliate-platform-picker {
+    display: flex;
+    gap: 8px;
+    border: 0;
+    padding: 5px;
+    margin: 0 0 20px;
+    background: #f2f5f3;
+    border-radius: 15px;
+    min-width: 0;
+}
+.affiliate-platform-picker label { position: relative; flex: 1; margin: 0; cursor: pointer; min-width: 0; }
+.dashboard-create-card .affiliate-platform-picker input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+.affiliate-platform-picker label > span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #66776b;
+    transition: background .15s, color .15s, box-shadow .15s;
+}
+.affiliate-platform-picker input:checked + span {
+    color: #237445;
+    background: #fff;
+    border-color: #dce8df;
+    box-shadow: 0 2px 6px rgba(29, 64, 41, .06);
+}
+.affiliate-platform-picker input[value="TikTok"]:checked + span { color: #172622; }
+.affiliate-platform-picker input:focus-visible + span { outline: 2px solid #237445; outline-offset: 2px; }
+.affiliate-platform-picker input:disabled + span { cursor: wait; opacity: .65; }
+[data-tiktok-guide][hidden], [data-shopee-guide][hidden], .dashboard-guide-link[hidden] { display: none !important; }

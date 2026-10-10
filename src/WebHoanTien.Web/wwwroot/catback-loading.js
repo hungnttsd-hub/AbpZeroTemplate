@@ -248,7 +248,8 @@
       if (!form) return;
       const submitter = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
       setButtonLoading(submitter, true, { text: form.dataset.loadingText || 'Đang xử lý...' });
-      showPage(form.dataset.pageLoadingText || 'Đang xử lý yêu cầu...', { delay: 220 });
+      if (form.dataset.pageLoading !== 'false')
+        showPage(form.dataset.pageLoadingText || 'Đang xử lý yêu cầu...', { delay: 220 });
     });
   });
 
@@ -256,6 +257,7 @@
   document.addEventListener('turbo:before-cache', hidePage);
   document.addEventListener('turbo:before-fetch-request', (event) => {
     const form = event.target instanceof HTMLFormElement ? event.target : null;
+    if (form?.dataset.pageLoading === 'false') return;
     showPage(form?.dataset.pageLoadingText || (form ? 'Đang xử lý yêu cầu...' : 'Đang tải trang...'));
   });
   document.addEventListener('turbo:before-render', hidePage);

@@ -1,0 +1,55 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f7f7fc; color: #111; font: 14px/1.5 Arial, sans-serif; }
+.authorization-header { height: 62px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px 0 14px; background: #111; color: #fff; }
+.authorization-brand { display: flex; align-items: center; gap: 6px; font-size: 16px; line-height: 15px; }
+.authorization-brand > i { font-size: 30px; color: #fff; text-shadow: -2px 0 #25f4ee, 2px 1px #fe2c55; }
+.authorization-brand small { display: block; font-size: 14px; }
+.authorization-language { display: flex; align-items: center; gap: 9px; color: #aaa; font-size: 16px; }
+.authorization-language i { font-size: 10px; }
+main { padding: 22px 16px 28px; }
+h1 { margin: 0 0 8px; text-align: center; color: #17324c; font-size: 28px; line-height: 36px; }
+.authorization-local-note { max-width: 612px; margin: 0 auto 16px; color: #65717b; font-size: 11px; text-align: center; }
+.authorization-card { width: 100%; max-width: 612px; margin: 0 auto; padding: 24px; background: #fff; border-radius: 8px; }
+.authorization-apps { display: flex; align-items: center; justify-content: center; gap: 25px; margin: 0 0 23px; }
+.authorization-apps img { display: block; width: 60px; height: 60px; object-fit: contain; }
+.authorization-exchange { color: #a6a6a6; font-size: 18px; }
+.authorization-tiktok { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 9px; background: #262626; }
+.authorization-tiktok i { color: #fff; font-size: 37px; text-shadow: -2px 0 #25f4ee, 2px 1px #fe2c55; }
+.authorization-intro { margin: 0 0 8px; font-size: 16px; line-height: 24px; }
+.authorization-permissions { border: 1px solid #e1e1e1; border-radius: 3px; overflow: hidden; }
+.authorization-select-all { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 12px; }
+.authorization-card input[type=checkbox] { margin: 0; width: 16px; height: 16px; flex: 0 0 16px; accent-color: #00a29b; color-scheme: light; cursor: pointer; }
+.authorization-card input[type=checkbox]:focus-visible { outline: 2px solid #00a29b; outline-offset: 3px; }
+.authorization-permission { display: flex; align-items: flex-start; gap: 8px; min-height: 71px; padding: 12px; border-top: 1px solid #e1e1e1; }
+.authorization-permission input { margin-top: 2px !important; }
+.authorization-permission div { min-width: 0; flex: 1; }
+.authorization-permission p { margin: 0 0 4px; }
+.authorization-permission small { display: block; color: #a4a4a4; font-size: 12px; line-height: 18px; }
+.authorization-permission > i { align-self: flex-end; margin-bottom: 5px; font-size: 9px; color: #777; }
+.authorization-acknowledgement { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; color: #333; line-height: 22px; }
+.authorization-acknowledgement input { margin-top: 3px !important; }
+.authorization-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+.authorization-actions button { min-height: 44px; border: 0; border-radius: 3px; padding: 0 25px; background: #f1f1f1; color: #111; font: 600 14px Arial, sans-serif; }
+.authorization-actions button:disabled { cursor: default; }
+.authorization-submit { cursor: pointer; }
+.authorization-submit:hover { background: #e6e6e6; }
+.authorization-submit:focus-visible { outline: 3px solid #00a29b; outline-offset: 3px; }
+.authorization-error { margin: 14px 0 0; color: #b42318; font-size: 13px; }
+.authorization-success-main h1 { margin-bottom: 20px; }
+.authorization-success-card { display: flex; flex-direction: column; align-items: center; text-align: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+.authorization-success-icon { display: block; width: 120px; height: 120px; margin: 0 auto 16px; }
+.authorization-success-card h2 { margin: 0; color: #1d2129; font-size: 16px; font-weight: 500; line-height: 24px; }
+.authorization-success-description { max-width: 360px; margin: 8px 0 0; color: #86909c; font-size: 14px; font-weight: 400; line-height: 22px; }
+.authorization-success-done { display: inline-flex; align-items: center; justify-content: center; min-width: 104px; min-height: 44px; margin-top: 20px; padding: 0 20px; border-radius: 4px; background: #009995; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; }
+.authorization-success-done:hover { background: #008a85; }
+.authorization-success-done:focus-visible { outline: 3px solid #00a29b; outline-offset: 3px; }
+.authorization-no-script { font-size: 12px; color: #738292; }
+@media (max-width: 640px) {
+    .authorization-header { padding-inline: 12px; }
+    .authorization-language { font-size: 13px; }
+    main { padding: 20px 12px; }
+    h1 { font-size: 25px; }
+    .authorization-card { padding: 20px 16px; }
+    .authorization-permission small { font-size: 11px; }
+    .authorization-success-break { display: none; }
+}

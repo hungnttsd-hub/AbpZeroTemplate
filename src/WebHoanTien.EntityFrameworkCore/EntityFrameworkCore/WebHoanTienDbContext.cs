@@ -49,6 +49,8 @@ public class WebHoanTienDbContext :
     public DbSet<AffiliateOrderItemAttribution> AffiliateOrderItemAttributions { get; set; } = null!;
     public DbSet<AffiliateCommissionRule> AffiliateCommissionRules { get; set; } = null!;
     public DbSet<AffiliateSyncState> AffiliateSyncStates { get; set; } = null!;
+    public DbSet<RioHubOrderSku> RioHubOrderSkus { get; set; } = null!;
+    public DbSet<RioHubSyncCursor> RioHubSyncCursors { get; set; } = null!;
     public DbSet<AffiliateSyncRun> AffiliateSyncRuns { get; set; } = null!;
     public DbSet<AffiliateRawPayload> AffiliateRawPayloads { get; set; } = null!;
     public DbSet<ShopeeSettlementBatch> ShopeeSettlementBatches { get; set; } = null!;

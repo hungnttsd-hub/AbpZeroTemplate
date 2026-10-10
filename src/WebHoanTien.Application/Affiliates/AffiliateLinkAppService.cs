@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using WebHoanTien.Integrations.Shopee;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Timing;
 using Volo.Abp.Users;
@@ -29,6 +30,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     private readonly AffiliateCommissionCalculator _commissionCalculator;
     private readonly IClock _clock;
     private readonly ILogger<AffiliateLinkAppService> _logger;
+    private readonly TikTokAffiliateLinkCreator _tikTokLinkCreator;
 
     public AffiliateLinkAppService(IRepository<AffiliateTracking, Guid> repository, ISafeAffiliateUrlResolver resolver,
         IAffiliateUrlNormalizer normalizer, ShopeeLinkTargetClassifier targetClassifier,
@@ -36,7 +38,8 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         IAffiliateProviderRegistry providers, ITrackingTokenGenerator tokenGenerator,
         IAffiliateIdResolver affiliateIdResolver, ShopeeAffiliateLinkBuilder linkBuilder,
         AffiliateUserShareRateResolver shareRateResolver,
-        AffiliateCommissionCalculator commissionCalculator, IClock clock, ILogger<AffiliateLinkAppService> logger)
+        AffiliateCommissionCalculator commissionCalculator, IClock clock, ILogger<AffiliateLinkAppService> logger,
+        TikTokAffiliateLinkCreator tikTokLinkCreator)
     {
         _repository = repository;
         _resolver = resolver;
@@ -51,11 +54,23 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         _commissionCalculator = commissionCalculator;
         _clock = clock;
         _logger = logger;
+        _tikTokLinkCreator = tikTokLinkCreator;
     }
 
     [AllowAnonymous]
     public Task<AffiliateUrlValidationDto> ValidateAsync(ValidateAffiliateUrlInput input)
     {
+        if (TikTokAffiliateUrl.TryNormalize(input.Url, out var tikTokUrl, out var tikTokProductId))
+        {
+            if (input.TargetType == AffiliateLinkTargetType.Shop || !IsSupportedInputTargetType(input.TargetType))
+                return Task.FromResult(InvalidValidation(WebHoanTienDomainErrorCodes.AffiliateTargetUnsupported,
+                    "TikTok hiện hỗ trợ tạo link sản phẩm."));
+            return Task.FromResult(new AffiliateUrlValidationDto
+            {
+                IsValid = true, Platform = AffiliatePlatform.TikTok, NormalizedUrl = tikTokUrl,
+                ItemId = tikTokProductId, DetectedTargetType = AffiliateLinkTargetType.Product
+            });
+        }
         if (!IsSupportedInputTargetType(input.TargetType))
         {
             return Task.FromResult(InvalidValidation(WebHoanTienDomainErrorCodes.AffiliateTargetTypeInvalid,
@@ -66,7 +81,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         if (!valid)
         {
             return Task.FromResult(InvalidValidation(WebHoanTienDomainErrorCodes.InvalidAffiliateUrl,
-                "Chỉ chấp nhận link HTTPS thuộc tên miền Shopee hợp lệ."));
+                "Vui lòng dán link HTTPS sản phẩm TikTok Shop hoặc sản phẩm/cửa hàng Shopee hợp lệ."));
         }
 
         if (ShopeeUrlNormalizer.IsShortHost(new Uri(normalized).IdnHost))
@@ -109,6 +124,13 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
 
     public async Task<AffiliateTrackingDto> CreateAsync(CreateAffiliateLinkInput input)
     {
+        if (TikTokAffiliateUrl.TryNormalize(input.Url, out _, out _))
+        {
+            if (input.TargetType == AffiliateLinkTargetType.Shop || !IsSupportedInputTargetType(input.TargetType))
+                throw new UserFriendlyException("TikTok hiện hỗ trợ tạo link sản phẩm.");
+            var created = await _tikTokLinkCreator.CreateAsync(input.Url, CurrentUser.GetId());
+            return Map(created.Tracking, created.IsExisting, created.WasRestored);
+        }
         EnsureSupportedInputTargetType(input.TargetType);
         var userId = CurrentUser.GetId();
         var originalUrl = input.Url.Trim();
@@ -248,18 +270,25 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         }
     }
 
-    private AffiliateTrackingDto Map(AffiliateTracking x, bool isExisting = false, bool wasRestored = false) => new()
+    private AffiliateTrackingDto Map(AffiliateTracking x, bool isExisting = false, bool wasRestored = false)
     {
-        Id = x.Id, IsExisting = isExisting, WasRestored = wasRestored, CreationTime = x.CreationTime, CreatorId = x.CreatorId, LastModificationTime = x.LastModificationTime,
-        LastModifierId = x.LastModifierId, IsDeleted = x.IsDeleted, DeleterId = x.DeleterId, DeletionTime = x.DeletionTime,
-        Platform = x.Platform, TargetType = _targetClassifier.Classify(x.NormalizedUrl),
-        TrackingToken = x.TrackingToken, OriginalUrl = x.OriginalUrl, NormalizedUrl = x.NormalizedUrl,
-        ProductId = x.ProductId, ShopId = x.ShopId, ProductName = x.ProductName,
-        ImageUrl = x.ImageUrl, EstimatedCommission = x.EstimatedCommission, ClickCount = x.ClickCount,
-        LastClickedAt = x.LastClickedAt, IsHidden = x.IsHidden, HiddenAt = x.HiddenAt,
-        Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken,
-        DirectUrl = x.AffiliateUrl ?? string.Empty
-    };
+        var product = x.Platform == AffiliatePlatform.TikTok ? TikTokProductOverrides.Find(x.ProductId) : null;
+        return new()
+        {
+            Id = x.Id, IsExisting = isExisting, WasRestored = wasRestored, CreationTime = x.CreationTime, CreatorId = x.CreatorId, LastModificationTime = x.LastModificationTime,
+            LastModifierId = x.LastModifierId, IsDeleted = x.IsDeleted, DeleterId = x.DeleterId, DeletionTime = x.DeletionTime,
+            Platform = x.Platform, TargetType = x.Platform == AffiliatePlatform.TikTok
+                ? AffiliateLinkTargetType.Product : _targetClassifier.Classify(x.NormalizedUrl),
+            TrackingToken = x.TrackingToken, OriginalUrl = x.OriginalUrl, NormalizedUrl = x.NormalizedUrl,
+            ProductId = x.ProductId, ShopId = x.ShopId, ProductName = product?.Title ?? x.ProductName,
+            ImageUrl = product?.ImageUrl ?? x.ImageUrl, EstimatedCommission = x.EstimatedCommission, ClickCount = x.ClickCount,
+            ProductPrice = product?.Price, CreatorCommissionAmount = product?.CommissionAmount,
+            IsProductUrlFallback = x.Platform == AffiliatePlatform.TikTok && x.GetProperty<bool>(TikTokProductOverrides.ProductUrlFallbackProperty),
+            LastClickedAt = x.LastClickedAt, IsHidden = x.IsHidden, HiddenAt = x.HiddenAt,
+            Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken,
+            DirectUrl = x.AffiliateUrl ?? string.Empty
+        };
+    }
 
     private static bool IsSupportedInputTargetType(AffiliateLinkTargetType targetType) =>
         targetType is AffiliateLinkTargetType.Auto or AffiliateLinkTargetType.Product or AffiliateLinkTargetType.Shop;
