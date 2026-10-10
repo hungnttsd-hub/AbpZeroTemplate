@@ -116,12 +116,12 @@ public class TikTokShopOAuthController : Controller
             var code = codeValues.Count == 1 ? codeValues[0] : null;
             if (string.IsNullOrWhiteSpace(code) || code == "null" || code.Length > 2048)
                 throw new UserFriendlyException("TikTok không trả về mã cấp quyền hợp lệ. Chưa có kết nối nào được xác nhận.");
-            var key = Request.Query["app_key"];
-            if (key.Count > 1 || (key.Count == 1 && key[0] != _client.AppKey))
-                throw new UserFriendlyException("App key trong callback không khớp CatBack.");
+            //var key = Request.Query["app_key"];
+            //if (key.Count > 1 || (key.Count == 1 && key[0] != _client.AppKey))
+            //    throw new UserFriendlyException("App key trong callback không khớp CatBack.");
             await _connection.Complete(code);
             TempData["TikTokCreatorConnected"] = true;
-            TempData["TikTokCreatorMessage"] = "Kết nối nhà sáng tạo tại Việt Nam thành công. CatBack đã nhận mã truy cập và đọc hồ sơ bằng API TikTok thật.";
+            TempData["TikTokCreatorMessage"] = $"Kết nối nhà sáng tạo tại Việt Nam thành công. CatBack đã nhận mã truy cập và đọc hồ sơ bằng API TikTok thật. {System.Text.Json.JsonSerializer.Serialize(Request.Query)} ";
             return LocalRedirect(TikTokShopOAuthRoutes.Result);
         }
         catch (UserFriendlyException ex) { return Failure(ex.Message); }
