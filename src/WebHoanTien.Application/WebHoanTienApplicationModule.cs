@@ -41,6 +41,9 @@ public class WebHoanTienApplicationModule : AbpModule
             .Bind(configuration.GetSection(RioHubOptions.SectionName))
             .PostConfigure(options =>
             {
+                // Retire automatic RioHub sync, including any previously queued job.
+                // TikTok orders are now fetched explicitly by the admin using Creator API.
+                options.SyncEnabled = false;
                 // Respect configuration precedence, including appsettings.secrets.json.
                 // Keep the original Docker environment variable as a fallback.
                 if (string.IsNullOrWhiteSpace(options.ApiKey))
@@ -78,8 +81,8 @@ public class WebHoanTienApplicationModule : AbpModule
             policy => policy.RequireAuthenticatedUser().AddRequirements(new TikTokAffiliateAccessRequirement())));
         context.Services.AddScoped<IAuthorizationHandler, TikTokAffiliateAuthorizationHandler>();
         context.Services.AddMemoryCache();
-        // Customer workspace always uses RioHub; a legacy Mock setting must never select fixtures.
-        context.Services.AddTransient<ITikTokAffiliateService, TikTokAffiliateRioHubService>();
+        // Real Creator API, sharing the admin's database token. No RioHub/mock fallback.
+        context.Services.AddTransient<ITikTokAffiliateService, TikTokAffiliateApiService>();
         context.Services.Configure<ShopeeAffiliateOptions>(configuration.GetSection(ShopeeAffiliateOptions.SectionName));
         context.Services.AddHttpClient("ShopeeProductData", client =>
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(configuration.GetValue("Shopee:ProductDataTimeoutSeconds", 10), 1, 120)));

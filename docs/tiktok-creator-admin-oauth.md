@@ -89,7 +89,7 @@ UI admin dùng Razor Page handlers với cơ chế quyền/antiforgery tương �
 - `105001` ở refresh hoặc Creator business call đánh dấu `ReauthRequired` có điều kiện version; `105005` chỉ báo scope; `101000` báo pairing/configuration, không tự xóa token. Timeout/429/5xx không bị coi là thu hồi quyền.
 - `TikTokCreatorConnection.GetProfile` dùng token chung; `105002` được forced-refresh có kiểm tra version, retry profile đúng một lần. `GetLink` hiện có cũng lấy token qua service chung, giữ scope check của Creator Generate General Link và không tự retry thao tác ghi.
 
-API GetOrders thật chưa được thêm trong bước này; module orders hiện có vẫn qua RioHub. Không thay đổi attribution, SubId hay cashback. Các phần Mock/RioHub và lựa chọn workspace cục bộ `hungnttsd` giữ luồng riêng. Người dùng thông thường không thể authorize/thay credential admin.
+Ghi chú lịch sử của bước OAuth: lúc đó chưa thêm GetOrders thật. Cập nhật 13/10/2026: luồng chính đã dùng Creator API cho sinh link và lấy/lưu đơn bằng nút admin, xem [hiện trạng Creator API](tiktok-shop-creator-api.md). Chưa triển khai đối soát/cộng ví. Người dùng thông thường không thể authorize/thay credential admin.
 
 ## Files chính
 

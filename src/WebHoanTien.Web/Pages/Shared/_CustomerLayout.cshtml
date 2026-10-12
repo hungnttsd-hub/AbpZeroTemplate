@@ -10,8 +10,8 @@
 @inject ICustomerNotificationAppService CustomerNotifications
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
-    var canAccessTikTokAffiliate = isAuthenticated &&
-        (await AuthorizationService.AuthorizeAsync(User, TikTokAffiliateAccess.Policy)).Succeeded;
+    // Customers create both Shopee and TikTok links using the shared home input.
+    var canAccessTikTokAffiliate = false;
     var userName = CurrentUser.UserName?.Trim() ?? User.Identity?.Name?.Trim();
     var displayedUserName = CurrentUser.Name?.Trim();
 
@@ -199,6 +199,8 @@
     var desktopAdminItems = new System.Collections.Generic.List<WebHoanTien.Web.Pages.Shared.CustomerDesktopNavigationItem>();
     if (canManageAffiliates) { desktopAdminItems.Add(new("/Admin/Affiliates", "Quản trị hoàn tiền", "fa-solid fa-chart-line")); }
     if (canManageSettlements) { desktopAdminItems.Add(new("/Admin/Settlements", "Duyệt đối soát Shopee", "fa-solid fa-file-invoice-dollar")); }
+    if (hasAdminOrdersPermission) { desktopAdminItems.Add(new("/Admin/TikTokOrders", "Đơn hàng TikTok Shop", "fa-brands fa-tiktok")); }
+    if (hasAdminSettingsPermission) { desktopAdminItems.Add(new("/Admin/TikTokCreator", "Kết nối TikTok Creator", "fa-brands fa-tiktok")); }
     if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Wallets", "Ví người dùng", "fa-solid fa-wallet")); }
     if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Payouts", "Duyệt yêu cầu rút tiền", "fa-solid fa-money-check-dollar")); }
     if (canManageNotifications) { desktopAdminItems.Add(new("/Admin/Notifications", "Quản lý thông báo", "fa-solid fa-bullhorn")); }
@@ -297,6 +299,18 @@
                             {
                                 <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Settlements", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Settlements" data-account-navigation-link>
                                     <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-file-invoice-dollar"></i></span><span class="account-navigation-label">Duyệt đối soát Shopee</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (hasAdminOrdersPermission)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/TikTokOrders", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/TikTokOrders" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-brands fa-tiktok"></i></span><span class="account-navigation-label">Đơn hàng TikTok Shop</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (hasAdminSettingsPermission)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/TikTokCreator", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/TikTokCreator" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-brands fa-tiktok"></i></span><span class="account-navigation-label">Kết nối TikTok Creator</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
                                 </a>
                             }
                             @if (canManagePayouts)

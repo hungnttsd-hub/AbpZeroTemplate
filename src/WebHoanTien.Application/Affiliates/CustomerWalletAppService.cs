@@ -225,7 +225,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         var (label, css, amount) = order.Status switch
         {
             AffiliateOrderStatus.Settled => ("Đã ghi nhận", "confirmed", settledUserCommission),
-            AffiliateOrderStatus.Completed => ("Chờ Shopee thanh toán", "pending", expectedUserCommission),
+            AffiliateOrderStatus.Completed => (order.Platform == AffiliatePlatform.TikTok ? "Chưa đối soát TikTok" : "Chờ Shopee thanh toán", "pending", expectedUserCommission),
             AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending => ("Sắp ghi nhận", "pending", expectedUserCommission),
             AffiliateOrderStatus.Refunded => ("Đã hoàn tiền", "cancelled", 0m),
             AffiliateOrderStatus.Cancelled => ("Đã hủy", "cancelled", 0m),
@@ -235,7 +235,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         {
             Id = order.Id,
             Kind = WalletMovementKind.Commission,
-            Title = "Hoàn tiền đơn Shopee",
+            Title = order.Platform == AffiliatePlatform.TikTok ? "Hoàn tiền dự kiến đơn TikTok Shop" : "Hoàn tiền đơn Shopee",
             Description = order.ExternalOrderId,
             OccurredAt = conversion.LastProviderUpdateAt,
             Amount = amount,

@@ -27,5 +27,9 @@ public class AffiliateDataSeedContributor : IDataSeedContributor, ITransientDepe
 
         if (!await _roleManager.RoleExistsAsync("User"))
             await _roleManager.CreateAsync(new IdentityRole(_guidGenerator.Create(), "User"));
+
+        if (!await _rules.AnyAsync(x => x.Platform == AffiliatePlatform.TikTok))
+            await _rules.InsertAsync(new AffiliateCommissionRule(_guidGenerator.Create(), AffiliatePlatform.TikTok,
+                WebHoanTienConsts.DefaultUserShareRate, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), null), autoSave: true);
     }
 }

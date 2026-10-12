@@ -61,6 +61,7 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
 
 public sealed class AffiliateTrackingListInput : PagedAndSortedResultRequestDto
 {
+    public AffiliatePlatform? Platform { get; set; }
     public bool IncludeHidden { get; set; }
 }
 
@@ -81,6 +82,7 @@ public interface IAffiliateLinkAppService : IApplicationService
 
 public sealed class AffiliateOrderListInput : PagedAndSortedResultRequestDto
 {
+    public AffiliatePlatform? Platform { get; set; }
     public AffiliateOrderStatus? Status { get; set; }
     public string? StatusGroup { get; set; }
     public DateTime? From { get; set; }
@@ -96,6 +98,11 @@ public sealed class AffiliateOrderSummaryDto
 
 public sealed class AffiliateOrderDto : FullAuditedEntityDto<Guid>
 {
+    public AffiliatePlatform Platform { get; set; }
+    public string? ProviderStatus { get; set; }
+    public decimal? ProviderEstimatedCommission { get; set; }
+    public decimal? ProviderActualCommission { get; set; }
+    public string? ReviewNote { get; set; }
     public Guid ConversionId { get; set; }
     public Guid? UserId { get; set; }
     public string? UserEmail { get; set; }

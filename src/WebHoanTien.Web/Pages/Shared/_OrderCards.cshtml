@@ -3,7 +3,8 @@
 @foreach (var order in Model.Orders.Items)
 {
     var firstItem = order.Items.FirstOrDefault();
-    var productName = string.IsNullOrWhiteSpace(firstItem?.ProductName) ? "Sản phẩm Shopee" : firstItem.ProductName;
+    var platformName = CustomerOrderUi.PlatformName(order.Platform);
+    var productName = string.IsNullOrWhiteSpace(firstItem?.ProductName) ? "Sản phẩm " + platformName : firstItem.ProductName;
     var statusClass = CustomerOrderUi.GetStatusClass(order.Status);
     <article class="cb-order-card @(Model.IsAdminOrderView ? "cb-order-card-admin" : null)" data-order-id="@order.Id">
         <div class="cb-order-card-top">
@@ -20,9 +21,9 @@
             </div>
             <div class="cb-order-product-copy">
                 <h2 title="@productName">@productName</h2>
-                <p><img src="~/orders-icons/store.svg" alt="" />Sản phẩm từ Shopee</p>
+                <p><img src="~/orders-icons/store.svg" alt="" />Sản phẩm từ @platformName</p>
                 <time datetime="@order.PurchaseTime.ToString("O")"><img src="~/orders-icons/clock.svg" alt="" />@CustomerOrderUi.FormatDate(order.PurchaseTime)</time>
-                <span class="cb-status cb-status-@statusClass"><i class="cb-desktop-only @(CustomerOrderUi.IsCancelled(order.Status) ? "fa-solid fa-ban" : CustomerOrderUi.IsConfirmed(order.Status) ? "fa-regular fa-circle-check" : "fa-regular fa-clock")" hidden aria-hidden="true"></i>@CustomerOrderUi.GetStatusLabel(order.Status)</span>
+                <span class="cb-status cb-status-@statusClass"><i class="cb-desktop-only @(CustomerOrderUi.IsCancelled(order.Status) ? "fa-solid fa-ban" : CustomerOrderUi.IsConfirmed(order.Status) ? "fa-regular fa-circle-check" : "fa-regular fa-clock")" hidden aria-hidden="true"></i>@CustomerOrderUi.GetStatusLabel(order.Status, order.Platform)</span>
             </div>
         </div>
         @if (Model.IsAdminOrderView)

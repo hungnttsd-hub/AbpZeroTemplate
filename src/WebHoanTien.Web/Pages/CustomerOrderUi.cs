@@ -16,11 +16,13 @@ public static class CustomerOrderUi
     public static string GetStatusClass(AffiliateOrderStatus status) =>
         IsPending(status) ? "pending" : IsConfirmed(status) ? "confirmed" : "cancelled";
 
-    public static string GetStatusLabel(AffiliateOrderStatus status) => status switch
+    public static string PlatformName(AffiliatePlatform platform) => platform == AffiliatePlatform.TikTok ? "TikTok Shop" : "Shopee";
+
+    public static string GetStatusLabel(AffiliateOrderStatus status, AffiliatePlatform platform = AffiliatePlatform.Shopee) => status switch
     {
         AffiliateOrderStatus.Unpaid => "Chờ thanh toán",
         AffiliateOrderStatus.Pending => "Chờ xử lý",
-        AffiliateOrderStatus.Completed => "Chờ Shopee thanh toán",
+        AffiliateOrderStatus.Completed => platform == AffiliatePlatform.TikTok ? "Chờ CatBack đối soát" : "Chờ Shopee thanh toán",
         AffiliateOrderStatus.Settled => "Đã đối soát",
         AffiliateOrderStatus.Cancelled => "Đã hủy",
         AffiliateOrderStatus.Refunded => "Đã hoàn tiền",
@@ -28,14 +30,14 @@ public static class CustomerOrderUi
         _ => status.ToString()
     };
 
-    public static string GetStatusDescription(AffiliateOrderStatus status) => status switch
+    public static string GetStatusDescription(AffiliateOrderStatus status, AffiliatePlatform platform = AffiliatePlatform.Shopee) => status switch
     {
-        AffiliateOrderStatus.Completed => "Đơn đã hoàn thành và đang chờ Shopee đối soát thanh toán.",
-        AffiliateOrderStatus.Settled => "Shopee đã đối soát và ghi nhận thanh toán hoa hồng.",
+        AffiliateOrderStatus.Completed => $"Đơn đã hoàn thành và đang chờ {PlatformName(platform)} đối soát hoa hồng.",
+        AffiliateOrderStatus.Settled => $"{PlatformName(platform)} đã ghi nhận hoa hồng được đối soát.",
         AffiliateOrderStatus.Cancelled => "Đơn đã hủy nên không phát sinh hoàn tiền.",
         AffiliateOrderStatus.Refunded => "Đơn đã hoàn nên không phát sinh hoàn tiền.",
-        AffiliateOrderStatus.Rejected => "Shopee không ghi nhận hoa hồng cho đơn này.",
-        _ => "Shopee đang kiểm tra và đối soát đơn hàng."
+        AffiliateOrderStatus.Rejected => $"{PlatformName(platform)} không ghi nhận hoa hồng cho đơn này.",
+        _ => $"{PlatformName(platform)} đang kiểm tra và đối soát đơn hàng."
     };
 
     public static string FormatMoney(decimal value) => $"{value:N0}đ";

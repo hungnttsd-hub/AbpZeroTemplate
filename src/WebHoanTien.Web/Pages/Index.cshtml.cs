@@ -66,14 +66,6 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostPrepareAsync()
     {
-        // The home form is Shopee-only; other pages keep their existing TikTok integration.
-        if (TikTokAffiliateUrl.TryNormalize(LinkUrl, out _, out _))
-        {
-            Error = "Trang chủ hiện chỉ hỗ trợ link Shopee.";
-            if (IsAjaxRequest()) return BadRequest(new { success = false, error = Error });
-            await LoadDashboardAsync();
-            return Page();
-        }
         var validation = await _links.ValidateAsync(new ValidateAffiliateUrlInput
         {
             Url = LinkUrl,

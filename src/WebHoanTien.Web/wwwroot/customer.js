@@ -41,22 +41,20 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   };
 
   const syncPlatform = () => {
-    const isTikTok = platformInputs.some((input) => input.checked && input.value === 'TikTok');
+    const isTikTok = detectInputPlatform() === 'TikTok';
     const title = linkForm?.querySelector('[data-platform-title]');
     const note = linkForm?.querySelector('[data-platform-note]');
     const label = linkForm?.querySelector('[data-platform-url-label]');
-    if (title) title.textContent = isTikTok ? 'Dán link TikTok Shop tại đây' : 'Dán link Shopee tại đây';
+    if (title) title.textContent = 'Dán link Shopee hoặc TikTok Shop tại đây';
     if (note) note.textContent = isTikTok
-      ? 'Dán link sản phẩm TikTok Shop để tạo link mua hàng. Thông tin hoàn tiền TikTok sẽ được cập nhật sau.'
-      : 'Nhận cả link sản phẩm và link cửa hàng — CatBack tự động nhận diện.';
-    if (label) label.textContent = isTikTok ? 'Link sản phẩm TikTok Shop' : 'Link sản phẩm hoặc cửa hàng Shopee';
-    if (linkInput) linkInput.placeholder = isTikTok
-      ? 'Dán link sản phẩm TikTok Shop...'
-      : 'Dán link sản phẩm hoặc cửa hàng Shopee...';
+      ? 'Đã nhận diện TikTok Shop. Hoàn tiền được ghi nhận theo đơn hàng và hoa hồng đã đối soát.'
+      : 'CatBack tự nhận diện link sản phẩm TikTok Shop hoặc sản phẩm/cửa hàng Shopee.';
+    if (label) label.textContent = 'Link Shopee hoặc TikTok Shop';
+    if (linkInput) linkInput.placeholder = 'Dán link Shopee hoặc TikTok Shop...';
     if (createButton && !creatingLink) {
       const arrow = document.createElement('span');
       arrow.textContent = '→';
-      createButton.replaceChildren(document.createTextNode(isTikTok ? 'Tạo link TikTok ' : 'Tạo link hoàn tiền '), arrow);
+      createButton.replaceChildren(document.createTextNode('Tạo link hoàn tiền '), arrow);
       createButtonContent = createButton.innerHTML;
     }
     document.querySelectorAll('[data-shopee-guide]').forEach((guide) => { guide.hidden = isTikTok; });
@@ -473,11 +471,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
   };
 
   linkInput?.addEventListener('input', () => {
-    const detectedPlatform = detectInputPlatform();
-    if (detectedPlatform && platformInputs.some((input) => input.value === detectedPlatform)) {
-      platformInputs.forEach((input) => { input.checked = input.value === detectedPlatform; });
-      syncPlatform();
-    }
+    syncPlatform();
     syncClearButton();
     if (linkForm?.querySelector('[data-affiliate-inline-result]')) clearInlineResult();
     if (urlStatus?.dataset.state !== 'idle') showUrlStatus('', 'idle');
@@ -487,6 +481,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     clearInlineResult();
     showUrlStatus('', 'idle');
     syncClearButton();
+    syncPlatform();
     linkInput.focus();
   }, { signal });
   syncClearButton();
@@ -494,10 +489,6 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
 
   linkForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (linkForm.dataset.tiktokEnabled === 'false' && detectInputPlatform() === 'TikTok') {
-      showUrlStatus('Trang chủ hiện chỉ hỗ trợ link Shopee.', 'error');
-      return;
-    }
     if (!createButton || !linkForm.checkValidity() || createButton.disabled) return;
 
     const formData = new FormData(linkForm);

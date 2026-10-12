@@ -4,6 +4,7 @@
     ViewData["Title"] = "Thông tin đơn hàng";
     ViewData["BodyClass"] = "orders-mobile-shell";
     var order = Model.Order;
+    var platformName = CustomerOrderUi.PlatformName(order.Platform);
     var statusClass = CustomerOrderUi.GetStatusClass(order.Status);
     var firstItem = order.Items.FirstOrDefault();
 }
@@ -21,8 +22,8 @@
 
         <div class="cb-detail-summary">
             <div class="cb-detail-status-row">
-                <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status)</span>
-                <span>@CustomerOrderUi.GetStatusDescription(order.Status)</span>
+                <span class="cb-status cb-status-@statusClass">@CustomerOrderUi.GetStatusLabel(order.Status, order.Platform)</span>
+                <span>@CustomerOrderUi.GetStatusDescription(order.Status, order.Platform)</span>
             </div>
             <dl>
                 @if (Model.IsAdminOrderView)
@@ -33,10 +34,11 @@
                             $"{x.UserEmail ?? x.UserId.ToString()} (+{CustomerOrderUi.FormatMoney(x.SettledUserCommission ?? x.ExpectedUserCommission)})")))</dd></div>
                 }
                 <div><dt>Giá trị đơn hàng</dt><dd>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</dd></div>
-                <div><dt>Ưu đãi</dt><dd>@(string.IsNullOrWhiteSpace(order.ShopType) ? "Ưu đãi Shopee" : order.ShopType)</dd></div>
+                <div><dt>Nền tảng</dt><dd>@platformName</dd></div>
                 <div class="cb-detail-cashback"><dt>@(order.Status == AffiliateOrderStatus.Settled ? "Bạn nhận được" : "Hoàn tiền dự kiến")</dt><dd>+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</dd></div>
             </dl>
-            <p class="cb-detail-note"><img src="~/orders-icons/shield-check.svg" alt="" /> @(order.Status == AffiliateOrderStatus.Settled ? "Số tiền đã được chốt theo bảng kê thanh toán thực tế từ Shopee." : "Số tiền này chưa được rút cho đến khi Shopee hoàn tất đối soát thanh toán.")</p>
+            <p class="cb-detail-note"><img src="~/orders-icons/shield-check.svg" alt="" /> @(order.Status == AffiliateOrderStatus.Settled ? $"Số tiền đã được chốt theo hoa hồng thực nhận từ {platformName}." : $"Số tiền này chưa được rút cho đến khi {platformName} xác nhận hoa hồng và CatBack đối soát.")</p>
+            @if (Model.IsAdminOrderView && !string.IsNullOrWhiteSpace(order.ReviewNote)) { <p class="text-danger">@order.ReviewNote</p> }
         </div>
     </header>
 
@@ -50,7 +52,7 @@
                 }
                 @foreach (var item in order.Items)
                 {
-                    var productName = string.IsNullOrWhiteSpace(item.ProductName) ? "Sản phẩm Shopee" : item.ProductName;
+                    var productName = string.IsNullOrWhiteSpace(item.ProductName) ? "Sản phẩm " + platformName : item.ProductName;
                     <article class="cb-detail-product">
                         <div class="cb-order-product-image">
                             @if (!string.IsNullOrWhiteSpace(item.ImageUrl ?? (item == firstItem ? order.ProductImageUrl : null)))
@@ -65,7 +67,7 @@
                         </div>
                         <div>
                             <h3>@productName</h3>
-                            <p><img src="~/orders-icons/store.svg" alt="" /> Sản phẩm từ Shopee</p>
+                            <p><img src="~/orders-icons/store.svg" alt="" /> Sản phẩm từ @platformName</p>
                             <span>Số lượng: @item.Quantity</span>
                             <span>@(order.Status == AffiliateOrderStatus.Settled ? "Đã ghi nhận" : "Hoàn tiền dự kiến"): +@CustomerOrderUi.FormatMoney(CustomerOrderUi.IsCancelled(order.Status) ? 0m : order.Status == AffiliateOrderStatus.Settled ? item.SettledUserCommission ?? 0m : item.ExpectedUserCommission)</span>
                             @if (Model.IsAdminOrderView)
@@ -78,7 +80,7 @@
                                         AffiliateAttributionStatus.Conflict => "Xung đột sau thanh toán",
                                         _ => "Chưa ghép"
                                     };
-                                    <small>Token: <code>@attribution.AttributionValue</code> · @attributionStatus · @(attribution.UserEmail ?? "Chưa có người nhận") · Shopee phân bổ @CustomerOrderUi.FormatMoney(attribution.SettledNetCommission ?? attribution.AllocatedNetCommission)</small>
+                                    <small>Mã theo dõi: <code>@attribution.AttributionValue</code> · @attributionStatus · @(attribution.UserEmail ?? "Chưa có người nhận") · @platformName phân bổ @CustomerOrderUi.FormatMoney(attribution.SettledNetCommission ?? attribution.AllocatedNetCommission)</small>
                                 }
                             }
                         </div>
@@ -104,7 +106,7 @@
                 }
                 <div>
                     <span><img src="~/orders-icons/cashback.svg" alt="" /></span>
-                    <div><strong>Shopee đối soát thanh toán</strong><small>@(order.SettledAt.HasValue ? CustomerOrderUi.FormatDate(order.SettledAt.Value) : "Đang chờ bảng kê thanh toán của Shopee.")</small></div>
+                    <div><strong>CatBack đối soát hoa hồng @platformName</strong><small>@(order.SettledAt.HasValue ? CustomerOrderUi.FormatDate(order.SettledAt.Value) : "Đang chờ xác nhận hoa hồng và đối soát.")</small></div>
                 </div>
             </div>
         </section>
@@ -113,7 +115,7 @@
             <span><img src="~/orders-icons/shield-check.svg" alt="" /></span>
             <div>
                 <h2>Hoàn tiền minh bạch</h2>
-                <p>CatBack chỉ ghi nhận số tiền bạn được nhận từ báo cáo thực tế của Shopee. Đơn hủy, hoàn hoặc bị từ chối sẽ không phát sinh hoàn tiền.</p>
+                <p>CatBack ghi nhận hoàn tiền theo hoa hồng thực tế từ @platformName. Đơn hủy, hoàn hoặc bị từ chối sẽ không phát sinh hoàn tiền.</p>
             </div>
         </section>
 

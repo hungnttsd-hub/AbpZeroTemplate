@@ -16,7 +16,7 @@ public static class TikTokAffiliateUrl
               uri.IdnHost.EndsWith(".tiktok.com", StringComparison.OrdinalIgnoreCase)) || uri.AbsolutePath == "/")
             return false;
 
-        // Do not fetch short URLs from the application server; RioHub resolves them.
+        // URL validation only. The dedicated resolver handles approved short-link hosts.
         // Preserve query parameters needed by TikTok links.
         var builder = new UriBuilder(uri) { Fragment = string.Empty, Host = uri.IdnHost.ToLowerInvariant(), Port = -1 };
         normalizedUrl = builder.Uri.AbsoluteUri;

@@ -13,7 +13,7 @@ public static class TikTokProductOverrides
         "/products/tiktok/tiktok-product-1732226714601031550.png",
         36100m, 3600m);
 
-    // Overrides describe a product; order commissions still come from RioHub reconciliation.
+    // Overrides describe product metadata only; cashback comes from Creator order reconciliation.
     public static TikTokProductOverride? Find(string? productId) =>
         productId == SunSet.ProductId ? SunSet : null;
 }

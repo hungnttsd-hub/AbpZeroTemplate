@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Data;
 using Volo.Abp.Guids;
 using Volo.Abp.Timing;
 using Volo.Abp.Users;
@@ -49,8 +50,11 @@ public class AffiliateRedirectController : Controller
         var navigation = await ResolveNavigationAsync(trackingToken);
         if (navigation.ErrorResult is not null) return navigation.ErrorResult;
 
-        await RegisterClickAsync(navigation.Tracking!, navigation.AffiliateId!);
-        return Redirect(navigation.AffiliateUrl!);
+        var clickId = await RegisterClickAsync(navigation.Tracking!, navigation.AffiliateId!);
+        var target = navigation.Tracking!.Platform == AffiliatePlatform.TikTok
+            && navigation.Tracking.GetProperty<string>(TikTokLinkAttribution.SourceProperty) == TikTokLinkAttribution.Source
+            ? TikTokLinkAttribution.AddEventId(navigation.AffiliateUrl!, clickId) : navigation.AffiliateUrl!;
+        return Redirect(target);
     }
 
     [HttpPost("/go/{trackingToken}/click")]
@@ -94,7 +98,7 @@ public class AffiliateRedirectController : Controller
             _linkBuilder.Build(normalizedUrl, tracking.TrackingToken, resolvedAffiliateId.AffiliateId));
     }
 
-    private async Task RegisterClickAsync(AffiliateTracking tracking, ResolvedAffiliateId resolvedAffiliateId)
+    private async Task<Guid> RegisterClickAsync(AffiliateTracking tracking, ResolvedAffiliateId resolvedAffiliateId)
     {
         var clickedAt = _clock.Now;
         var click = new AffiliateClick(_guidGenerator.Create(), tracking.Id, _currentUser.Id, clickedAt,
@@ -103,6 +107,7 @@ public class AffiliateRedirectController : Controller
         tracking.RegisterClick(clickedAt);
         await _clicks.InsertAsync(click);
         await _trackings.UpdateAsync(tracking, autoSave: true);
+        return click.Id;
     }
 
     private sealed record AffiliateNavigation(AffiliateTracking? Tracking, ResolvedAffiliateId? AffiliateId,

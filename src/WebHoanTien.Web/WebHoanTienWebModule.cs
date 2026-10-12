@@ -157,6 +157,7 @@ public class WebHoanTienWebModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddTransient<ITikTokCreatorConnection, TikTokCreatorConnection>();
+        context.Services.AddTransient<ITikTokCreatorApi, TikTokCreatorApi>();
         context.Services.AddTransient<ITikTokCreatorTokenService, TikTokCreatorTokenService>();
         context.Services.AddHttpClient(TikTokCreatorOAuthClient.HttpClientName,
             client => { client.Timeout = TimeSpan.FromSeconds(20); client.MaxResponseContentBufferSize = 1024 * 1024; })
@@ -567,11 +568,7 @@ public class WebHoanTienWebModule : AbpModule
             job => job.ExecuteAsync(new AffiliateRetentionJobArgs()),
             retentionCron);
 
-        var rioHub = context.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<RioHubOptions>>().Value;
-        if (rioHub.Enabled && rioHub.SyncEnabled)
-            RecurringJob.AddOrUpdate<RioHubOrderSyncJob>(
-                "riohub-tiktok-orders", job => job.ExecuteAsync(System.Threading.CancellationToken.None), rioHub.SyncCron);
-        else
-            RecurringJob.RemoveIfExists("riohub-tiktok-orders");
+        // TikTok order sync/reconciliation is explicitly initiated by an admin.
+        RecurringJob.RemoveIfExists("riohub-tiktok-orders");
     }
 }

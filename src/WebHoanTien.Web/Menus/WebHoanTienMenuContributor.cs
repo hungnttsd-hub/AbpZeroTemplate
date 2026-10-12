@@ -30,9 +30,6 @@ public class WebHoanTienMenuContributor : IMenuContributor
             "Customer.Orders", l["Menu:MyOrders"], "~/Orders", "fas fa-receipt", 20));
         var authorization = context.ServiceProvider.GetRequiredService<IAuthorizationService>();
         var principal = context.ServiceProvider.GetRequiredService<ICurrentPrincipalAccessor>().Principal;
-        if ((await authorization.AuthorizeAsync(principal, TikTokAffiliateAccess.Policy)).Succeeded)
-            context.Menu.Items.Add(new ApplicationMenuItem(
-                "Customer.TikTokAffiliate", "Tiếp thị liên kết TikTok", "~/tiktok-affiliate", "fab fa-tiktok", 25));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Customer.Account", l["Menu:Account"], "~/Account/Profile", "fas fa-user", 30));
         context.Menu.Items.Add(new ApplicationMenuItem(
@@ -54,9 +51,14 @@ public class WebHoanTienMenuContributor : IMenuContributor
             "Affiliate.Admin", l["Menu:AffiliateAdmin"], "~/Admin/Affiliates", "fas fa-chart-line", 50,
             requiredPermissionName: WebHoanTienPermissions.Admin.Default));
         if (principal.IsInRole("admin"))
+        {
             context.Menu.Items.Add(new ApplicationMenuItem(
                 "Affiliate.TikTokCreator", "TikTok Creator", "~/Admin/TikTokCreator", "fab fa-tiktok", 48,
                 requiredPermissionName: WebHoanTienPermissions.Admin.Settings));
+            context.Menu.Items.Add(new ApplicationMenuItem(
+                "Affiliate.TikTokOrders", "Đơn hàng TikTok Shop", "~/Admin/TikTokOrders", "fas fa-receipt", 49,
+                requiredPermissionName: WebHoanTienPermissions.Admin.Orders));
+        }
 
         var administration = context.Menu.GetAdministration();
         administration.SetSubItemOrder(IdentityMenuNames.GroupName, 1);

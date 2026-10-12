@@ -229,6 +229,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     {
         var userId = CurrentUser.GetId();
         var query = (await _repository.GetQueryableAsync()).Where(x => x.UserId == userId);
+        if (input.Platform.HasValue) query = query.Where(x => x.Platform == input.Platform.Value);
         if (!input.IncludeHidden) query = query.Where(x => !x.IsHidden);
         query = query.OrderByDescending(x => x.CreationTime);
         var total = await AsyncExecuter.CountAsync(query);
@@ -282,11 +283,12 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
             TrackingToken = x.TrackingToken, OriginalUrl = x.OriginalUrl, NormalizedUrl = x.NormalizedUrl,
             ProductId = x.ProductId, ShopId = x.ShopId, ProductName = product?.Title ?? x.ProductName,
             ImageUrl = product?.ImageUrl ?? x.ImageUrl, EstimatedCommission = x.EstimatedCommission, ClickCount = x.ClickCount,
-            ProductPrice = product?.Price, CreatorCommissionAmount = product?.CommissionAmount,
+            ProductPrice = null, CreatorCommissionAmount = null,
             IsProductUrlFallback = x.Platform == AffiliatePlatform.TikTok && x.GetProperty<bool>(TikTokProductOverrides.ProductUrlFallbackProperty),
             LastClickedAt = x.LastClickedAt, IsHidden = x.IsHidden, HiddenAt = x.HiddenAt,
             Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken,
-            DirectUrl = x.AffiliateUrl ?? string.Empty
+            DirectUrl = x.Platform == AffiliatePlatform.TikTok && x.GetProperty<string>(TikTokLinkAttribution.SourceProperty) == TikTokLinkAttribution.Source
+                ? "/go/" + x.TrackingToken : x.AffiliateUrl ?? string.Empty
         };
     }
 

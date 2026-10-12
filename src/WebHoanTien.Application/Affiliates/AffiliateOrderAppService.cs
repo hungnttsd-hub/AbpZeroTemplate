@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
@@ -49,6 +50,7 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
                     join conversion in conversionQuery on order.ConversionId equals conversion.Id
                     select new { Order = order, Conversion = conversion };
         if (allowedOrderIds is not null) query = query.Where(x => allowedOrderIds.Contains(x.Order.Id));
+        if (input.Platform.HasValue) query = query.Where(x => x.Order.Platform == input.Platform.Value);
         if (input.Status.HasValue)
         {
             query = query.Where(x => x.Order.Status == input.Status.Value);
@@ -261,6 +263,11 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
                 DeleterId = row.Order.DeleterId,
                 DeletionTime = row.Order.DeletionTime,
                 ConversionId = row.Order.ConversionId,
+                Platform = row.Order.Platform,
+                ProviderStatus = row.Order.Platform == AffiliatePlatform.TikTok ? row.Order.GetProperty<string>("TikTokProviderStatus") : null,
+                ProviderEstimatedCommission = includeAdminData ? row.Order.GetProperty<decimal?>("TikTokEstimatedCommission") : null,
+                ProviderActualCommission = includeAdminData ? row.Order.GetProperty<decimal?>("TikTokActualCommission") : null,
+                ReviewNote = includeAdminData ? row.Order.GetProperty<string>("TikTokOrderReview") : null,
                 UserId = scopedUserId ?? primaryRecipient?.UserId,
                 UserEmail = primaryRecipient?.UserEmail,
                 ExternalOrderId = row.Order.ExternalOrderId,

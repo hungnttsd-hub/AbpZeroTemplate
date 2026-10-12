@@ -1,0 +1,74 @@
+@page
+@model WebHoanTien.Web.Pages.Admin.TikTokOrders.IndexModel
+@using WebHoanTien.Affiliates
+@using WebHoanTien.Web.Pages
+@{
+    ViewData["Title"] = "Đơn hàng TikTok Shop";
+}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h3 mb-0">Đơn hàng TikTok Shop</h1>
+        <a href="/Admin/TikTokCreator" class="btn btn-outline-secondary">Kết nối Creator</a>
+    </div>
+    <p>Admin bấm nút để lấy và lưu đơn hàng. Đối soát, ghi nhận tiền vào ví sẽ triển khai sau.</p>
+    @if (TempData["TikTokNotice"] is string notice) { <div class="alert alert-success" role="status">@notice</div> }
+    @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="card mb-3"><div class="card-body">
+        <form method="get" class="d-flex flex-wrap align-items-end gap-3">
+            <div><label asp-for="FromDate" class="form-label">Từ ngày (giờ Việt Nam)</label><input asp-for="FromDate" class="form-control" /></div>
+            <div><label asp-for="ToDate" class="form-label">Đến hết ngày</label><input asp-for="ToDate" class="form-control" /></div>
+            <button type="submit" class="btn btn-outline-primary">Lọc đơn</button>
+        </form>
+        <form method="post" class="d-flex flex-wrap gap-2 mt-3" data-tiktok-manual-operation>
+            <input type="hidden" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+            <input type="hidden" name="ToDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+            @if (Model.CanSync) { <button asp-page-handler="Sync" class="btn btn-primary">Lấy đơn hàng từ TikTok</button> }
+            <span class="align-self-center" data-operation-progress hidden role="status">Đang gọi TikTok và xử lý đơn hàng…</span>
+        </form>
+        <p class="text-muted mt-3 mb-0">Chọn khoảng ngày đặt đơn, tối đa 90 ngày mỗi lần. Dữ liệu được lưu trong database chung của local và production; bấm lại sẽ cập nhật đơn đã có. Chưa có job tự động và chưa cộng tiền vào ví, kể cả khi TikTok trả trạng thái SETTLED.</p>
+    </div></div>
+    <div class="card"><div class="card-body">
+        <h2 class="h5">@Model.Orders.TotalCount đơn trong khoảng ngày</h2>
+        <div class="table-responsive"><table class="table align-middle">
+            <thead><tr><th>Đơn / ngày đặt</th><th>Sản phẩm</th><th>Trạng thái</th><th>Người nhận</th><th>Hoa hồng TikTok dự kiến</th><th>Hoa hồng TikTok thực nhận</th><th>Hoàn tiền dự kiến</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var order in Model.Orders.Items)
+            {
+                <tr>
+                    <td>@order.ExternalOrderId<br /><small>@CustomerOrderUi.FormatDate(order.PurchaseTime)</small></td>
+                    <td>@(order.Items.FirstOrDefault()?.ProductName ?? "Sản phẩm TikTok Shop")</td>
+                    <td>@CustomerOrderUi.GetStatusLabel(order.Status, order.Platform)<br /><small>@order.ProviderStatus</small>
+                        @if (!string.IsNullOrWhiteSpace(order.ReviewNote)) { <p class="text-danger small mb-0">@order.ReviewNote</p> }
+                    </td>
+                    <td>@(order.Recipients.Count == 0 ? "Chưa khớp lượt bấm" : string.Join(", ", order.Recipients.Select(x => x.UserEmail ?? x.UserId.ToString())))
+                        @if (order.UnmatchedAttributionCount > 0) { <small class="d-block text-danger">@order.UnmatchedAttributionCount dòng chưa khớp lượt bấm</small> }
+                    </td>
+                    <td>@(order.ProviderEstimatedCommission.HasValue ? CustomerOrderUi.FormatMoney(order.ProviderEstimatedCommission.Value) : "Chưa có số tiền VND hợp lệ")</td>
+                    <td>@(order.ProviderActualCommission.HasValue ? CustomerOrderUi.FormatMoney(order.ProviderActualCommission.Value) : "Chưa có")</td>
+                    <td>@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))<br /><small>Chưa đối soát CatBack</small></td>
+                    <td><a href="/Orders/@order.Id?returnUrl=%2FAdmin%2FTikTokOrders">Chi tiết</a></td>
+                </tr>
+            }
+            @if (Model.Orders.Items.Count == 0) { <tr><td colspan="8">Chưa có đơn. Chọn khoảng ngày và bấm Lấy đơn hàng từ TikTok.</td></tr> }
+            </tbody>
+        </table></div>
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="d-flex gap-3" aria-label="Phân trang đơn TikTok">
+                @if (Model.PageNumber > 1) { <a asp-route-FromDate="@Model.FromDate.ToString("yyyy-MM-dd")" asp-route-ToDate="@Model.ToDate.ToString("yyyy-MM-dd")" asp-route-PageNumber="@(Model.PageNumber - 1)">Trang trước</a> }
+                <span>@Model.PageNumber / @Model.TotalPages</span>
+                @if (Model.PageNumber < Model.TotalPages) { <a asp-route-FromDate="@Model.FromDate.ToString("yyyy-MM-dd")" asp-route-ToDate="@Model.ToDate.ToString("yyyy-MM-dd")" asp-route-PageNumber="@(Model.PageNumber + 1)">Trang sau</a> }
+            </nav>
+        }
+    </div></div>
+</div>
+@section Scripts {
+    <script>
+        document.querySelector('[data-tiktok-manual-operation]')?.addEventListener('submit', function () {
+            this.querySelector('[data-operation-progress]').hidden = false;
+            // Preserve the submitter's handler URL while blocking subsequent clicks.
+            this.querySelectorAll('button').forEach(button => { button.style.pointerEvents = 'none'; button.setAttribute('aria-disabled', 'true'); });
+        });
+    </script>
+}

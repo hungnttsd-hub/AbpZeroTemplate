@@ -19,21 +19,20 @@
     <div class="dashboard-grid links-page-grid">
         <div class="dashboard-main">
             <form method="post" asp-page-handler="Prepare" class="cb-card dashboard-create-card" id="link-form" data-ajax-create data-turbo="false">
-                <partial name="/Pages/Shared/_AffiliatePlatformPicker.cshtml" model="Model.LinkUrl" />
                 <div class="dashboard-create-heading">
                     <span class="dashboard-create-icon" aria-hidden="true"><img src="~/catback/icons/link.svg" alt="" /></span>
-                    <div><h2><span data-platform-title>Dán link Shopee tại đây</span> <span aria-hidden="true">✦</span></h2></div>
+                    <div><h2><span data-platform-title>Dán link Shopee hoặc TikTok Shop tại đây</span> <span aria-hidden="true">✦</span></h2></div>
                 </div>
                 <p class="affiliate-auto-detect-note">
                     <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 6.2h.01"/></svg>
-                    <span data-platform-note>Nhận cả link sản phẩm và link cửa hàng — CatBack tự động nhận diện.</span>
+                    <span data-platform-note>CatBack tự nhận diện link sản phẩm TikTok Shop hoặc sản phẩm/cửa hàng Shopee.</span>
                 </p>
                 <a class="dashboard-guide-link" href="/huong-dan#tao-link-hoan-tien">Xem hướng dẫn <span aria-hidden="true">›</span></a>
-                <label class="sr-only" id="affiliate-url-label" for="affiliate-url" data-platform-url-label>Link sản phẩm hoặc cửa hàng Shopee</label>
+                <label class="sr-only" id="affiliate-url-label" for="affiliate-url" data-platform-url-label>Link Shopee hoặc TikTok Shop</label>
                 <div class="dashboard-input-shell">
                     <span aria-hidden="true"><img src="~/catback/icons/link-dark.svg" alt="" /></span>
                     <input asp-for="LinkUrl" id="affiliate-url" type="url" inputmode="url" autocomplete="url"
-                           placeholder="Dán link sản phẩm hoặc cửa hàng Shopee..."
+                           placeholder="Dán link Shopee hoặc TikTok Shop..."
                            aria-labelledby="affiliate-url-label" required maxlength="2048" />
                     <button class="dashboard-input-clear" id="affiliate-url-clear" type="button" aria-label="Xóa link đang nhập" hidden>×</button>
                 </div>

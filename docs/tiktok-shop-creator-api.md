@@ -2,6 +2,36 @@
 
 > Cập nhật source ngày 12/10/2026: đã thay trial OAuth bằng luồng admin và token database. Xem [triển khai Creator admin OAuth](tiktok-creator-admin-oauth.md) cho hiện trạng mới; các mô tả placeholder/cache và tình trạng chưa có quyền trong lịch sử đối chiếu bên dưới không mô tả code OAuth hiện tại. Mapping business API vẫn tuân theo tài liệu và scope của token.
 
+## Triển khai hiện tại — 13/10/2026
+
+Phạm vi đã chốt: **sinh link và lấy/lưu đơn hàng**. Đối soát, kiểm tra thanh toán, ghi nhận hoàn tiền vào ví để làm sau.
+
+- Trang chủ và `/Links` dùng một ô URL, tự nhận diện Shopee/TikTok. TikTok gọi Creator API bằng token admin trong database, không fallback RioHub, mock hoặc link sản phẩm gốc. Link và lượt bấm được lưu vào database hiện có, dùng chung local/production theo connection string đã cấu hình.
+- [Generate General Sharing Links 202505](https://partner.tiktokshop.com/docv2/page/68465b060dbfb004a8c313b6): `POST /affiliate_creator/202505/affiliate_sharing_links/general_publishers/generate_batch`, scope `creator.affiliate.share_link.read`. Request tạo link đã được thử thành công như ghi nhận bên dưới. Không coi scope này là alias của `creator.affiliate.link.write`.
+- `/go/{trackingToken}` tạo và lưu click trước khi chuyển sang `sharing_link`, giữ nguyên chuỗi URL đã mã hóa và thêm `event_id=cbclk_<click-guid>`. Mỗi lần mở có một mã mới; link sao chép vẫn là URL CatBack để đi qua bước này. Không tự tạo `publisher_id` được CJ cấp.
+- [Search Creator Affiliate Orders 202410](https://partner.tiktokshop.com/docv2/page/6736985bd99b7d02fd715482): `POST /affiliate_creator/202410/orders/search`, scope chính xác `creator.affiliate_collaboration.read`. Đã đọc lại schema chính thức qua `api/v1/document/api_meta?src_document_id=6736985bd99b7d02fd715482` và document detail ngày 13/10/2026. Query `page_size=100`, `page_token`; body `create_time_ge` / `create_time_lt` UTC Unix seconds. Ký toàn bộ query phù hợp và JSON body; không thêm `shop_cipher` hoặc dùng Seller token.
+- Admin vào `/Admin/TikTokOrders`, chọn khoảng **ngày đặt đơn** theo giờ Việt Nam rồi bấm **Lấy đơn hàng từ TikTok**. Tối đa 90 ngày/100 trang mỗi lượt; hết giới hạn hoặc vòng lặp page token thì yêu cầu khoảng nhỏ hơn trước khi cập nhật đơn. Không dùng bộ lọc thời gian cập nhật của API trace đã deprecated.
+- `page_size` / `total_count` tính theo dòng SKU trước khi nhóm thành đơn. Gom đủ mọi trang và merge SKU cùng order ID trước khi upsert để không xóa SKU thuộc trang khác. Dữ liệu cùng SKU hoặc trạng thái đơn mâu thuẫn giữa các trang sẽ dừng lượt lấy. Bấm lại cập nhật đơn theo khóa `(Platform, ExternalOrderId)`, không tạo đơn trùng. Local/production dùng advisory lock PostgreSQL chung để tránh hai admin đồng bộ cùng lúc; transaction DB không bao quanh lời gọi API.
+- Với `trace_info.type=GENERAL`, `trace_info.id` chính là event ID trong sharing link; chỉ ghép khi tìm được click đã lưu, đúng Creator và tracking TikTok. `SPECIFIC` trả publisher ID, không tự quy về user hoặc suy đoán từ product ID. Đơn chưa ghép vẫn lưu và admin nhìn thấy.
+- Lưu order/SKU snapshot trong ExtraProperties của đơn để giữ dữ liệu phục vụ đối soát sau. Admin xem trạng thái TikTok, hoa hồng dự kiến, hoa hồng thực nhận VND hợp lệ và thông tin người nhận đã khớp. `actual_commission` đã bao gồm thuế/khoản chia sẻ; không trừ `pit` hoặc `shared_with_partner` lần nữa. Không suy đoán hệ số tiền, chuyển đổi ngoại tệ hoặc dấu phân cách số mơ hồ; định dạng chưa đọc được giữ trong snapshot và được báo cần kiểm tra.
+- Kể cả API trả `SETTLED`, chỉ lưu trạng thái/hoa hồng; trạng thái CatBack chưa được chuyển sang `AffiliateOrderStatus.Settled`, không gọi `Settle`, không tạo số dư có thể rút. Chưa thêm API/nút đối soát. Recurring job RioHub cũ bị gỡ và tắt để job đã nằm trong hàng đợi cũng không tự lấy đơn.
+- Không cần migration mới: dùng tracking, click, conversion/order/item/attribution, sync run và ExtraProperties hiện có. Build Web thành công; chưa chạy test hoặc sync đơn thật trong bước triển khai này.
+
+Các mục đối chiếu cũ bên dưới được giữ làm lịch sử; những câu “chưa có token”, “placeholder”, “vẫn qua RioHub” hoặc “chưa có schema response” không phản ánh hiện trạng trên.
+
+## Kiểm tra tạo link thật bằng token database — 12/10/2026
+
+Theo yêu cầu chủ dự án, đã thử đúng sản phẩm `1732226714601031550` từ link `https://shop.tiktok.com/vn/pdp/1732226714601031550?_t=ZS-9AQlvwzqcuk` trước khi sửa luồng tạo link trên trang chủ.
+
+- Local đọc credential Creator chính từ database dùng chung và giải mã thành công bằng Data Protection. `user_type = 1`, trạng thái `Active`, access token hết hạn `2026-10-19T16:22:43Z`; token có `creator.affiliate.share_link.read`.
+- Đã đọc lại [API Reference Generate General Sharing Links 202505](https://partner.tiktokshop.com/docv2/page/generate-general-sharing-links-202505). Trang này hiện là tài liệu cho method/path mà code gọi; slug cũ `creator-generate-general-link-202505` không còn hiển thị nội dung khi mở trực tiếp trong lần kiểm tra này.
+- Gửi một POST thật tới `/affiliate_creator/202505/affiliate_sharing_links/general_publishers/generate_batch`, body `{"material":{"ids":["1732226714601031550"],"type":"PRODUCT"}}`, ký HMAC-SHA256 và dùng Creator access token qua `x-tts-access-token`.
+- Kết quả: **HTTP 200, `code = 0`, một `sharing_links` item khớp material ID**. Request ID: `20261013003259600C44154EC57C0DE876`.
+- API trả link `https://www.tiktok.com/view/product/1732226714601031550?...` có `chain_key`, `utm_source=open_api` và `div_media_source=affiliate`. Client hiện có đọc được `sharing_link`; không gọi RioHub, không dùng mock.
+- Không in access token/refresh token/secret và không ghi plaintext token ra file. Bước probe chỉ đọc database/key ring, không refresh hoặc thay đổi credentials, không tạo tracking/order của CatBack.
+
+Kết quả xác nhận **tạo được link affiliate bằng Creator API thật**. Luồng nhập URL và attribution đã được nối trong code như phần hiện trạng trên. Chưa xác minh một đơn mua thực tế trả đúng event ID cho từng user CatBack, và chưa triển khai đối soát/cộng ví.
+
 Ngày đối chiếu: 05/10/2026 (Asia/Bangkok). Nguồn: tài liệu chính thức TikTok Shop Partner Center, đọc nội dung trang đã tải JavaScript. Đây là bảng đối chiếu để triển khai; chưa phải xác nhận API đã gọi thành công bằng token CatBack.
 
 **Cập nhật cho Review Demo:** chủ dự án xác nhận thêm scope Active `creator.affiliate.share_link.read` trong yêu cầu xây module mock. Các bảng ba scope bên dưới ghi lại bằng chứng HTML trước đó; scope mới chưa có bản chụp Manage scope bổ sung. Kế hoạch API thật là Creator Generate General Link `202505`, đã đối chiếu Required scope ở API Reference. Chưa có CreatorAccessToken vì đang chờ Creator testing account Vietnam. Giai đoạn hiện tại không gọi API thật; xem `tiktok-affiliate-review-demo.md`.
@@ -32,7 +62,7 @@ HTML cũng hiển thị target Vietnam / Beta Testing, giới hạn beta 25 auth
 | --- | --- | --- | --- |
 | [Get Creator Profile](https://partner.tiktokshop.com/docv2/page/get-creator-profile-202508) | `GET /affiliate_creator/202508/profiles` | `creator.affiliate.info` hoặc `creator.video.write` | Scope app được cung cấp khớp `creator.affiliate.info`; chỉ gọi sau khi Creator token thực sự cấp scope này. |
 | [Creator Search Open Collaboration Product](https://partner.tiktokshop.com/docv2/page/creator-search-open-collaboration-product-202405) | `POST /affiliate_creator/202405/open_collaborations/products/search` | `creator.affiliate_collaboration.read` | HTML Manage scope xác nhận thuộc scope ID 1021508 và key khớp; cần Creator token cấp scope này. |
-| [Search Creator Affiliate Orders](https://partner.tiktokshop.com/docv2/page/search-creator-affiliate-orders-202410) | `POST /affiliate_creator/202410/orders/search` | `creator.affiliate_collaboration.read` | HTML xác nhận thuộc scope ID 1021508; cần Creator token cấp scope này. Đây là API thay thế trace orders do TikTok chỉ định. |
+| [Search Creator Affiliate Orders](https://partner.tiktokshop.com/docv2/page/6736985bd99b7d02fd715482) | `POST /affiliate_creator/202410/orders/search` | `creator.affiliate_collaboration.read` | HTML xác nhận thuộc scope ID 1021508; đã đọc schema hiện hành 13/10/2026. Đây là API thay thế trace orders do TikTok chỉ định. |
 | [Search Creator Target Collaborations](https://partner.tiktokshop.com/docv2/page/search-creator-target-collaborations-202405) | `POST /affiliate_creator/202405/target_collaborations/search` | `creator.affiliate_collaboration.read` | HTML xác nhận thuộc scope ID 1021508; cần Creator token cấp scope này. |
 | [Get Open Collaboration Product List By Product Ids](https://partner.tiktokshop.com/docv2/page/get-open-collaboration-product-list-by-product-ids-202509) | `POST /affiliate_creator/202509/open_collaborations/products` | `creator.affiliate_collaboration.read` | HTML xác nhận thuộc scope ID 1021508; cần Creator token cấp scope này. |
 

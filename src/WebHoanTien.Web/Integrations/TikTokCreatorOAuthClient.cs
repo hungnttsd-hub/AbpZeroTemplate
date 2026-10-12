@@ -86,10 +86,14 @@ public class TikTokCreatorOAuthClient : ITransientDependency
     }
 
 
-    public async Task<string> GetLink(
+    public async Task<string> GetLink(TikTokCreatorTokens tokens, string productId, string? campaignId = null) =>
+        (await GenerateSharingLink(tokens, productId, campaignId)).SharingLink;
+
+    public async Task<TikTokSharingLink> GenerateSharingLink(
         TikTokCreatorTokens tokens,
         string productId,
-        string? campaignId = null)
+        string? campaignId = null,
+        CancellationToken ct = default)
     {
         EnsureConfigured();
 
@@ -166,8 +170,7 @@ public class TikTokCreatorOAuthClient : ITransientDependency
             new System.Net.Http.Headers.MediaTypeHeaderValue(
                 "application/json");
 
-        // Giả định Send() trả về JsonElement của "data"
-        var data = await Send(request, "creator_generate_general_link");
+        var data = await Send(request, "creator_generate_general_link", ct);
 
         // 6. Đọc link TikTok trả về
         if (data.ValueKind == JsonValueKind.Object &&
@@ -183,7 +186,8 @@ public class TikTokCreatorOAuthClient : ITransientDependency
                     var affiliateLink = link.GetString();
 
                     if (!string.IsNullOrWhiteSpace(affiliateLink))
-                        return affiliateLink;
+                        return new TikTokSharingLink(affiliateLink,
+                            OptionalString(item, "deep_link"), OptionalString(item, "one_link"), tokens.OpenId);
                 }
             }
         }
@@ -209,6 +213,42 @@ public class TikTokCreatorOAuthClient : ITransientDependency
             "TikTok không trả về liên kết tiếp thị cho sản phẩm.");
     }
 
+
+    public async Task<TikTokCreatorOrderPage> SearchOrders(TikTokCreatorTokens tokens,
+        long fromUnix, long toUnix, string? pageToken, CancellationToken ct = default)
+    {
+        EnsureConfigured();
+        if (!tokens.GrantedScopes.Contains("creator.affiliate_collaboration.read", StringComparer.Ordinal))
+            throw new UserFriendlyException("Creator token thiếu quyền đọc đơn hàng affiliate.");
+        const string path = "/affiliate_creator/202410/orders/search";
+        var body = JsonSerializer.Serialize(new { create_time_ge = fromUnix, create_time_lt = toUnix });
+        var query = new SortedDictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["app_key"] = AppKey, ["page_size"] = "100",
+            ["timestamp"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+        };
+        if (!string.IsNullOrEmpty(pageToken)) query["page_token"] = pageToken;
+        var input = AppSecret + path + string.Concat(query.Select(x => x.Key + x.Value)) + body + AppSecret;
+        var sign = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(AppSecret),
+            Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        var parameters = query.ToDictionary(x => x.Key, x => (string?)x.Value);
+        parameters["sign"] = sign;
+        using var request = new HttpRequestMessage(HttpMethod.Post,
+            QueryHelpers.AddQueryString("https://open-api.tiktokglobalshop.com" + path, parameters));
+        request.Headers.Add("x-tts-access-token", tokens.AccessToken);
+        request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body));
+        request.Content.Headers.ContentType = new("application/json");
+        var data = await Send(request, "creator_search_orders", ct);
+        if (!data.TryGetProperty("orders", out var orders) || orders.ValueKind != JsonValueKind.Array)
+        {
+            if (data.TryGetProperty("total_count", out var count) && count.ValueKind == JsonValueKind.Number
+                && count.TryGetInt64(out var total) && total == 0 && string.IsNullOrEmpty(OptionalString(data, "next_page_token")))
+                return new(Array.Empty<JsonElement>(), null, tokens.OpenId);
+            throw new UserFriendlyException("TikTok trả về danh sách đơn hàng không hợp lệ; chưa cập nhật đơn hoặc ví.");
+        }
+        return new(orders.EnumerateArray().Select(x => x.Clone()).ToArray(),
+            OptionalString(data, "next_page_token"), tokens.OpenId);
+    }
 
     private async Task<JsonElement> Send(HttpRequestMessage request, string stage, CancellationToken ct = default)
     {
@@ -262,6 +302,8 @@ public class TikTokCreatorOAuthClient : ITransientDependency
     private static string RequiredString(JsonElement data, string name) =>
         data.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString())
             ? value.GetString()! : throw new UserFriendlyException($"Phản hồi TikTok thiếu trường {name} hợp lệ.");
+    private static string? OptionalString(JsonElement data, string name) =>
+        data.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     private static DateTimeOffset RequiredTimestamp(JsonElement data, string name)
     {
         if (!data.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.Number || !value.TryGetInt64(out var timestamp))

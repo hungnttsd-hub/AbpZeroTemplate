@@ -44,6 +44,7 @@ public class CustomerNotificationManager : DomainService
         decimal? expectedUserCommission = null, decimal? settledUserCommission = null)
     {
         var orderLabel = Shorten(order.ExternalOrderId, 40);
+        var platformName = order.Platform == AffiliatePlatform.TikTok ? "TikTok Shop" : "Shopee";
         var actionUrl = $"/Orders/{order.Id}";
         var expectedAmount = expectedUserCommission ?? order.UserCommissionSnapshot;
         var settledAmount = settledUserCommission ?? order.PayableUserCommission;
@@ -52,27 +53,29 @@ public class CustomerNotificationManager : DomainService
             AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending => CreateOrRefreshOrderAsync(userId,
                 CustomerNotificationCategory.Cashback, CustomerNotificationKind.CashbackPending,
                 "Hoa hồng sắp ghi nhận",
-                $"{FormatMoney(expectedAmount)} từ đơn Shopee {orderLabel} đang chờ đối soát.",
+                $"{FormatMoney(expectedAmount)} từ đơn {platformName} {orderLabel} đang chờ đối soát.",
                 actionUrl, $"order:{order.Id:N}:pending"),
             AffiliateOrderStatus.Completed => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
-                CustomerNotificationKind.OrderReconciled, "Đơn hàng đã đối soát",
-                $"Đơn Shopee {orderLabel} đã hoàn tất đối soát và đang chờ Shopee thanh toán hoa hồng.",
+                CustomerNotificationKind.OrderReconciled, order.Platform == AffiliatePlatform.TikTok ? "Hoa hồng chờ CatBack đối soát" : "Đơn hàng đã đối soát",
+                order.Platform == AffiliatePlatform.TikTok
+                    ? $"TikTok Shop đã xác nhận hoa hồng đơn {orderLabel}; CatBack đang chờ đối soát để ghi nhận hoàn tiền."
+                    : $"Đơn Shopee {orderLabel} đã hoàn tất đối soát và đang chờ Shopee thanh toán hoa hồng.",
                 actionUrl, $"order:{order.Id:N}:completed"),
             AffiliateOrderStatus.Settled => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Cashback,
                 CustomerNotificationKind.CashbackRecorded, "Hoàn tiền đã ghi nhận",
-                $"{FormatMoney(settledAmount)} từ đơn Shopee {orderLabel} đã được cộng vào ví.",
+                $"{FormatMoney(settledAmount)} từ đơn {platformName} {orderLabel} đã được cộng vào ví.",
                 "/Wallet", $"order:{order.Id:N}:settled"),
             AffiliateOrderStatus.Cancelled => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderCancelled, "Đơn hàng đã hủy",
-                $"Đơn Shopee {orderLabel} đã bị hủy và không phát sinh hoàn tiền.", actionUrl,
+                $"Đơn {platformName} {orderLabel} đã bị hủy và không phát sinh hoàn tiền.", actionUrl,
                 $"order:{order.Id:N}:cancelled"),
             AffiliateOrderStatus.Refunded => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderRefunded, "Đơn hàng đã hoàn trả",
-                $"Đơn Shopee {orderLabel} đã hoàn trả và không còn đủ điều kiện hoàn tiền.", actionUrl,
+                $"Đơn {platformName} {orderLabel} đã hoàn trả và không còn đủ điều kiện hoàn tiền.", actionUrl,
                 $"order:{order.Id:N}:refunded"),
             AffiliateOrderStatus.Rejected => CreateOrRefreshOrderAsync(userId, CustomerNotificationCategory.Order,
                 CustomerNotificationKind.OrderRejected, "Đơn hàng không được ghi nhận",
-                $"Đơn Shopee {orderLabel} đã bị từ chối ghi nhận hoa hồng.", actionUrl,
+                $"Đơn {platformName} {orderLabel} chưa đủ điều kiện ghi nhận hoa hồng.", actionUrl,
                 $"order:{order.Id:N}:rejected"),
             _ => Task.FromResult(false)
         };
@@ -112,7 +115,7 @@ public class CustomerNotificationManager : DomainService
         {
             if (await CreateOnceAsync(value.UserId, CustomerNotificationCategory.Cashback,
                     CustomerNotificationKind.CashbackRecorded, "Hoàn tiền đã ghi nhận",
-                    $"{FormatMoney(value.Amount)} từ đơn Shopee {Shorten(value.Order.ExternalOrderId, 40)} đã được cộng vào ví.",
+                    $"{FormatMoney(value.Amount)} từ đơn {(value.Order.Platform == AffiliatePlatform.TikTok ? "TikTok Shop" : "Shopee")} {Shorten(value.Order.ExternalOrderId, 40)} đã được cộng vào ví.",
                     "/Wallet", $"order:{value.Order.Id:N}:settled"))
                 created++;
         }
