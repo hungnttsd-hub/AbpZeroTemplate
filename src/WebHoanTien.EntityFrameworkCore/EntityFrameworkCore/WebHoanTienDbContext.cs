@@ -15,6 +15,7 @@ using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Notifications;
 using WebHoanTien.IdentityExtensions;
+using WebHoanTien.TikTokAffiliate;
 
 namespace WebHoanTien.EntityFrameworkCore;
 
@@ -27,6 +28,8 @@ public class WebHoanTienDbContext :
     ISettingManagementDbContext,
     IDataProtectionKeyContext
 {
+    public DbSet<TikTokCreatorCredentials> TikTokCreatorCredentials { get; set; } = null!;
+    public DbSet<TikTokCreatorAuthState> TikTokCreatorAuthStates { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<AnonymousRecovery> AnonymousRecoveries { get; set; } = null!;
     public DbSet<AnonymousDevice> AnonymousDevices { get; set; } = null!;
@@ -82,5 +85,6 @@ public class WebHoanTienDbContext :
         builder.ConfigureAffiliate();
         builder.ConfigureNotifications();
         builder.ConfigureAnonymousAccounts();
+        builder.ConfigureTikTokCreator();
     }
 }

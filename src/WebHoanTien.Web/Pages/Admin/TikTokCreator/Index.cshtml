@@ -1,0 +1,39 @@
+@page
+@model WebHoanTien.Web.Pages.Admin.TikTokCreator.IndexModel
+@{
+    ViewData["Title"] = "TikTok Creator";
+}
+<div class="card">
+    <div class="card-body">
+        <h1>TikTok Creator của CatBack</h1>
+        <p>Authorize tài khoản TikTok Shop Creator của admin để CatBack sử dụng token chung. Token được mã hóa và lưu trong database.</p>
+        @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
+        @if (Model.Notice is not null) { <div class="alert alert-success" role="status">@Model.Notice</div> }
+        <p><strong>Trạng thái:</strong> @Model.StatusLabel</p>
+        @if (Model.Connection.OpenId is not null)
+        {
+            <dl>
+                <dt>Creator Open ID</dt><dd>@Model.Connection.OpenId</dd>
+                <dt>Loại tài khoản</dt><dd>Creator (user_type = @Model.Connection.UserType)</dd>
+                <dt>Access token hết hạn (UTC)</dt><dd>@Model.Connection.AccessTokenExpiresAtUtc?.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")</dd>
+                <dt>Refresh token hết hạn (UTC)</dt><dd>@Model.Connection.RefreshTokenExpiresAtUtc?.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")</dd>
+                <dt>Lần refresh gần nhất (UTC)</dt><dd>@(Model.Connection.LastRefreshedAtUtc?.ToString("yyyy-MM-dd HH:mm:ss 'UTC'") ?? "Chưa refresh")</dd>
+            </dl>
+            <h2>Quyền Creator đã cấp</h2>
+            <ul>@foreach (var scope in Model.Connection.GrantedScopes) { <li><code>@scope</code></li> }</ul>
+            @if (Model.Connection.MissingScopes.Length > 0)
+            { <p class="text-danger">Quyền còn thiếu: @string.Join(", ", Model.Connection.MissingScopes)</p> }
+        }
+        <form method="post" asp-page-handler="Authorize" data-turbo="false" class="mb-3">
+            <button type="submit" class="btn btn-primary" disabled="@(!Model.IsConfigured)">@(Model.Connection.OpenId is null ? "Authorize TikTok Creator" : "Authorize lại Creator hiện tại")</button>
+        </form>
+        @if (Model.Connection.Status is "Active" or "MissingScopes")
+        {
+            <form method="post" asp-page-handler="Refresh" data-turbo="false">
+                <button type="submit" class="btn btn-outline-secondary" disabled="@(!Model.IsConfigured)">Làm mới token</button>
+            </form>
+        }
+        <p class="mt-3">Đăng nhập đúng tài khoản Creator chính trên TikTok khi cấp quyền. CatBack giữ nguyên Creator chính nếu tài khoản khác authorize.</p>
+        <p>Callback đã đăng ký: <code>https://catback.id.vn/api/tiktok-shop/oauth/callback</code></p>
+    </div>
+</div>

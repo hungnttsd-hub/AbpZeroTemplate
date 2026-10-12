@@ -53,6 +53,10 @@ public class WebHoanTienMenuContributor : IMenuContributor
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Affiliate.Admin", l["Menu:AffiliateAdmin"], "~/Admin/Affiliates", "fas fa-chart-line", 50,
             requiredPermissionName: WebHoanTienPermissions.Admin.Default));
+        if (principal.IsInRole("admin"))
+            context.Menu.Items.Add(new ApplicationMenuItem(
+                "Affiliate.TikTokCreator", "TikTok Creator", "~/Admin/TikTokCreator", "fab fa-tiktok", 48,
+                requiredPermissionName: WebHoanTienPermissions.Admin.Settings));
 
         var administration = context.Menu.GetAdministration();
         administration.SetSubItemOrder(IdentityMenuNames.GroupName, 1);

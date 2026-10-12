@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
@@ -22,8 +23,8 @@ public class TikTokCreatorOAuthClient : ITransientDependency
     private readonly IHttpClientFactory _clients;
     private readonly IConfiguration _configuration;
     private readonly ILogger<TikTokCreatorOAuthClient> _logger;
-    public string AppKey => _configuration["TikTokShop:AppKey"]?.Trim() ?? "";
-    private string AppSecret => _configuration["TikTokShop:AppSecret"]?.Trim() ?? "";
+    public string AppKey => (_configuration["TikTokShop:Creator:AppKey"] ?? _configuration["TikTokShop:AppKey"])?.Trim() ?? "";
+    private string AppSecret => (_configuration["TikTokShop:Creator:AppSecret"] ?? _configuration["TikTokShop:AppSecret"])?.Trim() ?? "";
     public bool IsConfigured => !string.IsNullOrWhiteSpace(AppKey) && !string.IsNullOrWhiteSpace(AppSecret);
 
     public TikTokCreatorOAuthClient(IHttpClientFactory clients, IConfiguration configuration,
@@ -37,24 +38,22 @@ public class TikTokCreatorOAuthClient : ITransientDependency
             new Dictionary<string, string?> { ["app_key"] = AppKey, ["state"] = state });
     }
 
-    public Task<TikTokCreatorTokens> Exchange(string code) => GetTokens("get", "auth_code", code, "authorized_code");
-    public Task<TikTokCreatorTokens> Refresh(string token) => GetTokens("refresh", "refresh_token", token, "refresh_token");
+    public Task<TikTokCreatorTokens> Exchange(string code, CancellationToken ct = default) => GetTokens("get", "auth_code", code, "authorized_code", ct);
+    public Task<TikTokCreatorTokens> Refresh(string token, CancellationToken ct = default) => GetTokens("refresh", "refresh_token", token, "refresh_token", ct);
 
-    private async Task<TikTokCreatorTokens> GetTokens(string operation, string credentialKey, string credential, string grant)
+    private async Task<TikTokCreatorTokens> GetTokens(string operation, string credentialKey, string credential, string grant, CancellationToken ct)
     {
         EnsureConfigured();
         var url = QueryHelpers.AddQueryString($"https://auth.tiktok-shops.com/api/v2/token/{operation}",
             new Dictionary<string, string?> { ["app_key"] = AppKey, ["app_secret"] = AppSecret,
                 [credentialKey] = credential, ["grant_type"] = grant });
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        var data = await Send(request, "token_" + operation);
-        if (!data.TryGetProperty("user_type", out var type) || !type.TryGetInt32(out var userType) || userType != 1)
+        var data = await Send(request, "token_" + operation, ct);
+        if (!data.TryGetProperty("user_type", out var type) || type.ValueKind != JsonValueKind.Number || !type.TryGetInt32(out var userType) || userType != 1)
             throw new UserFriendlyException("TikTok trả về mã truy cập không thuộc nhà sáng tạo. Không thể dùng mã truy cập của nhà bán hàng cho kết nối này.");
         var scopes = data.TryGetProperty("granted_scopes", out var granted) && granted.ValueKind == JsonValueKind.Array
             ? granted.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).ToArray()
             : Array.Empty<string>();
-        if (!scopes.Contains("creator.affiliate.info", StringComparer.Ordinal))
-            throw new UserFriendlyException("Nhà sáng tạo chưa cấp quyền creator.affiliate.info. Hãy cấp lại quyền hồ sơ mà ứng dụng yêu cầu.");
         var tokens = new TikTokCreatorTokens(RequiredString(data, "access_token"), RequiredString(data, "refresh_token"),
             RequiredString(data, "open_id"), RequiredTimestamp(data, "access_token_expire_in"),
             RequiredTimestamp(data, "refresh_token_expire_in"), scopes);
@@ -211,12 +210,17 @@ public class TikTokCreatorOAuthClient : ITransientDependency
     }
 
 
-    private async Task<JsonElement> Send(HttpRequestMessage request, string stage)
+    private async Task<JsonElement> Send(HttpRequestMessage request, string stage, CancellationToken ct = default)
     {
+        var httpStatus = 0;
+        TimeSpan? retryAfter = null;
         try
         {
-            using var response = await _clients.CreateClient(HttpClientName).SendAsync(request);
-            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            using var response = await _clients.CreateClient(HttpClientName).SendAsync(request, ct);
+            httpStatus = (int)response.StatusCode;
+            retryAfter = response.Headers.RetryAfter?.Delta
+                ?? (response.Headers.RetryAfter?.Date is { } retryAt ? retryAt - DateTimeOffset.UtcNow : null);
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
             var root = json.RootElement;
             var requestId = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("request_id", out var rid) && rid.ValueKind == JsonValueKind.String
                 ? new string((rid.GetString() ?? "").Where(char.IsAsciiLetterOrDigit).Take(100).ToArray()) : "";
@@ -230,16 +234,26 @@ public class TikTokCreatorOAuthClient : ITransientDependency
                     "TikTok token diagnostic {Stage}: HTTP {Status}, code {Code}, request_id {RequestId}, summary {TokenSummary}",
                     stage, (int)response.StatusCode, code, requestId, TikTokTokenDiagnostics.Describe(root));
             if (!response.IsSuccessStatusCode || code != 0)
-                throw new UserFriendlyException($"TikTok chưa hoàn tất bước {stage} (HTTP {(int)response.StatusCode}, mã {code}, request_id {requestId}). " +
-                    "Nếu đang thử nghiệm, hãy gửi mã lỗi và request_id này cho TikTok để kiểm tra quyền của ứng dụng và nhà sáng tạo. Không gửi mã truy cập hoặc mã ủy quyền.");
+                throw new TikTokCreatorApiException(code, (int)response.StatusCode, stage,
+                    $"TikTok chưa hoàn tất bước {stage} (HTTP {(int)response.StatusCode}, mã {code}, request_id {requestId}). " +
+                    ErrorHint(code), retryAfter);
             if (!root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
                 throw new UserFriendlyException("TikTok trả về phản hồi không có dữ liệu hợp lệ.");
             return data.Clone();
         }
-        catch (HttpRequestException) { throw new UserFriendlyException("Không thể kết nối máy chủ TikTok. Hãy thử lại sau."); }
-        catch (TaskCanceledException) { throw new UserFriendlyException("Yêu cầu TikTok quá thời gian chờ. Hãy kết nối lại."); }
-        catch (JsonException) { throw new UserFriendlyException("Máy chủ TikTok chưa trả về JSON hợp lệ. Hãy thử lại sau."); }
+        catch (HttpRequestException) { throw new TikTokCreatorApiException(-1, 0, stage, "Không thể kết nối máy chủ TikTok. Hãy thử lại sau."); }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested) { throw new TikTokCreatorApiException(-1, 0, stage, "Yêu cầu TikTok quá thời gian chờ. Hãy thử lại sau; trạng thái kết nối được giữ nguyên."); }
+        catch (JsonException) { throw new TikTokCreatorApiException(-1, httpStatus, stage, "Máy chủ TikTok chưa trả về JSON hợp lệ. Hãy thử lại sau.", retryAfter); }
     }
+
+    private static string ErrorHint(int code) => code switch
+    {
+        105001 => "Token không hợp lệ hoặc quyền đã bị thu hồi. Admin cần kiểm tra và authorize lại Creator.",
+        105002 => "Access token đã hết hạn; cần làm mới token.",
+        105005 => "Kiểm tra scope của app và granted_scopes của Creator; callback thành công không chứng minh đã có đủ quyền.",
+        101000 => "Sai danh tính token hoặc API-token pairing. Cần kiểm tra cấu hình Creator API.",
+        _ => "Hãy thử lại sau hoặc gửi mã lỗi và request_id cho TikTok. Không gửi token hay mã ủy quyền."
+    };
 
     private void EnsureConfigured()
     {
@@ -250,7 +264,7 @@ public class TikTokCreatorOAuthClient : ITransientDependency
             ? value.GetString()! : throw new UserFriendlyException($"Phản hồi TikTok thiếu trường {name} hợp lệ.");
     private static DateTimeOffset RequiredTimestamp(JsonElement data, string name)
     {
-        if (!data.TryGetProperty(name, out var value) || !value.TryGetInt64(out var timestamp))
+        if (!data.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.Number || !value.TryGetInt64(out var timestamp))
             throw new UserFriendlyException($"Phản hồi TikTok thiếu thời hạn {name}.");
         try { return DateTimeOffset.FromUnixTimeSeconds(timestamp); }
         catch (ArgumentOutOfRangeException) { throw new UserFriendlyException("Thời hạn token TikTok không hợp lệ."); }
@@ -258,4 +272,23 @@ public class TikTokCreatorOAuthClient : ITransientDependency
 }
 
 public sealed record TikTokCreatorTokens(string AccessToken, string RefreshToken, string OpenId,
-    DateTimeOffset AccessExpiresAt, DateTimeOffset RefreshExpiresAt, string[] GrantedScopes);
+    DateTimeOffset AccessExpiresAt, DateTimeOffset RefreshExpiresAt, string[] GrantedScopes)
+{
+    public long TokenVersion { get; init; }
+    public override string ToString() => "TikTokCreatorTokens [redacted]";
+}
+
+public sealed class TikTokCreatorApiException : UserFriendlyException
+{
+    public int TikTokCode { get; }
+    public int HttpStatus { get; }
+    public bool RequiresReauthorization { get; }
+    public bool IsTransient => HttpStatus == 0 || HttpStatus == 429 || HttpStatus >= 500;
+    public int RetryAfterSeconds { get; }
+    public TikTokCreatorApiException(int code, int status, string stage, string message, TimeSpan? retryAfter = null) : base(message)
+    {
+        TikTokCode = code; HttpStatus = status;
+        RequiresReauthorization = stage == "token_refresh" && code == 105001 && status < 500 && status != 429;
+        RetryAfterSeconds = (int)Math.Clamp(Math.Ceiling(retryAfter?.TotalSeconds ?? 10), 1, 60);
+    }
+}

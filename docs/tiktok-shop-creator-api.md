@@ -1,5 +1,7 @@
 # CatBack — TikTok Shop Affiliate Creator API
 
+> Cập nhật source ngày 12/10/2026: đã thay trial OAuth bằng luồng admin và token database. Xem [triển khai Creator admin OAuth](tiktok-creator-admin-oauth.md) cho hiện trạng mới; các mô tả placeholder/cache và tình trạng chưa có quyền trong lịch sử đối chiếu bên dưới không mô tả code OAuth hiện tại. Mapping business API vẫn tuân theo tài liệu và scope của token.
+
 Ngày đối chiếu: 05/10/2026 (Asia/Bangkok). Nguồn: tài liệu chính thức TikTok Shop Partner Center, đọc nội dung trang đã tải JavaScript. Đây là bảng đối chiếu để triển khai; chưa phải xác nhận API đã gọi thành công bằng token CatBack.
 
 **Cập nhật cho Review Demo:** chủ dự án xác nhận thêm scope Active `creator.affiliate.share_link.read` trong yêu cầu xây module mock. Các bảng ba scope bên dưới ghi lại bằng chứng HTML trước đó; scope mới chưa có bản chụp Manage scope bổ sung. Kế hoạch API thật là Creator Generate General Link `202505`, đã đối chiếu Required scope ở API Reference. Chưa có CreatorAccessToken vì đang chờ Creator testing account Vietnam. Giai đoạn hiện tại không gọi API thật; xem `tiktok-affiliate-review-demo.md`.

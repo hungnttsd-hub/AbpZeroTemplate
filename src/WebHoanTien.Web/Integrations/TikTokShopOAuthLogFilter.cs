@@ -28,6 +28,13 @@ public static class TikTokShopOAuthLogFilter
                 return true;
         }
 
+        // MVC can log RedirectResult's Destination, including the bearer OAuth state.
+        // The callback no longer relies on a browser state cookie, so keep that URL out of logs.
+        foreach (var property in logEvent.Properties.Values)
+            if (property is ScalarValue { Value: string value }
+                && value.Contains("https://shop.tiktok.com/alliance/creator/auth?", System.StringComparison.OrdinalIgnoreCase))
+                return true;
+
         return false;
     }
 

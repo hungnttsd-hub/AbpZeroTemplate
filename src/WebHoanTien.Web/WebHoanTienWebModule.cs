@@ -157,10 +157,20 @@ public class WebHoanTienWebModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         context.Services.AddTransient<ITikTokCreatorConnection, TikTokCreatorConnection>();
+        context.Services.AddTransient<ITikTokCreatorTokenService, TikTokCreatorTokenService>();
         context.Services.AddHttpClient(TikTokCreatorOAuthClient.HttpClientName,
-            client => client.Timeout = TimeSpan.FromSeconds(20))
+            client => { client.Timeout = TimeSpan.FromSeconds(20); client.MaxResponseContentBufferSize = 1024 * 1024; })
             .RemoveAllLoggers()
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false,
+                UseCookies = false,
+                UseProxy = false,
+                // .NET 8 omits its DiagnosticsHandler when this is null: token query values
+                // must not be published to HttpHandlerDiagnosticListener / Activity collectors.
+                ActivityHeadersPropagator = null,
+                ConnectTimeout = TimeSpan.FromSeconds(10)
+            });
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
         var connectionString = configuration.GetConnectionString("Default")

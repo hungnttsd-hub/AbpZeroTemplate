@@ -1,5 +1,7 @@
 # CatBack — thử Creator OAuth thật
 
+> Luồng trial bên dưới là lịch sử ngày 08/10. Luồng admin/token database thay thế đã triển khai trong source ngày 12/10/2026; xem [TikTok Creator admin OAuth](tiktok-creator-admin-oauth.md). Không còn dùng cache/cookie admin làm điều kiện cho callback mới.
+
 Ngày đối chiếu: 08/10/2026 (Asia/Bangkok).
 
 ## Kết quả hiện tại
