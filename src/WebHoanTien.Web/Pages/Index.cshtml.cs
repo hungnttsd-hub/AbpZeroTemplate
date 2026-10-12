@@ -141,7 +141,8 @@ public class IndexModel : PageModel
         var nonce = Guid.NewGuid().ToString("N");
         var payload = JsonSerializer.Serialize(new PendingAffiliateAction
         {
-            Url = LinkUrl,
+            // Keep the pending-login cookie small for long TikTok share URLs as well.
+            Url = validation.Platform == AffiliatePlatform.TikTok ? validation.NormalizedUrl! : LinkUrl,
             TargetType = AffiliateLinkTargetType.Auto,
             Nonce = nonce
         });

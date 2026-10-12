@@ -60,7 +60,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     [AllowAnonymous]
     public Task<AffiliateUrlValidationDto> ValidateAsync(ValidateAffiliateUrlInput input)
     {
-        if (TikTokAffiliateUrl.TryNormalize(input.Url, out var tikTokUrl, out var tikTokProductId))
+        if (TikTokAffiliateUrl.TryNormalizeProductInput(input.Url, out var tikTokUrl, out var tikTokProductId))
         {
             if (input.TargetType == AffiliateLinkTargetType.Shop || !IsSupportedInputTargetType(input.TargetType))
                 return Task.FromResult(InvalidValidation(WebHoanTienDomainErrorCodes.AffiliateTargetUnsupported,
@@ -68,7 +68,8 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
             return Task.FromResult(new AffiliateUrlValidationDto
             {
                 IsValid = true, Platform = AffiliatePlatform.TikTok, NormalizedUrl = tikTokUrl,
-                ItemId = tikTokProductId, DetectedTargetType = AffiliateLinkTargetType.Product
+                ItemId = tikTokProductId, RequiresRedirectResolution = tikTokProductId is null,
+                DetectedTargetType = AffiliateLinkTargetType.Product
             });
         }
         if (!IsSupportedInputTargetType(input.TargetType))
@@ -124,7 +125,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
 
     public async Task<AffiliateTrackingDto> CreateAsync(CreateAffiliateLinkInput input)
     {
-        if (TikTokAffiliateUrl.TryNormalize(input.Url, out _, out _))
+        if (TikTokAffiliateUrl.TryNormalizeProductInput(input.Url, out _, out _))
         {
             if (input.TargetType == AffiliateLinkTargetType.Shop || !IsSupportedInputTargetType(input.TargetType))
                 throw new UserFriendlyException("TikTok hiện hỗ trợ tạo link sản phẩm.");

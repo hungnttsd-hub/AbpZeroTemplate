@@ -33,7 +33,7 @@
                     <span aria-hidden="true"><img src="~/catback/icons/link-dark.svg" alt="" /></span>
                     <input asp-for="LinkUrl" id="affiliate-url" type="url" inputmode="url" autocomplete="url"
                            placeholder="Dán link Shopee hoặc TikTok Shop..."
-                           aria-labelledby="affiliate-url-label" required maxlength="2048" />
+                           aria-labelledby="affiliate-url-label" required maxlength="@WebHoanTien.WebHoanTienConsts.AffiliateInputUrlMaxLength" />
                     <button class="dashboard-input-clear" id="affiliate-url-clear" type="button" aria-label="Xóa link đang nhập" hidden>×</button>
                 </div>
                 <div id="url-status" class="url-status" data-state="idle" role="status" aria-live="polite"></div>

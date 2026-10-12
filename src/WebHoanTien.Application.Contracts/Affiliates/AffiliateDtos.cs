@@ -9,7 +9,7 @@ namespace WebHoanTien.Affiliates;
 
 public sealed class ValidateAffiliateUrlInput
 {
-    [Required, StringLength(WebHoanTienConsts.UrlMaxLength)]
+    [Required, StringLength(WebHoanTienConsts.AffiliateInputUrlMaxLength)]
     public string Url { get; set; } = string.Empty;
     public AffiliateLinkTargetType TargetType { get; set; } = AffiliateLinkTargetType.Product;
 }
@@ -28,7 +28,7 @@ public sealed class AffiliateUrlValidationDto
 
 public sealed class CreateAffiliateLinkInput
 {
-    [Required, StringLength(WebHoanTienConsts.UrlMaxLength)]
+    [Required, StringLength(WebHoanTienConsts.AffiliateInputUrlMaxLength)]
     public string Url { get; set; } = string.Empty;
     public AffiliateLinkTargetType TargetType { get; set; } = AffiliateLinkTargetType.Product;
 }

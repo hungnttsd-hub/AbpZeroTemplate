@@ -14,7 +14,7 @@ public class TikTokProductUrlResolver : ITransientDependency
 
     public async Task<(string Url, string ProductId)> ResolveAsync(string input, CancellationToken ct)
     {
-        if (!TikTokAffiliateUrl.TryNormalize(input, out var url, out var productId))
+        if (!TikTokAffiliateUrl.TryNormalizeProductInput(input, out var url, out var productId))
             throw new UserFriendlyException("Vui lòng dán link sản phẩm TikTok Shop hợp lệ.");
         if (productId is not null) return (Canonical(productId), productId);
         var current = new Uri(url);
@@ -30,7 +30,7 @@ public class TikTokProductUrlResolver : ITransientDependency
             if ((int)response.StatusCode is not (>= 300 and < 400) || response.Headers.Location is null)
                 throw new UserFriendlyException("Không mở được link TikTok rút gọn. Hãy dùng link sản phẩm có ID.");
             var target = response.Headers.Location.IsAbsoluteUri ? response.Headers.Location : new Uri(current, response.Headers.Location);
-            if (!TikTokAffiliateUrl.TryNormalize(target.AbsoluteUri, out url, out productId))
+            if (!TikTokAffiliateUrl.TryNormalizeProductInput(target.AbsoluteUri, out url, out productId))
                 throw new UserFriendlyException("TikTok chuyển hướng tới địa chỉ không được hỗ trợ.");
             if (productId is not null) return (Canonical(productId), productId);
             if (!IsShortHost(target.Host)) throw new UserFriendlyException("Link TikTok không dẫn đến trang sản phẩm được hỗ trợ.");
@@ -41,5 +41,5 @@ public class TikTokProductUrlResolver : ITransientDependency
 
     public static bool IsShortHost(string host) => host.Equals("vt.tiktok.com", StringComparison.OrdinalIgnoreCase)
         || host.Equals("vm.tiktok.com", StringComparison.OrdinalIgnoreCase);
-    public static string Canonical(string id) => "https://shop.tiktok.com/vn/pdp/" + id;
+    public static string Canonical(string id) => TikTokAffiliateUrl.CanonicalProductUrl(id);
 }

@@ -39,7 +39,7 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
 
     public Task<TikTokProductDto> GetProduct(string productUrl)
     {
-        if (!TikTokAffiliateUrl.TryNormalize(AsUrl(productUrl), out _, out var id) || id is null)
+        if (!TikTokAffiliateUrl.TryNormalizeProductInput(AsUrl(productUrl), out _, out var id) || id is null)
             throw new UserFriendlyException("Vui lòng dùng link sản phẩm TikTok Shop có ID.");
         var metadata = TikTokProductOverrides.Find(id);
         return Task.FromResult(new TikTokProductDto(id, metadata?.Title ?? "Sản phẩm TikTok Shop", "TikTok Shop",

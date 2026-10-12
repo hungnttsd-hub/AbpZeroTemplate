@@ -49,8 +49,10 @@ public class TikTokAffiliateLinkCreator : ITransientDependency
         if (!TikTokAffiliateUrl.TryNormalize(link.SharingLink, out _, out _))
             throw new UserFriendlyException("TikTok trả về sharing link không hợp lệ.");
         var id = _guids.Create();
+        var originalUrl = url.Trim();
+        if (originalUrl.Length > WebHoanTienConsts.UrlMaxLength) originalUrl = normalized;
         var tracking = existing ?? new AffiliateTracking(id, userId, AffiliatePlatform.TikTok,
-            id.ToString("N"), url.Trim(), normalized);
+            id.ToString("N"), originalUrl, normalized);
         var metadata = TikTokProductOverrides.Find(productId);
         tracking.SetResolvedUrl(normalized, link.SharingLink);
         tracking.SetProduct(productId, null, metadata?.Title ?? "Sản phẩm TikTok Shop", metadata?.ImageUrl, null);

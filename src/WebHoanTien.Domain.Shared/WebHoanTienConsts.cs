@@ -7,6 +7,8 @@ public static class WebHoanTienConsts
     public const string NotificationDbSchema = "notification";
     public const string HangfireDbSchema = "hangfire";
     public const int UrlMaxLength = 2048;
+    // TikTok copy/share URLs include long query strings; normalize them before database storage.
+    public const int AffiliateInputUrlMaxLength = 8192;
     public const int TrackingTokenLength = 32;
     public const int AffiliateIdMaxLength = 128;
     public const int AffiliateOverrideNoteMaxLength = 500;
