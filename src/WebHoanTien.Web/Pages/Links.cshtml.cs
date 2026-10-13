@@ -80,11 +80,9 @@ public class LinksModel : PageModel
                     productName = result.ProductName,
                     shopId = result.ShopId,
                     imageUrl = result.ImageUrl,
-                    productPriceLabel = result.ProductPrice.HasValue ? result.ProductPrice.Value.ToString("N0") + "₫" : null,
-                    creatorCommissionLabel = result.CreatorCommissionAmount.HasValue ? result.CreatorCommissionAmount.Value.ToString("N0") + "₫" : null,
-                    estimatedCommissionLabel = result.EstimatedCommission.HasValue
-                        ? result.EstimatedCommission.Value.ToString("N0") + "₫"
-                        : null,
+                    productPriceLabel = CustomerLinkUi.MoneyRange(result.ProductPrice, result.ProductPriceMaximum),
+                    creatorCommissionLabel = CustomerLinkUi.MoneyRange(result.CreatorCommissionAmount, result.CreatorCommissionMaximum),
+                    estimatedCommissionLabel = CustomerLinkUi.MoneyRange(result.EstimatedCommission, result.EstimatedCommissionMaximum),
                     redirectUrl = result.RedirectUrl,
                     directUrl = result.DirectUrl,
                     clickCount = result.ClickCount,

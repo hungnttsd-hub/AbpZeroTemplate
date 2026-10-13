@@ -49,7 +49,10 @@ public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
     public string? ImageUrl { get; set; }
     public decimal? EstimatedCommission { get; set; }
     public decimal? ProductPrice { get; set; }
+    public decimal? ProductPriceMaximum { get; set; }
     public decimal? CreatorCommissionAmount { get; set; }
+    public decimal? CreatorCommissionMaximum { get; set; }
+    public decimal? EstimatedCommissionMaximum { get; set; }
     public int ClickCount { get; set; }
     public DateTime? LastClickedAt { get; set; }
     public bool IsHidden { get; set; }

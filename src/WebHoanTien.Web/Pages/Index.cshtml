@@ -113,9 +113,9 @@
                                 else if (createdIsTikTok)
                                 {
                                     <span class="affiliate-inline-estimate">
-                                        @if (Model.CreatedLink.CreatorCommissionAmount.HasValue)
+                                        @if (Model.CreatedLink.EstimatedCommission.HasValue)
                                         {
-                                            <text>Giá @(Model.CreatedLink.ProductPrice?.ToString("N0"))₫ · Hoa hồng Creator @(Model.CreatedLink.CreatorCommissionAmount.Value.ToString("N0"))₫</text>
+                                            <text>Hoàn lại dự kiến @CustomerLinkUi.MoneyRange(Model.CreatedLink.EstimatedCommission, Model.CreatedLink.EstimatedCommissionMaximum)</text>
                                         }
                                         else
                                         {
@@ -251,9 +251,13 @@
                                         <p class="affiliate-estimate unavailable">Chưa có ước tính hoa hồng</p>
                                     }
                                 }
-                                @if (isTikTok && item.CreatorCommissionAmount.HasValue)
+                                @if (isTikTok && item.EstimatedCommission.HasValue)
                                 {
-                                    <p class="affiliate-estimate">Giá @(item.ProductPrice?.ToString("N0"))₫ · Hoa hồng Creator @(item.CreatorCommissionAmount.Value.ToString("N0"))₫</p>
+                                    <p class="affiliate-estimate">Hoàn lại dự kiến @CustomerLinkUi.MoneyRange(item.EstimatedCommission, item.EstimatedCommissionMaximum)</p>
+                                }
+                                else if (isTikTok)
+                                {
+                                    <p class="affiliate-estimate unavailable">Chưa có ước tính hoàn tiền từ TikTok</p>
                                 }
                                 @if (item.IsProductUrlFallback)
                                 {

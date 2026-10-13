@@ -31,6 +31,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     private readonly IClock _clock;
     private readonly ILogger<AffiliateLinkAppService> _logger;
     private readonly TikTokAffiliateLinkCreator _tikTokLinkCreator;
+    private readonly TikTokProductPreviewEnricher _tikTokPreview;
 
     public AffiliateLinkAppService(IRepository<AffiliateTracking, Guid> repository, ISafeAffiliateUrlResolver resolver,
         IAffiliateUrlNormalizer normalizer, ShopeeLinkTargetClassifier targetClassifier,
@@ -39,7 +40,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         IAffiliateIdResolver affiliateIdResolver, ShopeeAffiliateLinkBuilder linkBuilder,
         AffiliateUserShareRateResolver shareRateResolver,
         AffiliateCommissionCalculator commissionCalculator, IClock clock, ILogger<AffiliateLinkAppService> logger,
-        TikTokAffiliateLinkCreator tikTokLinkCreator)
+        TikTokAffiliateLinkCreator tikTokLinkCreator, TikTokProductPreviewEnricher tikTokPreview)
     {
         _repository = repository;
         _resolver = resolver;
@@ -55,6 +56,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         _clock = clock;
         _logger = logger;
         _tikTokLinkCreator = tikTokLinkCreator;
+        _tikTokPreview = tikTokPreview;
     }
 
     [AllowAnonymous]
@@ -235,6 +237,8 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         query = query.OrderByDescending(x => x.CreationTime);
         var total = await AsyncExecuter.CountAsync(query);
         var rows = await AsyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
+        var refreshed = await _tikTokPreview.EnrichAsync(rows);
+        if (refreshed.Count > 0) await _repository.UpdateManyAsync(refreshed, autoSave: true);
         return new PagedResultDto<AffiliateTrackingDto>(total, rows.Select(x => Map(x)).ToList());
     }
 
@@ -242,6 +246,8 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     {
         var tracking = await _repository.GetAsync(id);
         if (tracking.UserId != CurrentUser.GetId()) throw new BusinessException(WebHoanTienDomainErrorCodes.TrackingNotOwned);
+        var refreshed = await _tikTokPreview.EnrichAsync(new[] { tracking });
+        if (refreshed.Count > 0) await _repository.UpdateAsync(tracking, autoSave: true);
         return Map(tracking);
     }
 
@@ -282,9 +288,13 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
             Platform = x.Platform, TargetType = x.Platform == AffiliatePlatform.TikTok
                 ? AffiliateLinkTargetType.Product : _targetClassifier.Classify(x.NormalizedUrl),
             TrackingToken = x.TrackingToken, OriginalUrl = x.OriginalUrl, NormalizedUrl = x.NormalizedUrl,
-            ProductId = x.ProductId, ShopId = x.ShopId, ProductName = product?.Title ?? x.ProductName,
-            ImageUrl = product?.ImageUrl ?? x.ImageUrl, EstimatedCommission = x.EstimatedCommission, ClickCount = x.ClickCount,
-            ProductPrice = null, CreatorCommissionAmount = null,
+            ProductId = x.ProductId, ShopId = x.ShopId, ProductName = x.ProductName ?? product?.Title,
+            ImageUrl = x.ImageUrl ?? product?.ImageUrl, EstimatedCommission = x.EstimatedCommission,
+            EstimatedCommissionMaximum = x.GetProperty<decimal?>(TikTokProductPreview.CashbackMaximum), ClickCount = x.ClickCount,
+            ProductPrice = x.GetProperty<decimal?>(TikTokProductPreview.PriceMinimum),
+            ProductPriceMaximum = x.GetProperty<decimal?>(TikTokProductPreview.PriceMaximum),
+            CreatorCommissionAmount = x.GetProperty<decimal?>(TikTokProductPreview.CommissionMinimum),
+            CreatorCommissionMaximum = x.GetProperty<decimal?>(TikTokProductPreview.CommissionMaximum),
             IsProductUrlFallback = x.Platform == AffiliatePlatform.TikTok && x.GetProperty<bool>(TikTokProductOverrides.ProductUrlFallbackProperty),
             LastClickedAt = x.LastClickedAt, IsHidden = x.IsHidden, HiddenAt = x.HiddenAt,
             Status = x.Status, RedirectUrl = "/go/" + x.TrackingToken,

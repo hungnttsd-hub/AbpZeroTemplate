@@ -214,6 +214,92 @@ public class TikTokCreatorOAuthClient : ITransientDependency
     }
 
 
+    public async Task<IReadOnlyList<TikTokCreatorProduct>> GetProducts(TikTokCreatorTokens tokens,
+        IReadOnlyCollection<string> productIds, CancellationToken ct = default)
+    {
+        EnsureConfigured();
+        if (!tokens.GrantedScopes.Contains("creator.affiliate_collaboration.read", StringComparer.Ordinal))
+            throw new UserFriendlyException("Creator token thiếu quyền đọc thông tin sản phẩm affiliate.");
+        var ids = productIds.Distinct(StringComparer.Ordinal).ToArray();
+        if (ids.Length is < 1 or > 50 || ids.Any(x => x.Length is < 1 or > 30 || !x.All(char.IsAsciiDigit)))
+            throw new UserFriendlyException("Cần từ 1 đến 50 Product ID TikTok hợp lệ.");
+        const string path = "/affiliate_creator/202509/open_collaborations/products";
+        // The official Reference specifies POST, comma-separated product_ids in query, and {} body.
+        const string body = "{}";
+        var query = new SortedDictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["app_key"] = AppKey, ["product_ids"] = string.Join(",", ids),
+            ["timestamp"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)
+        };
+        var input = AppSecret + path + string.Concat(query.Select(x => x.Key + x.Value)) + body + AppSecret;
+        var parameters = query.ToDictionary(x => x.Key, x => (string?)x.Value);
+        parameters["sign"] = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(AppSecret),
+            Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+        using var request = new HttpRequestMessage(HttpMethod.Post,
+            QueryHelpers.AddQueryString("https://open-api.tiktokglobalshop.com" + path, parameters));
+        request.Headers.Add("x-tts-access-token", tokens.AccessToken);
+        request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body));
+        request.Content.Headers.ContentType = new("application/json");
+        var data = await Send(request, "creator_product_info", ct);
+        if (!data.TryGetProperty("products", out var products) || products.ValueKind == JsonValueKind.Null)
+            return Array.Empty<TikTokCreatorProduct>();
+        if (products.ValueKind != JsonValueKind.Array)
+            throw new UserFriendlyException("TikTok trả về thông tin sản phẩm không hợp lệ.");
+        var result = new List<TikTokCreatorProduct>();
+        foreach (var product in products.EnumerateArray())
+        {
+            var id = OptionalString(product, "id");
+            var region = OptionalString(product, "sale_region");
+            if (id is null || !ids.Contains(id, StringComparer.Ordinal) || region is not (null or "VN")) continue;
+            var price = ProductPrice(product);
+            var commission = ProductCommission(product);
+            // commission.amount is independently authoritative for the product preview. TikTok can
+            // return a nonzero amount with empty sales_price fields. Only treat a zero without any
+            // promotional price as unavailable, as specified in the Reference.
+            if (price.Minimum is null && commission.Maximum == 0m) commission = (null, null);
+            string? shopName = product.TryGetProperty("shop", out var shop) && shop.ValueKind == JsonValueKind.Object
+                ? OptionalString(shop, "name") : null;
+            result.Add(new(id, tokens.OpenId, OptionalString(product, "title"), shopName,
+                OptionalString(product, "main_image_url"), price.Minimum, price.Maximum,
+                commission.Minimum, commission.Maximum));
+        }
+        return result;
+    }
+
+    private static (decimal? Minimum, decimal? Maximum) ProductPrice(JsonElement product)
+    {
+        if (!product.TryGetProperty("sales_price", out var price) || price.ValueKind != JsonValueKind.Object
+            || OptionalString(price, "currency") != "VND") return (null, null);
+        var minText = OptionalString(price, "minimum_amount");
+        var maxText = OptionalString(price, "maximum_amount");
+        decimal? min = null, max = null;
+        if (minText is not null) { if (!TryProductMoney(minText, out var value)) return (null, null); min = value; }
+        if (maxText is not null) { if (!TryProductMoney(maxText, out var value)) return (null, null); max = value; }
+        min ??= max; max ??= min;
+        return min <= max ? (min, max) : (null, null);
+    }
+
+    private static (decimal? Minimum, decimal? Maximum) ProductCommission(JsonElement product)
+    {
+        if (!product.TryGetProperty("commission", out var commission) || commission.ValueKind != JsonValueKind.Object
+            || OptionalString(commission, "currency") != "VND") return (null, null);
+        var text = OptionalString(commission, "amount");
+        if (text is null) return (null, null);
+        var amounts = text.Split(" - ", StringSplitOptions.TrimEntries);
+        if (amounts.Length is < 1 or > 2 || !TryProductMoney(amounts[0], out var min)) return (null, null);
+        var max = min;
+        if (amounts.Length == 2 && !TryProductMoney(amounts[1], out max)) return (null, null);
+        return min <= max ? (min, max) : (null, null);
+    }
+
+    private static bool TryProductMoney(string text, out decimal amount)
+    {
+        amount = 0;
+        return text.Length is > 0 and <= 24 && text.All(c => char.IsAsciiDigit(c) || c == '.')
+            && decimal.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out amount)
+            && amount >= 0 && amount <= 1_000_000_000_000m;
+    }
+
     public async Task<TikTokCreatorOrderPage> SearchOrders(TikTokCreatorTokens tokens,
         long fromUnix, long toUnix, string? pageToken, CancellationToken ct = default)
     {

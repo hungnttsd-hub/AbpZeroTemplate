@@ -15,8 +15,10 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
     private readonly ITikTokCreatorConnection _connection;
     private readonly IAffiliateLinkAppService _links;
     private readonly IAffiliateOrderAppService _orders;
-    public TikTokAffiliateApiService(ITikTokCreatorConnection connection, IAffiliateLinkAppService links, IAffiliateOrderAppService orders)
-    { _connection = connection; _links = links; _orders = orders; }
+    private readonly ITikTokCreatorApi _api;
+    public TikTokAffiliateApiService(ITikTokCreatorConnection connection, IAffiliateLinkAppService links,
+        IAffiliateOrderAppService orders, ITikTokCreatorApi api)
+    { _connection = connection; _links = links; _orders = orders; _api = api; }
     public Task<TikTokAffiliateIntegrationDto> GetIntegrationInfo() => Task.FromResult(
         new TikTokAffiliateIntegrationDto("Api", false, null, _connection.IsConfigured));
     public Task<TikTokCreatorDto?> GetCreatorProfile() => _connection.GetProfile();
@@ -37,13 +39,14 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
     public async Task<TikTokGeneratedLinkDto> GenerateAffiliateLink(string productId) => Map(await _links.CreateAsync(
         new CreateAffiliateLinkInput { Url = AsUrl(productId), TargetType = AffiliateLinkTargetType.Auto }));
 
-    public Task<TikTokProductDto> GetProduct(string productUrl)
+    public async Task<TikTokProductDto> GetProduct(string productUrl)
     {
         if (!TikTokAffiliateUrl.TryNormalizeProductInput(AsUrl(productUrl), out _, out var id) || id is null)
             throw new UserFriendlyException("Vui lòng dùng link sản phẩm TikTok Shop có ID.");
-        var metadata = TikTokProductOverrides.Find(id);
-        return Task.FromResult(new TikTokProductDto(id, metadata?.Title ?? "Sản phẩm TikTok Shop", "TikTok Shop",
-            metadata?.Price, "VND", null, metadata?.ImageUrl ?? "", "Metadata", null));
+        var product = (await _api.GetProductsAsync(new[] { id })).FirstOrDefault();
+        if (product is null) throw new UserFriendlyException("TikTok chưa trả thông tin open collaboration của sản phẩm này.");
+        return new TikTokProductDto(id, product.Title ?? "Sản phẩm TikTok Shop", product.ShopName ?? "TikTok Shop",
+            product.MinimumPrice, "VND", null, product.ImageUrl ?? "", "TikTokCreatorApi", product.MinimumCommission);
     }
 
     public async Task<IReadOnlyList<TikTokAffiliateOrderDto>> SearchAffiliateOrders() =>

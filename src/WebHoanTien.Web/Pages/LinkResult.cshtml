@@ -35,9 +35,9 @@
         {
             <h1>@resultTitle</h1>
             <p class="muted">@(Model.Tracking.IsProductUrlFallback ? "Link sản phẩm gốc đã sẵn sàng; chưa tạo link affiliate qua RioHub." : "Link TikTok Shop của bạn đã sẵn sàng.")</p>
-            @if (Model.Tracking.CreatorCommissionAmount.HasValue)
+            @if (Model.Tracking.EstimatedCommission.HasValue)
             {
-                <p class="estimate">Giá @(Model.Tracking.ProductPrice?.ToString("N0"))₫ · Hoa hồng Creator @(Model.Tracking.CreatorCommissionAmount.Value.ToString("N0"))₫</p>
+                <p class="estimate">Hoàn lại dự kiến @CustomerLinkUi.MoneyRange(Model.Tracking.EstimatedCommission, Model.Tracking.EstimatedCommissionMaximum)</p>
             }
         }
         else if (Model.Tracking.EstimatedCommission.HasValue)

@@ -20,10 +20,12 @@ public class TikTokAffiliateLinkCreator : ITransientDependency
     private readonly IRepository<AffiliateTracking, Guid> _repository;
     private readonly IGuidGenerator _guids;
     private readonly ICurrentUser _currentUser;
+    private readonly TikTokProductPreviewEnricher _preview;
 
     public TikTokAffiliateLinkCreator(ITikTokCreatorApi api, TikTokProductUrlResolver resolver,
-        IRepository<AffiliateTracking, Guid> repository, IGuidGenerator guids, ICurrentUser currentUser)
-    { _api = api; _resolver = resolver; _repository = repository; _guids = guids; _currentUser = currentUser; }
+        IRepository<AffiliateTracking, Guid> repository, IGuidGenerator guids, ICurrentUser currentUser,
+        TikTokProductPreviewEnricher preview)
+    { _api = api; _resolver = resolver; _repository = repository; _guids = guids; _currentUser = currentUser; _preview = preview; }
 
     public async Task<(AffiliateTracking Tracking, bool IsExisting, bool WasRestored, JsonElement? Product)> CreateAsync(
         string url, Guid userId, CancellationToken cancellationToken = default)
@@ -39,7 +41,9 @@ public class TikTokAffiliateLinkCreator : ITransientDependency
         var restored = existing?.IsHidden == true;
         if (existing is not null && TikTokAffiliateUrl.TryNormalize(existing.AffiliateUrl, out _, out _))
         {
-            if (restored) { existing.Show(); await _repository.UpdateAsync(existing, autoSave: true, cancellationToken: cancellationToken); }
+            if (restored) existing.Show();
+            await _preview.EnrichAsync(new[] { existing }, force: true, ct: cancellationToken);
+            await _repository.UpdateAsync(existing, autoSave: true, cancellationToken: cancellationToken);
             return (existing, true, restored, null);
         }
 
@@ -61,6 +65,7 @@ public class TikTokAffiliateLinkCreator : ITransientDependency
         tracking.SetProperty(TikTokProductOverrides.ProductUrlFallbackProperty, false);
         if (!string.IsNullOrWhiteSpace(link.OneLink)) tracking.SetProperty(TikTokLinkAttribution.OneLinkProperty, link.OneLink);
         tracking.Show();
+        await _preview.EnrichAsync(new[] { tracking }, ct: cancellationToken);
         if (existing is null) await _repository.InsertAsync(tracking, autoSave: true, cancellationToken: cancellationToken);
         else await _repository.UpdateAsync(tracking, autoSave: true, cancellationToken: cancellationToken);
         return (tracking, existing is not null, restored, null);

@@ -231,19 +231,17 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     }
 
     let estimate = card.querySelector('.affiliate-estimate');
-    if (!estimate && isTikTok && link.creatorCommissionLabel) {
+    if (!estimate && isTikTok) {
       estimate = document.createElement('p');
       estimate.className = 'affiliate-estimate';
       card.querySelector('.affiliate-link-details')?.appendChild(estimate);
     }
     if (estimate) {
-      estimate.hidden = isShop || (isTikTok && !link.creatorCommissionLabel);
-      estimate.textContent = isTikTok
-        ? `Giá ${link.productPriceLabel} · Hoa hồng Creator ${link.creatorCommissionLabel}`
-        : link.estimatedCommissionLabel
+      estimate.hidden = isShop;
+      estimate.textContent = link.estimatedCommissionLabel
         ? `Hoàn lại dự kiến ${link.estimatedCommissionLabel}`
-        : 'Chưa có ước tính hoa hồng';
-      estimate.classList.toggle('unavailable', !isTikTok && !link.estimatedCommissionLabel);
+        : isTikTok ? 'Chưa có ước tính hoàn tiền từ TikTok' : 'Chưa có ước tính hoa hồng';
+      estimate.classList.toggle('unavailable', !link.estimatedCommissionLabel);
     }
     let productUrlNote = card.querySelector('[data-product-url-note]');
     if (!productUrlNote && link.isProductUrlFallback) {
@@ -336,14 +334,10 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
     const estimateElement = result?.querySelector('[data-affiliate-estimate]');
     if (estimateElement) {
       estimateElement.hidden = isShop;
-      estimateElement.classList.toggle('unavailable', !isTikTok && !link.estimatedCommissionLabel);
-      estimateElement.textContent = isTikTok
-        ? link.creatorCommissionLabel
-          ? `Giá ${link.productPriceLabel} · Hoa hồng Creator ${link.creatorCommissionLabel}`
-          : 'Link TikTok Shop đã sẵn sàng'
-        : link.estimatedCommissionLabel
+      estimateElement.classList.toggle('unavailable', !link.estimatedCommissionLabel);
+      estimateElement.textContent = link.estimatedCommissionLabel
         ? `Hoàn lại dự kiến ${link.estimatedCommissionLabel}`
-        : 'Chưa có ước tính hoa hồng';
+        : isTikTok ? 'Chưa có ước tính hoàn tiền từ TikTok' : 'Chưa có ước tính hoa hồng';
     }
     const copyButton = result?.querySelector('[data-copy-url]');
     if (copyButton) copyButton.dataset.copyUrl = link.redirectUrl;
@@ -354,7 +348,7 @@ window.CatBackSpa.mount('customer-dashboard', ({ signal, visit }) => {
       ? 'Mở shop trên Shopee để thêm nhiều sản phẩm vào giỏ hàng trong cùng một lần mua.'
       : isTikTok ? link.isProductUrlFallback
         ? 'Link sản phẩm gốc, chưa tạo link affiliate qua RioHub.'
-        : 'Mở link để xem sản phẩm và mua hàng trên TikTok Shop.'
+        : 'Mở link để mua trên TikTok Shop. Tiền hoàn là dự kiến, phụ thuộc đơn hàng và hoa hồng đối soát.'
       : 'Mở sản phẩm trên Shopee và hoàn tất đơn trong cùng phiên để được ghi nhận hoàn tiền.';
     const buyButton = result?.querySelector('.affiliate-inline-buy-button');
     if (buyButton) {

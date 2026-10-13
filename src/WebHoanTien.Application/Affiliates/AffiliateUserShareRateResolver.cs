@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
 using WebHoanTien.Notifications;
 
@@ -34,9 +35,13 @@ public class AffiliateUserShareRateResolver : ITransientDependency
         _notificationManager = notificationManager;
     }
 
-    public async Task<decimal> GetForNextOrderAsync(Guid userId, AffiliatePlatform platform, DateTime purchaseTime)
+    public async Task<decimal> GetForNextOrderAsync(Guid userId, AffiliatePlatform platform, DateTime purchaseTime,
+        decimal? configuredRateFallback = null)
     {
-        var configuredRate = (await _commissionRuleManager.GetForPurchaseAsync(platform, purchaseTime)).UserShareRate;
+        decimal configuredRate;
+        try { configuredRate = (await _commissionRuleManager.GetForPurchaseAsync(platform, purchaseTime)).UserShareRate; }
+        catch (BusinessException ex) when (ex.Code == WebHoanTienDomainErrorCodes.CommissionRuleNotFound && configuredRateFallback.HasValue)
+        { configuredRate = configuredRateFallback.Value; }
         var qualifyingOrders = await GetQualifyingOrdersAsync(userId, platform);
         return AffiliateUserShareRatePolicy.Resolve(qualifyingOrders.Count + 1, configuredRate);
     }
