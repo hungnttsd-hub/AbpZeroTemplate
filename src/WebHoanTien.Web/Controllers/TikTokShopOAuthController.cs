@@ -24,13 +24,11 @@ public class TikTokShopOAuthController : Controller
     private readonly TikTokCreatorTokenService _tokens;
     private readonly ICurrentUser _user;
     private readonly ILogger<TikTokShopOAuthController> _logger;
-    private readonly TikTokCreatorSelection _selection;
-    private readonly ITikTokAffiliateService _affiliate;
     private readonly ICurrentTenant _tenant;
 
     public TikTokShopOAuthController(TikTokCreatorTokenService tokens, ICurrentUser user,
-        ILogger<TikTokShopOAuthController> logger, TikTokCreatorSelection selection, ITikTokAffiliateService affiliate, ICurrentTenant tenant)
-    { _tokens = tokens; _user = user; _logger = logger; _selection = selection; _affiliate = affiliate; _tenant = tenant; }
+        ILogger<TikTokShopOAuthController> logger, ICurrentTenant tenant)
+    { _tokens = tokens; _user = user; _logger = logger; _tenant = tenant; }
 
     [Authorize(Roles = "admin")]
     [Authorize(WebHoanTienPermissions.Admin.Settings)]
@@ -68,21 +66,21 @@ public class TikTokShopOAuthController : Controller
         return Json(await _tokens.GetStatusAsync(HttpContext.RequestAborted));
     }
 
-    [Authorize(TikTokAffiliateAccess.Policy)]
+    [Authorize(Roles = "admin")]
+    [Authorize(WebHoanTienPermissions.Admin.Settings)]
     [HttpPost("/api/tiktok-shop/oauth/connect")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Connect([FromForm] string? creatorUsername)
+    public async Task<IActionResult> Connect()
     {
+        if (_tenant.Id.HasValue) return Forbid();
+        // Start on the deployment serving the app's registered callback; local reuses the DB credential.
+        if (!string.Equals(Request.Host.Host, "catback.id.vn", StringComparison.OrdinalIgnoreCase) || Request.Host.Port is not (null or 443))
+            return Redirect("https://catback.id.vn/tiktok-affiliate");
         SetPrivateHeaders();
         try
         {
-            if (!ModelState.IsValid) throw new UserFriendlyException("Vui lòng nhập Username TikTok hợp lệ.");
-            creatorUsername = TikTokCreatorSelection.ValidateUsername(creatorUsername);
-            if (!TikTokCreatorSelection.IsLocal(creatorUsername))
-                return LocalRedirect("/Admin/TikTokCreator");
-            // Preserve the existing RioHub/local workspace flow, independently of admin OAuth.
-            await _selection.SelectAsync(creatorUsername);
-            return LocalRedirect("/tiktok-affiliate/authorize");
+            if (!ModelState.IsValid) return BadRequest();
+            return Redirect(await _tokens.StartAuthorizationAsync(_user.GetId(), HttpContext.RequestAborted));
         }
         catch (UserFriendlyException ex) { return ResultRedirect(ex.Message, false); }
     }
@@ -121,11 +119,10 @@ public class TikTokShopOAuthController : Controller
     [Authorize(TikTokAffiliateAccess.Policy)]
     [HttpPost("/api/tiktok-shop/oauth/disconnect")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Disconnect()
+    public IActionResult Disconnect()
     {
         SetPrivateHeaders();
-        await _affiliate.DisconnectCreator();
-        return LocalRedirect("/tiktok-affiliate");
+        return StatusCode(StatusCodes.Status410Gone, new { error = "Đã bỏ kết nối cục bộ. Creator chung được quản lý bởi admin tại trang TikTok Creator." });
     }
 
     [AllowAnonymous]

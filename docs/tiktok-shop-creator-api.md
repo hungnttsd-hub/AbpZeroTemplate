@@ -6,6 +6,15 @@
 
 Phạm vi đã chốt: **sinh link và lấy/lưu đơn hàng**. Đối soát, kiểm tra thanh toán, ghi nhận hoàn tiền vào ví để làm sau.
 
+### Trang TikTok dùng API thật — cập nhật 13/10/2026
+
+- `/tiktok-affiliate` thay toàn bộ luồng demo và nhánh username `hungnttsd`. Không nhập/chọn username, không dựng hồ sơ hoặc đơn hàng cố định, không dùng adapter RioHub/mock. Hồ sơ Creator được đọc từ TikTok bằng credential admin trong DB chung; các trường DTO điều khiển Demo Mode đã được bỏ.
+- Host admin có quyền `Affiliate.Admin.Settings` bấm **Kết nối qua TikTok** hoặc **Cấp quyền lại qua TikTok** để mở OAuth thật. State/token dùng đúng service DB và callback production đã đăng ký. Bấm kết nối tại local chuyển về trang production trước khi tạo state; local tiếp tục dùng credential trong cùng DB. Không có thao tác ngắt kết nối cục bộ giả hoặc tự xóa credential chung.
+- Tạo link dùng service Creator đã xác minh bên dưới, lưu tracking riêng cho user, trả URL `/go/{token}` và kèm ảnh/hoa hồng/hoàn tiền dự kiến từ metadata thật khi API có dữ liệu. Thư viện chỉ hiển thị link của user có source Creator API. Trang chủ vẫn giữ một ô nhập chung Shopee/TikTok như trước.
+- Tab đơn hàng đọc sổ đơn đã lưu, lọc ngày đặt theo UTC+7 và trạng thái, phân trang 50 đơn. User xem đơn được ghép với liên kết của mình; người có quyền quản trị đơn xem tất cả đơn TikTok, gồm đơn chưa ghép. Host admin có thêm quyền `Affiliate.Admin.Sync` mới thấy và dùng được nút **Lấy đơn từ TikTok**; nút gọi cùng service và advisory lock của `/Admin/TikTokOrders`. Làm mới/lọc danh sách chỉ đọc DB, không tự đồng bộ, đối soát hoặc cộng ví.
+- Các URL `/tiktok-affiliate/authorize`, `/tiktok-affiliate/authorization-success`, `/tiktok-affiliate/demo/authorize` chỉ chuyển về trang thật. Đã xóa class chọn username/kết nối giả, adapter workspace RioHub, đơn demo và asset của màn hình authorize/success giả. Key phân quyền user `IsTiktokDemo` được giữ để không mất quyền các tài khoản đã cấp; tên hiển thị là **Cho phép tiếp thị liên kết TikTok**. Admin có quyền Settings hoặc Orders được vào trang thật mà không cần flag cũ.
+- Không migration hoặc thay đổi credential/user trong DB ở bước này. Build Web và kiểm tra cú pháp JavaScript thành công; chưa chạy test, kiểm thử trình duyệt, authorize hoặc đồng bộ đơn thật trong lần sửa trang này.
+
 ### Ảnh sản phẩm và hoàn tiền dự kiến — cập nhật 13/10/2026
 
 - Đã nối [Get Open Collaboration Product List By Product Ids 202509](https://partner.tiktokshop.com/docv2/page/68d4e70c0b3977048877ec65) vào luồng sinh link và danh sách link đã lưu. Đọc lại API Reference chính thức qua `api/v1/document/api_meta?src_document_id=68d4e70c0b3977048877ec65` và document detail: **POST** `/affiliate_creator/202509/open_collaborations/products`, query **`product_ids` là danh sách ID ngăn bằng dấu phẩy**, tối đa 50, body `{}` đúng sample. Không truyền product_ids trong body. Scope `creator.affiliate_collaboration.read` đã có trong token DB.

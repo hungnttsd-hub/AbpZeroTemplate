@@ -77,6 +77,9 @@
 .tt-table-actions a, .tt-table-actions button { color: #075b81; font: inherit; font-weight: 700; background: transparent; border: 0; padding: 4px; cursor: pointer; text-decoration: none; }
 .tt-empty { text-align: center; padding: 44px 20px; }
 .tt-empty i { font-size: 27px; background: #e8f7fa; color: #068e94; padding: 20px; border-radius: 20px; }
+.tt-order-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 18px 0; }
+.tt-order-filters label { display: grid; gap: 6px; color: #476273; font-size: 12px; }
+.tt-order-filters input, .tt-order-filters select { min-height: 40px; max-width: 100%; padding: 8px 12px; border: 1px solid #d9e5e9; border-radius: 8px; background: #fff; color: #173c50; }
 .tt-empty h3 { margin: 18px 0 8px; font-size: 16px; }
 .tt-empty p { font-size: 12px; line-height: 1.6; color: #647d8f; }
 @media (max-width: 900px) { .tt-overview-grid { grid-template-columns: 1fr; } .tt-review-guide { display: none; } }

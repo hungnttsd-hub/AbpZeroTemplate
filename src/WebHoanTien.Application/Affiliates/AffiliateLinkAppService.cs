@@ -283,6 +283,7 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
         var product = x.Platform == AffiliatePlatform.TikTok ? TikTokProductOverrides.Find(x.ProductId) : null;
         return new()
         {
+            ProviderSource = x.Platform == AffiliatePlatform.TikTok ? x.GetProperty<string>(TikTokLinkAttribution.SourceProperty) : null,
             Id = x.Id, IsExisting = isExisting, WasRestored = wasRestored, CreationTime = x.CreationTime, CreatorId = x.CreatorId, LastModificationTime = x.LastModificationTime,
             LastModifierId = x.LastModifierId, IsDeleted = x.IsDeleted, DeleterId = x.DeleterId, DeletionTime = x.DeletionTime,
             Platform = x.Platform, TargetType = x.Platform == AffiliatePlatform.TikTok

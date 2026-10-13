@@ -2,6 +2,8 @@
 
 Triển khai ngày 12/10/2026. Phạm vi trước mắt: authorize tài khoản Creator chính của admin, lưu token bền vững trong PostgreSQL, tự refresh và cung cấp token dùng chung cho client Creator hiện có. Chưa xác nhận nhận token thật cho tới khi admin hoàn tất authorize trên deployment production.
 
+> **Cập nhật 13/10/2026:** token Creator thật đã có trong DB và đã dùng được để sinh link/đọc metadata sản phẩm. Trang `/tiktok-affiliate` hiện dùng cùng kết nối admin và Creator API thật; luồng demo/username `hungnttsd` đã bỏ. Xem [hiện trạng link và đơn hàng](tiktok-shop-creator-api.md).
+
 ## Tài liệu đã đối chiếu
 
 Đã đọc nội dung tải JavaScript từ Partner Center trong lần triển khai này:
@@ -50,7 +52,7 @@ Theo yêu cầu chủ dự án, production và local dùng trực tiếp **cùng
 3. Local dùng cùng chứng chỉ DataProtection có private key với production để đọc key ring được bảo vệ trong `DataProtectionKeys`. Đường dẫn file chứng chỉ có thể khác giữa hai máy; nội dung chứng chỉ/khóa phải khớp. Không cần lấy token từ trình duyệt hoặc authorize lại ở local.
 4. Client Creator tại local đọc bản ghi `affiliate.TikTokCreatorCredentials` theo AppKey, giải mã ở backend và dùng token đó khi thử API. Khi production hoặc local refresh, cả hai đọc được token mới từ cùng bản ghi và dùng cùng database lease để tránh refresh đồng thời.
 
-Callback vẫn là URL production đã đăng ký. `App:SelfUrl` của local giữ localhost; không cần đổi nó sang production để dùng token. Module giao diện hiện mặc định `TikTokAffiliate:Mode = RioHub`; cấu hình database chung giúp client Creator thật dùng được token, không tự đổi nghiệp vụ module RioHub thành API Creator.
+Callback vẫn là URL production đã đăng ký. `App:SelfUrl` của local giữ localhost; không cần đổi nó sang production để dùng token. Trang `/tiktok-affiliate` hiện dùng trực tiếp `TikTokAffiliateApiService`, không chọn backend qua cấu hình Mode hoặc fallback RioHub/mock.
 
 ## Admin authorize lần đầu
 
@@ -64,7 +66,7 @@ Callback vẫn là URL production đã đăng ký. `App:SelfUrl` của local gi�
 
 Trang admin khi chạy trên localhost/domain khác sẽ chuyển về trang admin production **trước khi tạo state**. Không authorize trên một database cục bộ rồi mong callback production đọc được state đó. Giữ Redirect URL đăng ký chính xác, không thêm `redirect_uri` vào URL authorize.
 
-Authorize lại cùng open ID cập nhật credential và tăng version. Nếu tài khoản TikTok khác authorize, transaction từ chối ghi và giữ nguyên Creator chính, kể cả Creator chính đang cần authorize lại. Không có chức năng tự động thay Creator chính trong bước này. Ngắt kết nối workspace của user vẫn giữ token admin chung; nó không thu hồi quyền trên TikTok.
+Authorize lại cùng open ID cập nhật credential và tăng version. Nếu tài khoản TikTok khác authorize, transaction từ chối ghi và giữ nguyên Creator chính, kể cả Creator chính đang cần authorize lại. Không có chức năng tự động thay Creator chính trong bước này. Luồng ngắt kết nối workspace giả đã bỏ; endpoint cũ trả HTTP 410 và không thay đổi credential chung.
 
 ## Endpoints
 

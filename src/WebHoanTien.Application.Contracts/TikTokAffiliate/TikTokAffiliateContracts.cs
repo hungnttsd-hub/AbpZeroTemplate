@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Application.Dtos;
+using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.TikTokAffiliate;
 
@@ -9,26 +11,20 @@ public interface ITikTokAffiliateService : IApplicationService
 {
     Task<TikTokAffiliateIntegrationDto> GetIntegrationInfo();
     Task<TikTokCreatorDto?> GetCreatorProfile();
-    Task<TikTokCreatorDto> ConnectCreator();
-    Task DisconnectCreator();
     Task<TikTokProductDto> GetProduct(string productUrl);
     Task<TikTokGeneratedLinkDto> GenerateAffiliateLink(string productId);
     Task<IReadOnlyList<TikTokGeneratedLinkDto>> GetGeneratedLinks();
     Task DeleteGeneratedLink(string productId);
-    Task<IReadOnlyList<TikTokAffiliateOrderDto>> SearchAffiliateOrders();
+    Task<PagedResultDto<AffiliateOrderDto>> SearchAffiliateOrders(AffiliateOrderListInput input);
 }
 
-public sealed record TikTokAffiliateIntegrationDto(string Mode, bool IsDemo, string? SampleProductUrl,
-    bool IsAvailable = true);
+public sealed record TikTokAffiliateIntegrationDto(bool IsAvailable);
 public sealed record TikTokCreatorDto(string CreatorId, string Username, string DisplayName,
     string Market, string Status);
 public sealed record TikTokProductDto(string ProductId, string Title, string ShopName, decimal? Price,
     string Currency, decimal? CommissionRate, string ImageUrl, string? CommissionSource = null,
-    decimal? CommissionAmount = null);
+    decimal? CommissionAmount = null, decimal? PriceMaximum = null, decimal? CommissionMaximum = null,
+    decimal? EstimatedCashback = null, decimal? EstimatedCashbackMaximum = null);
 public sealed record TikTokGeneratedLinkDto(string ProductId, string ProductTitle, string SharingLink,
     DateTimeOffset CreatedAt, string Status, Guid? TrackingId = null, string? DirectLink = null,
     TikTokProductDto? Product = null);
-public sealed record TikTokAffiliateOrderDto(string OrderId, string Product, decimal? OrderAmount,
-    decimal? AffiliateCommission, string Currency, string Status, DateTimeOffset CreatedAt,
-    string? SkuId = null, decimal? EstimatedCommission = null, decimal? ActualCommission = null,
-    DateTimeOffset? SettledAt = null, string? ProductId = null, string Source = "RioHub");

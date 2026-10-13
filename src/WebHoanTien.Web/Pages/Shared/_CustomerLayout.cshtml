@@ -10,8 +10,8 @@
 @inject ICustomerNotificationAppService CustomerNotifications
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
-    // Customers create both Shopee and TikTok links using the shared home input.
-    var canAccessTikTokAffiliate = false;
+    var canAccessTikTokAffiliate = isAuthenticated &&
+        (await AuthorizationService.AuthorizeAsync(User, TikTokAffiliateAccess.Policy)).Succeeded;
     var userName = CurrentUser.UserName?.Trim() ?? User.Identity?.Name?.Trim();
     var displayedUserName = CurrentUser.Name?.Trim();
 

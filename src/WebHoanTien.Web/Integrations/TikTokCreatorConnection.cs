@@ -41,7 +41,4 @@ public class TikTokCreatorConnection : ITikTokCreatorConnection, ITransientDepen
         catch (TikTokCreatorApiException ex) when (ex.TikTokCode == 105001)
         { await _tokens.ReportInvalidTokenAsync(tokens.TokenVersion); throw; }
     }
-
-    // A user's workspace disconnect must never disable the shared admin credential.
-    public Task Disconnect() => Task.CompletedTask;
 }

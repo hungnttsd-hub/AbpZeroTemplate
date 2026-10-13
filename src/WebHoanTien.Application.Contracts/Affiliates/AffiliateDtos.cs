@@ -35,6 +35,7 @@ public sealed class CreateAffiliateLinkInput
 
 public sealed class AffiliateTrackingDto : FullAuditedEntityDto<Guid>
 {
+    public string? ProviderSource { get; set; }
     public bool IsExisting { get; set; }
     public bool WasRestored { get; set; }
     public bool IsProductUrlFallback { get; set; }

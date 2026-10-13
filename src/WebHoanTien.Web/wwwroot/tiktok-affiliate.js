@@ -6,20 +6,15 @@
     root.dataset.initialized = 'true';
     const find = selector => root.querySelector(selector);
     const state = JSON.parse(find('[data-tt-initial]').textContent);
-    let generatedLink = null;
-    let revision = 0;
-    let busy = false;
-    const currency = (value, code = '') => value == null ? '—' :
-      new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(value) + (code ? ' ' + code : '');
-    const date = value => new Intl.DateTimeFormat('vi-VN', {
-      dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh'
-    }).format(new Date(value));
-    const text = (selector, value) => { find(selector).textContent = value; };
+    let generatedLink = null, revision = 0, busy = false;
+    const currency = value => value == null ? '—' : new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value) + '₫';
+    const moneyRange = (min, max) => min == null ? 'Chưa có dữ liệu' : max != null && max > min ? currency(min) + '–' + currency(max) : currency(min);
+    const date = value => new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(value));
+    const text = (selector, value) => { const element = find(selector); if (element) element.textContent = value; };
     const statusLabel = value => ({
-      Pending: 'Chờ xử lý', Settled: 'Đã chốt hoa hồng',
-      Cancelled: 'Đã hủy / hoàn', Generated: 'Đã tạo', ProductUrl: 'Link sản phẩm gốc'
+      CREATED: 'Đã tạo', 1: 'Chờ thanh toán', 2: 'Chờ xử lý', 3: 'Chờ CatBack đối soát',
+      4: 'Đã hủy', 5: 'Đã hoàn trả', 6: 'Không được ghi nhận', 7: 'Đã ghi nhận'
     }[value] || value);
-
     function feedback(message, kind = 'error') {
       const element = find('[data-tt-feedback]');
       element.hidden = !message; element.textContent = message; element.dataset.kind = kind;
@@ -28,10 +23,22 @@
       find('#tt-product-url').disabled = !state.creator;
       find('#tt-product-url').readOnly = busy;
       find('[data-tt-create]').disabled = !state.creator || busy;
-      root.querySelectorAll('[data-tt-hide-link], [data-tt-refresh-links], [data-tt-refresh-orders]')
-        .forEach(button => { button.disabled = busy; });
+      root.querySelectorAll('[data-tt-hide-link], [data-tt-refresh-links], [data-tt-refresh-orders]').forEach(button => { button.disabled = busy; });
+      const sync = find('[data-tt-sync-orders]');
+      if (sync) sync.disabled = busy || !state.creator;
+      const pager = state.orders || {};
+      find('[data-tt-orders-prev]').disabled = busy || (pager.pageNumber || 1) <= 1;
+      find('[data-tt-orders-next]').disabled = busy || (pager.pageNumber || 1) >= (pager.totalPages || 1);
     }
-    async function request(handler, values = null) {
+    function orderValues(page = state.orders?.pageNumber || 1) {
+      const values = new URLSearchParams(new FormData(find('[data-tt-order-filters]')));
+      values.delete('Tab'); values.set('PageNumber', String(page));
+      return Object.fromEntries(values);
+    }
+    async function request(handler, values = null, query = null) {
+      const url = new URL('/tiktok-affiliate', window.location.origin);
+      url.searchParams.set('handler', handler);
+      if (query) Object.entries(query).forEach(([key, value]) => url.searchParams.set(key, value));
       const options = { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } };
       if (values) {
         options.method = 'POST';
@@ -39,17 +46,15 @@
         body.set('__RequestVerificationToken', find('input[name="__RequestVerificationToken"]').value);
         options.body = body;
       }
-      const response = await fetch('/tiktok-affiliate?handler=' + handler, options);
-      if (response.redirected || response.status === 401 || response.status === 403)
-        throw new Error('Phiên CatBack đã hết hạn hoặc bạn chưa được cấp quyền. Đăng nhập lại để tiếp tục.');
+      const response = await fetch(url, options);
+      if (response.redirected || response.status === 401 || response.status === 403) throw new Error('Phiên CatBack đã hết hạn hoặc bạn chưa được cấp quyền.');
       const payload = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error((typeof payload?.error === 'string' ? payload.error : payload?.error?.message) || 'Không thể hoàn tất thao tác. Vui lòng thử lại.');
+      if (!response.ok) throw new Error((typeof payload?.error === 'string' ? payload.error : payload?.error?.message) || 'Không thể hoàn tất thao tác TikTok. Vui lòng thử lại.');
       if (!payload || !('data' in payload)) throw new Error('Phản hồi không hợp lệ. Vui lòng tải lại trang.');
       return payload.data;
     }
     async function run(button, label, action) {
-      if (busy) return;
+      if (busy || !button) return;
       busy = true; feedback(''); enableWorkflow();
       const previous = button.textContent;
       button.textContent = label; button.setAttribute('aria-busy', 'true');
@@ -60,8 +65,8 @@
       try {
         const url = new URL(value, window.location.origin);
         if (url.username || url.password) return null;
-        if (url.origin === window.location.origin && /^\/go\/cb_[a-f0-9]{32}$/.test(url.pathname)) return url.href;
-        return url.protocol === 'https:' && (url.hostname === 'tiktok.com' || url.hostname.endsWith('.tiktok.com')) ? url.href : null;
+        // All generated links go through CatBack so every click receives an event ID.
+        return url.origin === window.location.origin && /^\/go\/(?:cb_)?[a-f0-9]{32}$/.test(url.pathname) ? url.href : null;
       } catch { return null; }
     }
     async function copy(value) {
@@ -77,55 +82,35 @@
           if (!copied) throw new Error('copy unavailable');
         }
         feedback('Đã sao chép liên kết TikTok.', 'success');
-      } catch { feedback('Không thể tự động sao chép. Hãy chọn và sao chép liên kết thủ công.'); }
+      } catch { feedback('Không thể sao chép. Hãy chọn và sao chép liên kết thủ công.'); }
     }
-    function cell(row, value) {
-      const td = document.createElement('td'); td.textContent = value; row.append(td); return td;
-    }
+    function cell(row, value) { const td = document.createElement('td'); td.textContent = value; row.append(td); return td; }
     function badge(td, value) {
       const span = document.createElement('span'); span.className = 'tt-status';
-      const style = { Pending: 'pending', Settled: 'settled', Cancelled: 'cancelled', Generated: 'generated' }[value];
-      if (style) span.classList.add('is-' + style);
       span.textContent = statusLabel(value); td.append(span);
     }
     function clearResult() {
       revision++; generatedLink = null;
-      find('[data-tt-product]').hidden = true;
-      find('[data-tt-result]').hidden = true;
-      find('[data-tt-result-placeholder]').hidden = false;
-      find('#tt-sharing-link').value = '';
+      find('[data-tt-product]').hidden = true; find('[data-tt-result]').hidden = true;
+      find('[data-tt-result-placeholder]').hidden = false; find('#tt-sharing-link').value = '';
     }
     function renderProduct(link) {
       const product = link.product;
       text('[data-tt-product-title]', product?.title || link.productTitle);
-      text('[data-tt-product-shop]', product?.shopName || '');
-      text('[data-tt-product-price]', product?.price != null ? currency(product.price, product.currency) : 'Giá chưa được cung cấp');
-      text('[data-tt-product-commission]', product?.commissionAmount != null
-        ? currency(product.commissionAmount, product.currency)
-        : product?.commissionRate != null
-        ? new Intl.NumberFormat('vi-VN', { style: 'percent', maximumFractionDigits: 2 }).format(product.commissionRate)
-        : 'Chưa có dữ liệu');
-      text('[data-tt-rate-note]', product?.commissionSource === 'configured'
-        ? link.status === 'ProductUrl'
-          ? 'Tỷ lệ tham khảo từ đơn của nhà sáng tạo khác; hoa hồng thực tế có thể thay đổi.'
-          : 'Hoa hồng cố định theo cấu hình sản phẩm; số tiền thực nhận được đối soát từ đơn RioHub.'
-        : product?.commissionSource === 'global'
-        ? 'Tỷ lệ tham khảo từ đơn của nhà sáng tạo khác; hoa hồng thực tế có thể thay đổi.'
-        : product?.commissionSource === 'creator'
-          ? 'Tỷ lệ từ đơn gần nhất của nhà sáng tạo; hoa hồng thực tế có thể thay đổi.'
-          : 'Tỷ lệ tham khảo theo dữ liệu sản phẩm, có thể chưa gồm hoa hồng thưởng.');
+      text('[data-tt-product-shop]', product?.shopName || 'TikTok Shop');
+      text('[data-tt-product-price]', product?.price != null ? moneyRange(product.price, product.priceMaximum) : 'TikTok chưa cung cấp giá bán');
+      text('[data-tt-product-commission]', moneyRange(product?.commissionAmount, product?.commissionMaximum));
+      text('[data-tt-product-cashback]', moneyRange(product?.estimatedCashback, product?.estimatedCashbackMaximum));
+      text('[data-tt-rate-note]', 'Tiền hoàn dự kiến phụ thuộc SKU, ưu đãi và hoa hồng thực tế khi đối soát. Hiện chưa cộng tiền vào ví.');
       const image = find('[data-tt-product-image]');
       let imageUrl = null;
       try {
-        if (product?.imageUrl) {
-          const url = new URL(product.imageUrl, window.location.origin);
-          if (url.protocol === 'https:' || (url.origin === window.location.origin && url.pathname.startsWith('/products/tiktok/')))
-            imageUrl = url.href;
-        }
-      } catch { /* Metadata is best-effort. */ }
+        const url = new URL(product?.imageUrl || '', window.location.origin);
+        if (product?.imageUrl && !url.username && !url.password && (url.protocol === 'https:' || url.origin === window.location.origin && url.pathname.startsWith('/products/tiktok/'))) imageUrl = url.href;
+      } catch { /* Optional image may be absent. */ }
       image.hidden = !imageUrl;
       image.onerror = () => { image.hidden = true; find('[data-tt-product]').classList.add('has-no-image'); };
-      if (imageUrl) { image.src = imageUrl; image.alt = product.title; }
+      if (imageUrl) { image.src = imageUrl; image.alt = product.title || link.productTitle; }
       else image.removeAttribute('src');
       find('[data-tt-product]').classList.toggle('has-no-image', !imageUrl);
       find('[data-tt-product]').hidden = false;
@@ -133,8 +118,7 @@
     function renderLinks() {
       const links = state.links || [];
       text('[data-tt-link-count]', links.length);
-      find('[data-tt-links-empty]').hidden = links.length > 0;
-      find('[data-tt-links-table]').hidden = !links.length;
+      find('[data-tt-links-empty]').hidden = !!links.length; find('[data-tt-links-table]').hidden = !links.length;
       const body = find('[data-tt-links-body]'); body.replaceChildren();
       links.forEach(link => {
         const row = document.createElement('tr');
@@ -145,17 +129,13 @@
         const url = safeSharingUrl(link.sharingLink);
         if (url) {
           const open = document.createElement('a'); open.href = url; open.target = '_blank';
-          open.rel = 'noopener noreferrer'; open.referrerPolicy = 'no-referrer'; open.dataset.turbo = 'false';
-          open.textContent = 'Mở liên kết ↗'; open.setAttribute('aria-label', 'Mở liên kết của ' + link.productTitle);
-          container.append(open);
+          open.rel = 'noopener noreferrer sponsored'; open.referrerPolicy = 'no-referrer'; open.dataset.turbo = 'false';
+          open.textContent = 'Mở liên kết ↗'; container.append(open);
           const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Sao chép';
-          button.setAttribute('aria-label', 'Sao chép liên kết của ' + link.productTitle);
           button.addEventListener('click', () => copy(link.sharingLink)); container.append(button);
         }
         if (link.trackingId) {
-          const hide = document.createElement('button'); hide.type = 'button'; hide.textContent = 'Ẩn liên kết';
-          hide.dataset.ttHideLink = ''; hide.disabled = busy;
-          hide.setAttribute('aria-label', 'Ẩn liên kết của ' + link.productTitle);
+          const hide = document.createElement('button'); hide.type = 'button'; hide.textContent = 'Ẩn liên kết'; hide.dataset.ttHideLink = ''; hide.disabled = busy;
           hide.addEventListener('click', () => run(hide, 'Đang ẩn...', async () => {
             state.links = await request('DeleteLink', { trackingId: link.trackingId });
             if (generatedLink?.trackingId === link.trackingId) clearResult();
@@ -167,29 +147,33 @@
       });
     }
     function renderOrders() {
-      const orders = state.orders || [];
-      const orderCount = new Set(orders.map(order => order.orderId)).size;
-      text('[data-tt-orders-count]', orderCount + ' đơn / ' + orders.length + ' SKU');
+      const pager = state.orders || { items: [], totalCount: 0, pageNumber: 1, totalPages: 1 };
+      const orders = pager.items || [];
+      text('[data-tt-orders-count]', pager.totalCount + ' đơn');
       const error = find('[data-tt-orders-error]');
       error.hidden = !state.ordersError; error.textContent = state.ordersError || '';
-      find('[data-tt-orders-empty]').hidden = orders.length > 0 || !!state.ordersError;
-      find('[data-tt-orders-table]').hidden = !orders.length;
+      find('[data-tt-orders-empty]').hidden = !!orders.length || !!state.ordersError; find('[data-tt-orders-table]').hidden = !orders.length;
       const body = find('[data-tt-orders-body]'); body.replaceChildren();
       orders.forEach(order => {
-        const row = document.createElement('tr'); const id = cell(row, order.orderId);
-        const sku = document.createElement('small'); sku.textContent = 'SKU: ' + order.skuId; id.append(sku);
-        const source = document.createElement('small');
-        source.textContent = order.source === 'Manual' ? 'Tạo thủ công' : 'RioHub'; id.append(source);
-        const product = cell(row, order.product);
-        product.className = 'tt-order-product';
-        if (order.productId) { const productId = document.createElement('small'); productId.textContent = 'ID: ' + order.productId; product.append(productId); }
-        cell(row, currency(order.orderAmount, order.currency));
-        cell(row, currency(order.estimatedCommission, order.currency));
-        cell(row, currency(order.actualCommission, order.currency)); badge(cell(row, ''), order.status);
-        const created = cell(row, date(order.createdAt));
-        if (order.settledAt) { const settled = document.createElement('small'); settled.textContent = 'Chốt: ' + date(order.settledAt); created.append(settled); }
-        body.append(row);
+        const row = document.createElement('tr'); cell(row, order.externalOrderId);
+        cell(row, order.items.map(item => item.productName || 'Sản phẩm TikTok Shop').join(' · '));
+        cell(row, currency(order.purchaseAmount)); cell(row, currency(order.expectedUserCommission));
+        if (state.isAdminOrderView) {
+          cell(row, currency(order.providerActualCommission));
+          const recipient = cell(row, order.recipients.length ? order.recipients.map(value => value.userEmail || value.userId).join(', ') : 'Chưa khớp lượt bấm');
+          if (order.unmatchedAttributionCount > 0) { const note = document.createElement('small'); note.textContent = order.unmatchedAttributionCount + ' dòng chưa khớp'; recipient.append(note); }
+        }
+        const status = cell(row, ''); badge(status, order.providerStatus === 'FROZEN' ? 'Tạm giữ hoa hồng' : order.status);
+        if (order.providerStatus) { const source = document.createElement('small'); source.textContent = 'TikTok: ' + order.providerStatus; status.append(source); }
+        if (order.reviewNote) { const note = document.createElement('small'); note.textContent = order.reviewNote; status.append(note); }
+        cell(row, date(order.purchaseTime));
+        const details = document.createElement('a'); details.href = '/Orders/' + order.id + '?returnUrl=%2Ftiktok-affiliate%3FTab%3Dorders'; details.textContent = 'Chi tiết';
+        cell(row, '').append(details); body.append(row);
       });
+      find('[data-tt-orders-pagination]').hidden = pager.totalPages <= 1;
+      text('[data-tt-orders-page]', pager.pageNumber + ' / ' + pager.totalPages);
+      find('[data-tt-order-filters] input[name="PageNumber"]').value = pager.pageNumber;
+      enableWorkflow();
     }
     function selectTab(name, focus = false) {
       root.querySelectorAll('[data-tt-tab]').forEach(tab => {
@@ -199,19 +183,11 @@
     }
     const connectForm = find('[data-tt-connect-form]');
     connectForm?.addEventListener('submit', event => {
-      if (event.defaultPrevented) return;
       if (connectForm.dataset.submitting === 'true') { event.preventDefault(); return; }
       connectForm.dataset.submitting = 'true';
       const button = connectForm.querySelector('button[type="submit"]');
-      if (!button) return;
       connectForm.dataset.submitLabel = button.textContent;
-      if (window.CatBackLoading)
-        window.CatBackLoading.setButtonLoading(button, true, { text: 'Đang kết nối…' });
-      else {
-        button.disabled = true;
-        button.setAttribute('aria-busy', 'true');
-        button.textContent = 'Đang kết nối…';
-      }
+      button.disabled = true; button.setAttribute('aria-busy', 'true'); button.textContent = 'Đang mở TikTok…';
     });
     root.querySelectorAll('[data-tt-tab]').forEach(tab => {
       tab.addEventListener('click', () => selectTab(tab.dataset.ttTab));
@@ -227,53 +203,54 @@
     find('[data-tt-product-form]').addEventListener('submit', event => {
       event.preventDefault(); if (busy) return;
       clearResult(); const currentRevision = revision;
-      run(find('[data-tt-create]'), 'Đang tạo link TikTok...', async () => {
+      run(find('[data-tt-create]'), 'Đang tạo link TikTok…', async () => {
         const result = await request('Generate', { productUrlOrId: find('#tt-product-url').value });
         if (currentRevision !== revision) return;
         const url = safeSharingUrl(result.link.sharingLink);
         if (!url) throw new Error('Liên kết trả về không hợp lệ.');
-        generatedLink = result.link; state.links = result.links;
-        const productUrlOnly = generatedLink.status === 'ProductUrl';
-        find('#tt-sharing-link').value = url;
-        text('[data-tt-result-title]', productUrlOnly ? 'Đã lưu link sản phẩm gốc.' : 'Đã tạo liên kết tiếp thị.');
-        text('[data-tt-result-note]', productUrlOnly
-            ? 'Liên kết đã được lưu trong tài khoản CatBack của bạn.'
-          : 'Liên kết đã được lưu trong tài khoản CatBack của bạn.');
+        generatedLink = result.link; state.links = result.links; find('#tt-sharing-link').value = url;
+        text('[data-tt-result-title]', 'Đã tạo liên kết tiếp thị qua TikTok.');
+        text('[data-tt-result-note]', 'Liên kết đã lưu trong tài khoản CatBack của bạn.');
         text('[data-tt-link-time]', 'Đã lưu lúc ' + date(generatedLink.createdAt) + ' (giờ Việt Nam)');
         find('[data-tt-result]').hidden = false; find('[data-tt-result-placeholder]').hidden = true;
-        renderProduct(generatedLink); renderLinks();
-          feedback(productUrlOnly ? 'Đã tạo và lưu liên kết TikTok.' : 'Đã tạo và lưu liên kết TikTok.', 'success');
+        renderProduct(generatedLink); renderLinks(); feedback('Đã tạo và lưu liên kết TikTok.', 'success');
       });
     });
     find('[data-tt-copy-result]').addEventListener('click', () => generatedLink && copy(generatedLink.sharingLink));
     find('[data-tt-show-links]').addEventListener('click', () => selectTab('links', true));
     find('[data-tt-show-overview]').addEventListener('click', () => { selectTab('overview', true); find('#tt-product-url').focus(); });
-    find('[data-tt-refresh-links]').addEventListener('click', () => run(find('[data-tt-refresh-links]'), 'Đang tải...', async () => {
+    find('[data-tt-refresh-links]').addEventListener('click', () => run(find('[data-tt-refresh-links]'), 'Đang tải…', async () => {
       state.links = await request('Links'); renderLinks(); feedback('Đã cập nhật danh sách liên kết.', 'success');
     }));
-    find('[data-tt-refresh-orders]').addEventListener('click', () => run(find('[data-tt-refresh-orders]'), 'Đang tải...', async () => {
-      try { state.orders = await request('Orders'); state.ordersError = null; renderOrders(); }
+    async function loadOrders(page) {
+      try { state.orders = await request('Orders', null, orderValues(page)); state.ordersError = null; renderOrders(); }
       catch (error) { state.ordersError = error.message; renderOrders(); throw error; }
+    }
+    find('[data-tt-refresh-orders]').addEventListener('click', () => run(find('[data-tt-refresh-orders]'), 'Đang tải…', () => loadOrders(state.orders?.pageNumber || 1)));
+    find('[data-tt-orders-prev]').addEventListener('click', () => run(find('[data-tt-orders-prev]'), 'Đang tải…', () => loadOrders(Math.max(1, state.orders.pageNumber - 1))));
+    find('[data-tt-orders-next]').addEventListener('click', () => run(find('[data-tt-orders-next]'), 'Đang tải…', () => loadOrders(Math.min(state.orders.totalPages, state.orders.pageNumber + 1))));
+    find('[data-tt-order-filters]').addEventListener('submit', event => {
+      event.preventDefault();
+      run(find('[data-tt-order-filters] button[type="submit"]'), 'Đang lọc…', () => loadOrders(1));
+    });
+    find('[data-tt-sync-orders]')?.addEventListener('click', () => run(find('[data-tt-sync-orders]'), 'Đang lấy đơn từ TikTok…', async () => {
+      const payload = await request('Sync', orderValues(1));
+      state.orders = payload.orders; state.ordersError = null; renderOrders();
+      const result = payload.result;
+      feedback('Đã đọc ' + result.fetchedOrders + ' đơn: thêm ' + result.insertedOrders + ', cập nhật ' + result.updatedOrders + ', chưa khớp ' + result.unmatchedOrders + ', cần kiểm tra ' + result.needsReview + '. ' + (result.notice || ''), 'success');
     }));
-    renderLinks(); renderOrders(); enableWorkflow();
+    renderLinks(); renderOrders(); selectTab(state.initialTab || 'overview'); enableWorkflow();
   }
   window.catBackTikTokAffiliate = { init };
-  // Native OAuth navigation can restore this document from the browser back/forward cache.
-  // Restore the single-submit lock and button so the user can start again after going back.
   window.addEventListener('pageshow', () => {
     const form = document.querySelector('[data-tt-connect-form]');
     if (form?.dataset.submitting !== 'true') return;
     const button = form.querySelector('button[type="submit"]');
-    if (button) {
-      window.CatBackLoading?.setButtonLoading(button, false);
-      button.disabled = false;
-      button.removeAttribute('aria-busy');
-      if (form.dataset.submitLabel) button.textContent = form.dataset.submitLabel;
-    }
+    if (button) { button.disabled = false; button.removeAttribute('aria-busy'); button.textContent = form.dataset.submitLabel || 'Kết nối qua TikTok'; }
     delete form.dataset.submitting;
-    delete form.dataset.submitLabel;
   });
-  document.addEventListener('DOMContentLoaded', init);
   document.addEventListener('turbo:load', init);
+  document.addEventListener('turbo:render', init);
+  document.addEventListener('DOMContentLoaded', init);
   init();
 })();

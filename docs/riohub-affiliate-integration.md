@@ -1,5 +1,7 @@
 # Tích hợp RioHub vào CatBack
 
+> **Luồng workspace bên dưới là lịch sử.** Ngày 13/10/2026, `/tiktok-affiliate` đã chuyển sang Creator API thật, bỏ chọn username, nhánh demo `hungnttsd` và đơn thủ công. Các job RioHub TikTok đã được tắt; admin chỉ lấy đơn qua nút gọi Creator API. Xem [triển khai hiện tại](tiktok-shop-creator-api.md).
+
 Ngày đối chiếu: 10/10/2026. Nguồn: tài liệu người dùng cung cấp và [Developer API của RioHub](https://riohub.vn/tiktok-shop-developer), bản cập nhật hiển thị 09/10/2026.
 
 ## Phạm vi đã triển khai

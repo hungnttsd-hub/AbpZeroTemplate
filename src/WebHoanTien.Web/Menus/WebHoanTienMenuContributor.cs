@@ -30,6 +30,9 @@ public class WebHoanTienMenuContributor : IMenuContributor
             "Customer.Orders", l["Menu:MyOrders"], "~/Orders", "fas fa-receipt", 20));
         var authorization = context.ServiceProvider.GetRequiredService<IAuthorizationService>();
         var principal = context.ServiceProvider.GetRequiredService<ICurrentPrincipalAccessor>().Principal;
+        if ((await authorization.AuthorizeAsync(principal, TikTokAffiliateAccess.Policy)).Succeeded)
+            context.Menu.Items.Add(new ApplicationMenuItem(
+                "Customer.TikTokAffiliate", "TikTok Shop", "~/tiktok-affiliate", "fab fa-tiktok", 25));
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Customer.Account", l["Menu:Account"], "~/Account/Profile", "fas fa-user", 30));
         context.Menu.Items.Add(new ApplicationMenuItem(

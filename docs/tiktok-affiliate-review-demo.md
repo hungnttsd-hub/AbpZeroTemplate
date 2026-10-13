@@ -1,5 +1,7 @@
 # TikTok Affiliate — Review Demo
 
+> **Đã thay thế ngày 13/10/2026.** `/tiktok-affiliate` hiện dùng OAuth, hồ sơ, tạo link và lấy đơn hàng qua Creator API thật bằng token admin trong database. Không còn demo hoặc nhánh kết nối `hungnttsd`; cấu hình Mock/ShowDemoLabel và hướng dẫn walkthrough bên dưới chỉ là lịch sử, không còn áp dụng. Xem [luồng trang TikTok hiện tại](tiktok-shop-creator-api.md#trang-tiktok-dùng-api-thật--cập-nhật-13102026).
+
 **Cập nhật 08/10/2026:** đã bổ sung card thử Creator OAuth thật, riêng với demo. Callback hiện đổi code lấy token và xác minh hồ sơ qua API nếu phiên cấp quyền hợp lệ. Adapter Api hỗ trợ hồ sơ, các chức năng product/link/orders thật vẫn chưa triển khai. Xem [hướng dẫn OAuth trial](tiktok-creator-oauth-trial.md); các mô tả adapter chưa gọi API bên dưới ghi lại giai đoạn demo ban đầu.
 
 ## Mở module

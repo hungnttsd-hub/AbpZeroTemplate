@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
+using Volo.Abp.Authorization.Permissions;
+using WebHoanTien.Permissions;
 
 namespace WebHoanTien.TikTokAffiliate;
 
@@ -12,11 +14,13 @@ public sealed class TikTokAffiliateAuthorizationHandler : AuthorizationHandler<T
 {
     private readonly ICurrentUser _currentUser;
     private readonly IIdentityUserRepository _users;
+    private readonly IPermissionChecker _permissions;
 
-    public TikTokAffiliateAuthorizationHandler(ICurrentUser currentUser, IIdentityUserRepository users)
+    public TikTokAffiliateAuthorizationHandler(ICurrentUser currentUser, IIdentityUserRepository users, IPermissionChecker permissions)
     {
         _currentUser = currentUser;
         _users = users;
+        _permissions = permissions;
     }
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
@@ -25,9 +29,13 @@ public sealed class TikTokAffiliateAuthorizationHandler : AuthorizationHandler<T
         if (context.User.Identity?.IsAuthenticated != true || !_currentUser.IsAuthenticated || !_currentUser.Id.HasValue)
             return;
         // Read persisted access rather than trusting a potentially stale cookie claim.
-        // No implicit administrator bypass: every account needs IsTiktokDemo == true.
         var user = await _users.FindAsync(_currentUser.Id.Value);
-        if (user is { IsActive: true } && user.GetProperty<bool>(TikTokAffiliateAccess.UserProperty))
+        if (user is not { IsActive: true }) return;
+        // Keep existing portal access for provisioned accounts. Administrators with TikTok
+        // connection/order permissions can manage the real integration without a demo flag.
+        if (user.GetProperty<bool>(TikTokAffiliateAccess.UserProperty) || context.User.IsInRole("admin") &&
+            (await _permissions.IsGrantedAsync(WebHoanTienPermissions.Admin.Settings)
+             || await _permissions.IsGrantedAsync(WebHoanTienPermissions.Admin.Orders)))
             context.Succeed(requirement);
     }
 }
