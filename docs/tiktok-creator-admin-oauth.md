@@ -4,6 +4,12 @@ Triển khai ngày 12/10/2026. Phạm vi trước mắt: authorize tài khoản 
 
 > **Cập nhật 13/10/2026:** token Creator thật đã có trong DB và đã dùng được để sinh link/đọc metadata sản phẩm. Trang `/tiktok-affiliate` hiện dùng cùng kết nối admin và Creator API thật; luồng demo/username `hungnttsd` đã bỏ. Xem [hiện trạng link và đơn hàng](tiktok-shop-creator-api.md).
 
+> **Cập nhật 14/10/2026:** theo yêu cầu quay video với cấp quyền TikTok thật, tài khoản hoạt động có `IsTiktokDemo = true` được dùng hai nút **Kết nối với tài khoản TikTok Creator** và **Ngắt kết nối** tại `/tiktok-affiliate`. Policy `CatBack.TikTokAffiliate.CreatorConnection` đọc cờ từ database mỗi lần kiểm tra; admin có Settings vẫn được quản lý. Tenant và tài khoản không đủ quyền bị chặn. Endpoint quản trị status/refresh giữ quyền admin, không mở thêm quyền lấy đơn/sync cho tài khoản demo.
+
+Nút Kết nối POST có antiforgery tới luồng OAuth Creator thật hiện có, tạo state dùng một lần trên deployment nhận callback; localhost chuyển tới `https://catback.id.vn/tiktok-affiliate`. Không mô phỏng màn hình TikTok và không tự xác nhận kết nối. Callback đổi code/lưu token theo luồng hiện có; Creator mới khác OpenId chính vẫn bị từ chối. Trường `InitiatedByAdminId`/`AuthorizedByAdminId` giữ tên cột cũ, giờ có thể ghi ID tài khoản được bật cờ này khi bắt đầu từ workspace.
+
+Ngắt kết nối tại CatBack là thao tác **chung cho Creator của toàn hệ thống**: transaction khóa cùng app key như reauthorize, đặt credential chính `Disabled`, xóa hai token mã hóa, tăng TokenVersion và hủy refresh lease. Giữ OpenId/credential primary và lịch sử link/đơn để chỉ kết nối lại đúng Creator đã chọn. Các state Pending/Processing bị đánh dấu Failed; callback/refresh đang chạy không thể ghi đè ngắt kết nối. Không gọi API thu hồi quyền trên TikTok. Muốn sử dụng lại phải cấp quyền thật. Hai nút khóa cùng nhau khi submit và được khôi phục khi Back; không bật overlay loading toàn màn hình. Không thao tác database hoặc cấp quyền TikTok thật trong lần sửa code này; không cần migration.
+
 ## Tài liệu đã đối chiếu
 
 Đã đọc nội dung tải JavaScript từ Partner Center trong lần triển khai này:

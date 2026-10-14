@@ -66,8 +66,7 @@ public class TikTokShopOAuthController : Controller
         return Json(await _tokens.GetStatusAsync(HttpContext.RequestAborted));
     }
 
-    [Authorize(Roles = "admin")]
-    [Authorize(WebHoanTienPermissions.Admin.Settings)]
+    [Authorize(TikTokAffiliateAccess.ConnectionPolicy)]
     [HttpPost("/api/tiktok-shop/oauth/connect")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Connect()
@@ -116,13 +115,16 @@ public class TikTokShopOAuthController : Controller
         }
     }
 
-    [Authorize(TikTokAffiliateAccess.Policy)]
+    [Authorize(TikTokAffiliateAccess.ConnectionPolicy)]
     [HttpPost("/api/tiktok-shop/oauth/disconnect")]
     [ValidateAntiForgeryToken]
-    public IActionResult Disconnect()
+    public async Task<IActionResult> Disconnect()
     {
+        if (_tenant.Id.HasValue) return Forbid();
         SetPrivateHeaders();
-        return StatusCode(StatusCodes.Status410Gone, new { error = "Đã bỏ kết nối cục bộ. Creator chung được quản lý bởi admin tại trang TikTok Creator." });
+        await _tokens.DisconnectAsync(HttpContext.RequestAborted);
+        TempData["TikTokConnectionNotice"] = "Đã ngắt kết nối TikTok Creator tại CatBack. Hãy kết nối lại để tiếp tục.";
+        return LocalRedirect("/tiktok-affiliate");
     }
 
     [AllowAnonymous]

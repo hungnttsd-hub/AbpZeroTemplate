@@ -16,6 +16,7 @@ using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Permissions;
 using WebHoanTien.TikTokAffiliate;
+using WebHoanTien.Web.Integrations;
 
 namespace WebHoanTien.Web.Pages;
 
@@ -30,11 +31,15 @@ public class TikTokAffiliateModel : PageModel
     private readonly IAuthorizationService _authorization;
     private readonly ICurrentTenant _tenant;
     private readonly ILogger<TikTokAffiliateModel> _logger;
+    private readonly TikTokCreatorTokenService _tokens;
     public TikTokAffiliateIntegrationDto Integration { get; private set; } = new(false);
     public TikTokCreatorDto? Creator { get; private set; }
     public string InitialStateJson { get; private set; } = "{}";
     public string? ConnectionError { get; private set; }
+    public string? ConnectionNotice { get; private set; }
     public bool CanManageConnection { get; private set; }
+    public bool CanConnectCreator { get; private set; }
+    public bool CanDisconnectCreator { get; private set; }
     public bool CanSync { get; private set; }
     public bool IsAdminOrderView { get; private set; }
     [BindProperty(SupportsGet = true), DataType(DataType.Date)] public DateTime FromDate { get; set; } = DateTime.UtcNow.AddHours(7).Date.AddDays(-30);
@@ -44,13 +49,17 @@ public class TikTokAffiliateModel : PageModel
     [BindProperty(SupportsGet = true)] public string? Tab { get; set; }
 
     public TikTokAffiliateModel(ITikTokAffiliateService service, IAdminTikTokOperationsAppService operations,
-        IAuthorizationService authorization, ICurrentTenant tenant, ILogger<TikTokAffiliateModel> logger)
-    { _service = service; _operations = operations; _authorization = authorization; _tenant = tenant; _logger = logger; }
+        IAuthorizationService authorization, ICurrentTenant tenant, ILogger<TikTokAffiliateModel> logger,
+        TikTokCreatorTokenService tokens)
+    { _service = service; _operations = operations; _authorization = authorization; _tenant = tenant; _logger = logger; _tokens = tokens; }
 
     public async Task<IActionResult> OnGetAsync()
     {
         if (_tenant.Id.HasValue) return Forbid();
         await LoadPermissionsAsync();
+        ConnectionNotice = TempData["TikTokConnectionNotice"] as string;
+        var connection = await _tokens.GetStatusAsync(HttpContext.RequestAborted);
+        CanDisconnectCreator = CanConnectCreator && connection.OpenId is not null && connection.Status != "Disabled";
         Integration = await _service.GetIntegrationInfo();
         try { Creator = await _service.GetCreatorProfile(); }
         catch (UserFriendlyException ex) { ConnectionError = ex.Message; }
@@ -61,7 +70,11 @@ public class TikTokAffiliateModel : PageModel
         }
         IReadOnlyList<TikTokGeneratedLinkDto> links = Array.Empty<TikTokGeneratedLinkDto>();
         try { links = await _service.GetGeneratedLinks(); }
-        catch (UserFriendlyException ex) { ConnectionError ??= ex.Message; }
+        catch (UserFriendlyException ex)
+        {
+            // No credential after an explicit disconnect is expected, not a failed connection.
+            if (connection.Status is not ("Disabled" or "NotConnected")) ConnectionError ??= ex.Message;
+        }
         var orders = new PagedResultDto<AffiliateOrderDto>();
         string? ordersError = null;
         try { orders = await LoadOrdersAsync(); }
@@ -104,13 +117,23 @@ public class TikTokAffiliateModel : PageModel
         });
     }
 
-    public IActionResult OnPostDisconnect() => StatusCode(410, new { error = "Đã bỏ kết nối cục bộ. Admin quản lý Creator chung tại trang TikTok Creator." });
+    public async Task<IActionResult> OnPostDisconnectAsync()
+    {
+        if (_tenant.Id.HasValue) return Forbid();
+        await LoadPermissionsAsync();
+        if (!CanConnectCreator) return Forbid();
+        await _tokens.DisconnectAsync(HttpContext.RequestAborted);
+        TempData["TikTokConnectionNotice"] = "Đã ngắt kết nối TikTok Creator tại CatBack. Hãy kết nối lại để tiếp tục.";
+        return LocalRedirect("/tiktok-affiliate");
+    }
 
     private async Task LoadPermissionsAsync()
     {
         IsAdminOrderView = await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Orders);
         CanManageConnection = !_tenant.Id.HasValue && User.IsInRole("admin")
             && await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Settings);
+        CanConnectCreator = !_tenant.Id.HasValue &&
+            (await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.ConnectionPolicy)).Succeeded;
         CanSync = !_tenant.Id.HasValue && User.IsInRole("admin") && IsAdminOrderView
             && await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Sync);
     }

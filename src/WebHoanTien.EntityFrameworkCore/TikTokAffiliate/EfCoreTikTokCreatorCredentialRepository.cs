@@ -50,6 +50,25 @@ public class EfCoreTikTokCreatorCredentialRepository : ITikTokCreatorCredentialR
     public Task<TikTokCreatorCredentials?> GetPrimaryAsync(string appKey, CancellationToken ct) => Run(db =>
         db.TikTokCreatorCredentials.AsNoTracking().SingleOrDefaultAsync(x => x.AppKey == appKey && x.IsPrimary, ct), ct);
 
+    public Task DisablePrimaryAsync(string appKey, CancellationToken ct) => Run(async db =>
+    {
+        // Serialize against reauthorization and invalidate in-flight callbacks/refresh writes.
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({appKey}, 0))", ct);
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE affiliate."TikTokCreatorCredentials"
+            SET "Status" = 'Disabled', "AccessTokenEncrypted" = '', "RefreshTokenEncrypted" = '',
+                "TokenVersion" = "TokenVersion" + 1, "RefreshLockId" = NULL, "RefreshLockUntilUtc" = NULL,
+                "UpdatedAtUtc" = CURRENT_TIMESTAMP
+            WHERE "AppKey" = {appKey} AND "IsPrimary" = TRUE
+            """, ct);
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            UPDATE affiliate."TikTokCreatorAuthStates"
+            SET "Status" = 'Failed', "UsedAtUtc" = COALESCE("UsedAtUtc", CURRENT_TIMESTAMP)
+            WHERE "AppKey" = {appKey} AND "Status" IN ('Pending', 'Processing')
+            """, ct);
+        return true;
+    }, ct, transaction: true);
+
     public Task SaveAuthorizationAsync(TikTokCreatorAuthState state, TikTokCreatorCredentials incoming, CancellationToken ct) => Run(async db =>
     {
         // Serialize the first connection and subsequent reauthorizations per app, including two admins.

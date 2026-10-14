@@ -25,6 +25,10 @@
         <button id="tt-tab-orders" type="button" role="tab" aria-selected="false" aria-controls="tt-orders" tabindex="-1" data-tt-tab="orders">Đơn hàng Affiliate</button>
     </div>
     <p class="tt-feedback" data-tt-feedback role="status" aria-live="polite" hidden></p>
+    @if (!string.IsNullOrEmpty(Model.ConnectionNotice))
+    {
+        <p class="tt-feedback" data-kind="success" role="status">@Model.ConnectionNotice</p>
+    }
     @if (!string.IsNullOrEmpty(Model.ConnectionError))
     {
         <p class="tt-feedback" data-kind="error" role="alert">@Model.ConnectionError</p>
@@ -32,20 +36,30 @@
     <section id="tt-overview" role="tabpanel" aria-labelledby="tt-tab-overview" class="tt-overview-grid">
         <div class="tt-flow">
             <section class="cb-card tt-card" aria-labelledby="tt-creator-heading">
-                <header class="tt-card-heading"><span class="tt-step">01</span><div><h2 id="tt-creator-heading">Kết nối Creator</h2><p>Creator đã cấp quyền TikTok cho CatBack</p></div><span class="tt-status @(Model.Creator is not null ? "is-connected" : "")">@(Model.Creator is not null ? "Đã kết nối TikTok" : "Chưa xác minh kết nối")</span></header>
+                <header class="tt-card-heading"><span class="tt-step">01</span><div><h2 id="tt-creator-heading">Kết nối Creator</h2><p>Creator đã cấp quyền TikTok cho CatBack</p></div><span class="tt-status @(Model.Creator is not null ? "is-connected" : "")">@(Model.Creator is not null ? "Đã kết nối TikTok" : "Chưa kết nối")</span></header>
                 <div class="tt-connection">
                     <div class="tt-avatar" aria-hidden="true"><i class="fa-brands fa-tiktok"></i></div>
-                    <div class="tt-creator-copy"><h3>@(Model.Creator is not null ? "@" + Model.Creator.Username : "Chưa có Creator được xác minh")</h3><p>@(Model.Creator is not null ? $"Thị trường {Model.Creator.Market}. Liên kết của bạn sử dụng Creator chung của CatBack." : "Admin kết nối Creator để CatBack tạo link và lấy đơn hàng.")</p></div>
+                    <div class="tt-creator-copy"><h3>@(Model.Creator is not null ? "@" + Model.Creator.Username : "Chưa có Creator được xác minh")</h3><p>@(Model.Creator is not null ? $"Thị trường {Model.Creator.Market}. Liên kết của bạn sử dụng Creator chung của CatBack." : Model.CanConnectCreator ? "Bấm Kết nối với tài khoản TikTok Creator để cấp quyền và bắt đầu tạo link." : "Admin kết nối Creator để CatBack tạo link và lấy đơn hàng.")</p></div>
                 </div>
-                @if (Model.CanManageConnection)
+                @if (Model.CanConnectCreator)
                 {
-                    <form method="post" action="/api/tiktok-shop/oauth/connect" data-turbo="false" data-tt-connect-form data-page-loading="false" data-loading-text="Đang kết nối…">
-                        @Html.AntiForgeryToken()
-                        <button class="tt-button" type="submit" disabled="@(!Model.Integration.IsAvailable)">@(Model.Creator is null ? "Kết nối qua TikTok" : "Cấp quyền lại qua TikTok")</button>
+                    <div class="tt-connection-actions">
+                        <form method="post" action="/api/tiktok-shop/oauth/connect" data-turbo="false" data-tt-connect-form data-page-loading="false" data-loading-text="Đang mở TikTok…">
+                            @Html.AntiForgeryToken()
+                            <button class="tt-button" type="submit" disabled="@(!Model.Integration.IsAvailable)">Kết nối với tài khoản TikTok Creator</button>
+                        </form>
+                        <form method="post" asp-page-handler="Disconnect" data-turbo="false" data-tt-disconnect-form data-page-loading="false" data-loading-text="Đang ngắt kết nối…">
+                            @Html.AntiForgeryToken()
+                            <button class="tt-button tt-button-secondary" type="submit" disabled="@(!Model.CanDisconnectCreator)">Ngắt kết nối</button>
+                        </form>
+                    </div>
+                    @if (Model.CanManageConnection)
+                    {
                         <a href="/Admin/TikTokCreator" class="tt-text-button">Quản lý kết nối Creator</a>
-                    </form>
+                    }
+                    <p class="tt-caption">Kết nối mở trang cấp quyền thật của TikTok. Ngắt kết nối tại CatBack sẽ dừng Creator chung; thao tác này không thu hồi quyền trên TikTok.</p>
                 }
-                <p class="tt-caption">Khi cấp quyền, admin đăng nhập Creator tại TikTok. Kết nối được lưu trong database chung để local và production cùng sử dụng.</p>
+                <p class="tt-caption">Đăng nhập đúng Creator chính tại TikTok khi cấp quyền. Kết nối được lưu trong database chung để local và production cùng sử dụng.</p>
             </section>
             <section class="cb-card tt-card" aria-labelledby="tt-product-heading">
                 <header class="tt-card-heading"><span class="tt-step">02</span><div><h2 id="tt-product-heading">Tạo link TikTok</h2><p>Nhận liên kết tiếp thị cùng thông tin sản phẩm</p></div></header>
@@ -79,9 +93,10 @@
         </aside>
     </section>
     <section id="tt-links" role="tabpanel" aria-labelledby="tt-tab-links" class="cb-card tt-card tt-list-panel" hidden>
-        <header class="tt-list-heading"><div><span class="tt-label">THƯ VIỆN LIÊN KẾT</span><h2>Link đã tạo</h2><p>Các liên kết TikTok Shop đã lưu trong tài khoản của bạn.</p></div><div class="tt-table-actions"><button type="button" class="tt-button tt-button-secondary" data-tt-refresh-links>Làm mới</button><button type="button" class="tt-button tt-button-secondary" data-tt-show-overview>Tạo liên kết →</button></div></header>
+        <header class="tt-list-heading"><div><span class="tt-label">THƯ VIỆN LIÊN KẾT</span><h2>Link đã tạo</h2><p>@(Model.Creator is not null ? $"Toàn bộ link CatBack đã tạo bằng Creator @{Model.Creator.Username}." : "Toàn bộ link CatBack đã lưu của Creator đang kết nối.")</p></div><div class="tt-table-actions"><button type="button" class="tt-button tt-button-secondary" data-tt-refresh-links>Làm mới</button><button type="button" class="tt-button tt-button-secondary" data-tt-show-overview>Tạo liên kết →</button></div></header>
         <div class="tt-empty" data-tt-links-empty><i class="fa-solid fa-link" aria-hidden="true"></i><h3>Chưa có liên kết</h3><p>Dán link sản phẩm để tạo liên kết TikTok Shop đầu tiên.</p></div>
         <p class="tt-caption">Hoa hồng tổng dự kiến là khoản Creator nhận cho mỗi sản phẩm, trước khi chia hoàn tiền; có thể thay đổi theo SKU và ưu đãi.</p>
+        <p class="tt-caption">Mỗi link ghi nhận hoàn tiền cho tài khoản CatBack đã tạo link đó. Link đã ẩn khỏi danh sách cá nhân vẫn được lưu trong thư viện Creator.</p>
         <div class="tt-table-scroll" data-tt-links-table hidden><table><thead><tr><th scope="col">Sản phẩm</th><th scope="col">Hoa hồng tổng dự kiến</th><th scope="col">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody data-tt-links-body></tbody></table></div>
     </section>
     <section id="tt-orders" role="tabpanel" aria-labelledby="tt-tab-orders" class="cb-card tt-card tt-list-panel" hidden>
@@ -96,8 +111,8 @@
         <p class="tt-caption">Ngày đặt đơn theo giờ Việt Nam, tối đa 90 ngày mỗi lượt. Làm mới danh sách đọc dữ liệu đã lưu; admin bấm Lấy đơn từ TikTok để gọi API. Chưa có job tự động hoặc xử lý cộng ví.</p>
         <p class="tt-feedback" role="status" data-tt-orders-error hidden></p>
         <div class="tt-empty" data-tt-orders-empty><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><h3>Chưa có đơn hàng phù hợp</h3><p>Chọn khoảng ngày đặt đơn hoặc đợi admin lấy dữ liệu từ TikTok.</p></div>
-        <div class="tt-table-scroll" data-tt-orders-table hidden><table><thead><tr><th scope="col">Mã đơn</th><th scope="col">Sản phẩm</th><th scope="col">Giá trị đơn</th><th scope="col">Hoàn tiền dự kiến</th>
-            @if (Model.IsAdminOrderView) { <th scope="col">Hoa hồng TikTok thực nhận</th><th scope="col">Người nhận</th> }
+        <div class="tt-table-scroll" data-tt-orders-table hidden><table><thead><tr><th scope="col">Mã đơn</th><th scope="col">Sản phẩm</th><th scope="col">Giá trị đơn</th>
+            @if (Model.IsAdminOrderView) { <th scope="col">Hoa hồng TikTok thực nhận</th> }
             <th scope="col">Trạng thái</th><th scope="col">Ngày đặt</th><th scope="col">Chi tiết</th></tr></thead><tbody data-tt-orders-body></tbody></table></div>
         <nav class="tt-table-actions" data-tt-orders-pagination hidden aria-label="Phân trang đơn hàng"><button type="button" class="tt-button tt-button-secondary" data-tt-orders-prev>Trang trước</button><span data-tt-orders-page></span><button type="button" class="tt-button tt-button-secondary" data-tt-orders-next>Trang sau</button></nav>
     </section>

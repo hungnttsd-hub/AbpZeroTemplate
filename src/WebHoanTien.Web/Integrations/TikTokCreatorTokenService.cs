@@ -50,16 +50,16 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
             throw new UserFriendlyException("Cần cấu hình chứng chỉ DataProtection dùng chung giữa các instance để bảo vệ khóa mã hóa token trong database.");
     }
 
-    public async Task<string> StartAuthorizationAsync(Guid adminId, CancellationToken ct)
+    public async Task<string> StartAuthorizationAsync(Guid actorId, CancellationToken ct)
     {
         // This is a host-level CatBack credential, not a tenant administrator's connection.
-        if (_tenant.Id.HasValue) throw new UserFriendlyException("Chỉ admin hệ thống CatBack được authorize Creator chung.");
+        if (_tenant.Id.HasValue) throw new UserFriendlyException("Chỉ tài khoản hệ thống CatBack được authorize Creator chung.");
         ValidateConfiguration();
         var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
         var now = DateTimeOffset.UtcNow;
         await _store.CreateStateAsync(new TikTokCreatorAuthState(Guid.NewGuid())
         {
-            StateHash = HashState(state), AppKey = _client.AppKey, InitiatedByAdminId = adminId,
+            StateHash = HashState(state), AppKey = _client.AppKey, InitiatedByAdminId = actorId,
             CreatedAtUtc = now, ExpiresAtUtc = now.AddMinutes(10)
         }, ct);
         return _client.AuthorizationUrl(state);
@@ -178,6 +178,13 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
     }
 
     public Task<TikTokCreatorCredentials?> ReadPrimaryAsync(CancellationToken ct = default) => _store.GetPrimaryAsync(_client.AppKey, ct);
+
+    // Disconnect CatBack's credential; this does not revoke the user's grant at TikTok.
+    public Task DisconnectAsync(CancellationToken ct = default)
+    {
+        if (_tenant.Id.HasValue) throw new UserFriendlyException("Chỉ tài khoản hệ thống CatBack được quản lý Creator chung.");
+        return _store.DisablePrimaryAsync(_client.AppKey, ct);
+    }
 
     public async Task ReportInvalidTokenAsync(long observedVersion, CancellationToken ct = default)
     {

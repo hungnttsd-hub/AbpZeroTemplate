@@ -1,4 +1,7 @@
 @model WebHoanTien.Web.Controllers.TikTokShopOAuthStatusModel
+@using Microsoft.AspNetCore.Authorization
+@using WebHoanTien.Permissions
+@inject IAuthorizationService AuthorizationService
 @{
     Layout = null;
 }
@@ -20,9 +23,15 @@
         <p>@Model.Description</p>
         @if (Model.IsCallbackResult && !Model.IsConnected)
         {
-            <p class="notice" role="status">Xem chi tiết trạng thái tại trang quản trị. Không gửi token, mã ủy quyền hoặc mật khẩu cho bộ phận hỗ trợ.</p>
+            <p class="notice" role="status">Quay về màn hình TikTok để kiểm tra kết nối. Không gửi token, mã ủy quyền hoặc mật khẩu cho bộ phận hỗ trợ.</p>
         }
-        <nav class="actions" aria-label="Điều hướng"><a class="button" href="/Admin/TikTokCreator">Xem trạng thái Creator trong quản trị</a><a href="/tiktok-affiliate">Về Tiếp thị liên kết TikTok</a></nav>
+        <nav class="actions" aria-label="Điều hướng">
+            <a class="button" href="/tiktok-affiliate">Về Tiếp thị liên kết TikTok</a>
+            @if (User.IsInRole("admin") && (await AuthorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Settings)).Succeeded)
+            {
+                <a href="/Admin/TikTokCreator">Xem trạng thái Creator trong quản trị</a>
+            }
+        </nav>
         <footer><a href="/About">Giới thiệu CatBack</a><a href="/Legal/Privacy">Chính sách quyền riêng tư</a><a href="/Legal/Terms">Điều khoản sử dụng</a></footer>
     </main>
 </body>

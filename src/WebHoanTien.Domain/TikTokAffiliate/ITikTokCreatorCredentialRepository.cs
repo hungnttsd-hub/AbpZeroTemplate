@@ -10,6 +10,7 @@ public interface ITikTokCreatorCredentialRepository
     Task CreateStateAsync(TikTokCreatorAuthState state, CancellationToken ct);
     Task<TikTokCreatorAuthState?> ConsumeStateAsync(string hash, string appKey, CancellationToken ct);
     Task FailStateAsync(Guid id, CancellationToken ct);
+    Task DisablePrimaryAsync(string appKey, CancellationToken ct);
     Task<TikTokCreatorCredentials?> GetPrimaryAsync(string appKey, CancellationToken ct);
     Task SaveAuthorizationAsync(TikTokCreatorAuthState state, TikTokCreatorCredentials credentials, CancellationToken ct);
     Task<bool> AcquireRefreshAsync(Guid id, long version, Guid leaseId, CancellationToken ct);

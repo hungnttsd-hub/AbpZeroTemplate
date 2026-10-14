@@ -17,7 +17,9 @@ public class TikTokCreatorConnection : ITikTokCreatorConnection, ITransientDepen
 
     public async Task<TikTokCreatorDto?> GetProfile()
     {
-        if (!_user.IsAuthenticated || !IsConfigured || await _tokens.ReadPrimaryAsync() is null) return null;
+        if (!_user.IsAuthenticated || !IsConfigured) return null;
+        var credential = await _tokens.ReadPrimaryAsync();
+        if (credential is null || credential.Status == "Disabled") return null;
         var tokens = await _tokens.GetTokensAsync();
         try { return await ReadProfile(tokens); }
         catch (TikTokCreatorApiException ex) when (ex.TikTokCode == 105002)

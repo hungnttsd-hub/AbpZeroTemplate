@@ -27,4 +27,4 @@ public sealed record TikTokProductDto(string ProductId, string Title, string Sho
     decimal? EstimatedCashback = null, decimal? EstimatedCashbackMaximum = null);
 public sealed record TikTokGeneratedLinkDto(string ProductId, string ProductTitle, string SharingLink,
     DateTimeOffset CreatedAt, string Status, Guid? TrackingId = null, string? DirectLink = null,
-    TikTokProductDto? Product = null);
+    TikTokProductDto? Product = null, bool CanHide = false);

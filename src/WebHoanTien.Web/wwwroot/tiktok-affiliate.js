@@ -12,7 +12,8 @@
     const date = value => new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(value));
     const text = (selector, value) => { const element = find(selector); if (element) element.textContent = value; };
     const statusLabel = value => ({
-      CREATED: 'Đã tạo', 1: 'Chờ thanh toán', 2: 'Chờ xử lý', 3: 'Chờ CatBack đối soát',
+      CREATED: 'Đã tạo', HIDDEN: 'Đã ẩn', FAILED: 'Tạo link thất bại', DISABLED: 'Đã tắt',
+      1: 'Chờ thanh toán', 2: 'Chờ xử lý', 3: 'Chờ CatBack đối soát',
       4: 'Đã hủy', 5: 'Đã hoàn trả', 6: 'Không được ghi nhận', 7: 'Đã ghi nhận'
     }[value] || value);
     function feedback(message, kind = 'error') {
@@ -156,12 +157,12 @@
           const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Sao chép';
           button.addEventListener('click', () => copy(link.sharingLink)); container.append(button);
         }
-        if (link.trackingId) {
+        if (link.trackingId && link.canHide) {
           const hide = document.createElement('button'); hide.type = 'button'; hide.textContent = 'Ẩn liên kết'; hide.dataset.ttHideLink = ''; hide.disabled = busy;
           hide.addEventListener('click', () => run(hide, 'Đang ẩn...', async () => {
             state.links = await request('DeleteLink', { trackingId: link.trackingId });
             if (generatedLink?.trackingId === link.trackingId) clearResult();
-            renderLinks(); feedback('Đã ẩn liên kết khỏi danh sách.', 'success');
+            renderLinks(); feedback('Đã ẩn liên kết khỏi danh sách cá nhân.', 'success');
           }));
           container.append(hide);
         }
@@ -179,11 +180,9 @@
       orders.forEach(order => {
         const row = document.createElement('tr'); cell(row, order.externalOrderId);
         cell(row, order.items.map(item => item.productName || 'Sản phẩm TikTok Shop').join(' · '));
-        cell(row, currency(order.purchaseAmount)); cell(row, currency(order.expectedUserCommission));
+        cell(row, currency(order.purchaseAmount));
         if (state.isAdminOrderView) {
           cell(row, currency(order.providerActualCommission));
-          const recipient = cell(row, order.recipients.length ? order.recipients.map(value => value.userEmail || value.userId).join(', ') : 'Chưa khớp lượt bấm');
-          if (order.unmatchedAttributionCount > 0) { const note = document.createElement('small'); note.textContent = order.unmatchedAttributionCount + ' dòng chưa khớp'; recipient.append(note); }
         }
         const status = cell(row, ''); badge(status, order.providerStatus === 'FROZEN' ? 'Tạm giữ hoa hồng' : order.status);
         if (order.providerStatus) { const source = document.createElement('small'); source.textContent = 'TikTok: ' + order.providerStatus; status.append(source); }
@@ -203,13 +202,22 @@
         find('#tt-' + tab.dataset.ttTab).hidden = !active; if (active && focus) tab.focus();
       });
     }
-    const connectForm = find('[data-tt-connect-form]');
-    connectForm?.addEventListener('submit', event => {
-      if (connectForm.dataset.submitting === 'true') { event.preventDefault(); return; }
-      connectForm.dataset.submitting = 'true';
-      const button = connectForm.querySelector('button[type="submit"]');
-      connectForm.dataset.submitLabel = button.textContent;
-      button.disabled = true; button.setAttribute('aria-busy', 'true'); button.textContent = 'Đang mở TikTok…';
+    root.querySelectorAll('[data-tt-connect-form], [data-tt-disconnect-form]').forEach(form => {
+      form.addEventListener('submit', event => {
+        if (event.defaultPrevented) return;
+        const forms = [...root.querySelectorAll('[data-tt-connect-form], [data-tt-disconnect-form]')];
+        if (forms.some(item => item.dataset.submitting === 'true')) { event.preventDefault(); return; }
+        form.dataset.submitting = 'true';
+        const button = form.querySelector('button[type="submit"]');
+        form.dataset.submitLabel = button.textContent;
+        forms.forEach(item => {
+          const control = item.querySelector('button[type="submit"]');
+          item.dataset.initialDisabled = String(control.disabled);
+          control.disabled = true;
+        });
+        button.setAttribute('aria-busy', 'true');
+        button.textContent = form.hasAttribute('data-tt-disconnect-form') ? 'Đang ngắt kết nối…' : 'Đang mở TikTok…';
+      });
     });
     root.querySelectorAll('[data-tt-tab]').forEach(tab => {
       tab.addEventListener('click', () => selectTab(tab.dataset.ttTab));
@@ -265,11 +273,18 @@
   }
   window.catBackTikTokAffiliate = { init };
   window.addEventListener('pageshow', () => {
-    const form = document.querySelector('[data-tt-connect-form]');
-    if (form?.dataset.submitting !== 'true') return;
-    const button = form.querySelector('button[type="submit"]');
-    if (button) { button.disabled = false; button.removeAttribute('aria-busy'); button.textContent = form.dataset.submitLabel || 'Kết nối qua TikTok'; }
-    delete form.dataset.submitting;
+    document.querySelectorAll('[data-tt-connect-form], [data-tt-disconnect-form]').forEach(form => {
+      const button = form.querySelector('button[type="submit"]');
+      if (button && form.dataset.initialDisabled !== undefined) {
+        window.CatBackLoading?.setButtonLoading(button, false);
+        button.disabled = form.dataset.initialDisabled === 'true';
+        button.removeAttribute('aria-busy');
+        if (form.dataset.submitLabel) button.textContent = form.dataset.submitLabel;
+      }
+      delete form.dataset.submitting;
+      delete form.dataset.initialDisabled;
+      delete form.dataset.submitLabel;
+    });
   });
   document.addEventListener('turbo:load', init);
   document.addEventListener('turbo:render', init);

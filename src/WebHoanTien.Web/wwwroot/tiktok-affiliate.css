@@ -25,6 +25,8 @@
 .tt-status.is-pending { background: #fff4dc; color: #8a631e; }
 .tt-status.is-cancelled { background: #fcebed; color: #a44958; }
 .tt-connection { display: flex; align-items: center; gap: 16px; margin: 0 0 20px; }
+.tt-connection-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.tt-connection-actions form { margin: 0; }
 .tt-avatar { width: 60px; height: 60px; border-radius: 18px; background: #031e45; color: #fff; display: grid; place-items: center; font-size: 28px; flex-shrink: 0; }
 .tt-creator-copy { min-width: 0; }
 .tt-creator-copy h3, .tt-product h3 { font-size: 17px; margin: 0 0 6px; }

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Data;
+using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Users;
 using WebHoanTien.Affiliates;
 
 namespace WebHoanTien.TikTokAffiliate;
@@ -17,16 +20,29 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
     private readonly IAffiliateLinkAppService _links;
     private readonly IAffiliateOrderAppService _orders;
     private readonly ITikTokCreatorApi _api;
+    private readonly IRepository<AffiliateTracking, Guid> _trackings;
+    private readonly TikTokProductPreviewEnricher _preview;
     public TikTokAffiliateApiService(ITikTokCreatorConnection connection, IAffiliateLinkAppService links,
-        IAffiliateOrderAppService orders, ITikTokCreatorApi api)
-    { _connection = connection; _links = links; _orders = orders; _api = api; }
+        IAffiliateOrderAppService orders, ITikTokCreatorApi api, IRepository<AffiliateTracking, Guid> trackings,
+        TikTokProductPreviewEnricher preview)
+    { _connection = connection; _links = links; _orders = orders; _api = api; _trackings = trackings; _preview = preview; }
     public Task<TikTokAffiliateIntegrationDto> GetIntegrationInfo() => Task.FromResult(
         new TikTokAffiliateIntegrationDto(_connection.IsConfigured));
     public Task<TikTokCreatorDto?> GetCreatorProfile() => _connection.GetProfile();
 
-    public async Task<IReadOnlyList<TikTokGeneratedLinkDto>> GetGeneratedLinks() =>
-        (await _links.GetListAsync(new AffiliateTrackingListInput { Platform = AffiliatePlatform.TikTok, MaxResultCount = 100 }))
-        .Items.Where(x => x.Platform == AffiliatePlatform.TikTok && x.ProviderSource == TikTokLinkAttribution.Source).Select(Map).ToList();
+    public async Task<IReadOnlyList<TikTokGeneratedLinkDto>> GetGeneratedLinks()
+    {
+        if (CurrentTenant.Id.HasValue) throw new UserFriendlyException("Trang TikTok này dùng Creator của hệ thống CatBack.");
+        var creatorOpenId = await _api.GetCreatorOpenIdAsync();
+        // Creator library includes every CatBack owner and hidden link, without the personal list's 100-row limit.
+        var links = (await _trackings.GetListAsync(x => x.Platform == AffiliatePlatform.TikTok))
+            .Where(x => x.GetProperty<string>(TikTokLinkAttribution.SourceProperty) == TikTokLinkAttribution.Source
+                && x.GetProperty<string>(TikTokLinkAttribution.CreatorProperty) == creatorOpenId)
+            .OrderByDescending(x => x.CreationTime).ThenByDescending(x => x.Id).ToList();
+        var refreshed = await _preview.EnrichAsync(links);
+        if (refreshed.Count > 0) await _trackings.UpdateManyAsync(refreshed, autoSave: true);
+        return links.Select(MapCreatorLink).ToList();
+    }
 
     public async Task DeleteGeneratedLink(string trackingId)
     {
@@ -74,5 +90,20 @@ public class TikTokAffiliateApiService : WebHoanTienAppService, ITikTokAffiliate
         x.RedirectUrl, new DateTimeOffset(DateTime.SpecifyKind(x.CreationTime, DateTimeKind.Utc)), "CREATED", x.Id, x.RedirectUrl,
         new TikTokProductDto(x.ProductId ?? "", x.ProductName ?? "Sản phẩm TikTok Shop", "TikTok Shop",
             x.ProductPrice, "VND", null, x.ImageUrl ?? "", "TikTokCreatorApi", x.CreatorCommissionAmount,
-            x.ProductPriceMaximum, x.CreatorCommissionMaximum, x.EstimatedCommission, x.EstimatedCommissionMaximum));
+            x.ProductPriceMaximum, x.CreatorCommissionMaximum, x.EstimatedCommission, x.EstimatedCommissionMaximum), !x.IsHidden);
+
+    private TikTokGeneratedLinkDto MapCreatorLink(AffiliateTracking x)
+    {
+        var ownsLink = x.UserId == CurrentUser.GetId();
+        var sharingLink = x.Status == AffiliateTrackingStatus.Active ? "/go/" + x.TrackingToken : string.Empty;
+        var status = x.IsHidden ? "HIDDEN" : x.Status == AffiliateTrackingStatus.Active ? "CREATED"
+            : x.Status == AffiliateTrackingStatus.Failed ? "FAILED" : "DISABLED";
+        return new(x.ProductId ?? "", x.ProductName ?? "Sản phẩm TikTok Shop", sharingLink,
+            new DateTimeOffset(DateTime.SpecifyKind(x.CreationTime, DateTimeKind.Utc)), status, x.Id, sharingLink,
+            new TikTokProductDto(x.ProductId ?? "", x.ProductName ?? "Sản phẩm TikTok Shop", "TikTok Shop",
+                x.GetProperty<decimal?>(TikTokProductPreview.PriceMinimum), "VND", null, x.ImageUrl ?? "", "TikTokCreatorApi",
+                x.GetProperty<decimal?>(TikTokProductPreview.CommissionMinimum), x.GetProperty<decimal?>(TikTokProductPreview.PriceMaximum),
+                x.GetProperty<decimal?>(TikTokProductPreview.CommissionMaximum), ownsLink ? x.EstimatedCommission : null,
+                ownsLink ? x.GetProperty<decimal?>(TikTokProductPreview.CashbackMaximum) : null), ownsLink && !x.IsHidden);
+    }
 }
