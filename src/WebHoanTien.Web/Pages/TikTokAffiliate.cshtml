@@ -89,7 +89,7 @@
         <aside class="tt-review-guide cb-card">
             <span class="tt-label">TIKTOK SHOP · CATBACK</span><h2>Từ sản phẩm<br />đến liên kết chia sẻ.</h2>
             <ol><li><strong>Dán link sản phẩm</strong><span>Dùng link rút gọn, link trực tiếp hoặc ID sản phẩm.</span></li><li><strong>Tạo liên kết</strong><span>Nhận link có mã theo dõi riêng và thông tin sản phẩm khi có.</span></li><li><strong>Chia sẻ và theo dõi</strong><span>Xem các liên kết đã lưu và đơn hàng được ghi nhận.</span></li></ol>
-            <div class="tt-guide-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><p>Ảnh và hoa hồng sản phẩm được đọc từ TikTok. Đơn hàng được admin lấy khi bấm nút. Đối soát và cộng ví sẽ triển khai sau.</p></div>
+            <div class="tt-guide-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><p>Ảnh và hoa hồng sản phẩm được đọc từ TikTok. Tài khoản được cấp quyền bấm Lấy đơn từ TikTok để đồng bộ. Đối soát và cộng ví sẽ triển khai sau.</p></div>
         </aside>
     </section>
     <section id="tt-links" role="tabpanel" aria-labelledby="tt-tab-links" class="cb-card tt-card tt-list-panel" hidden>
@@ -100,7 +100,7 @@
         <div class="tt-table-scroll" data-tt-links-table hidden><table><thead><tr><th scope="col">Sản phẩm</th><th scope="col">Hoa hồng tổng dự kiến</th><th scope="col">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody data-tt-links-body></tbody></table></div>
     </section>
     <section id="tt-orders" role="tabpanel" aria-labelledby="tt-tab-orders" class="cb-card tt-card tt-list-panel" hidden>
-        <header class="tt-list-heading"><div><span class="tt-label">ĐƠN HÀNG TIKTOK SHOP</span><h2>Đơn hàng</h2><p>@(Model.IsAdminOrderView ? "Phạm vi quản trị: đơn đã lấy từ TikTok của tất cả khách hàng, bao gồm đơn chưa khớp lượt bấm." : "Đơn đã được admin đồng bộ từ TikTok và khớp với liên kết của bạn.")</p></div><div class="tt-table-actions"><span class="tt-status" data-tt-orders-count>0 đơn</span><button type="button" class="tt-button tt-button-secondary" data-tt-refresh-orders>Làm mới danh sách</button></div></header>
+        <header class="tt-list-heading"><div><span class="tt-label">ĐƠN HÀNG TIKTOK SHOP</span><h2>Đơn hàng</h2><p>@(Model.IsAdminOrderView ? "Đơn của Creator TikTok đã đồng bộ, bao gồm đơn của các khách hàng và đơn chưa khớp lượt bấm." : "Đơn đã được đồng bộ từ TikTok và khớp với liên kết của bạn.")</p></div><div class="tt-table-actions"><span class="tt-status" data-tt-orders-count>0 đơn</span><button type="button" class="tt-button tt-button-secondary" data-tt-refresh-orders>Làm mới danh sách</button></div></header>
         <form method="get" class="tt-order-filters" data-tt-order-filters>
             <input type="hidden" name="Tab" value="orders" /><input type="hidden" name="PageNumber" value="@Model.PageNumber" />
             <label>Từ ngày đặt đơn<input asp-for="FromDate" /></label><label>Đến hết ngày<input asp-for="ToDate" /></label>
@@ -108,9 +108,9 @@
             <button class="tt-button tt-button-secondary" type="submit">Lọc đơn hàng</button>
             @if (Model.CanSync) { <button class="tt-button" type="button" data-tt-sync-orders disabled="@(Model.Creator is null)">Lấy đơn từ TikTok</button> }
         </form>
-        <p class="tt-caption">Ngày đặt đơn theo giờ Việt Nam, tối đa 90 ngày mỗi lượt. Làm mới danh sách đọc dữ liệu đã lưu; admin bấm Lấy đơn từ TikTok để gọi API. Chưa có job tự động hoặc xử lý cộng ví.</p>
+        <p class="tt-caption">Ngày đặt đơn theo giờ Việt Nam, tối đa 90 ngày mỗi lượt. Làm mới danh sách đọc dữ liệu đã lưu; bấm Lấy đơn từ TikTok để đồng bộ qua API. Chưa có job tự động hoặc xử lý cộng ví.</p>
         <p class="tt-feedback" role="status" data-tt-orders-error hidden></p>
-        <div class="tt-empty" data-tt-orders-empty><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><h3>Chưa có đơn hàng phù hợp</h3><p>Chọn khoảng ngày đặt đơn hoặc đợi admin lấy dữ liệu từ TikTok.</p></div>
+        <div class="tt-empty" data-tt-orders-empty><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><h3>Chưa có đơn hàng phù hợp</h3><p>Chọn khoảng ngày đặt đơn hoặc cập nhật dữ liệu từ TikTok.</p></div>
         <div class="tt-table-scroll" data-tt-orders-table hidden><table><thead><tr><th scope="col">Mã đơn</th><th scope="col">Sản phẩm</th><th scope="col">Giá trị đơn</th>
             @if (Model.IsAdminOrderView) { <th scope="col">Hoa hồng TikTok thực nhận</th> }
             <th scope="col">Trạng thái</th><th scope="col">Ngày đặt</th><th scope="col">Chi tiết</th></tr></thead><tbody data-tt-orders-body></tbody></table></div>

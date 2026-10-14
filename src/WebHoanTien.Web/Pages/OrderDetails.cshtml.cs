@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Permissions;
+using WebHoanTien.TikTokAffiliate;
 
 namespace WebHoanTien.Web.Pages;
 
@@ -27,6 +28,8 @@ public class OrderDetailsModel : PageModel
     {
         IsAdminOrderView = (await _authorizationService.AuthorizeAsync(User, WebHoanTienPermissions.Admin.Orders)).Succeeded;
         Order = await _orders.GetAsync(id);
+        if (!IsAdminOrderView && Order.Platform == AffiliatePlatform.TikTok)
+            IsAdminOrderView = (await _authorizationService.AuthorizeAsync(User, TikTokAffiliateAccess.OrdersPolicy)).Succeeded;
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) ReturnUrl = returnUrl;
     }
 }

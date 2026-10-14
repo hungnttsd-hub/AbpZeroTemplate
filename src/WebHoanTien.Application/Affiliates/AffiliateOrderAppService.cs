@@ -9,6 +9,7 @@ using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using WebHoanTien.Permissions;
+using WebHoanTien.TikTokAffiliate;
 
 namespace WebHoanTien.Affiliates;
 
@@ -21,11 +22,12 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
     private readonly IRepository<AffiliateOrderItemAttribution, Guid> _attributions;
     private readonly IRepository<AffiliateTracking, Guid> _trackings;
     private readonly IRepository<IdentityUser, Guid> _users;
+    private readonly ITikTokCreatorApi _tikTokCreator;
 
     public AffiliateOrderAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
         IRepository<AffiliateOrderItemAttribution, Guid> attributions,
-        IRepository<AffiliateTracking, Guid> trackings, IRepository<IdentityUser, Guid> users)
+        IRepository<AffiliateTracking, Guid> trackings, IRepository<IdentityUser, Guid> users, ITikTokCreatorApi tikTokCreator)
     {
         _conversions = conversions;
         _orders = orders;
@@ -33,13 +35,17 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         _attributions = attributions;
         _trackings = trackings;
         _users = users;
+        _tikTokCreator = tikTokCreator;
     }
 
     public async Task<PagedResultDto<AffiliateOrderDto>> GetListAsync(AffiliateOrderListInput input)
     {
         var canManageAllOrders = await AuthorizationService.IsGrantedAsync(WebHoanTienPermissions.Admin.Orders);
-        Guid? scopedUserId = canManageAllOrders ? null : CurrentUser.GetId();
-        var allowedOrderIds = scopedUserId.HasValue
+        // The demo flag grants a Creator-wide view only for an explicitly TikTok-filtered list.
+        // Generic/Shopee lists keep the existing user attribution boundary.
+        var creatorOrderView = !canManageAllOrders && input.Platform == AffiliatePlatform.TikTok && await HasTikTokDemoAccessAsync();
+        Guid? scopedUserId = canManageAllOrders || creatorOrderView ? null : CurrentUser.GetId();
+        var allowedOrderIds = creatorOrderView ? await GetConnectedCreatorOrderIdsAsync() : scopedUserId.HasValue
             ? await GetAttributedOrderIdsAsync(scopedUserId.Value)
             : null;
 
@@ -74,7 +80,7 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         var rows = await AsyncExecuter.ToListAsync(query.Skip(input.SkipCount).Take(input.MaxResultCount));
         return new PagedResultDto<AffiliateOrderDto>(total,
             await MapRowsAsync(rows.Select(x => (x.Order, x.Conversion)).ToList(), scopedUserId,
-                canManageAllOrders));
+                canManageAllOrders || creatorOrderView));
     }
 
     public async Task<AffiliateOrderSummaryDto> GetSummaryAsync()
@@ -137,7 +143,11 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         var order = await _orders.GetAsync(id);
         var conversion = await _conversions.GetAsync(order.ConversionId);
         var canManageAllOrders = await AuthorizationService.IsGrantedAsync(WebHoanTienPermissions.Admin.Orders);
-        Guid? scopedUserId = canManageAllOrders ? null : CurrentUser.GetId();
+        var creatorOrderView = !canManageAllOrders && order.Platform == AffiliatePlatform.TikTok &&
+            await HasTikTokDemoAccessAsync() && !string.IsNullOrEmpty(order.GetProperty<string>(TikTokAffiliateAccess.OrderCreatorProperty)) &&
+            string.Equals(order.GetProperty<string>(TikTokAffiliateAccess.OrderCreatorProperty),
+                await _tikTokCreator.GetCreatorOpenIdAsync(), StringComparison.Ordinal);
+        Guid? scopedUserId = canManageAllOrders || creatorOrderView ? null : CurrentUser.GetId();
         if (scopedUserId.HasValue)
         {
             var itemIds = (await _items.GetListAsync(x => x.OrderId == id)).Select(x => x.Id).ToList();
@@ -147,7 +157,23 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         }
 
         return (await MapRowsAsync(new List<(AffiliateOrder, AffiliateConversion)> { (order, conversion) },
-            scopedUserId, canManageAllOrders))[0];
+            scopedUserId, canManageAllOrders || creatorOrderView))[0];
+    }
+
+    private async Task<bool> HasTikTokDemoAccessAsync()
+    {
+        if (CurrentTenant.Id.HasValue || !CurrentUser.IsAuthenticated || !CurrentUser.Id.HasValue) return false;
+        var user = await _users.FindAsync(CurrentUser.Id.Value);
+        return user is { IsActive: true } && user.GetProperty<bool>(TikTokAffiliateAccess.UserProperty);
+    }
+
+    private async Task<List<Guid>> GetConnectedCreatorOrderIdsAsync()
+    {
+        var creator = await _tikTokCreator.GetCreatorOpenIdAsync();
+        // ExtraProperties are evaluated here; date/status filters and pagination still run in the ledger query.
+        return (await _orders.GetListAsync(x => x.Platform == AffiliatePlatform.TikTok))
+            .Where(x => string.Equals(x.GetProperty<string>(TikTokAffiliateAccess.OrderCreatorProperty), creator, StringComparison.Ordinal))
+            .Select(x => x.Id).ToList();
     }
 
     private async Task<List<Guid>> GetAttributedOrderIdsAsync(Guid userId)

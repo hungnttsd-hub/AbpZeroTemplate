@@ -22,12 +22,11 @@ using WebHoanTien.Permissions;
 
 namespace WebHoanTien.TikTokAffiliate;
 
-[Authorize(Roles = "admin")]
-[Authorize(WebHoanTienPermissions.Admin.Orders)]
+[Authorize(TikTokAffiliateAccess.OrderSyncPolicy)]
 [UnitOfWork(IsDisabled = true)]
 public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikTokOperationsAppService
 {
-    private const string CreatorProperty = "TikTokOrderCreatorOpenId";
+    private const string CreatorProperty = TikTokAffiliateAccess.OrderCreatorProperty;
     private const string FingerprintProperty = "TikTokOrderFingerprint";
     private const string ReviewProperty = "TikTokOrderReview";
     private readonly ITikTokCreatorApi _api;
@@ -54,10 +53,9 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
         _clicks = clicks; _rules = rules; _runs = runs; _upserter = upserter;
     }
 
-    [Authorize(WebHoanTienPermissions.Admin.Sync)]
     public async Task<TikTokManualSyncResult> SyncOrdersAsync(TikTokManualSyncInput input)
     {
-        if (_tenant.Id.HasValue) throw new UserFriendlyException("Chức năng này chỉ dành cho admin hệ thống.");
+        if (_tenant.Id.HasValue) throw new UserFriendlyException("Chức năng này chỉ dành cho tài khoản hệ thống CatBack.");
         if (input.FromUtc >= input.ToUtc || input.ToUtc - input.FromUtc > TimeSpan.FromDays(90)
             || input.ToUtc > DateTimeOffset.UtcNow.AddDays(1) || input.FromUtc.Year < 2026)
             throw new UserFriendlyException("Chọn khoảng ngày hợp lệ, tối đa 90 ngày mỗi lần và từ năm 2026.");
@@ -214,12 +212,12 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
                     && click!.ClickedAt < source.CreatedAt.AddSeconds(1))
                 { attribution = tracking.TrackingToken; clickTime = click.ClickedAt; matchedTrace = true; }
             }
-            if (!matchedTrace)
-                reviewReasons.Add(string.IsNullOrWhiteSpace(traceId)
-                    ? "TikTok chưa trả mã theo dõi (trace_info) để ghép đơn với user. Đồng bộ lại khi sàn cập nhật dữ liệu."
-                    : traceType == "SPECIFIC"
-                        ? "TikTok trả mã publisher SPECIFIC; chưa có mapping publisher với user CatBack."
-                        : "Mã theo dõi TikTok không khớp lượt bấm CatBack đã lưu; chưa xác định được người nhận.");
+            //if (!matchedTrace)
+            //    reviewReasons.Add(string.IsNullOrWhiteSpace(traceId)
+            //        ? "TikTok chưa trả mã theo dõi (trace_info) để ghép đơn với user. Đồng bộ lại khi sàn cập nhật dữ liệu."
+            //        : traceType == "SPECIFIC"
+            //            ? "TikTok trả mã publisher SPECIFIC; chưa có mapping publisher với user CatBack."
+            //            : "Mã theo dõi TikTok không khớp lượt bấm CatBack đã lưu; chưa xác định được người nhận.");
             fingerprint.Append('|').Append(skuId).Append(':').Append(traceType).Append(':').Append(traceId)
                 .Append(':').Append(validMoney).Append(':').Append(commission.ToString(CultureInfo.InvariantCulture))
                 .Append(':').Append(validPrice).Append(':').Append(purchase.ToString(CultureInfo.InvariantCulture));

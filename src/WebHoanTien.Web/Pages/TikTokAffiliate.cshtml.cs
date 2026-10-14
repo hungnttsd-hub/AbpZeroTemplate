@@ -129,13 +129,13 @@ public class TikTokAffiliateModel : PageModel
 
     private async Task LoadPermissionsAsync()
     {
-        IsAdminOrderView = await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Orders);
+        IsAdminOrderView = (await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.OrdersPolicy)).Succeeded;
         CanManageConnection = !_tenant.Id.HasValue && User.IsInRole("admin")
             && await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Settings);
         CanConnectCreator = !_tenant.Id.HasValue &&
             (await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.ConnectionPolicy)).Succeeded;
-        CanSync = !_tenant.Id.HasValue && User.IsInRole("admin") && IsAdminOrderView
-            && await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Sync);
+        CanSync = !_tenant.Id.HasValue &&
+            (await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.OrderSyncPolicy)).Succeeded;
     }
 
     private DateTimeOffset WindowStart => new(DateTime.SpecifyKind(FromDate.Date, DateTimeKind.Unspecified), TimeSpan.FromHours(7));

@@ -83,6 +83,14 @@ public class WebHoanTienApplicationModule : AbpModule
         Configure<AuthorizationOptions>(options => options.AddPolicy(TikTokAffiliateAccess.ConnectionPolicy,
             policy => policy.RequireAuthenticatedUser().AddRequirements(new TikTokCreatorConnectionRequirement())));
         context.Services.AddScoped<IAuthorizationHandler, TikTokCreatorConnectionAuthorizationHandler>();
+        Configure<AuthorizationOptions>(options =>
+        {
+            options.AddPolicy(TikTokAffiliateAccess.OrdersPolicy,
+                policy => policy.RequireAuthenticatedUser().AddRequirements(new TikTokCreatorOrdersRequirement(false)));
+            options.AddPolicy(TikTokAffiliateAccess.OrderSyncPolicy,
+                policy => policy.RequireAuthenticatedUser().AddRequirements(new TikTokCreatorOrdersRequirement(true)));
+        });
+        context.Services.AddScoped<IAuthorizationHandler, TikTokCreatorOrdersAuthorizationHandler>();
         context.Services.AddMemoryCache();
         // Real Creator API, sharing the admin's database token. No RioHub/mock fallback.
         context.Services.AddTransient<ITikTokAffiliateService, TikTokAffiliateApiService>();
