@@ -51,9 +51,18 @@ public class AffiliateRedirectController : Controller
         if (navigation.ErrorResult is not null) return navigation.ErrorResult;
 
         var clickId = await RegisterClickAsync(navigation.Tracking!, navigation.AffiliateId!);
-        var target = navigation.Tracking!.Platform == AffiliatePlatform.TikTok
-            && navigation.Tracking.GetProperty<string>(TikTokLinkAttribution.SourceProperty) == TikTokLinkAttribution.Source
-            ? TikTokLinkAttribution.AddEventId(navigation.AffiliateUrl!, clickId) : navigation.AffiliateUrl!;
+        var target = navigation.AffiliateUrl!;
+        if (navigation.Tracking!.Platform == AffiliatePlatform.TikTok
+            && navigation.Tracking.GetProperty<string>(TikTokLinkAttribution.SourceProperty) == TikTokLinkAttribution.Source)
+        {
+            var userAgent = Request.Headers.UserAgent.ToString();
+            var opensMobileApp = userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase)
+                || userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase)
+                || userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase);
+            target = opensMobileApp && TikTokLinkAttribution.TryCreateAppLink(
+                navigation.Tracking.GetProperty<string>(TikTokLinkAttribution.OneLinkProperty), clickId, out var appLink)
+                ? appLink : TikTokLinkAttribution.AddEventId(target, clickId);
+        }
         return Redirect(target);
     }
 

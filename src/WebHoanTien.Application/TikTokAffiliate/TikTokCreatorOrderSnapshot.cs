@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Volo.Abp;
 
 namespace WebHoanTien.TikTokAffiliate;
@@ -74,9 +75,19 @@ internal sealed class TikTokCreatorOrderSnapshot
         amount = 0;
         if (!sku.TryGetProperty(field, out var money) || money.ValueKind != JsonValueKind.Object
             || String(money, "currency") != "VND") return false;
-        var text = String(money, "amount");
-        // No currency conversion, cents assumption or ambiguous thousands separator parsing.
-        return text is { Length: > 0 and <= 24 } && text.All(c => char.IsAsciiDigit(c) || c == '.')
+        var text = String(money, "amount")?.Trim();
+        if (text is not { Length: > 0 and <= 48 }) return false;
+        // Orders 202410 returns localized VND amounts, for example "38.000₫".
+        // The explicit đồng symbol distinguishes Vietnamese grouping from plain API decimals.
+        if (text.EndsWith('₫'))
+        {
+            text = text[..^1].Trim();
+            if (!Regex.IsMatch(text, @"\A(?:[0-9]+|[0-9]{1,3}(?:\.[0-9]{3})+)\z", RegexOptions.CultureInvariant))
+                return false;
+            text = text.Replace(".", "", StringComparison.Ordinal);
+        }
+        // Keep plain numeric decimals in API units; do not convert currency or guess separators.
+        return text.All(c => char.IsAsciiDigit(c) || c == '.')
             && decimal.TryParse(text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out amount)
             && amount >= 0 && amount <= 1_000_000_000_000m;
     }

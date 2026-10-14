@@ -6,6 +6,15 @@
 
 Phạm vi đã chốt: **sinh link và lấy/lưu đơn hàng**. Đối soát, kiểm tra thanh toán, ghi nhận hoàn tiền vào ví để làm sau.
 
+### Giá trị đơn và attribution khi mở app — 14/10/2026
+
+- Đơn thực tế `586576086023701663` trong DB trả `price.amount = "38.000₫"`, `estimated_commission.amount = "3.990₫"`, cùng `currency = "VND"`, quantity 1. Parser cũ chỉ nhận số decimal thuần nên ghi giá/hoa hồng thành 0. Đã đọc lại API Reference Search Creator Affiliate Orders `202410`: trường tiền của đơn là giá trị localized.
+- Bộ đọc tiền nhận định dạng VND có ký hiệu `₫` và nhóm hàng nghìn đúng ba chữ số, nên đọc đúng **38.000 VND / 3.990 VND**. Số decimal thuần vẫn giữ nguyên đơn vị của API. Không bỏ ký hiệu tùy ý, suy đoán dấu phân cách khác, quy đổi ngoại tệ hoặc nhân thêm hệ số. Giá/hoa hồng thiếu hoặc không đọc được được ghi rõ trong review note.
+- Snapshot của đơn trên có `trace_info = {}`. CatBack đã lưu một click từ điện thoại, cùng Creator/sản phẩm, trước đơn khoảng 45 giây; đây chỉ là dữ liệu chẩn đoán, không dùng product ID/thời gian để tự gán user. Chỉ ghép khi API trả `trace_info.type = GENERAL` và ID khớp click đã lưu. Review note của đơn nêu rõ thiếu mã theo dõi thay vì thông báo lỗi tiền chung.
+- Đọc lại đúng đơn từ Creator API ngày 14/10/2026: HTTP 200/code 0, request ID `202610140911377654320C1857EB01A8B7`; trạng thái vẫn `AWAITING PAYMENT`, tiền giữ nguyên như trên và `trace_info` vẫn rỗng. Đã sửa số tiền bị ghi 0 của riêng đơn này từ snapshot trong DB chung: giá trị 38.000 VND, hoa hồng Creator dự kiến 3.990 VND. Transaction kiểm tra order/SKU/attribution chưa ghép, chưa chốt và có đúng dữ liệu snapshot; lưu audit giá trị cũ trong ExtraProperties. Không thay người nhận, tỷ lệ chia, trạng thái thanh toán hoặc số dư ví.
+- Đã đọc lại API Reference Generate General Sharing Links `202505` và đối chiếu `one_link` đã lưu của sản phẩm: URL thuộc `snssdk1180.onelink.me`, có placeholder `o_event_id`. Khi mở `/go/{token}` trên Android/iPhone/iPad, server lưu click rồi ưu tiên `one_link`, thay mọi placeholder bằng `cbclk_<click-guid>` mà không encode/decode lại URL. Desktop hoặc link không có one-link hợp lệ tiếp tục dùng `sharing_link` với `event_id`. URL chia sẻ của user vẫn là CatBack `/go/...`.
+- Chưa xác nhận đơn mua sau thay đổi này trả lại trace; cần deploy bản sửa và đối chiếu một đơn qua nút Mua ngay trên app. Đơn cũ thiếu trace vẫn cần đồng bộ lại khi TikTok bổ sung dữ liệu. Không sửa người nhận dựa trên phỏng đoán và không cộng tiền vào ví.
+
 ### Trang TikTok dùng API thật — cập nhật 13/10/2026
 
 - `/tiktok-affiliate` thay toàn bộ luồng demo và nhánh username `hungnttsd`. Không nhập/chọn username, không dựng hồ sơ hoặc đơn hàng cố định, không dùng adapter RioHub/mock. Hồ sơ Creator được đọc từ TikTok bằng credential admin trong DB chung; các trường DTO điều khiển Demo Mode đã được bỏ.

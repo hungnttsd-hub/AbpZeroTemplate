@@ -69,6 +69,14 @@
         return url.origin === window.location.origin && /^\/go\/(?:cb_)?[a-f0-9]{32}$/.test(url.pathname) ? url.href : null;
       } catch { return null; }
     }
+    function safeProductImageUrl(value) {
+      if (!value) return null;
+      try {
+        const url = new URL(value, window.location.origin);
+        if (url.username || url.password) return null;
+        return url.protocol === 'https:' || url.origin === window.location.origin && url.pathname.startsWith('/products/tiktok/') ? url.href : null;
+      } catch { return null; }
+    }
     async function copy(value) {
       const url = safeSharingUrl(value);
       if (!url) { feedback('Liên kết không hợp lệ.'); return; }
@@ -103,11 +111,7 @@
       text('[data-tt-product-cashback]', moneyRange(product?.estimatedCashback, product?.estimatedCashbackMaximum));
       text('[data-tt-rate-note]', 'Tiền hoàn dự kiến phụ thuộc SKU, ưu đãi và hoa hồng thực tế khi đối soát. Hiện chưa cộng tiền vào ví.');
       const image = find('[data-tt-product-image]');
-      let imageUrl = null;
-      try {
-        const url = new URL(product?.imageUrl || '', window.location.origin);
-        if (product?.imageUrl && !url.username && !url.password && (url.protocol === 'https:' || url.origin === window.location.origin && url.pathname.startsWith('/products/tiktok/'))) imageUrl = url.href;
-      } catch { /* Optional image may be absent. */ }
+      const imageUrl = safeProductImageUrl(product?.imageUrl);
       image.hidden = !imageUrl;
       image.onerror = () => { image.hidden = true; find('[data-tt-product]').classList.add('has-no-image'); };
       if (imageUrl) { image.src = imageUrl; image.alt = product.title || link.productTitle; }
@@ -122,8 +126,26 @@
       const body = find('[data-tt-links-body]'); body.replaceChildren();
       links.forEach(link => {
         const row = document.createElement('tr');
-        const title = cell(row, link.productTitle); const note = document.createElement('small');
-        note.textContent = link.productId; title.append(note);
+        const product = link.product;
+        const productTitle = product?.title || link.productTitle || 'Sản phẩm TikTok Shop';
+        const productCell = cell(row, ''); productCell.className = 'tt-link-product';
+        const summary = document.createElement('div'); summary.className = 'tt-link-product-summary';
+        const thumbnail = document.createElement('div'); thumbnail.className = 'tt-link-thumbnail';
+        const placeholder = document.createElement('span'); placeholder.className = 'tt-link-image-placeholder';
+        placeholder.textContent = 'Chưa có ảnh'; thumbnail.append(placeholder);
+        const imageUrl = safeProductImageUrl(product?.imageUrl);
+        if (imageUrl) {
+          const image = document.createElement('img'); image.width = 64; image.height = 64;
+          image.alt = productTitle; image.loading = 'lazy'; image.decoding = 'async'; image.referrerPolicy = 'no-referrer';
+          image.onerror = () => { image.remove(); placeholder.hidden = false; };
+          image.src = imageUrl; placeholder.hidden = true; thumbnail.append(image);
+        }
+        const productCopy = document.createElement('div'); productCopy.className = 'tt-link-product-copy';
+        const title = document.createElement('strong'); title.textContent = productTitle;
+        const note = document.createElement('small'); note.textContent = link.productId;
+        productCopy.append(title, note); summary.append(thumbnail, productCopy); productCell.append(summary);
+        const commission = cell(row, moneyRange(product?.commissionAmount, product?.commissionMaximum));
+        commission.className = 'tt-link-commission';
         cell(row, date(link.createdAt)); badge(cell(row, ''), link.status);
         const actions = cell(row, ''); const container = document.createElement('div'); container.className = 'tt-table-actions';
         const url = safeSharingUrl(link.sharingLink);

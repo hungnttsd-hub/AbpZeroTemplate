@@ -38,6 +38,10 @@
                 {
                     <small><i class="cb-desktop-only fa-solid fa-triangle-exclamation" hidden aria-hidden="true"></i>@order.UnmatchedAttributionCount token chưa ghép hoặc đang xung đột</small>
                 }
+                @if (!string.IsNullOrWhiteSpace(order.ReviewNote))
+                {
+                    <small>@order.ReviewNote</small>
+                }
             </div>
         }
         <dl class="cb-order-values">

@@ -72,6 +72,14 @@
 .tt-table-scroll td { border-bottom: 1px solid #dce7e9; padding: 18px 12px; white-space: nowrap; }
 .tt-table-scroll td:first-child { font-weight: 700; }
 .tt-table-scroll td.tt-order-product { min-width: 200px; max-width: 300px; white-space: normal; overflow-wrap: anywhere; }
+.tt-table-scroll td.tt-link-product { min-width: 240px; max-width: 360px; white-space: normal; }
+.tt-link-product-summary { display: flex; align-items: center; gap: 12px; }
+.tt-link-thumbnail { display: grid; place-items: center; flex: 0 0 64px; height: 64px; border: 1px solid #dce7e9; border-radius: 10px; overflow: hidden; background: #edf6f8; }
+.tt-link-thumbnail img { width: 64px; height: 64px; object-fit: contain; }
+.tt-link-image-placeholder { padding: 6px; color: #647d8f; font-size: 10px; font-weight: 400; text-align: center; }
+.tt-link-product-copy { min-width: 0; overflow-wrap: anywhere; }
+.tt-link-product-copy strong { display: block; line-height: 1.5; }
+.tt-link-commission { color: #075b81; font-weight: 700; }
 .tt-table-scroll small { display: block; font-weight: 400; font-size: 10px; color: #647d8f; margin-top: 5px; }
 .tt-table-actions { display: flex; align-items: center; gap: 12px; }
 .tt-table-actions a, .tt-table-actions button { color: #075b81; font: inherit; font-weight: 700; background: transparent; border: 0; padding: 4px; cursor: pointer; text-decoration: none; }

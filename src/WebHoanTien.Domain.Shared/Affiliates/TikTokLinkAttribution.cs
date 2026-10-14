@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace WebHoanTien.Affiliates;
 
@@ -22,5 +23,21 @@ public static class TikTokLinkAttribution
         var fragment = sharingLink.IndexOf('#');
         if (fragment >= 0) sharingLink = sharingLink[..fragment];
         return sharingLink + (sharingLink.Contains('?') ? "&" : "?") + "event_id=" + EventId(clickId);
+    }
+
+    public static bool TryCreateAppLink(string? oneLink, Guid clickId, out string destination)
+    {
+        destination = string.Empty;
+        // Generate General Sharing Links 202505: replace every o_event_id placeholder
+        // in the API's one_link. Preserve its nested encoded parameters byte-for-byte.
+        if (string.IsNullOrWhiteSpace(oneLink) || oneLink.Length > 8192 || oneLink.Any(char.IsControl)
+            || !Uri.TryCreate(oneLink, UriKind.Absolute, out var uri) || uri.Scheme != "https"
+            || !uri.IsDefaultPort || uri.UserInfo.Length > 0
+            || !uri.IdnHost.Equals("snssdk1180.onelink.me", StringComparison.OrdinalIgnoreCase)
+            || !oneLink.Contains("o_event_id", StringComparison.Ordinal)) return false;
+        var target = oneLink.Replace("o_event_id", EventId(clickId), StringComparison.Ordinal);
+        if (target.Length > 8192) return false;
+        destination = target;
+        return true;
     }
 }

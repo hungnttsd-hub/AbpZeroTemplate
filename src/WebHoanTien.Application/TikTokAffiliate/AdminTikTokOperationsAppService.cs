@@ -123,7 +123,7 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
                     order.SetProperty("TikTokOrderSnapshot", snapshot.ToJson());
                     order.SetProperty("TikTokEstimatedCommission", TotalMoney(snapshot, "estimated_commission"));
                     order.SetProperty("TikTokActualCommission", snapshot.Status == "SETTLED" ? TotalMoney(snapshot, "actual_commission") : null);
-                    order.SetProperty(ReviewProperty, normalized.NeedsReview ? "Trạng thái hoặc số tiền TikTok cần kiểm tra; chưa cộng ví." : "");
+                    order.SetProperty(ReviewProperty, normalized.ReviewNote);
                     await _orders.UpdateAsync(order);
                     await work.CompleteAsync(ct);
                     if (upsert.Inserted) result.InsertedOrders++; else result.UpdatedOrders++;
@@ -182,7 +182,8 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
             _ => (AffiliateOrderStatus.Pending, AffiliateConversionStatus.Pending)
         };
         var knownStatus = source.Status is "AWAITING PAYMENT" or "To-SETTLE" or "SETTLED" or "REFUNDED" or "FROZEN";
-        var needsReview = !knownStatus;
+        var reviewReasons = new HashSet<string>(StringComparer.Ordinal);
+        if (!knownStatus) reviewReasons.Add("Trạng thái TikTok chưa được hỗ trợ; cần admin kiểm tra.");
         var items = new List<NormalizedAffiliateOrderItem>();
         DateTime? clickTime = null;
         var fingerprint = new StringBuilder(source.Id + "|" + source.Status + "|" + creator);
@@ -192,13 +193,16 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
             var paid = source.Status == "SETTLED";
             var validMoney = TikTokCreatorOrderSnapshot.TryMoney(sku, paid ? "actual_commission" : "estimated_commission", out var commission);
             // These aggregate fields already include additions and deductions. Do not subtract pit or agency fees again.
-            if (!validMoney) { commission = 0; needsReview = true; }
+            if (!validMoney) { commission = 0; reviewReasons.Add("TikTok chưa trả số tiền hoa hồng VND hợp lệ; chưa có khoản hoàn tiền để ghi nhận."); }
             if (!knownStatus || source.Status is "REFUNDED" or "FROZEN") commission = 0;
-            var purchase = TikTokCreatorOrderSnapshot.TryMoney(sku, "price", out var unitPrice) ? unitPrice * quantity : 0;
+            var validPrice = TikTokCreatorOrderSnapshot.TryMoney(sku, "price", out var unitPrice);
+            var purchase = validPrice ? unitPrice * quantity : 0;
+            if (!validPrice) reviewReasons.Add("TikTok chưa trả giá sản phẩm VND hợp lệ; cần kiểm tra giá trị đơn hàng.");
             string traceType = "", traceId = "";
             if (sku.TryGetProperty("trace_info", out var trace) && trace.ValueKind == JsonValueKind.Object)
             { traceType = TikTokCreatorOrderSnapshot.String(trace, "type") ?? ""; traceId = TikTokCreatorOrderSnapshot.String(trace, "id") ?? ""; }
             var attribution = "tt:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(traceType + ":" + traceId + ":" + source.Id + ":" + skuId))).ToLowerInvariant();
+            var matchedTrace = false;
             if (traceType == "GENERAL" && TikTokLinkAttribution.TryGetClickId(traceId, out var clickId))
             {
                 var click = await _clicks.FindAsync(clickId);
@@ -208,10 +212,17 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
                     && tracking.GetProperty<string>(TikTokLinkAttribution.SourceProperty) == TikTokLinkAttribution.Source
                     // The API reports create_time in whole seconds; local clicks retain milliseconds.
                     && click!.ClickedAt < source.CreatedAt.AddSeconds(1))
-                { attribution = tracking.TrackingToken; clickTime = click.ClickedAt; }
+                { attribution = tracking.TrackingToken; clickTime = click.ClickedAt; matchedTrace = true; }
             }
+            if (!matchedTrace)
+                reviewReasons.Add(string.IsNullOrWhiteSpace(traceId)
+                    ? "TikTok chưa trả mã theo dõi (trace_info) để ghép đơn với user. Đồng bộ lại khi sàn cập nhật dữ liệu."
+                    : traceType == "SPECIFIC"
+                        ? "TikTok trả mã publisher SPECIFIC; chưa có mapping publisher với user CatBack."
+                        : "Mã theo dõi TikTok không khớp lượt bấm CatBack đã lưu; chưa xác định được người nhận.");
             fingerprint.Append('|').Append(skuId).Append(':').Append(traceType).Append(':').Append(traceId)
-                .Append(':').Append(validMoney).Append(':').Append(commission.ToString(CultureInfo.InvariantCulture));
+                .Append(':').Append(validMoney).Append(':').Append(commission.ToString(CultureInfo.InvariantCulture))
+                .Append(':').Append(validPrice).Append(':').Append(purchase.ToString(CultureInfo.InvariantCulture));
             items.Add(new(skuId, TikTokCreatorOrderSnapshot.String(sku, "product_id"),
                 TikTokCreatorOrderSnapshot.String(sku, "product_name"), purchase, quantity, commission, 0,
                 source.Status == "FROZEN", source.Status,
@@ -222,8 +233,8 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
         var purchaseTotal = items.Sum(x => x.PurchaseAmount);
         var order = new NormalizedAffiliateOrder(source.Id, status, "TikTok Shop", purchaseTotal, net, items);
         return new(new(source.Id, null, source.CreatedAt, clickTime, conversionStatus, net, net,
-            CommissionSource.NetCommission, new[] { order }), needsReview,
-            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprint.ToString()))));
+            CommissionSource.NetCommission, new[] { order }), reviewReasons.Count > 0,
+            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprint.ToString()))), string.Join(" ", reviewReasons));
     }
 
     private async Task CompleteRunAsync(Guid id, TikTokManualSyncResult result, int errors, string? notice)
@@ -247,5 +258,5 @@ public class AdminTikTokOperationsAppService : WebHoanTienAppService, IAdminTikT
         return sum;
     }
 
-    private sealed record NormalizedSnapshot(NormalizedAffiliateConversion Conversion, bool NeedsReview, string Fingerprint);
+    private sealed record NormalizedSnapshot(NormalizedAffiliateConversion Conversion, bool NeedsReview, string Fingerprint, string ReviewNote);
 }
