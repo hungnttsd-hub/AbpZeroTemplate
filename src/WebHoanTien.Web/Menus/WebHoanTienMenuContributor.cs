@@ -59,11 +59,16 @@ public class WebHoanTienMenuContributor : IMenuContributor
                 "Affiliate.TikTokCreator", "TikTok Creator", "~/Admin/TikTokCreator", "fab fa-tiktok", 48,
                 requiredPermissionName: WebHoanTienPermissions.Admin.Settings));
             context.Menu.Items.Add(new ApplicationMenuItem(
+                "Affiliate.TikTokConnections", "Kết nối Creator của user", "~/Admin/TikTokConnections", "fas fa-users", 48,
+                requiredPermissionName: WebHoanTienPermissions.Admin.Settings));
+            context.Menu.Items.Add(new ApplicationMenuItem(
                 "Affiliate.TikTokOrders", "Đơn hàng TikTok Shop", "~/Admin/TikTokOrders", "fas fa-receipt", 49,
                 requiredPermissionName: WebHoanTienPermissions.Admin.Orders));
         }
 
         var administration = context.Menu.GetAdministration();
+        if ((await authorization.AuthorizeAsync(principal, TikTokDeveloperAccess.Policy)).Succeeded)
+            context.Menu.Items.Add(new ApplicationMenuItem("Affiliate.TikTokDeveloper", "TikTok Developer API", "~/Developer/TikTok", "fas fa-code", 51));
         administration.SetSubItemOrder(IdentityMenuNames.GroupName, 1);
         administration.SetSubItemOrder(SettingManagementMenuNames.GroupName, 2);
     }

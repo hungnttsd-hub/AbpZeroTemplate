@@ -59,7 +59,11 @@
                     }
                     <p class="tt-caption">Kết nối mở trang cấp quyền thật của TikTok. Ngắt kết nối tại CatBack sẽ dừng Creator chung; thao tác này không thu hồi quyền trên TikTok.</p>
                 }
-                <p class="tt-caption">Đăng nhập đúng Creator chính tại TikTok khi cấp quyền. Kết nối được lưu trong database chung để local và production cùng sử dụng.</p>
+                @if (Model.CanAccessDeveloper)
+                {
+                    <a href="/Developer/TikTok" class="tt-text-button">Đăng nhập TikTok Creator riêng để dùng Developer API →</a>
+                }
+                <p class="tt-caption">Chỉ admin quản lý Creator hoàn tiền trên trang này. Creator riêng của user được quản lý tại TikTok Developer API.</p>
             </section>
             <section class="cb-card tt-card" aria-labelledby="tt-product-heading">
                 <header class="tt-card-heading"><span class="tt-step">02</span><div><h2 id="tt-product-heading">Tạo link TikTok</h2><p>Nhận liên kết tiếp thị cùng thông tin sản phẩm</p></div></header>

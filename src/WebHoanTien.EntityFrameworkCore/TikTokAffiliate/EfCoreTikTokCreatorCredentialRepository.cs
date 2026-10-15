@@ -75,6 +75,9 @@ public class EfCoreTikTokCreatorCredentialRepository : ITikTokCreatorCredentialR
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({incoming.AppKey}, 0))", ct);
         var session = await db.TikTokCreatorAuthStates.SingleAsync(x => x.Id == state.Id, ct);
         if (session.Status != "Processing") throw new UserFriendlyException("Phiên cấp quyền không còn hợp lệ.");
+        if (session.AppKey != incoming.AppKey || incoming.AuthorizedByAdminId == Guid.Empty ||
+            incoming.AuthorizedByAdminId != session.InitiatedByAdminId || incoming.UserType != 1)
+            throw new UserFriendlyException("Kết nối không khớp phiên Creator hoàn tiền do admin bắt đầu.");
         var candidates = await db.TikTokCreatorCredentials.FromSqlInterpolated($"""
             SELECT * FROM affiliate."TikTokCreatorCredentials" WHERE "AppKey" = {incoming.AppKey} AND "IsPrimary" = TRUE FOR UPDATE
             """).ToListAsync(ct);

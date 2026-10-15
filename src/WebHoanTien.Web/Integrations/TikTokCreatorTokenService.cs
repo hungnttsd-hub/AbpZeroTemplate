@@ -13,6 +13,10 @@ using Volo.Abp;
 using Volo.Abp.Auditing;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.MultiTenancy;
+using Volo.Abp.Identity;
+using Volo.Abp.Users;
+using Volo.Abp.Authorization.Permissions;
+using WebHoanTien.Permissions;
 using WebHoanTien.TikTokAffiliate;
 using WebHoanTien.Web.IdentityExtensions;
 
@@ -29,10 +33,15 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
     private readonly IHostEnvironment _environment;
     private readonly RecoveryCertificates _certificates;
     private readonly ICurrentTenant _tenant;
+    private readonly ICurrentUser _currentUser;
+    private readonly IdentityUserManager _users;
+    private readonly IPermissionChecker _permissions;
 
     public TikTokCreatorTokenService(ITikTokCreatorCredentialRepository store, TikTokCreatorOAuthClient client,
-        IDataProtectionProvider protection, IConfiguration configuration, IHostEnvironment environment, RecoveryCertificates certificates, ICurrentTenant tenant)
-    { _store = store; _client = client; _protection = protection; _configuration = configuration; _environment = environment; _certificates = certificates; _tenant = tenant; }
+        IDataProtectionProvider protection, IConfiguration configuration, IHostEnvironment environment, RecoveryCertificates certificates, ICurrentTenant tenant,
+        ICurrentUser currentUser, IdentityUserManager users, IPermissionChecker permissions)
+    { _store = store; _client = client; _protection = protection; _configuration = configuration; _environment = environment; _certificates = certificates; _tenant = tenant;
+        _currentUser = currentUser; _users = users; _permissions = permissions; }
 
     private int RefreshBeforeMinutes => _configuration.GetValue("TikTokShop:Creator:TokenRefreshBeforeExpiryMinutes", 5);
     private string[] RequiredScopes => _configuration.GetSection("TikTokShop:Creator:RequiredScopes").Get<string[]>() ?? Array.Empty<string>();
@@ -54,6 +63,7 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
     {
         // This is a host-level CatBack credential, not a tenant administrator's connection.
         if (_tenant.Id.HasValue) throw new UserFriendlyException("Chỉ tài khoản hệ thống CatBack được authorize Creator chung.");
+        await RequireAdminActorAsync(actorId);
         ValidateConfiguration();
         var state = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
         var now = DateTimeOffset.UtcNow;
@@ -76,6 +86,8 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
             ?? throw new UserFriendlyException("Phiên authorize đã hết hạn, đã dùng hoặc không hợp lệ. Hãy bắt đầu lại từ trang quản trị.");
         try
         {
+            // Validate the recorded initiator, including states created before the admin-only restriction.
+            await RequireActiveAdminAsync(session.InitiatedByAdminId);
             if (denied) throw new UserFriendlyException("TikTok chưa cấp quyền hoặc bạn đã từ chối authorize.");
             if (string.IsNullOrWhiteSpace(code) || code == "null" || code.Length > 2048)
                 throw new UserFriendlyException("TikTok không trả mã cấp quyền hợp lệ.");
@@ -87,6 +99,7 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
                 CreatedAtUtc = now, UpdatedAtUtc = now
             };
             ApplyTokens(credentials, tokens);
+            await RequireActiveAdminAsync(session.InitiatedByAdminId);
             await _store.SaveAuthorizationAsync(session, credentials, ct);
             return Status(credentials);
         }
@@ -132,7 +145,9 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
             ct.ThrowIfCancellationRequested();
             var value = await _store.GetPrimaryAsync(_client.AppKey, ct)
                 ?? throw new UserFriendlyException("Admin chưa authorize TikTok Creator. Vui lòng kết nối trong trang quản trị.");
-            if (value.Status is not ("Active" or "MissingScopes") || value.UserType != 1)
+            // Cashback always comes from the explicitly registered primary admin credential.
+            // Never select by the current visitor or fall back to TikTokDeveloperAccounts.
+            if (!value.IsPrimary || value.AuthorizedByAdminId == Guid.Empty || value.Status is not ("Active" or "MissingScopes") || value.UserType != 1)
                 throw new UserFriendlyException("Kết nối Creator cần được admin authorize lại (" + value.Status + ").");
             startingVersion ??= value.TokenVersion;
             var now = DateTimeOffset.UtcNow;
@@ -180,10 +195,26 @@ public class TikTokCreatorTokenService : ITikTokCreatorTokenService, ITransientD
     public Task<TikTokCreatorCredentials?> ReadPrimaryAsync(CancellationToken ct = default) => _store.GetPrimaryAsync(_client.AppKey, ct);
 
     // Disconnect CatBack's credential; this does not revoke the user's grant at TikTok.
-    public Task DisconnectAsync(CancellationToken ct = default)
+    public async Task DisconnectAsync(CancellationToken ct = default)
     {
         if (_tenant.Id.HasValue) throw new UserFriendlyException("Chỉ tài khoản hệ thống CatBack được quản lý Creator chung.");
-        return _store.DisablePrimaryAsync(_client.AppKey, ct);
+        await RequireAdminActorAsync(_currentUser.GetId());
+        await _store.DisablePrimaryAsync(_client.AppKey, ct);
+    }
+
+    private async Task RequireAdminActorAsync(Guid actorId)
+    {
+        if (!_currentUser.IsAuthenticated || _currentUser.Id != actorId || !_currentUser.IsInRole("admin") ||
+            !await _permissions.IsGrantedAsync(WebHoanTienPermissions.Admin.Settings))
+            throw new UserFriendlyException("Chỉ admin có quyền cấu hình được thay đổi Creator hoàn tiền của CatBack.");
+        await RequireActiveAdminAsync(actorId);
+    }
+
+    private async Task RequireActiveAdminAsync(Guid actorId)
+    {
+        var actor = await _users.FindByIdAsync(actorId.ToString());
+        if (actor is not { IsActive: true, TenantId: null } || !await _users.IsInRoleAsync(actor, "admin"))
+            throw new UserFriendlyException("Người bắt đầu cấp quyền Creator chung không còn là admin đang hoạt động.");
     }
 
     public async Task ReportInvalidTokenAsync(long observedVersion, CancellationToken ct = default)

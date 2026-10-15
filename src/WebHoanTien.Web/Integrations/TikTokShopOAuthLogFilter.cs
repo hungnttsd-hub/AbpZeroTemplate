@@ -24,7 +24,9 @@ public static class TikTokShopOAuthLogFilter
         {
             if (logEvent.Properties.TryGetValue(key, out var property)
                 && property is ScalarValue { Value: string path }
-                && TikTokShopOAuthRoutes.IsPublicEndpoint(path.Split('?')[0]))
+                && (TikTokShopOAuthRoutes.IsPublicEndpoint(path.Split('?')[0]) ||
+                    WebHoanTien.TikTokAffiliate.TikTokDeveloperAccess.IsApiPath(path.Split('?')[0]) ||
+                    path.StartsWith(WebHoanTien.TikTokAffiliate.TikTokDeveloperAccess.Portal, System.StringComparison.OrdinalIgnoreCase)))
                 return true;
         }
 

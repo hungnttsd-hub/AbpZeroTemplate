@@ -2,6 +2,7 @@
   "culture": "en",
   "texts": {
     "IsTiktokDemo": "Enable TikTok Affiliate",
+    "CanUseTikTokDeveloperApi": "Enable TikTok Developer API (own Creator)",
     "AppName": "CatBack",
     "Welcome": "Shop on Shopee and receive part of the commission",
     "Menu:Home": "Home",

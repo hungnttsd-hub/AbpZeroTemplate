@@ -1,0 +1,78 @@
+@page
+@model WebHoanTien.Web.Pages.Admin.TikTokConnections.IndexModel
+@using ConnectionPage = WebHoanTien.Web.Pages.Admin.TikTokConnections.IndexModel
+@{ ViewData["Title"] = "Kết nối TikTok Creator"; }
+@section Styles { <link rel="stylesheet" href="~/tiktok-management.css" asp-append-version="true" /> }
+<section class="tt-management">
+    <header class="tt-page-heading">
+        <div><span class="tt-eyebrow">CatBack · Quản trị TikTok</span><h1>Kết nối TikTok Creator</h1>
+        <p>Theo dõi tài khoản đã kết nối qua CatBack. Cập nhật lúc @ConnectionPage.LocalTime(Model.SnapshotAtUtc) (UTC+7).</p></div>
+        <div class="tt-actions"><a asp-page="Index" class="button button-ghost">Làm mới danh sách</a><a href="/Admin/TikTokCreator" class="button button-ghost">Creator hoàn tiền</a></div>
+    </header>
+    <section class="cb-card">
+        <h2>Creator dùng cho hoàn tiền CatBack</h2>
+        @if (Model.Connections.CashbackCreator is { } primary)
+        {
+            <dl class="tt-meta">
+                <dt>Creator Open ID</dt><dd><code>@primary.OpenId</code></dd>
+                <dt>Admin đã cấp quyền</dt><dd>@(primary.AdminUserName ?? primary.AuthorizedByAdminId.ToString())</dd>
+                <dt>Trạng thái</dt><dd>@ConnectionPage.StatusLabel(primary.Status, primary.RefreshExpiresAtUtc)</dd>
+                <dt>Access token hết hạn (UTC+7)</dt><dd>@ConnectionPage.LocalTime(primary.AccessExpiresAtUtc)</dd>
+                <dt>Refresh token hết hạn (UTC+7)</dt><dd>@ConnectionPage.LocalTime(primary.RefreshExpiresAtUtc)</dd>
+            </dl>
+        }
+        else { <p>Admin chưa kết nối Creator hoàn tiền. CatBack sẽ yêu cầu admin kết nối; không dùng thay token Developer.</p> }
+        <p>Tạo link, lấy sản phẩm và đồng bộ đơn hoàn tiền chỉ dùng Creator chính do admin cấp quyền. Kết nối riêng của user không thay thế Creator này.</p>
+    </section>
+    <section class="cb-card">
+        <h2>Creator riêng của user Developer API</h2>
+        <div class="developer-metrics">
+            <p><strong>@Model.Connections.TotalAccounts</strong> user có hồ sơ Developer</p>
+            <p><strong>@Model.Connections.ConnectedUsers</strong> user đang lưu kết nối</p>
+            <p><strong>@Model.Connections.ConnectedCreators</strong> Creator riêng biệt đang kết nối</p>
+            <p><strong>@Model.Connections.NeedsReauthorization</strong> kết nối cần cấp quyền lại</p>
+        </div>
+        <p>Số liệu từ database CatBack, chưa xác minh trực tiếp với TikTok khi mở trang. Không bao gồm lượt cấp quyền ngoài luồng CatBack; thay đổi hoặc thu hồi quyền trên TikTok được phát hiện khi gọi API. User bị khóa hoặc bị thu hồi quyền Developer sẽ không gọi được API dù còn bản ghi kết nối.</p>
+        <form method="get" class="tt-filter-grid tt-divider">
+            <div class="tt-field">
+                <label for="creator-search">User / Username TikTok / Open ID</label>
+                <input id="creator-search" name="Search" value="@Model.Search" maxlength="128" placeholder="Tìm tài khoản hoặc Creator…" />
+            </div>
+            <div class="tt-field">
+                <label for="creator-status">Trạng thái</label>
+                <select id="creator-status" asp-for="Status">
+                    <option value="">Tất cả</option><option value="Active">Đã kết nối</option>
+                    <option value="ReauthRequired">Cần cấp quyền lại</option><option value="Disabled">Đã ngắt</option>
+                    <option value="NotConnected">Chưa kết nối</option>
+                </select>
+            </div>
+            <button class="button" type="submit">Lọc</button>
+        </form>
+        <p class="tt-caption">@Model.Connections.FilteredCount user phù hợp · Trang @Model.PageNumber / @Model.TotalPages. Cuộn ngang để xem đầy đủ thông tin.</p>
+        <div class="table-responsive" tabindex="0" role="region" aria-label="Các kết nối TikTok Creator">
+            <table class="tt-connections-table">
+                <thead><tr><th>User CatBack</th><th>Creator TikTok</th><th>Kết nối</th><th>Token hết hạn (UTC+7)</th><th>Quyền và API key</th><th>Cập nhật (UTC+7)</th></tr></thead>
+                <tbody>
+                    @foreach (var row in Model.Connections.Items)
+                    {
+                        <tr>
+                            <td><strong>@(row.UserName ?? "User đã xóa")</strong><br /><small>@row.UserId</small><br />@(row.UserActive ? "Đang hoạt động" : "Bị khóa / đã xóa")</td>
+                            <td>@(row.CreatorUsername is not null ? "@" + row.CreatorUsername : "—")<br /><code>@row.OpenId</code></td>
+                            <td><span class="tt-badge">@ConnectionPage.StatusLabel(row.Status, row.RefreshExpiresAtUtc)</span></td>
+                            <td>Access: @ConnectionPage.LocalTime(row.AccessExpiresAtUtc)<br />Refresh: @ConnectionPage.LocalTime(row.RefreshExpiresAtUtc)</td>
+                            <td><span>@row.ActiveKeyCount key còn hiệu lực</span>
+                                <ul class="tt-scopes">@foreach (var scope in ConnectionPage.Scopes(row.GrantedScopesJson)) { <li><code>@scope</code></li> }</ul>
+                            </td>
+                            <td>@ConnectionPage.LocalTime(row.UpdatedAtUtc)</td>
+                        </tr>
+                    }
+                    @if (Model.Connections.Items.Count == 0) { <tr><td colspan="6" class="tt-empty">Chưa có kết nối phù hợp.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        <nav class="tt-pagination" aria-label="Phân trang kết nối">
+            @if (Model.PageNumber > 1) { <a asp-page="Index" asp-route-Search="@Model.Search" asp-route-Status="@Model.Status" asp-route-PageNumber="@(Model.PageNumber - 1)">← Trang trước</a> }
+            @if (Model.PageNumber < Model.TotalPages) { <a asp-page="Index" asp-route-Search="@Model.Search" asp-route-Status="@Model.Status" asp-route-PageNumber="@(Model.PageNumber + 1)">Trang sau →</a> }
+        </nav>
+    </section>
+</section>

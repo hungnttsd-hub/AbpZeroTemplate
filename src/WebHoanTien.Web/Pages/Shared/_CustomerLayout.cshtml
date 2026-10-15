@@ -12,6 +12,8 @@
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var canAccessTikTokAffiliate = isAuthenticated &&
         (await AuthorizationService.AuthorizeAsync(User, TikTokAffiliateAccess.Policy)).Succeeded;
+    var canAccessTikTokDeveloper = isAuthenticated &&
+        (await AuthorizationService.AuthorizeAsync(User, TikTokDeveloperAccess.Policy)).Succeeded;
     var userName = CurrentUser.UserName?.Trim() ?? User.Identity?.Name?.Trim();
     var displayedUserName = CurrentUser.Name?.Trim();
 
@@ -98,13 +100,15 @@
         (Url: "/#link-form", Label: "Tạo link hoàn tiền", Icon: "fa-solid fa-link", IsActive: false, ShowBadge: false),
         (Url: "/Links", Label: "Link đã tạo", Icon: "fa-solid fa-clock-rotate-left", IsActive: isLinksActive, ShowBadge: false),
         (Url: "/tiktok-affiliate", Label: "Tiếp thị liên kết TikTok", Icon: "fa-brands fa-tiktok", IsActive: currentPath.StartsWith("/tiktok-affiliate", StringComparison.OrdinalIgnoreCase), ShowBadge: false),
+        (Url: "/Developer/TikTok", Label: "TikTok Developer API", Icon: "fa-solid fa-code", IsActive: currentPath.StartsWith("/Developer/TikTok", StringComparison.OrdinalIgnoreCase), ShowBadge: false),
         (Url: "/Orders", Label: "Đơn hàng", Icon: "fa-solid fa-bag-shopping", IsActive: isOrdersActive, ShowBadge: false),
         (Url: "/Wallet", Label: "Ví tiền", Icon: "fa-solid fa-wallet", IsActive: isWalletOverviewActive, ShowBadge: false),
         (Url: "/Wallet/Withdraw", Label: "Rút tiền", Icon: "fa-solid fa-money-bill-transfer", IsActive: isWithdrawActive, ShowBadge: false),
         (Url: "/Wallet/History", Label: "Lịch sử ví", Icon: "fa-solid fa-file-lines", IsActive: isWalletHistoryActive, ShowBadge: false),
         (Url: "/Notifications", Label: "Thông báo", Icon: "fa-regular fa-bell", IsActive: isNotificationsActive, ShowBadge: true),
         (Url: "/huong-dan", Label: "Hướng dẫn", Icon: "fa-regular fa-circle-question", IsActive: isGuideActive, ShowBadge: false)
-    }.Where(item => item.Url != "/tiktok-affiliate" || canAccessTikTokAffiliate).ToArray();
+    }.Where(item => (item.Url != "/tiktok-affiliate" || canAccessTikTokAffiliate) &&
+        (item.Url != "/Developer/TikTok" || canAccessTikTokDeveloper)).ToArray();
 }
 <!doctype html>
 <html lang="vi">
@@ -201,6 +205,7 @@
     if (canManageSettlements) { desktopAdminItems.Add(new("/Admin/Settlements", "Duyệt đối soát Shopee", "fa-solid fa-file-invoice-dollar")); }
     if (hasAdminOrdersPermission) { desktopAdminItems.Add(new("/Admin/TikTokOrders", "Đơn hàng TikTok Shop", "fa-brands fa-tiktok")); }
     if (hasAdminSettingsPermission) { desktopAdminItems.Add(new("/Admin/TikTokCreator", "Kết nối TikTok Creator", "fa-brands fa-tiktok")); }
+    if (hasAdminSettingsPermission) { desktopAdminItems.Add(new("/Admin/TikTokConnections", "Kết nối Creator của user", "fa-solid fa-users")); }
     if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Wallets", "Ví người dùng", "fa-solid fa-wallet")); }
     if (canManagePayouts) { desktopAdminItems.Add(new("/Admin/Payouts", "Duyệt yêu cầu rút tiền", "fa-solid fa-money-check-dollar")); }
     if (canManageNotifications) { desktopAdminItems.Add(new("/Admin/Notifications", "Quản lý thông báo", "fa-solid fa-bullhorn")); }
@@ -213,6 +218,7 @@
         CurrentPath = currentPath,
         IsAuthenticated = isAuthenticated,
         CanAccessTikTokAffiliate = canAccessTikTokAffiliate,
+        CanAccessTikTokDeveloper = canAccessTikTokDeveloper,
         DisplayName = displayedUserName,
         Initial = userInitial,
         UnreadNotificationCount = unreadNotificationCount,
@@ -311,6 +317,9 @@
                             {
                                 <a class="account-navigation-item @(currentPath.StartsWith("/Admin/TikTokCreator", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/TikTokCreator" data-account-navigation-link>
                                     <span class="account-navigation-icon" aria-hidden="true"><i class="fa-brands fa-tiktok"></i></span><span class="account-navigation-label">Kết nối TikTok Creator</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/TikTokConnections", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/TikTokConnections" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-users"></i></span><span class="account-navigation-label">Kết nối Creator của user</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
                                 </a>
                             }
                             @if (canManagePayouts)

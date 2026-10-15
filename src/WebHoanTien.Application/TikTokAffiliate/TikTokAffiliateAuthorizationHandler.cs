@@ -57,7 +57,8 @@ public sealed class TikTokCreatorConnectionAuthorizationHandler : AuthorizationH
         if (context.User.Identity?.IsAuthenticated != true || !_currentUser.IsAuthenticated || !_currentUser.Id.HasValue) return;
         var user = await _users.FindAsync(_currentUser.Id.Value);
         if (user is not { IsActive: true }) return;
-        if (user.GetProperty<bool>(TikTokAffiliateAccess.UserProperty) || context.User.IsInRole("admin") &&
+        // This policy changes CatBack's cashback Creator, never a Developer's personal connection.
+        if (context.User.IsInRole("admin") &&
             await _permissions.IsGrantedAsync(WebHoanTienPermissions.Admin.Settings))
             context.Succeed(requirement);
     }

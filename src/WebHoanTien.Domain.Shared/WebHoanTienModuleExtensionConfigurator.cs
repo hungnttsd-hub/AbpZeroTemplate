@@ -41,6 +41,13 @@ public static class WebHoanTienModuleExtensionConfigurator
     private static void ConfigureExtraProperties()
     {
         ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
+            identity.ConfigureUser(user => user.AddOrUpdateProperty<bool>(TikTokDeveloperAccess.UserProperty, property =>
+            {
+                property.DefaultValue = false;
+                property.DisplayName = LocalizableString.Create<WebHoanTienResource>(TikTokDeveloperAccess.UserProperty);
+                property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
+            })));
+        ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
             identity.ConfigureUser(user => user.AddOrUpdateProperty<bool>(
                 TikTokAffiliateAccess.UserProperty, property =>
                 {

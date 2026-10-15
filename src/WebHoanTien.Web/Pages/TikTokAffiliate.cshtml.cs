@@ -39,6 +39,7 @@ public class TikTokAffiliateModel : PageModel
     public string? ConnectionNotice { get; private set; }
     public bool CanManageConnection { get; private set; }
     public bool CanConnectCreator { get; private set; }
+    public bool CanAccessDeveloper { get; private set; }
     public bool CanDisconnectCreator { get; private set; }
     public bool CanSync { get; private set; }
     public bool IsAdminOrderView { get; private set; }
@@ -134,6 +135,8 @@ public class TikTokAffiliateModel : PageModel
             && await _authorization.IsGrantedAsync(WebHoanTienPermissions.Admin.Settings);
         CanConnectCreator = !_tenant.Id.HasValue &&
             (await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.ConnectionPolicy)).Succeeded;
+        CanAccessDeveloper = !_tenant.Id.HasValue &&
+            (await _authorization.AuthorizeAsync(User, TikTokDeveloperAccess.Policy)).Succeeded;
         CanSync = !_tenant.Id.HasValue &&
             (await _authorization.AuthorizeAsync(User, TikTokAffiliateAccess.OrderSyncPolicy)).Succeeded;
     }

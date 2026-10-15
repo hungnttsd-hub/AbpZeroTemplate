@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,10 +27,11 @@ public class TikTokShopOAuthController : Controller
     private readonly ICurrentUser _user;
     private readonly ILogger<TikTokShopOAuthController> _logger;
     private readonly ICurrentTenant _tenant;
+    private readonly TikTokDeveloperService _developers;
 
     public TikTokShopOAuthController(TikTokCreatorTokenService tokens, ICurrentUser user,
-        ILogger<TikTokShopOAuthController> logger, ICurrentTenant tenant)
-    { _tokens = tokens; _user = user; _logger = logger; _tenant = tenant; }
+        ILogger<TikTokShopOAuthController> logger, ICurrentTenant tenant, TikTokDeveloperService developers)
+    { _tokens = tokens; _user = user; _logger = logger; _tenant = tenant; _developers = developers; }
 
     [Authorize(Roles = "admin")]
     [Authorize(WebHoanTienPermissions.Admin.Settings)]
@@ -93,11 +96,24 @@ public class TikTokShopOAuthController : Controller
         if (HttpMethods.IsHead(Request.Method) || !Request.QueryString.HasValue)
             return View("Status", new TikTokShopOAuthStatusModel("TikTok Shop — CatBack",
                 "Địa chỉ nhận kết quả authorize Creator. Hãy bắt đầu từ trang TikTok Creator trong quản trị CatBack.", false));
+        var developerFlow = Request.Query["state"].Count == 1 && Request.Query["state"][0]?.StartsWith(TikTokDeveloperAccess.StatePrefix, StringComparison.Ordinal) == true;
         try
         {
             var state = SingleQuery("state", required: true)!;
             var code = SingleQuery("code");
             var appKey = SingleQuery("app_key");
+            if (developerFlow)
+            {
+                var cookie = Request.Cookies[TikTokDeveloperAccess.StateCookie];
+                if (!_user.IsAuthenticated || cookie is null || cookie.Length != state.Length ||
+                    !CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(cookie), Encoding.UTF8.GetBytes(state)))
+                    throw new UserFriendlyException("Phiên Developer không khớp trình duyệt hoặc đã hết đăng nhập. Hãy kết nối lại từ Developer API.");
+                Response.Cookies.Delete(TikTokDeveloperAccess.StateCookie, new CookieOptions { Path = "/", Secure = true, HttpOnly = true });
+                await _developers.CompleteAuthorizationAsync(_user.GetId(), state, code, appKey,
+                    Request.Query.ContainsKey("error") || Request.Query.ContainsKey("error_description"), HttpContext.RequestAborted);
+                TempData["TikTokDeveloperNotice"] = "Đã kết nối Creator riêng. Mỗi API chỉ hoạt động khi Creator đã cấp đủ scope tương ứng.";
+                return LocalRedirect(TikTokDeveloperAccess.Portal);
+            }
             var status = await _tokens.CompleteAuthorizationAsync(state, code, appKey,
                 Request.Query.ContainsKey("error") || Request.Query.ContainsKey("error_description"), HttpContext.RequestAborted);
             var message = status.Status == "MissingScopes"
@@ -105,12 +121,21 @@ public class TikTokShopOAuthController : Controller
                 : "Đã authorize Creator và lưu token an toàn vào database CatBack.";
             return ResultRedirect(message, status.IsConnected);
         }
-        catch (UserFriendlyException ex) { return ResultRedirect(ex.Message, false); }
+        catch (UserFriendlyException ex)
+        {
+            if (developerFlow) { TempData["TikTokDeveloperError"] = ex.Message; return LocalRedirect(TikTokDeveloperAccess.Portal); }
+            return ResultRedirect(ex.Message, false);
+        }
         catch (Exception ex)
         {
             var reference = Guid.NewGuid().ToString("N");
             // Exception messages/objects may include the token exchange URL. Log only the type.
             _logger.LogWarning("TikTok OAuth failed: reference {Reference}, exception type {Type}", reference, ex.GetType().Name);
+            if (developerFlow)
+            {
+                TempData["TikTokDeveloperError"] = "Chưa hoàn tất kết nối Creator riêng. Mã hỗ trợ: " + reference;
+                return LocalRedirect(TikTokDeveloperAccess.Portal);
+            }
             return ResultRedirect("Chưa hoàn tất authorize. Hãy thử lại từ trang quản trị. Mã hỗ trợ: " + reference, false);
         }
     }

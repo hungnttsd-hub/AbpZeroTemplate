@@ -60,6 +60,7 @@ public class LegalConsentMiddleware
 
     private static bool IsExempt(PathString path) =>
         TikTokShopOAuthRoutes.IsPublicEndpoint(path.Value) ||
+        WebHoanTien.TikTokAffiliate.TikTokDeveloperAccess.IsApiPath(path.Value) ||
         path.Equals(new PathString("/About")) || path.Equals(new PathString("/About/")) ||
         path.Equals(new PathString("/Contact")) || path.Equals(new PathString("/Contact/")) ||
         path.StartsWithSegments("/Account/AnonymousSuccess") || path.StartsWithSegments("/Account/Recovery") ||

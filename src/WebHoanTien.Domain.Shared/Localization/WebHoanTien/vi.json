@@ -2,6 +2,7 @@
   "culture": "vi",
   "texts": {
     "IsTiktokDemo": "Cho phép tiếp thị liên kết TikTok",
+    "CanUseTikTokDeveloperApi": "Cho phép TikTok Developer API (Creator riêng)",
     "AppName": "CatBack",
     "Welcome": "Mua sắm Shopee, nhận lại một phần hoa hồng",
     "Menu:Home": "Trang chủ",

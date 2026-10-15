@@ -23,7 +23,7 @@ public class AnonymousAccountSecurityMiddleware
         var path = context.Request.Path.Value ?? "";
         // Public OAuth status pages do not access account data. An expired anonymous
         // session must not turn an external callback into a login redirect.
-        if (TikTokShopOAuthRoutes.IsPublicEndpoint(path))
+        if (TikTokShopOAuthRoutes.IsPublicEndpoint(path) || WebHoanTien.TikTokAffiliate.TikTokDeveloperAccess.IsApiPath(path))
         { await _next(context); return; }
         if (path.StartsWith("/Account/", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/api/account", StringComparison.OrdinalIgnoreCase))
         { context.Response.Headers.CacheControl = "no-store"; context.Response.Headers["Referrer-Policy"] = "no-referrer"; }

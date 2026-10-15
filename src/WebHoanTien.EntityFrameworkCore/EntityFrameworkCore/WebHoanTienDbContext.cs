@@ -30,6 +30,9 @@ public class WebHoanTienDbContext :
 {
     public DbSet<TikTokCreatorCredentials> TikTokCreatorCredentials { get; set; } = null!;
     public DbSet<TikTokCreatorAuthState> TikTokCreatorAuthStates { get; set; } = null!;
+    public DbSet<TikTokDeveloperAccount> TikTokDeveloperAccounts { get; set; } = null!;
+    public DbSet<TikTokDeveloperAuthState> TikTokDeveloperAuthStates { get; set; } = null!;
+    public DbSet<TikTokDeveloperApiKey> TikTokDeveloperApiKeys { get; set; } = null!;
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<AnonymousRecovery> AnonymousRecoveries { get; set; } = null!;
     public DbSet<AnonymousDevice> AnonymousDevices { get; set; } = null!;

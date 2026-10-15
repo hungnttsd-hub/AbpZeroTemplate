@@ -5,64 +5,68 @@
 @{
     ViewData["Title"] = "Đơn hàng TikTok Shop";
 }
-<div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <h1 class="h3 mb-0">Đơn hàng TikTok Shop</h1>
-        <a href="/Admin/TikTokCreator" class="btn btn-outline-secondary">Kết nối Creator</a>
-    </div>
-    <p>Admin bấm nút để lấy và lưu đơn hàng. Đối soát, ghi nhận tiền vào ví sẽ triển khai sau.</p>
-    @if (TempData["TikTokNotice"] is string notice) { <div class="alert alert-success" role="status">@notice</div> }
-    @if (Model.Error is not null) { <div class="alert alert-danger" role="alert">@Model.Error</div> }
-    <div asp-validation-summary="All" class="text-danger"></div>
-    <div class="card mb-3"><div class="card-body">
-        <form method="get" class="d-flex flex-wrap align-items-end gap-3">
-            <div><label asp-for="FromDate" class="form-label">Từ ngày (giờ Việt Nam)</label><input asp-for="FromDate" class="form-control" /></div>
-            <div><label asp-for="ToDate" class="form-label">Đến hết ngày</label><input asp-for="ToDate" class="form-control" /></div>
-            <button type="submit" class="btn btn-outline-primary">Lọc đơn</button>
+@section Styles { <link rel="stylesheet" href="~/tiktok-management.css" asp-append-version="true" /> }
+<section class="tt-management">
+    <header class="tt-page-heading">
+        <div><span class="tt-eyebrow">CatBack · Quản trị TikTok</span><h1>Đơn hàng TikTok Shop</h1>
+        <p>Lấy và quản lý đơn hàng từ Creator chính của CatBack. Đối soát và ghi nhận tiền vào ví sẽ triển khai sau.</p></div>
+        <a href="/Admin/TikTokCreator" class="button button-ghost">Kết nối Creator</a>
+    </header>
+    @if (TempData["TikTokNotice"] is string notice) { <div class="status-message" role="status">@notice</div> }
+    @if (Model.Error is not null) { <div class="status-message status-error" role="alert">@Model.Error</div> }
+    <div asp-validation-summary="All" role="alert"></div>
+    <section class="cb-card" aria-labelledby="tt-filter-heading">
+        <h2 id="tt-filter-heading">Khoảng ngày đặt đơn</h2>
+        <form method="get" class="tt-filter-grid">
+            <div class="tt-field"><label asp-for="FromDate">Từ ngày (giờ Việt Nam)</label><input asp-for="FromDate" /></div>
+            <div class="tt-field"><label asp-for="ToDate">Đến hết ngày</label><input asp-for="ToDate" /></div>
+            <button type="submit" class="button button-ghost">Lọc đơn</button>
         </form>
-        <form method="post" class="d-flex flex-wrap gap-2 mt-3" data-tiktok-manual-operation>
+        <form method="post" class="tt-actions tt-divider" data-tiktok-manual-operation>
             <input type="hidden" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
             <input type="hidden" name="ToDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
-            @if (Model.CanSync) { <button asp-page-handler="Sync" class="btn btn-primary">Lấy đơn hàng từ TikTok</button> }
-            <span class="align-self-center" data-operation-progress hidden role="status">Đang gọi TikTok và xử lý đơn hàng…</span>
+            @if (Model.CanSync) { <button type="submit" asp-page-handler="Sync" class="button">Lấy đơn hàng từ TikTok</button> }
+            <span data-operation-progress hidden role="status">Đang gọi TikTok và xử lý đơn hàng…</span>
         </form>
-        <p class="text-muted mt-3 mb-0">Chọn khoảng ngày đặt đơn, tối đa 90 ngày mỗi lần. Dữ liệu được lưu trong database chung của local và production; bấm lại sẽ cập nhật đơn đã có. Chưa có job tự động và chưa cộng tiền vào ví, kể cả khi TikTok trả trạng thái SETTLED.</p>
-    </div></div>
-    <div class="card"><div class="card-body">
-        <h2 class="h5">@Model.Orders.TotalCount đơn trong khoảng ngày</h2>
-        <div class="table-responsive"><table class="table align-middle">
-            <thead><tr><th>Đơn / ngày đặt</th><th>Sản phẩm</th><th>Trạng thái</th><th>Người nhận</th><th>Hoa hồng TikTok dự kiến</th><th>Hoa hồng TikTok thực nhận</th><th>Hoàn tiền dự kiến</th><th></th></tr></thead>
+        <p class="tt-caption">Chọn tối đa 90 ngày mỗi lần. Lấy lại sẽ cập nhật đơn đã có. Chưa có job tự động và chưa cộng tiền vào ví, kể cả khi TikTok trả trạng thái SETTLED.</p>
+    </section>
+    <section class="cb-card" aria-labelledby="tt-orders-heading">
+        <h2 id="tt-orders-heading">@Model.Orders.TotalCount đơn trong khoảng ngày</h2>
+        <p class="tt-caption">Cuộn ngang bảng để xem đầy đủ thông tin trên màn hình nhỏ.</p>
+        <div class="table-responsive" tabindex="0" role="region" aria-label="Danh sách đơn hàng TikTok"><table class="tt-order-table">
+            <colgroup><col class="tt-col-order" /><col class="tt-col-product" /><col class="tt-col-status" /><col class="tt-col-recipient" /><col class="tt-col-amount" /><col class="tt-col-amount" /><col class="tt-col-amount" /><col class="tt-col-action" /></colgroup>
+            <thead><tr><th scope="col">Đơn / ngày đặt</th><th scope="col">Sản phẩm</th><th scope="col">Trạng thái</th><th scope="col">Người nhận</th><th scope="col">Hoa hồng TikTok dự kiến</th><th scope="col">Hoa hồng TikTok thực nhận</th><th scope="col">Hoàn tiền dự kiến</th><th scope="col">Thao tác</th></tr></thead>
             <tbody>
             @foreach (var order in Model.Orders.Items)
             {
                 <tr>
-                    <td>@order.ExternalOrderId<br /><small>@CustomerOrderUi.FormatDate(order.PurchaseTime)</small></td>
+                    <td><strong>@order.ExternalOrderId</strong><small>@CustomerOrderUi.FormatDate(order.PurchaseTime)</small></td>
                     <td>@(order.Items.FirstOrDefault()?.ProductName ?? "Sản phẩm TikTok Shop")</td>
-                    <td>@CustomerOrderUi.GetStatusLabel(order.Status, order.Platform)<br /><small>@order.ProviderStatus</small>
-                        @if (!string.IsNullOrWhiteSpace(order.ReviewNote)) { <p class="text-danger small mb-0">@order.ReviewNote</p> }
+                    <td><span class="tt-badge">@CustomerOrderUi.GetStatusLabel(order.Status, order.Platform)</span><small>@order.ProviderStatus</small>
+                        @if (!string.IsNullOrWhiteSpace(order.ReviewNote)) { <p class="tt-review-note">@order.ReviewNote</p> }
                     </td>
                     <td>@(order.Recipients.Count == 0 ? "Chưa khớp lượt bấm" : string.Join(", ", order.Recipients.Select(x => x.UserEmail ?? x.UserId.ToString())))
-                        @if (order.UnmatchedAttributionCount > 0) { <small class="d-block text-danger">@order.UnmatchedAttributionCount dòng chưa khớp lượt bấm</small> }
+                        @if (order.UnmatchedAttributionCount > 0) { <p class="tt-review-note">@order.UnmatchedAttributionCount dòng chưa khớp lượt bấm</p> }
                     </td>
-                    <td>@(order.ProviderEstimatedCommission.HasValue ? CustomerOrderUi.FormatMoney(order.ProviderEstimatedCommission.Value) : "Chưa có số tiền VND hợp lệ")</td>
-                    <td>@(order.ProviderActualCommission.HasValue ? CustomerOrderUi.FormatMoney(order.ProviderActualCommission.Value) : "Chưa có")</td>
-                    <td>@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))<br /><small>Chưa đối soát CatBack</small></td>
+                    <td>@if (order.ProviderEstimatedCommission.HasValue) { <span class="tt-money">@CustomerOrderUi.FormatMoney(order.ProviderEstimatedCommission.Value)</span> } else { <span>Chưa có số tiền VND hợp lệ</span> }</td>
+                    <td>@if (order.ProviderActualCommission.HasValue) { <span class="tt-money">@CustomerOrderUi.FormatMoney(order.ProviderActualCommission.Value)</span> } else { <span>Chưa có</span> }</td>
+                    <td><strong class="tt-money">@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</strong><small>Chưa đối soát CatBack</small></td>
                     <td><a href="/Orders/@order.Id?returnUrl=%2FAdmin%2FTikTokOrders">Chi tiết</a></td>
                 </tr>
             }
-            @if (Model.Orders.Items.Count == 0) { <tr><td colspan="8">Chưa có đơn. Chọn khoảng ngày và bấm Lấy đơn hàng từ TikTok.</td></tr> }
+            @if (Model.Orders.Items.Count == 0) { <tr><td colspan="8" class="tt-empty">Chưa có đơn. Chọn khoảng ngày và bấm Lấy đơn hàng từ TikTok.</td></tr> }
             </tbody>
         </table></div>
         @if (Model.TotalPages > 1)
         {
-            <nav class="d-flex gap-3" aria-label="Phân trang đơn TikTok">
+            <nav class="tt-pagination" aria-label="Phân trang đơn TikTok">
                 @if (Model.PageNumber > 1) { <a asp-route-FromDate="@Model.FromDate.ToString("yyyy-MM-dd")" asp-route-ToDate="@Model.ToDate.ToString("yyyy-MM-dd")" asp-route-PageNumber="@(Model.PageNumber - 1)">Trang trước</a> }
                 <span>@Model.PageNumber / @Model.TotalPages</span>
                 @if (Model.PageNumber < Model.TotalPages) { <a asp-route-FromDate="@Model.FromDate.ToString("yyyy-MM-dd")" asp-route-ToDate="@Model.ToDate.ToString("yyyy-MM-dd")" asp-route-PageNumber="@(Model.PageNumber + 1)">Trang sau</a> }
             </nav>
         }
-    </div></div>
-</div>
+    </section>
+</section>
 @section Scripts {
     <script>
         document.querySelector('[data-tiktok-manual-operation]')?.addEventListener('submit', function () {

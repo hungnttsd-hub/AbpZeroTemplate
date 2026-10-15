@@ -1,0 +1,98 @@
+@page "/Developer/TikTok"
+@model WebHoanTien.Web.Pages.Developer.TikTokModel
+@using WebHoanTien.TikTokAffiliate
+@{ ViewData["Title"] = "TikTok Developer API"; }
+@section Styles { <link rel="stylesheet" href="~/tiktok-management.css" asp-append-version="true" /> }
+<section class="tt-management" data-tiktok-developer>
+    <header class="tt-page-heading"><div><span class="tt-eyebrow">CatBack · Developer</span><h1>TikTok Developer API</h1>
+    <p>Kết nối Creator của riêng bạn và gọi bốn API TikTok qua CatBack bằng API key.</p></div></header>
+    @if (Model.Error is not null) { <p class="status-message status-error" role="alert">@Model.Error</p> }
+    @if (Model.Notice is not null) { <p class="status-message" role="status">@Model.Notice</p> }
+    <section class="cb-card">
+        <h2>Creator riêng của bạn</h2>
+        <p><span class="tt-badge">@(Model.Connection.Status switch { "Active" => "Đã kết nối", "Disabled" => "Đã ngắt kết nối", "ReauthRequired" => "Cần cấp quyền lại", _ => "Chưa kết nối" })</span></p>
+        @if (Model.Connection.OpenId is not null)
+        {
+            <p>@(Model.Connection.Username is not null ? "@" + Model.Connection.Username : Model.Connection.OpenId)</p>
+            <p>Access token hết hạn (UTC): @Model.Connection.AccessExpiresAtUtc?.ToString("yyyy-MM-dd HH:mm:ss")</p>
+            <p>Quyền đã cấp:</p>
+            <ul class="tt-scopes">@foreach (var scope in Model.Connection.GrantedScopes) { <li><code>@scope</code></li> }</ul>
+        }
+        <div class="tt-actions tt-divider">
+            <form method="post" asp-page-handler="Connect" data-turbo="false" data-page-loading="false" data-developer-submit>
+                <button class="button" type="submit" disabled="@(!Model.IsConfigured)">Đăng nhập TikTok và cấp quyền Creator của tôi</button>
+            </form>
+            @if (Model.Connection.Status is "Active" or "ReauthRequired")
+            {
+                <form method="post" asp-page-handler="Disconnect" data-turbo="false" data-page-loading="false" data-developer-submit>
+                    <button class="button button-ghost" type="submit">Ngắt Creator riêng</button>
+                </form>
+            }
+        </div>
+        <p class="tt-caption">Sau khi cấp quyền thành công, CatBack lưu token được mã hóa và tự làm mới để phục vụ API key của bạn. Backend của bạn có thể lấy access token và refresh token riêng qua API bên dưới.</p>
+        <p class="tt-caption">Kết nối riêng này không thay Creator dùng cho hoàn tiền CatBack. Ngắt tại đây không thu hồi quyền trên TikTok.</p>
+    </section>
+    <section class="cb-card">
+        <h2>API key CatBack</h2>
+        <p>Key có hiệu lực @Model.KeyLifetimeDays ngày. Hạn mức @Model.RequestsPerMinute request/phút cho toàn bộ key của tài khoản.</p>
+        <p>Key này cho phép gọi các API Developer và lấy access token/refresh token Creator riêng của bạn.</p>
+        @if (Model.NewApiKey is not null)
+        {
+            <div class="tt-key-reveal" role="status">
+                <strong>Sao chép và lưu key ngay. Key đầy đủ chỉ hiển thị trong lần này.</strong>
+                <div class="tt-field"><label for="new-developer-key">API key vừa tạo</label>
+                <input id="new-developer-key" type="text" value="@Model.NewApiKey" readonly autocomplete="off" spellcheck="false" /></div>
+                <button type="button" class="button" data-copy-developer-key>Sao chép key</button>
+                <span data-developer-copy-status aria-live="polite"></span>
+            </div>
+        }
+        <form method="post" asp-page-handler="CreateKey" class="tt-key-form" data-turbo="false" data-page-loading="false" data-developer-submit>
+            <div class="tt-field"><label for="developer-key-name">Tên key</label>
+            <input id="developer-key-name" name="keyName" type="text" maxlength="100" required placeholder="Ví dụ: Backend website của tôi" /></div>
+            <button class="button" type="submit" disabled="@(!Model.IsConfigured)">Tạo API key</button>
+        </form>
+        <div class="table-responsive" tabindex="0" role="region" aria-label="API key của bạn"><table class="tt-key-table">
+            <thead><tr><th>Tên</th><th>Key</th><th>Hết hạn (UTC)</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody>
+                @foreach (var key in Model.Keys)
+                {
+                    var active = key.RevokedAtUtc is null && key.ExpiresAtUtc > DateTimeOffset.UtcNow;
+                    <tr>
+                        <td>@key.Name</td><td><code>@key.Preview</code></td><td>@key.ExpiresAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(key.RevokedAtUtc is not null ? "Đã thu hồi" : active ? "Đang hoạt động" : "Hết hạn")</td>
+                        <td>
+                            @if (active)
+                            {
+                                <form method="post" asp-page-handler="RevokeKey" data-turbo="false" data-developer-submit data-page-loading="false">
+                                    <input type="hidden" name="keyId" value="@key.Id" />
+                                    <button class="button button-ghost" type="submit">Thu hồi</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (Model.Keys.Count == 0) { <tr><td colspan="5" class="tt-empty">Chưa có API key. Đặt tên key và bấm Tạo API key để bắt đầu.</td></tr> }
+            </tbody>
+        </table></div>
+    </section>
+    <section class="cb-card">
+        <h2>Cách gọi API</h2>
+        <p>Base URL: <code>https://catback.id.vn</code>. Header bắt buộc: <code>X-CatBack-Api-Key: &lt;key của bạn&gt;</code>.</p>
+        <p>CatBack tự lấy token riêng, thêm app_key/timestamp/sign. JSON trả về giữ nguyên envelope TikTok: code, message, request_id, data.</p>
+        <dl class="tt-api-list"><dt>GET</dt><dd><code>@TikTokDeveloperAccess.ProfilePath</code></dd>
+            <dt>POST</dt><dd><code>@TikTokDeveloperAccess.ProductsPath?product_ids=123,456</code> — body <code>{}</code></dd>
+            <dt>POST</dt><dd><code>@TikTokDeveloperAccess.LinksPath</code></dd>
+            <dt>POST</dt><dd><code>@TikTokDeveloperAccess.OrdersPath?page_size=20</code></dd></dl>
+        <p>Tạo link dùng body <code>{"material":{"ids":["PRODUCT_ID"],"type":"PRODUCT"}}</code>.</p>
+        <p>Tìm đơn dùng body <code>{}</code> hoặc lọc theo <code>create_time_ge</code>/<code>create_time_lt</code> (Unix giây); phân trang bằng <code>page_token</code> TikTok trả về.</p>
+        <p>API trả dữ liệu của Creator riêng, không đọc đơn/link đã lưu của người khác trong CatBack. Không gửi key vào URL hoặc đưa key vào frontend công khai.</p>
+    </section>
+    <section class="cb-card">
+        <h2>Lấy access token và refresh token TikTok</h2>
+        <p><code>POST @TikTokDeveloperAccess.TokenPath</code> qua HTTPS, header <code>X-CatBack-Api-Key</code>, không cần query hoặc body.</p>
+        <p>Chỉ trả token Creator riêng đã kết nối với tài khoản sở hữu key. CatBack tự refresh nếu access token sắp hết hạn; khi cần lấy cặp mới, gọi lại endpoint này.</p>
+        <p>Phản hồi có <code>data.access_token</code>, <code>data.refresh_token</code>, <code>data.open_id</code>, <code>data.granted_scopes</code>, <code>data.user_type = 1</code> và hai mốc hết hạn Unix giây <code>access_token_expire_in</code>/<code>refresh_token_expire_in</code>.</p>
+        <p>Lưu token trong secret phía backend, tránh log hoặc đưa vào frontend. API không trả AppSecret; lời gọi TikTok trực tiếp vẫn cần chữ ký theo cấu hình app.</p>
+    </section>
+</section>
+@section Scripts { <script src="~/tiktok-developer.js" asp-append-version="true"></script> }

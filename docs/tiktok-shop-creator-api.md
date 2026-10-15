@@ -4,6 +4,16 @@
 
 ## Triển khai hiện tại — 13/10/2026
 
+### Quản lý kết nối Creator riêng và tách token — 15/10/2026
+
+- Admin có quyền Settings vào `/Admin/TikTokConnections` xem các user/Creator đã kết nối qua CatBack, số lượng kết nối theo database, scope, hạn token và số API key còn hiệu lực. Hiển thị riêng Creator chính phục vụ hoàn tiền. Trang chỉ đọc metadata, không gọi TikTok, refresh hoặc giải mã token.
+- User được cấp `CanUseTikTokDeveloperApi` vào `/Developer/TikTok`, đăng nhập và authorize Creator thật. Callback Developer lưu credential theo user vào bảng riêng; user gọi bốn endpoint bằng API key CatBack. Xem [hướng dẫn Developer API](tiktok-developer-api.md).
+- Chỉ admin đang hoạt động có quyền Settings mới được bắt đầu kết nối/ngắt Creator chung. Flag `IsTiktokDemo` không còn cho phép sửa kết nối này; quyền xem/đồng bộ đơn hiện có vẫn giữ nguyên. Callback Creator chung kiểm tra người khởi tạo là admin; từ chối state cũ do user không phải admin bắt đầu.
+- Luồng link/sản phẩm/đồng bộ đơn hoàn tiền luôn đọc credential `IsPrimary` do admin đăng ký trong `TikTokCreatorCredentials`. Không chọn theo user đăng nhập và không fallback token Developer khi Creator chung lỗi/chưa kết nối. Developer callback không ghi vào bảng Creator chung.
+- Theo yêu cầu bổ sung, backend của user Developer được lấy access token/refresh token Creator riêng qua `POST /api/developer/tiktok/token` với API key CatBack. Endpoint HTTPS này chỉ đọc kho Developer theo chủ key, tự refresh nếu cần và không trả AppSecret/token Creator hoàn tiền. Xem contract và cách gọi tại hướng dẫn Developer API.
+- Chưa xác minh có API Creator công khai liệt kê tổng mọi tài khoản đã authorize app. Số đếm quản trị chỉ phản ánh các kết nối CatBack lưu, không phải số user online hoặc số trực tiếp từ TikTok. Quyền bị thu hồi phía TikTok có thể chỉ được phản ánh khi gọi API tiếp theo.
+- Build Web thành công; không chạy test, kiểm thử trình duyệt, authorize thật hoặc áp dụng migration/database trong lần sửa này. Phần admin mới không cần migration thêm ngoài `AddTikTokDeveloperApi` đã tạo.
+
 Phạm vi đã chốt: **sinh link và lấy/lưu đơn hàng**. Đối soát, kiểm tra thanh toán, ghi nhận hoàn tiền vào ví để làm sau.
 
 ### Giá trị đơn và attribution khi mở app — 14/10/2026
