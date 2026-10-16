@@ -4,6 +4,21 @@
 
 ## Triển khai hiện tại — 13/10/2026
 
+### Tự động đồng bộ đơn hàng mỗi giờ — 16/10/2026
+
+- Hangfire đăng ký job `tiktok-creator-orders-hourly`, lịch `0 * * * *` (phút 00 mỗi giờ), mặc định bật qua `TikTokShop:OrderSync:Enabled = true`. Lịch bắt đầu hoạt động khi deploy/khởi động Web host mới; không cần migration. Theo dõi trạng thái trong `/hangfire`, số lượng đơn và lỗi trong sổ `AffiliateSyncRun` hiện có.
+- `TikTokShop:OrderSync:LookbackDays` mặc định **90**, cho phép 1–90 ngày. Mỗi lượt đọc lại cửa sổ này theo thời điểm tạo đơn (UTC) để cập nhật trạng thái/hoa hồng của đơn cũ và nhận đơn mới; không chỉ lấy các đơn tạo trong giờ vừa qua. Đơn ngoài cửa sổ có thể lấy lại bằng nút đồng bộ thủ công. Giữ giới hạn 100 trang của service; nếu vượt giới hạn, lượt đồng bộ thất bại và cần giảm cửa sổ hoặc đồng bộ thủ công theo khoảng nhỏ hơn.
+- Job gọi chung `TikTokOrderSyncService` với nút lấy đơn của admin, dùng Creator API/token chính trong DB và kiểm tra scope hiện có. Không gọi app service yêu cầu phiên đăng nhập từ background job. Khóa PostgreSQL chung ngăn chạy cùng đồng bộ/đối soát thủ công hoặc instance khác; upsert theo khóa đơn hiện có để tránh trùng.
+- Lượt có lỗi từng đơn được ghi Failed trong lịch sử và job Hangfire; không tự retry ngay, lịch giờ tiếp theo sẽ đọc lại cửa sổ. Token/kết nối lỗi được báo lỗi, không fallback mock/RioHub/Developer token. Tắt `Enabled` và khởi động lại Web host để gỡ lịch, các job đã xếp hàng cũng kiểm tra cờ này trước khi xử lý.
+- Đồng bộ chỉ lưu dữ liệu và đánh dấu cần kiểm tra khi dữ liệu đơn đã chốt thay đổi. Việc duyệt/cộng ví tiếp tục cần admin. Build Web thành công (0 lỗi, 1 cảnh báo biến `matchedTrace` chưa dùng từ logic import hiện có); kiểm tra diff không có lỗi khoảng trắng. Đợt sửa này không gọi API thật hoặc chạy test/kiểm thử trình duyệt.
+
+### Đối soát thủ công và ghi nhận ví — 15/10/2026
+
+- Theo quyết định mới của chủ dự án, admin được duyệt ở mọi trạng thái TikTok. Tại `/Admin/TikTokOrders`, bấm **Đối soát** để nhập số tiền/lý do, xem trước từng người nhận rồi xác nhận cộng ví. Chỉ ghi nhận tiền sau bước admin duyệt, không tự duyệt khi sync.
+- Dùng actual_commission thì thuế bổ sung 0%. Nhập hoa hồng trước thuế thì mặc định 10%, admin được sửa. Không tự điền estimated/net từ API thành số trước thuế. Đơn phải có người nhận được ghép hợp lệ và đúng Creator chính của admin.
+- Chốt ledger trong transaction với khóa chống đồng bộ/duyệt trùng, bản xem trước ràng buộc admin/đơn/số tiền trong 10 phút. Lưu dấu vết duyệt và notification; ví đọc sổ đơn đã chốt. Không lấy token Developer, không thay nghiệp vụ Shopee.
+- Xem [quy trình và điều kiện đối soát TikTok](tiktok-order-settlement.md). Mô tả cũ “đối soát/cộng ví để sau” bên dưới là lịch sử trước thay đổi này. Không cần migration mới và chưa duyệt/cộng tiền thật trong lần sửa source.
+
 ### Quản lý kết nối Creator riêng và tách token — 15/10/2026
 
 - Admin có quyền Settings vào `/Admin/TikTokConnections` xem các user/Creator đã kết nối qua CatBack, số lượng kết nối theo database, scope, hạn token và số API key còn hiệu lực. Hiển thị riêng Creator chính phục vụ hoàn tiền. Trang chỉ đọc metadata, không gọi TikTok, refresh hoặc giải mã token.

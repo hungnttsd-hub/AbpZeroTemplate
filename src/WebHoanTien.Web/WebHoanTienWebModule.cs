@@ -158,6 +158,7 @@ public class WebHoanTienWebModule : AbpModule
     {
         context.Services.AddTransient<ITikTokCreatorConnection, TikTokCreatorConnection>();
         context.Services.AddTransient<ITikTokCreatorApi, TikTokCreatorApi>();
+        context.Services.AddTransient<ITikTokCashbackCreatorRegistry, TikTokCashbackCreatorRegistry>();
         context.Services.AddTransient<ITikTokCreatorTokenService, TikTokCreatorTokenService>();
         context.Services.AddHttpClient(TikTokCreatorOAuthClient.HttpClientName,
             client => { client.Timeout = TimeSpan.FromSeconds(20); client.MaxResponseContentBufferSize = 1024 * 1024; })
@@ -568,7 +569,16 @@ public class WebHoanTienWebModule : AbpModule
             job => job.ExecuteAsync(new AffiliateRetentionJobArgs()),
             retentionCron);
 
-        // TikTok order sync/reconciliation is explicitly initiated by an admin.
+        // Retire the old RioHub schedule; only the Creator API imports TikTok orders.
         RecurringJob.RemoveIfExists("riohub-tiktok-orders");
+        var tikTokSync = context.ServiceProvider
+            .GetRequiredService<Microsoft.Extensions.Options.IOptions<TikTokOrderSyncOptions>>().Value;
+        if (tikTokSync.Enabled)
+            RecurringJob.AddOrUpdate<TikTokOrderSyncJob>(
+                TikTokOrderSyncJob.RecurringJobId,
+                job => job.ExecuteAsync(System.Threading.CancellationToken.None),
+                Cron.Hourly());
+        else
+            RecurringJob.RemoveIfExists(TikTokOrderSyncJob.RecurringJobId);
     }
 }

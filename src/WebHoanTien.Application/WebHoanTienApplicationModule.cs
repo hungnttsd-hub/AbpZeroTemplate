@@ -37,12 +37,17 @@ public class WebHoanTienApplicationModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
+        context.Services.AddOptions<TikTokOrderSyncOptions>()
+            .Bind(configuration.GetSection(TikTokOrderSyncOptions.SectionName))
+            .Validate(options => options.LookbackDays is >= 1 and <= 90,
+                "TikTokShop:OrderSync:LookbackDays phải nằm trong khoảng 1–90 ngày.")
+            .ValidateOnStart();
         context.Services.AddOptions<RioHubOptions>()
             .Bind(configuration.GetSection(RioHubOptions.SectionName))
             .PostConfigure(options =>
             {
                 // Retire automatic RioHub sync, including any previously queued job.
-                // TikTok orders are now fetched explicitly by the admin using Creator API.
+                // TikTok orders use Creator API through manual sync and the hourly job.
                 options.SyncEnabled = false;
                 // Respect configuration precedence, including appsettings.secrets.json.
                 // Keep the original Docker environment variable as a fallback.

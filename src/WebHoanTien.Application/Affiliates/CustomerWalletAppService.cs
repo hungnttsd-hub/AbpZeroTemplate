@@ -235,9 +235,12 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         {
             Id = order.Id,
             Kind = WalletMovementKind.Commission,
-            Title = order.Platform == AffiliatePlatform.TikTok ? "Hoàn tiền dự kiến đơn TikTok Shop" : "Hoàn tiền đơn Shopee",
+            Title = order.Platform == AffiliatePlatform.TikTok
+                ? order.Status == AffiliateOrderStatus.Settled ? "Hoàn tiền đơn TikTok Shop" : "Hoàn tiền dự kiến đơn TikTok Shop"
+                : "Hoàn tiền đơn Shopee",
             Description = order.ExternalOrderId,
-            OccurredAt = conversion.LastProviderUpdateAt,
+            OccurredAt = order.Platform == AffiliatePlatform.TikTok && order.SettledAt.HasValue
+                ? order.SettledAt.Value : conversion.LastProviderUpdateAt,
             Amount = amount,
             StatusLabel = label,
             StatusClass = css

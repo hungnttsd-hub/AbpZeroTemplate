@@ -24,7 +24,7 @@ public class PostgresTikTokManualSyncLock : ITikTokManualSyncLock, ITransientDep
             await connection.OpenAsync(ct);
             await using var command = new NpgsqlCommand("SELECT pg_try_advisory_lock(hashtextextended('CatBack.TikTokCreator.ManualOrders.v1', 0))", connection);
             if (await command.ExecuteScalarAsync(ct) is not true)
-                throw new UserFriendlyException("Một admin hoặc instance khác đang cập nhật đơn TikTok. Vui lòng đợi rồi thử lại.");
+                throw new UserFriendlyException("Một admin hoặc tác vụ khác đang cập nhật đơn TikTok. Vui lòng đợi rồi thử lại.");
             // A dedicated, non-pooled connection owns the session lock. No transaction spans an API request.
             // Closing it (also after process failure) releases the PostgreSQL advisory lock.
             return connection;

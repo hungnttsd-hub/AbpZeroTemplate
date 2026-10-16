@@ -9,7 +9,7 @@
 <section class="tt-management">
     <header class="tt-page-heading">
         <div><span class="tt-eyebrow">CatBack · Quản trị TikTok</span><h1>Đơn hàng TikTok Shop</h1>
-        <p>Lấy và quản lý đơn hàng từ Creator chính của CatBack. Đối soát và ghi nhận tiền vào ví sẽ triển khai sau.</p></div>
+        <p>Lấy đơn từ Creator chính của CatBack. Bấm Đối soát tại từng đơn để xem trước và duyệt hoàn tiền.</p></div>
         <a href="/Admin/TikTokCreator" class="button button-ghost">Kết nối Creator</a>
     </header>
     @if (TempData["TikTokNotice"] is string notice) { <div class="status-message" role="status">@notice</div> }
@@ -28,7 +28,7 @@
             @if (Model.CanSync) { <button type="submit" asp-page-handler="Sync" class="button">Lấy đơn hàng từ TikTok</button> }
             <span data-operation-progress hidden role="status">Đang gọi TikTok và xử lý đơn hàng…</span>
         </form>
-        <p class="tt-caption">Chọn tối đa 90 ngày mỗi lần. Lấy lại sẽ cập nhật đơn đã có. Chưa có job tự động và chưa cộng tiền vào ví, kể cả khi TikTok trả trạng thái SETTLED.</p>
+        <p class="tt-caption">Chọn tối đa 90 ngày mỗi lần. Lấy lại sẽ cập nhật đơn đã có. Đồng bộ không tự cộng ví; chỉ ghi nhận hoàn tiền sau khi admin duyệt đối soát.</p>
     </section>
     <section class="cb-card" aria-labelledby="tt-orders-heading">
         <h2 id="tt-orders-heading">@Model.Orders.TotalCount đơn trong khoảng ngày</h2>
@@ -50,8 +50,8 @@
                     </td>
                     <td>@if (order.ProviderEstimatedCommission.HasValue) { <span class="tt-money">@CustomerOrderUi.FormatMoney(order.ProviderEstimatedCommission.Value)</span> } else { <span>Chưa có số tiền VND hợp lệ</span> }</td>
                     <td>@if (order.ProviderActualCommission.HasValue) { <span class="tt-money">@CustomerOrderUi.FormatMoney(order.ProviderActualCommission.Value)</span> } else { <span>Chưa có</span> }</td>
-                    <td><strong class="tt-money">@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</strong><small>Chưa đối soát CatBack</small></td>
-                    <td><a href="/Orders/@order.Id?returnUrl=%2FAdmin%2FTikTokOrders">Chi tiết</a></td>
+                    <td><strong class="tt-money">@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</strong><small>@(order.SettledAt.HasValue ? "Đã đối soát CatBack" : "Chưa đối soát CatBack")</small></td>
+                    <td><a href="/Admin/TikTokSettlements/@order.Id">@(order.SettledAt.HasValue ? "Xem đối soát" : "Đối soát")</a><small><a href="/Orders/@order.Id?returnUrl=%2FAdmin%2FTikTokOrders">Chi tiết</a></small></td>
                 </tr>
             }
             @if (Model.Orders.Items.Count == 0) { <tr><td colspan="8" class="tt-empty">Chưa có đơn. Chọn khoảng ngày và bấm Lấy đơn hàng từ TikTok.</td></tr> }

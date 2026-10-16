@@ -32,8 +32,12 @@ public static class CustomerOrderUi
 
     public static string GetStatusDescription(AffiliateOrderStatus status, AffiliatePlatform platform = AffiliatePlatform.Shopee) => status switch
     {
-        AffiliateOrderStatus.Completed => $"Đơn đã hoàn thành và đang chờ {PlatformName(platform)} đối soát hoa hồng.",
-        AffiliateOrderStatus.Settled => $"{PlatformName(platform)} đã ghi nhận hoa hồng được đối soát.",
+        AffiliateOrderStatus.Completed => platform == AffiliatePlatform.TikTok
+            ? "TikTok Shop đã xác nhận hoa hồng; đang chờ CatBack duyệt đối soát."
+            : $"Đơn đã hoàn thành và đang chờ {PlatformName(platform)} đối soát hoa hồng.",
+        AffiliateOrderStatus.Settled => platform == AffiliatePlatform.TikTok
+            ? "CatBack đã duyệt đối soát và ghi nhận hoàn tiền cho đơn TikTok Shop."
+            : $"{PlatformName(platform)} đã ghi nhận hoa hồng được đối soát.",
         AffiliateOrderStatus.Cancelled => "Đơn đã hủy nên không phát sinh hoàn tiền.",
         AffiliateOrderStatus.Refunded => "Đơn đã hoàn nên không phát sinh hoàn tiền.",
         AffiliateOrderStatus.Rejected => $"{PlatformName(platform)} không ghi nhận hoa hồng cho đơn này.",

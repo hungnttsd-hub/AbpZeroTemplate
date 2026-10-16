@@ -184,7 +184,7 @@
         if (state.isAdminOrderView) {
           cell(row, currency(order.providerActualCommission));
         }
-        const status = cell(row, ''); badge(status, order.providerStatus === 'FROZEN' ? 'Tạm giữ hoa hồng' : order.status);
+        const status = cell(row, ''); badge(status, order.providerStatus === 'FROZEN' && Number(order.status) !== 7 ? 'Tạm giữ hoa hồng' : order.status);
         if (order.providerStatus) { const source = document.createElement('small'); source.textContent = 'TikTok: ' + order.providerStatus; status.append(source); }
         if (order.reviewNote) { const note = document.createElement('small'); note.textContent = order.reviewNote; status.append(note); }
         cell(row, date(order.purchaseTime));

@@ -17,6 +17,7 @@ public sealed class TikTokManualSyncResult
     public int UpdatedOrders { get; set; }
     public int UnmatchedOrders { get; set; }
     public int NeedsReview { get; set; }
+    public int FailedOrders { get; set; }
     public string? Notice { get; set; }
 }
 

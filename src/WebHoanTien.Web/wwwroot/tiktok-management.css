@@ -98,6 +98,12 @@
 .tt-management .tt-api-list dt { font-weight: 800; color: #087684; }
 .tt-management .tt-api-list dd { min-width: 0; margin: -10px 0 0; }
 .tt-management .tt-key-table td:last-child { white-space: nowrap; }
+.tt-management .tt-settlement-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.tt-management .tt-wide { grid-column: 1 / -1; }
+.tt-management .tt-settlement-confirm > label { display: flex; align-items: flex-start; gap: 10px; font-weight: 600; }
+.tt-management .tt-settlement-confirm input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin: 3px 0; accent-color: var(--tt-teal); }
+.tt-management .tt-settlement-confirm button { margin-top: 16px; }
+.tt-management .tt-warning { border-color: #e9d594; background: #fff9e7; color: #78591a; }
 @media (max-width: 900px) {
   .tt-management { width: calc(100% - 32px); margin-top: 24px; }
   .tt-management .tt-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -109,6 +115,7 @@
   .tt-management .tt-page-heading { gap: 14px; margin-bottom: 20px; }
   .tt-management .tt-page-heading > div { flex-basis: 100%; }
   .tt-management .tt-filter-grid, .tt-management .tt-key-form { grid-template-columns: minmax(0, 1fr); }
+  .tt-management .tt-settlement-form { grid-template-columns: minmax(0, 1fr); }
   .tt-management .tt-meta { grid-template-columns: minmax(0, 1fr); gap: 5px; }
   .tt-management .tt-meta dd { margin-bottom: 12px; }
   .tt-management .tt-actions > :is(a, button, form) { width: 100%; }

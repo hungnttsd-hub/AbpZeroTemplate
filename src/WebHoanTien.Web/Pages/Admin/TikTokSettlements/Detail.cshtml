@@ -1,0 +1,88 @@
+@page "/Admin/TikTokSettlements/{orderId:guid}"
+@model WebHoanTien.Web.Pages.Admin.TikTokSettlements.DetailModel
+@using WebHoanTien.TikTokAffiliate
+@using SettlementUi = WebHoanTien.Web.Pages.Admin.TikTokSettlements.DetailModel
+@{ ViewData["Title"] = "Đối soát đơn TikTok"; }
+@section Styles { <link rel="stylesheet" href="~/tiktok-management.css" asp-append-version="true" /> }
+<section class="tt-management">
+    <header class="tt-page-heading">
+        <div><span class="tt-eyebrow">CatBack · Đối soát TikTok</span><h1>Đối soát đơn @Model.Preview.ExternalOrderId</h1>
+        <p>Admin xem trước và duyệt hoàn tiền. Không tự cộng ví khi đồng bộ đơn.</p></div>
+        <div class="tt-actions"><a href="/Admin/TikTokOrders" class="button button-ghost">Về danh sách đơn</a><a href="/Orders/@Model.OrderId?returnUrl=%2FAdmin%2FTikTokOrders" class="button button-ghost">Chi tiết đơn</a></div>
+    </header>
+    @if (Model.Error is not null) { <p class="status-message status-error" role="alert">@Model.Error</p> }
+    @if (Model.Notice is not null) { <p class="status-message" role="status">@Model.Notice</p> }
+    <div asp-validation-summary="All" role="alert"></div>
+    <section class="cb-card">
+        <h2>Trạng thái và nguồn dữ liệu</h2>
+        <dl class="tt-meta">
+            <dt>Trạng thái TikTok</dt><dd>@(Model.Preview.ProviderStatus ?? "Chưa có")</dd>
+            <dt>Creator hoàn tiền</dt><dd><code>@Model.Preview.CreatorOpenId</code></dd>
+            <dt>Lần đồng bộ gần nhất (UTC+7)</dt><dd>@SettlementUi.LocalTime(Model.Preview.LastCheckedAt)</dd>
+            <dt>Hoa hồng TikTok dự kiến</dt><dd>@(Model.Preview.EstimatedCommission.HasValue ? SettlementUi.Precise(Model.Preview.EstimatedCommission.Value) : "Chưa có")</dd>
+            <dt>Hoa hồng TikTok thực nhận</dt><dd>@(Model.Preview.ActualCommission.HasValue ? SettlementUi.Precise(Model.Preview.ActualCommission.Value) : "Chưa có")</dd>
+        </dl>
+        <p class="tt-caption">Dữ liệu từ lần đồng bộ đã lưu của Creator chính do admin đăng ký. Bấm Lấy đơn hàng từ TikTok ở danh sách đơn nếu cần cập nhật. Token Developer không được sử dụng cho đối soát.</p>
+    </section>
+    @if (!Model.Preview.AlreadySettled)
+    {
+        <section class="cb-card">
+            <h2>1. Chọn số tiền đối soát</h2>
+            <form method="post" asp-page-handler="Preview" data-turbo="false" class="tt-settlement-form">
+                <div class="tt-field tt-wide"><label asp-for="Input.Source">Nguồn hoa hồng</label>
+                    <select asp-for="Input.Source">
+                        <option value="1">Dùng actual_commission từ TikTok — không trừ thuế thêm</option>
+                        <option value="2">Admin nhập hoa hồng trước thuế — thuế mặc định 10%</option>
+                    </select>
+                </div>
+                <div class="tt-field"><label asp-for="Input.GrossCommission">Hoa hồng trước thuế (đ, chỉ dùng khi nhập tay)</label><input asp-for="Input.GrossCommission" type="number" min="0" max="1000000000000" step="0.0001" /><span asp-validation-for="Input.GrossCommission"></span></div>
+                <div class="tt-field"><label asp-for="Input.TaxPercent">Thuế (% — chỉ áp dụng hoa hồng nhập tay)</label><input asp-for="Input.TaxPercent" type="number" min="0" max="100" step="0.0001" required /><span asp-validation-for="Input.TaxPercent"></span></div>
+                <div class="tt-field tt-wide"><label asp-for="Input.Reason">Lý do duyệt / ghi chú đối soát</label><input asp-for="Input.Reason" minlength="10" maxlength="1000" required placeholder="Căn cứ và lý do admin duyệt khoản hoàn tiền này" /><span asp-validation-for="Input.Reason"></span></div>
+                <p class="tt-caption tt-wide">Có thể duyệt ở mọi trạng thái TikTok. Khoản actual_commission đã trừ thuế/chia sẻ nên thuế bổ sung bằng 0%. Không có phí dịch vụ mặc định cho TikTok.</p>
+                <button type="submit" class="button">Xem trước số tiền cộng ví</button>
+            </form>
+        </section>
+    }
+    @if (Model.Preview.Issues.Count > 0)
+    {
+        <section class="status-message status-error" role="alert"><strong>Chưa thể duyệt đối soát</strong><ul>@foreach (var issue in Model.Preview.Issues) { <li>@issue</li> }</ul>
+        <p>Đơn chưa ghép cần được kiểm tra và ghép affiliate link tại <a href="/Admin/Affiliates">Quản trị hoàn tiền</a>. CatBack không đoán người nhận từ sản phẩm hoặc thời gian mua.</p></section>
+    }
+    @if (Model.Preview.Warnings.Count > 0)
+    {
+        <section class="status-message tt-warning" role="status"><strong>Lưu ý trước khi duyệt</strong><ul>@foreach (var warning in Model.Preview.Warnings) { <li>@warning</li> }</ul></section>
+    }
+    <section class="cb-card">
+        <h2>@(Model.Preview.AlreadySettled ? "Đã đối soát và ghi nhận ví" : "2. Số tiền và người nhận")</h2>
+        <dl class="tt-meta">
+            <dt>Hoa hồng dùng để đối soát</dt><dd>@SettlementUi.Precise(Model.Preview.GrossCommission)</dd>
+            <dt>Thuế bổ sung (@Model.Preview.TaxPercent%)</dt><dd>@SettlementUi.Precise(Model.Preview.TaxAmount)</dd>
+            <dt>Còn lại sau thuế</dt><dd>@SettlementUi.Precise(Model.Preview.NetCommission)</dd>
+            <dt>Tổng hoàn tiền cho user</dt><dd><strong>@SettlementUi.Money(Model.Preview.UserCommission)</strong></dd>
+            <dt>Còn lại tại CatBack (gồm phần chưa ghép)</dt><dd>@SettlementUi.Precise(Model.Preview.NetCommission - Model.Preview.UserCommission)</dd>
+            @if (Model.Preview.UnmatchedNetCommission > 0) { <dt>Chưa ghép, không cộng ví</dt><dd>@SettlementUi.Precise(Model.Preview.UnmatchedNetCommission)</dd> }
+        </dl>
+        <div class="table-responsive" tabindex="0" role="region" aria-label="Số tiền đối soát theo người nhận"><table>
+            <thead><tr><th scope="col">Người nhận</th><th scope="col">Hoa hồng sau thuế được phân bổ</th><th scope="col">Tiền cộng ví</th></tr></thead>
+            <tbody>
+                @foreach (var recipient in Model.Preview.Recipients) { <tr><td>@(recipient.UserName ?? recipient.UserId.ToString())<small>@recipient.UserId</small></td><td>@SettlementUi.Precise(recipient.NetCommission)</td><td><strong>@SettlementUi.Money(recipient.UserCommission)</strong></td></tr> }
+                @if (Model.Preview.Recipients.Count == 0) { <tr><td colspan="3" class="tt-empty">Chưa xác định được người nhận.</td></tr> }
+            </tbody>
+        </table></div>
+        <p class="tt-caption">Tỷ lệ chia dùng theo từng phân bổ đã lưu của đơn. Tiền cộng ví làm tròn đến đồng, không vượt hoa hồng sau thuế của người nhận.</p>
+        @if (Model.Preview.AlreadySettled)
+        {
+            <dl class="tt-meta"><dt>Thời gian duyệt (UTC+7)</dt><dd>@SettlementUi.LocalTime(Model.Preview.SettledAt)</dd><dt>Admin duyệt</dt><dd>@Model.Preview.ApprovedBy</dd><dt>Mã đối soát</dt><dd><code>@Model.Preview.SettlementReference</code></dd><dt>Lý do</dt><dd>@Model.Preview.ApprovalReason</dd></dl>
+        }
+        else if (Model.ShowConfirmation && Model.Preview.CanApprove)
+        {
+            <form method="post" asp-page-handler="Approve" data-turbo="false" class="tt-settlement-confirm tt-divider">
+                <input type="hidden" asp-for="PreviewToken" />
+                <p><strong>Lý do duyệt:</strong> @Model.Input.Reason</p>
+                <label><input asp-for="ConfirmApproval" type="checkbox" required /> Tôi xác nhận người nhận và số tiền ở trên, đồng ý ghi nhận @SettlementUi.Money(Model.Preview.UserCommission) vào ví.</label>
+                <p class="tt-caption">Bản xem trước có hiệu lực 10 phút. Nếu dữ liệu đơn thay đổi, CatBack sẽ yêu cầu xem trước lại. Muốn sửa số tiền, dùng form phía trên rồi bấm Xem trước.</p>
+                <button type="submit" class="button">Duyệt đối soát và cộng ví</button>
+            </form>
+        }
+    </section>
+</section>
