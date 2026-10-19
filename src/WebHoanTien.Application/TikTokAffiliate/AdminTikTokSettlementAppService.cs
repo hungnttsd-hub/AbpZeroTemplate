@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp;
 using Volo.Abp.Authorization;
@@ -71,11 +72,94 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
     }
 
     public async Task<TikTokSettlementApprovalResult> ApproveAsync(Guid orderId, TikTokSettlementInput input, string expectedPlanHash)
+        => await ApproveCoreAsync(orderId, input, expectedPlanHash, requirePaid: false);
+
+    public async Task<List<TikTokSettlementPreview>> PreviewPaidOrdersAsync(string reason)
+    {
+        RequireHostAdmin();
+        ValidateReason(reason);
+        List<(Guid Id, string ExternalOrderId)> candidates;
+        using (var work = _uow.Begin(requiresNew: true, isTransactional: false))
+        {
+            var orders = await _orders.GetListAsync(x => x.Platform == AffiliatePlatform.TikTok &&
+                !x.SettledAt.HasValue && x.Status != AffiliateOrderStatus.Settled, cancellationToken: _cancellation.Token);
+            candidates = orders.Where(x => x.GetProperty<string>("TikTokProviderStatus") == "SETTLED")
+                .OrderBy(x => x.ExternalOrderId, StringComparer.Ordinal).Select(x => (x.Id, x.ExternalOrderId)).ToList();
+            await work.CompleteAsync(_cancellation.Token);
+        }
+        var previews = new List<TikTokSettlementPreview>();
+        foreach (var candidate in candidates)
+        {
+            _cancellation.Token.ThrowIfCancellationRequested();
+            try
+            {
+                using var work = _uow.Begin(requiresNew: true, isTransactional: false);
+                var plan = await BuildAsync(candidate.Id, PaidInput(reason));
+                if (!plan.Preview.AlreadySettled && plan.Preview.ProviderStatus != "SETTLED")
+                    plan.Preview.Issues.Add("TikTok đã thay đổi trạng thái; đơn không còn đủ điều kiện duyệt hàng loạt.");
+                await work.CompleteAsync(_cancellation.Token);
+                previews.Add(plan.Preview);
+            }
+            catch (AbpAuthorizationException) { throw; }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                Logger.LogWarning("TikTok bulk preview failed for order {OrderId}: {ErrorType}", candidate.Id, ex.GetType().Name);
+                previews.Add(new TikTokSettlementPreview
+                {
+                    OrderId = candidate.Id, ExternalOrderId = candidate.ExternalOrderId,
+                    Issues = new() { ex is UserFriendlyException friendly ? friendly.Message :
+                        "Không đọc được dữ liệu đối soát của đơn. Mở đơn để kiểm tra và xem trước lại." }
+                });
+            }
+        }
+        return previews;
+    }
+
+    public async Task<TikTokBulkSettlementResult> ApprovePaidOrdersAsync(List<TikTokBulkSettlementPlan> plans, string reason)
+    {
+        RequireHostAdmin();
+        ValidateReason(reason);
+        if (plans.Count == 0 || plans.Select(x => x.OrderId).Distinct().Count() != plans.Count)
+            throw new UserFriendlyException("Danh sách duyệt trống hoặc trùng đơn. Hãy xem trước lại.");
+        var result = new TikTokBulkSettlementResult();
+        foreach (var plan in plans)
+        {
+            _cancellation.Token.ThrowIfCancellationRequested();
+            try
+            {
+                // One transaction and a fresh eligibility/hash check per order. A blocked order must not stop other orders.
+                var approved = await ApproveCoreAsync(plan.OrderId, PaidInput(reason), plan.PlanHash, requirePaid: true);
+                result.Orders.Add(new(plan.OrderId, plan.ExternalOrderId, !approved.AlreadySettled,
+                    approved.AlreadySettled, approved.CreditedAmount, null));
+            }
+            catch (AbpAuthorizationException) { throw; }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                Logger.LogWarning("TikTok bulk settlement failed for order {OrderId}: {ErrorType}", plan.OrderId, ex.GetType().Name);
+                var message = ex is UserFriendlyException friendly ? friendly.Message :
+                    "Chưa xác nhận duyệt được đơn này. Mở lại đối soát để kiểm tra trạng thái và xem trước lại.";
+                result.Orders.Add(new(plan.OrderId, plan.ExternalOrderId, false, false, 0, message));
+            }
+        }
+        return result;
+    }
+
+    private static TikTokSettlementInput PaidInput(string reason) => new()
+    { Source = TikTokSettlementAmountSource.ActualCommission, Reason = reason.Trim() };
+
+    private static void ValidateReason(string? reason)
+    {
+        reason = reason?.Trim();
+        if (reason is not { Length: >= 10 and <= 1000 } || reason.Any(char.IsControl))
+            throw new UserFriendlyException("Nhập lý do duyệt từ 10–1.000 ký tự, trên một dòng.");
+    }
+
+    private async Task<TikTokSettlementApprovalResult> ApproveCoreAsync(Guid orderId, TikTokSettlementInput input,
+        string expectedPlanHash, bool requirePaid)
     {
         RequireHostAdmin();
         input.Reason = input.Reason?.Trim();
-        if (input.Reason is not { Length: >= 10 and <= 1000 } || input.Reason.Any(char.IsControl))
-            throw new UserFriendlyException("Nhập lý do duyệt từ 10–1.000 ký tự, trên một dòng.");
+        ValidateReason(input.Reason);
         if (expectedPlanHash is not { Length: 64 } || !expectedPlanHash.All(char.IsAsciiHexDigit))
             throw new UserFriendlyException("Hãy xem trước đối soát trước khi duyệt.");
         var ct = _cancellation.Token;
@@ -91,6 +175,8 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
             return new(true, 0);
         }
         if (!preview.CanApprove) throw new UserFriendlyException(string.Join(" ", preview.Issues));
+        if (requirePaid && (preview.ProviderStatus != "SETTLED" || input.Source != TikTokSettlementAmountSource.ActualCommission))
+            throw new UserFriendlyException("Chỉ duyệt hàng loạt đơn TikTok đã SETTLED bằng hoa hồng thực nhận.");
         if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(expectedPlanHash), Encoding.ASCII.GetBytes(preview.PlanHash)))
             throw new UserFriendlyException("Dữ liệu đơn, người nhận hoặc số tiền đã đổi. Hãy xem trước lại trước khi duyệt.");
         foreach (var row in plan.Rows) row.Attribution.Settle(row.Net, row.UserAmount);
@@ -102,6 +188,9 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
         plan.Order.SetProperty("TikTokSettlementGross", preview.GrossCommission);
         plan.Order.SetProperty("TikTokSettlementTaxPercent", preview.TaxPercent);
         plan.Order.SetProperty("TikTokSettlementTaxAmount", preview.TaxAmount);
+        plan.Order.SetProperty("TikTokSettlementProviderTaxAmount", preview.ProviderTaxAmount);
+        plan.Order.SetProperty("TikTokSettlementAdditionalTaxBase", preview.AdditionalTaxBase);
+        plan.Order.SetProperty("TikTokSettlementTaxPolicy", "ZeroWithholdingTenPercentV1");
         plan.Order.SetProperty("TikTokSettlementProviderStatus", preview.ProviderStatus);
         plan.Order.SetProperty("TikTokSettlementOrderStatus", (int)plan.Order.Status);
         plan.Order.SetProperty("TikTokSettlementCreatorOpenId", preview.CreatorOpenId);
@@ -138,6 +227,7 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
             TaxPercent = 10m
         };
         if (!useDefaults) ValidateAmounts(input);
+        if (input.TaxPercent == 0) input.TaxPercent = 10m;
         var preview = new TikTokSettlementPreview
         {
             OrderId = order.Id, ExternalOrderId = order.ExternalOrderId, Input = input,
@@ -160,6 +250,9 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
             preview.GrossCommission = order.GetProperty<decimal?>("TikTokSettlementGross") ?? order.SettledNetCommission ?? 0;
             preview.TaxPercent = order.GetProperty<decimal?>("TikTokSettlementTaxPercent") ?? 0;
             preview.TaxAmount = order.GetProperty<decimal?>("TikTokSettlementTaxAmount") ?? 0;
+            preview.ProviderTaxAmount = order.GetProperty<decimal?>("TikTokSettlementProviderTaxAmount");
+            preview.AdditionalTaxBase = order.GetProperty<decimal?>("TikTokSettlementAdditionalTaxBase") ??
+                (preview.TaxPercent > 0 ? preview.GrossCommission : 0);
             preview.NetCommission = order.SettledNetCommission ?? 0; preview.UserCommission = order.SettledUserCommission ?? 0;
             foreach (var row in rows) { row.Net = row.Attribution.SettledNetCommission ?? 0; row.UserAmount = row.Attribution.SettledUserCommission ?? 0; }
             preview.UnmatchedNetCommission = rows.Where(x => x.Attribution.Status != AffiliateAttributionStatus.Matched || !x.Attribution.UserId.HasValue).Sum(x => x.Net);
@@ -196,29 +289,41 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
             {
                 if (snapshot.Skus.Count != items.Count || items.Any(x => !snapshot.Skus.ContainsKey(x.ExternalItemId)))
                     preview.Issues.Add("Tập SKU khác dữ liệu TikTok đã lưu; đồng bộ lại đơn trước khi duyệt.");
-                decimal total = 0;
+                decimal total = 0, providerTax = 0, additionalTax = 0, taxBase = 0;
+                var hasZeroTax = false;
                 foreach (var item in items)
                 {
                     if (!snapshot.Skus.TryGetValue(item.ExternalItemId, out var sku) || !TikTokCreatorOrderSnapshot.TryMoney(sku, "actual_commission", out var amount))
                     { preview.Issues.Add("TikTok thiếu hoa hồng thực nhận VND của SKU."); continue; }
                     if (Round(amount) != amount) preview.Issues.Add("Hoa hồng thực nhận vượt độ chính xác sổ đơn; cần kiểm tra số tiền.");
                     total += amount;
+                    if (!TikTokCreatorOrderSnapshot.TryMoney(sku, "pit", out var withheld))
+                    { preview.Issues.Add("TikTok thiếu số thuế khấu trừ pit hợp lệ của SKU; đồng bộ lại để xác định thuế trước khi duyệt."); continue; }
+                    providerTax += withheld;
+                    var tax = withheld == 0 ? Round(amount * 10m / 100m) : 0;
+                    if (withheld == 0) { hasZeroTax = true; taxBase += amount; }
+                    additionalTax += tax;
                     var itemRows = rows.Where(x => x.Attribution.OrderItemId == item.Id).ToList();
                     if (itemRows.Count != 1) { preview.Issues.Add("SKU TikTok có nhiều phân bổ không rõ nguồn; cần kiểm tra trước khi dùng actual_commission."); continue; }
-                    weights[itemRows[0].Attribution.Id] = amount;
+                    weights[itemRows[0].Attribution.Id] = amount - tax;
                 }
                 preview.GrossCommission = total;
+                preview.ProviderTaxAmount = providerTax;
+                preview.AdditionalTaxBase = taxBase;
+                preview.TaxPercent = hasZeroTax ? 10m : 0m;
+                preview.TaxAmount = additionalTax;
+                preview.NetCommission = total - additionalTax;
+                if (hasZeroTax) preview.Warnings.Add("Theo cấu hình đối soát CatBack: SKU có thuế TikTok pit = 0đ được trừ bổ sung 10% trên actual_commission. SKU đã có thuế khấu trừ không bị trừ thêm.");
                 if (total > 1_000_000_000_000m) preview.Issues.Add("Tổng hoa hồng vượt hạn mức đối soát; cần kiểm tra dữ liệu.");
                 if (actual != total) preview.Issues.Add("Tổng actual_commission khác số tiền đã lưu; cần đồng bộ lại.");
             }
-            preview.TaxPercent = 0; preview.TaxAmount = 0;
-            preview.NetCommission = preview.GrossCommission;
         }
         else
         {
             if (!input.GrossCommission.HasValue) preview.Issues.Add("Nhập hoa hồng trước thuế để lập phương án đối soát thủ công.");
             preview.GrossCommission = input.GrossCommission ?? 0;
             preview.TaxPercent = input.TaxPercent;
+            preview.AdditionalTaxBase = preview.GrossCommission;
             preview.TaxAmount = Round(preview.GrossCommission * input.TaxPercent / 100m);
             preview.NetCommission = preview.GrossCommission - preview.TaxAmount;
             preview.Warnings.Add("Duyệt theo hoa hồng admin nhập, không phải xác nhận TikTok đã thanh toán.");
@@ -253,7 +358,8 @@ public class AdminTikTokSettlementAppService : WebHoanTienAppService, IAdminTikT
             order.Id, order.ConcurrencyStamp, status = order.Status, creator = preview.CreatorOpenId, registeredCreator,
             snapshot = order.GetProperty<string>("TikTokOrderSnapshot"), fingerprint = order.GetProperty<string>("TikTokOrderFingerprint"),
             providerStatus = preview.ProviderStatus, review = order.GetProperty<string>("TikTokOrderReview"),
-            preview.LastCheckedAt, input.Source, preview.GrossCommission, preview.TaxPercent, reason = input.Reason?.Trim(),
+            taxPolicy = "ZeroWithholdingTenPercentV1", preview.LastCheckedAt, input.Source, preview.GrossCommission,
+            preview.ProviderTaxAmount, preview.AdditionalTaxBase, preview.TaxPercent, preview.TaxAmount, reason = input.Reason?.Trim(),
             rows = rows.Select(x => new { x.Attribution.Id, x.Attribution.AttributionValue, x.Attribution.UserId,
                 x.Attribution.TrackingId, x.Attribution.Status, x.Attribution.UserShareRate, x.Attribution.AllocatedNetCommission,
                 x.Net, x.UserAmount }),

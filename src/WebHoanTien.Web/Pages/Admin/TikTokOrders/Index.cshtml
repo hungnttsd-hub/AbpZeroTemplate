@@ -10,7 +10,8 @@
     <header class="tt-page-heading">
         <div><span class="tt-eyebrow">CatBack · Quản trị TikTok</span><h1>Đơn hàng TikTok Shop</h1>
         <p>Lấy đơn từ Creator chính của CatBack. Bấm Đối soát tại từng đơn để xem trước và duyệt hoàn tiền.</p></div>
-        <a href="/Admin/TikTokCreator" class="button button-ghost">Kết nối Creator</a>
+        <div class="tt-actions"><a href="/Admin/TikTokSettlements/Bulk" class="button">Duyệt toàn bộ đơn TikTok đã thanh toán</a>
+            <a href="/Admin/TikTokCreator" class="button button-ghost">Kết nối Creator</a></div>
     </header>
     @if (TempData["TikTokNotice"] is string notice) { <div class="status-message" role="status">@notice</div> }
     @if (Model.Error is not null) { <div class="status-message status-error" role="alert">@Model.Error</div> }
@@ -51,7 +52,7 @@
                     <td>@if (order.ProviderEstimatedCommission.HasValue) { <span class="tt-money">@CustomerOrderUi.FormatMoney(order.ProviderEstimatedCommission.Value)</span> } else { <span>Chưa có số tiền VND hợp lệ</span> }</td>
                     <td>@if (order.ProviderActualCommission.HasValue) { <span class="tt-money">@CustomerOrderUi.FormatMoney(order.ProviderActualCommission.Value)</span> } else { <span>Chưa có</span> }</td>
                     <td><strong class="tt-money">@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</strong><small>@(order.SettledAt.HasValue ? "Đã đối soát CatBack" : "Chưa đối soát CatBack")</small></td>
-                    <td><a href="/Admin/TikTokSettlements/@order.Id">@(order.SettledAt.HasValue ? "Xem đối soát" : "Đối soát")</a><small><a href="/Orders/@order.Id?returnUrl=%2FAdmin%2FTikTokOrders">Chi tiết</a></small></td>
+                    <td><a href="/Admin/TikTokSettlements/@order.Id">@(order.SettledAt.HasValue ? "Xem đối soát" : "Duyệt đối soát")</a><small><a href="/Orders/@order.Id?returnUrl=%2FAdmin%2FTikTokOrders">Chi tiết</a></small></td>
                 </tr>
             }
             @if (Model.Orders.Items.Count == 0) { <tr><td colspan="8" class="tt-empty">Chưa có đơn. Chọn khoảng ngày và bấm Lấy đơn hàng từ TikTok.</td></tr> }

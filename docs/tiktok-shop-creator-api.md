@@ -14,8 +14,10 @@
 
 ### Đối soát thủ công và ghi nhận ví — 15/10/2026
 
+> Cập nhật 18/10/2026: bổ sung duyệt toàn bộ đơn SETTLED qua `/Admin/TikTokSettlements/Bulk`, xem trước/xác nhận theo admin trong 10 phút. Theo yêu cầu chủ dự án, SKU có `pit = 0đ` được trừ bổ sung 10% trên actual; SKU có pit lớn hơn 0 không bị trừ thêm. Thiếu pit hợp lệ thì chặn duyệt bằng actual. Hoa hồng nhập tay có thuế 0% cũng được chuyển thành 10%. Xem quy trình đối soát bên dưới để biết chi tiết.
+
 - Theo quyết định mới của chủ dự án, admin được duyệt ở mọi trạng thái TikTok. Tại `/Admin/TikTokOrders`, bấm **Đối soát** để nhập số tiền/lý do, xem trước từng người nhận rồi xác nhận cộng ví. Chỉ ghi nhận tiền sau bước admin duyệt, không tự duyệt khi sync.
-- Dùng actual_commission thì thuế bổ sung 0%. Nhập hoa hồng trước thuế thì mặc định 10%, admin được sửa. Không tự điền estimated/net từ API thành số trước thuế. Đơn phải có người nhận được ghép hợp lệ và đúng Creator chính của admin.
+- Dùng actual_commission thì áp dụng quy tắc thuế cập nhật 18/10 ở trên. Nhập hoa hồng trước thuế mặc định 10%; nhập 0% được chuyển thành 10%. Không tự điền estimated/net từ API thành số trước thuế. Đơn phải có người nhận được ghép hợp lệ và đúng Creator chính của admin.
 - Chốt ledger trong transaction với khóa chống đồng bộ/duyệt trùng, bản xem trước ràng buộc admin/đơn/số tiền trong 10 phút. Lưu dấu vết duyệt và notification; ví đọc sổ đơn đã chốt. Không lấy token Developer, không thay nghiệp vụ Shopee.
 - Xem [quy trình và điều kiện đối soát TikTok](tiktok-order-settlement.md). Mô tả cũ “đối soát/cộng ví để sau” bên dưới là lịch sử trước thay đổi này. Không cần migration mới và chưa duyệt/cộng tiền thật trong lần sửa source.
 

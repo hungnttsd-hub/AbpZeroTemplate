@@ -67,6 +67,12 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         var counts = await AsyncExecuter.ToListAsync(filteredRecords.GroupBy(record => record.Status)
             .Select(group => new { Status = group.Key, Count = group.Count(), Amount = group.Sum(record => record.ActualPaidCommission) }));
         var financial = await BuildFinancialSummaryAsync(filteredRecords);
+        var paidBills = (await _bills.GetQueryableAsync())
+            .Where(bill => bill.PaidAt.HasValue && bill.PaidAt.Value > DateTime.UnixEpoch);
+        var paidUnapprovedCount = await AsyncExecuter.CountAsync(filteredRecords.Where(record =>
+            record.Status != ShopeeSettlementRecordStatus.Approved &&
+            record.Status != ShopeeSettlementRecordStatus.AlreadySettled &&
+            paidBills.Any(bill => bill.Id == record.BillId)));
         var pageIds = rows.Select(batch => batch.Id).ToList();
         var pageRecords = pageIds.Count == 0 ? new List<ShopeeSettlementRecord>() :
             await AsyncExecuter.ToListAsync(filteredRecords.Where(record => pageIds.Contains(record.BatchId)));
@@ -91,7 +97,8 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                     group.Status != ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count),
                 TotalActualCommission = financial.ActualCommission,
                 TotalUserCommission = financial.UserCommission,
-                TotalAdminCommission = financial.AdminCommission
+                TotalAdminCommission = financial.AdminCommission,
+                PaidUnapprovedCount = paidUnapprovedCount
             },
             Batches = new PagedResultDto<AdminShopeeSettlementBatchDto>(totalCount,
                 batchDtos)
@@ -226,11 +233,44 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         AdminShopeeSettlementBatchListInput? input = null)
     {
         var batch = await _batches.GetAsync(batchId);
-        var candidates = await AsyncExecuter.ToListAsync((await GetFilteredRecordsAsync(input)).Where(record => record.BatchId == batchId &&
+        var candidates = await GetPaidApprovalCandidatesAsync(input, batchId);
+        var preparation = await ApprovePaidRecordsAsync(candidates);
+        return await BuildResultAsync(batch, preparation.Work, preparation.SkippedCount);
+    }
+
+    [UnitOfWork]
+    public async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveAllPaidAsync(
+        AdminShopeeSettlementBatchListInput input)
+    {
+        // Select across every matching batch/page, then prepare together to detect duplicate orders.
+        var candidates = await GetPaidApprovalCandidatesAsync(input);
+        var preparation = await ApprovePaidRecordsAsync(candidates);
+        return new AdminShopeeSettlementBulkApprovalResultDto
+        {
+            ApprovedCount = preparation.Work.Count,
+            SkippedCount = preparation.SkippedCount,
+            ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
+            CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+        };
+    }
+
+    private async Task<List<ShopeeSettlementRecord>> GetPaidApprovalCandidatesAsync(
+        AdminShopeeSettlementBatchListInput? input, Guid? batchId = null)
+    {
+        var records = await GetFilteredRecordsAsync(input);
+        var paidBills = (await _bills.GetQueryableAsync())
+            .Where(bill => bill.PaidAt.HasValue && bill.PaidAt.Value > DateTime.UnixEpoch);
+        return await AsyncExecuter.ToListAsync(records.Where(record =>
+            (!batchId.HasValue || record.BatchId == batchId.Value) &&
             record.Status != ShopeeSettlementRecordStatus.Approved &&
-            record.Status != ShopeeSettlementRecordStatus.AlreadySettled));
+            record.Status != ShopeeSettlementRecordStatus.AlreadySettled &&
+            paidBills.Any(bill => bill.Id == record.BillId)));
+    }
+
+    private async Task<BulkApprovalPreparation> ApprovePaidRecordsAsync(List<ShopeeSettlementRecord> candidates)
+    {
         if (candidates.Count == 0)
-            return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 0);
+            return new BulkApprovalPreparation(new List<ApprovalWork>(), 0);
         await _matcher.RefreshAsync(candidates);
         var billIds = candidates.Select(record => record.BillId).Distinct().ToList();
         var bills = (await _bills.GetListAsync(bill => billIds.Contains(bill.Id))).ToDictionary(bill => bill.Id);
@@ -255,8 +295,9 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         await _notificationManager.NotifySettledOrdersAsync(preparation.Work
             .SelectMany(item => item.Recipients.Select(recipient =>
                 (recipient.UserId, item.Order, recipient.UserCommission))));
-        await RefreshBatchAsync(batch);
-        return await BuildResultAsync(batch, preparation.Work, preparation.SkippedCount);
+        foreach (var batchId in candidates.Select(record => record.BatchId).Distinct())
+            await _matcher.RefreshBatchAsync(batchId);
+        return preparation;
     }
 
     private async Task<BulkApprovalPreparation> PrepareManyAsync(List<ShopeeSettlementRecord> records,

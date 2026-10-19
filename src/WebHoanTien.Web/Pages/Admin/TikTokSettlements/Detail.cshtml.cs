@@ -64,6 +64,7 @@ public class DetailModel : PageModel
             if (Input.Reason is not { Length: >= 10 and <= 1000 } || Input.Reason.Any(char.IsControl))
                 throw new UserFriendlyException("Nhập lý do duyệt từ 10–1.000 ký tự để xem trước và xác nhận.");
             Preview = await _settlements.PreviewAsync(OrderId, Input);
+            ModelState.Remove("Input.TaxPercent");
             if (Preview.CanApprove)
             {
                 PreviewToken = Protector().Protect(JsonSerializer.Serialize(new SignedPreview(OrderId, Input, Preview.PlanHash)), TimeSpan.FromMinutes(10));

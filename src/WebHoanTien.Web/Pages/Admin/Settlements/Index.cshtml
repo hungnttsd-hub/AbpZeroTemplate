@@ -74,7 +74,18 @@
                 @if (Model.AllRecords)
                 {
                     <header>
-                        <div><span>TỔNG HỢP CÁC BATCH ĐANG LỌC</span><h2>Đơn đối soát theo bộ lọc</h2><p>@displayedRecords.TotalCount đơn phù hợp; đơn chờ duyệt được xếp lên đầu.</p></div>
+                        <div><span>TỔNG HỢP CÁC BATCH ĐANG LỌC</span><h2>Đơn đối soát theo bộ lọc</h2><p>@displayedRecords.TotalCount đơn phù hợp; @Model.Data.Summary.PaidUnapprovedCount bản ghi Shopee đã thanh toán chưa duyệt. Duyệt tất cả áp dụng trên mọi batch và mọi trang theo bộ lọc hiện tại.</p></div>
+                        <div class="admin-settlement-actions">
+                            <form method="post" asp-page-handler="ApproveAllPaid" data-approve-all data-approval-scope="all-batches">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="Filter" value="@Model.Filter" />
+                                <input type="hidden" name="IsApproved" value="@(Model.IsApproved?.ToString().ToLowerInvariant())" />
+                                <input type="hidden" name="IsShopeePaid" value="@(Model.IsShopeePaid?.ToString().ToLowerInvariant())" />
+                                <input type="hidden" name="AffiliateId" value="@Model.AffiliateId" />
+                                <button type="submit" disabled="@(Model.Data.Summary.PaidUnapprovedCount == 0)">Duyệt tất cả đơn Shopee đã thanh toán</button>
+                                <span role="status"></span>
+                            </form>
+                        </div>
                     </header>
                 }
                 else if (selectedBatch is not null)

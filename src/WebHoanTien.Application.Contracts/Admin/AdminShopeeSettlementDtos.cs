@@ -41,6 +41,7 @@ public sealed class AdminShopeeSettlementSummaryDto
     public decimal TotalActualCommission { get; set; }
     public decimal TotalUserCommission { get; set; }
     public decimal TotalAdminCommission { get; set; }
+    public int PaidUnapprovedCount { get; set; }
 }
 
 public sealed class AdminShopeeSettlementBatchDto : CreationAuditedEntityDto<Guid>
@@ -143,6 +144,14 @@ public sealed class AdminShopeeSettlementRefreshResultDto
     public AdminShopeeSettlementBatchDto Batch { get; set; } = new();
 }
 
+public sealed class AdminShopeeSettlementBulkApprovalResultDto
+{
+    public int ApprovedCount { get; set; }
+    public int SkippedCount { get; set; }
+    public decimal ApprovedCommission { get; set; }
+    public decimal CreditedUserCommission { get; set; }
+}
+
 public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
 {
     Task<AdminShopeeSettlementPageDto> GetListAsync(AdminShopeeSettlementBatchListInput input);
@@ -153,5 +162,7 @@ public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId, AdminShopeeSettlementManualInput? manual = null);
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId,
         AdminShopeeSettlementBatchListInput? input = null);
+    Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveAllPaidAsync(
+        AdminShopeeSettlementBatchListInput input);
     Task<AdminShopeeSettlementRefreshResultDto> RefreshMatchesAsync(Guid batchId);
 }

@@ -31,14 +31,14 @@
             <form method="post" asp-page-handler="Preview" data-turbo="false" class="tt-settlement-form">
                 <div class="tt-field tt-wide"><label asp-for="Input.Source">Nguồn hoa hồng</label>
                     <select asp-for="Input.Source">
-                        <option value="1">Dùng actual_commission từ TikTok — không trừ thuế thêm</option>
+                        <option value="1">Dùng hoa hồng thực nhận TikTok — thuế TikTok bằng 0đ thì trừ bổ sung 10%</option>
                         <option value="2">Admin nhập hoa hồng trước thuế — thuế mặc định 10%</option>
                     </select>
                 </div>
                 <div class="tt-field"><label asp-for="Input.GrossCommission">Hoa hồng trước thuế (đ, chỉ dùng khi nhập tay)</label><input asp-for="Input.GrossCommission" type="number" min="0" max="1000000000000" step="0.0001" /><span asp-validation-for="Input.GrossCommission"></span></div>
-                <div class="tt-field"><label asp-for="Input.TaxPercent">Thuế (% — chỉ áp dụng hoa hồng nhập tay)</label><input asp-for="Input.TaxPercent" type="number" min="0" max="100" step="0.0001" required /><span asp-validation-for="Input.TaxPercent"></span></div>
+                <div class="tt-field"><label asp-for="Input.TaxPercent">Thuế nhập tay (% — nhập 0 sẽ tự áp dụng 10%)</label><input asp-for="Input.TaxPercent" type="number" min="0" max="100" step="0.0001" required /><span asp-validation-for="Input.TaxPercent"></span></div>
                 <div class="tt-field tt-wide"><label asp-for="Input.Reason">Lý do duyệt / ghi chú đối soát</label><input asp-for="Input.Reason" minlength="10" maxlength="1000" required placeholder="Căn cứ và lý do admin duyệt khoản hoàn tiền này" /><span asp-validation-for="Input.Reason"></span></div>
-                <p class="tt-caption tt-wide">Có thể duyệt ở mọi trạng thái TikTok. Khoản actual_commission đã trừ thuế/chia sẻ nên thuế bổ sung bằng 0%. Không có phí dịch vụ mặc định cho TikTok.</p>
+                <p class="tt-caption tt-wide">Có thể duyệt nhập tay ở mọi trạng thái TikTok. Khi dùng hoa hồng thực nhận, SKU có thuế TikTok pit = 0đ được trừ bổ sung 10%; SKU đã có thuế khấu trừ không bị trừ thêm. Quy tắc này do CatBack áp dụng cho đối soát.</p>
                 <button type="submit" class="button">Xem trước số tiền cộng ví</button>
             </form>
         </section>
@@ -56,6 +56,8 @@
         <h2>@(Model.Preview.AlreadySettled ? "Đã đối soát và ghi nhận ví" : "2. Số tiền và người nhận")</h2>
         <dl class="tt-meta">
             <dt>Hoa hồng dùng để đối soát</dt><dd>@SettlementUi.Precise(Model.Preview.GrossCommission)</dd>
+            @if (Model.Preview.ProviderTaxAmount.HasValue) { <dt>Thuế TikTok đã khấu trừ</dt><dd>@SettlementUi.Precise(Model.Preview.ProviderTaxAmount.Value)</dd> }
+            <dt>Hoa hồng áp dụng thuế bổ sung</dt><dd>@SettlementUi.Precise(Model.Preview.AdditionalTaxBase)</dd>
             <dt>Thuế bổ sung (@Model.Preview.TaxPercent%)</dt><dd>@SettlementUi.Precise(Model.Preview.TaxAmount)</dd>
             <dt>Còn lại sau thuế</dt><dd>@SettlementUi.Precise(Model.Preview.NetCommission)</dd>
             <dt>Tổng hoàn tiền cho user</dt><dd><strong>@SettlementUi.Money(Model.Preview.UserCommission)</strong></dd>

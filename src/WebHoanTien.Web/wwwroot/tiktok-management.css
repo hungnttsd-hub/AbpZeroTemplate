@@ -70,6 +70,8 @@
 .tt-management td .tt-review-note { margin: 8px 0 0; color: #aa2949; font-size: 12px; }
 .tt-management .tt-money { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tt-management .tt-order-table { min-width: 1320px; }
+.tt-management .tt-bulk-table { min-width: 1200px; }
+.tt-management .tt-bulk-table th:last-child { width: 32%; }
 .tt-management .tt-order-table .tt-col-order { width: 185px; }
 .tt-management .tt-order-table .tt-col-product { width: 270px; }
 .tt-management .tt-order-table .tt-col-status { width: 185px; }

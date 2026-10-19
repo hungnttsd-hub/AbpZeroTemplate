@@ -1,0 +1,76 @@
+@page "/Admin/TikTokSettlements/Bulk"
+@model WebHoanTien.Web.Pages.Admin.TikTokSettlements.BulkModel
+@using SettlementUi = WebHoanTien.Web.Pages.Admin.TikTokSettlements.DetailModel
+@{ ViewData["Title"] = "Duyệt toàn bộ đơn TikTok đã thanh toán"; }
+@section Styles { <link rel="stylesheet" href="~/tiktok-management.css" asp-append-version="true" /> }
+<section class="tt-management">
+    <header class="tt-page-heading">
+        <div><span class="tt-eyebrow">CatBack · Đối soát TikTok</span><h1>Duyệt toàn bộ đơn TikTok đã thanh toán</h1>
+        <p>Lấy tất cả đơn TikTok đã SETTLED và chưa duyệt tại CatBack, trên mọi trang và mọi ngày đặt đơn.</p></div>
+        <a href="/Admin/TikTokOrders" class="button button-ghost">Về danh sách đơn</a>
+    </header>
+    @if (Model.Error is not null) { <p class="status-message status-error" role="alert">@Model.Error</p> }
+    <div asp-validation-summary="All" role="alert"></div>
+    @if (Model.Result is not null)
+    {
+        <section class="cb-card" aria-labelledby="tt-result-heading">
+            <h2 id="tt-result-heading">Kết quả duyệt đối soát</h2>
+            <p role="status">Đã duyệt @Model.Result.Orders.Count(x => x.Approved) đơn, cộng ví <strong>@SettlementUi.Money(Model.Result.Orders.Sum(x => x.CreditedAmount))</strong>.
+                Đã duyệt trước đó: @Model.Result.Orders.Count(x => x.AlreadySettled) đơn. Cần kiểm tra: @Model.Result.Orders.Count(x => x.Error is not null) đơn.</p>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Kết quả duyệt từng đơn"><table>
+                <thead><tr><th scope="col">Đơn hàng</th><th scope="col">Kết quả</th><th scope="col">Tiền cộng ví</th></tr></thead>
+                <tbody>@foreach (var order in Model.Result.Orders)
+                {
+                    <tr><td><a href="/Admin/TikTokSettlements/@order.OrderId">@order.ExternalOrderId</a></td>
+                        <td>@(order.Error ?? (order.AlreadySettled ? "Đã duyệt trước đó, không cộng lần nữa" : "Đã duyệt"))</td>
+                        <td>@SettlementUi.Money(order.CreditedAmount)</td></tr>
+                }</tbody>
+            </table></div>
+        </section>
+    }
+    <section class="cb-card">
+        <h2>1. Xem trước tất cả đơn đã thanh toán</h2>
+        <p>SKU có thuế TikTok khấu trừ bằng 0đ sẽ được áp dụng thuế bổ sung 10% trên hoa hồng thực nhận. SKU đã bị khấu trừ thuế được giữ nguyên. Chỉ các đơn đủ dữ liệu và có người nhận hợp lệ mới được duyệt.</p>
+        <form method="post" asp-page-handler="Preview" data-turbo="false" class="tt-settlement-form">
+            <div class="tt-field tt-wide"><label asp-for="Reason">Lý do duyệt chung</label><input asp-for="Reason" minlength="10" maxlength="1000" required /><span asp-validation-for="Reason"></span></div>
+            <button type="submit" class="button button-ghost">Xem trước toàn bộ đơn đã thanh toán</button>
+        </form>
+    </section>
+    @if (Model.HasPreview)
+    {
+        <section class="cb-card">
+            <h2>2. Kiểm tra và duyệt đối soát</h2>
+            <p>@Model.Orders.Count đơn đã thanh toán chưa được duyệt tại thời điểm kiểm tra; <strong>@Model.EligibleCount đơn đủ điều kiện</strong>, @(Model.Orders.Count - Model.EligibleCount) đơn bỏ qua.</p>
+            <dl class="tt-meta"><dt>Thuế bổ sung của đơn đủ điều kiện</dt><dd>@SettlementUi.Precise(Model.TotalTax)</dd>
+                <dt>Tổng tiền cộng ví</dt><dd><strong>@SettlementUi.Money(Model.TotalCredit)</strong></dd></dl>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Xem trước đối soát TikTok"><table class="tt-bulk-table">
+                <thead><tr><th scope="col">Đơn hàng</th><th scope="col">Hoa hồng thực nhận</th><th scope="col">Thuế TikTok đã trừ</th><th scope="col">Thuế bổ sung</th><th scope="col">Tiền cộng ví</th><th scope="col">Điều kiện / lưu ý</th></tr></thead>
+                <tbody>@foreach (var order in Model.Orders)
+                {
+                    <tr><td><a href="/Admin/TikTokSettlements/@order.OrderId">@order.ExternalOrderId</a></td>
+                        <td>@(order.ActualCommission.HasValue ? SettlementUi.Precise(order.ActualCommission.Value) : "Chưa có")</td>
+                        <td>@(order.ProviderTaxAmount.HasValue ? SettlementUi.Precise(order.ProviderTaxAmount.Value) : "Chưa có")</td>
+                        <td>@SettlementUi.Precise(order.TaxAmount)<small>@order.TaxPercent% trên @SettlementUi.Precise(order.AdditionalTaxBase)</small></td>
+                        <td>@SettlementUi.Money(order.UserCommission)</td>
+                        <td><strong>@(order.CanApprove ? "Đủ điều kiện" : order.AlreadySettled ? "Đã duyệt trước đó" : "Bỏ qua")</strong>
+                            @foreach (var issue in order.Issues) { <p class="tt-review-note">@issue</p> }
+                            @foreach (var warning in order.Warnings) { <small>@warning</small> }
+                            @foreach (var recipient in order.Recipients) { <small>@recipient.UserName: @SettlementUi.Money(recipient.UserCommission)</small> }
+                        </td></tr>
+                }
+                @if (Model.Orders.Count == 0) { <tr><td colspan="6" class="tt-empty">Không có đơn TikTok đã thanh toán cần duyệt.</td></tr> }
+                </tbody>
+            </table></div>
+            @if (Model.PreviewToken is not null && Model.EligibleCount > 0)
+            {
+                <form method="post" asp-page-handler="Approve" data-turbo="false" class="tt-settlement-confirm tt-divider">
+                    <input type="hidden" asp-for="PreviewToken" />
+                    <p><strong>Lý do duyệt:</strong> @Model.Reason</p>
+                    <label><input asp-for="ConfirmApproval" type="checkbox" required /> Tôi xác nhận duyệt @Model.EligibleCount đơn đủ điều kiện và cộng @SettlementUi.Money(Model.TotalCredit) vào ví theo danh sách trên.</label>
+                    <p class="tt-caption">Bản xem trước có hiệu lực 10 phút. Đơn thay đổi dữ liệu sẽ được bỏ qua và báo kết quả riêng. Các đơn mới xuất hiện sau lần xem trước cần một lượt duyệt mới.</p>
+                    <button type="submit" class="button">Duyệt toàn bộ @Model.EligibleCount đơn đủ điều kiện</button>
+                </form>
+            }
+        </section>
+    }
+</section>

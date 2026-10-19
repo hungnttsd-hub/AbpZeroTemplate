@@ -135,6 +135,34 @@ public class IndexModel : PageModel
         }
     }
 
+    public async Task<IActionResult> OnPostApproveAllPaidAsync()
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { success = false, error = "Bộ lọc không hợp lệ. Hãy tải lại trang và thử lại." });
+        try
+        {
+            var result = await _settlements.ApproveAllPaidAsync(CurrentFilters());
+            return new JsonResult(new
+            {
+                success = true,
+                message = result.ApprovedCount > 0
+                    ? $"Đã duyệt {result.ApprovedCount} đơn Shopee đã thanh toán và cộng tiền vào ví." +
+                      (result.SkippedCount > 0 ? $" Có {result.SkippedCount} bản ghi được bỏ qua để kiểm tra lại." : string.Empty)
+                    : "Không còn đơn Shopee đã thanh toán đủ điều kiện để duyệt." +
+                      (result.SkippedCount > 0 ? $" Có {result.SkippedCount} bản ghi cần kiểm tra lại." : string.Empty),
+                result
+            });
+        }
+        catch (UserFriendlyException exception)
+        {
+            return BadRequest(new { success = false, error = exception.Message });
+        }
+        catch (BusinessException exception)
+        {
+            return BadRequest(new { success = false, error = ErrorMessage(exception) });
+        }
+    }
+
     public async Task<IActionResult> OnPostRefreshMatchesAsync(Guid batchId)
     {
         try

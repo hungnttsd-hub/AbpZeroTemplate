@@ -35,6 +35,8 @@ public sealed class TikTokSettlementPreview
     public decimal GrossCommission { get; set; }
     public decimal TaxPercent { get; set; }
     public decimal TaxAmount { get; set; }
+    public decimal? ProviderTaxAmount { get; set; }
+    public decimal AdditionalTaxBase { get; set; }
     public decimal NetCommission { get; set; }
     public decimal UserCommission { get; set; }
     public decimal UnmatchedNetCommission { get; set; }
@@ -48,11 +50,20 @@ public sealed class TikTokSettlementPreview
 
 public sealed record TikTokSettlementRecipient(Guid UserId, string? UserName, decimal NetCommission, decimal UserCommission);
 public sealed record TikTokSettlementApprovalResult(bool AlreadySettled, decimal CreditedAmount);
+public sealed record TikTokBulkSettlementPlan(Guid OrderId, string ExternalOrderId, string PlanHash);
+public sealed record TikTokBulkSettlementOrderResult(Guid OrderId, string ExternalOrderId, bool Approved,
+    bool AlreadySettled, decimal CreditedAmount, string? Error);
+public sealed class TikTokBulkSettlementResult
+{
+    public List<TikTokBulkSettlementOrderResult> Orders { get; set; } = new();
+}
 
 public interface IAdminTikTokSettlementAppService : IApplicationService
 {
     Task<TikTokSettlementPreview> PreviewAsync(Guid orderId, TikTokSettlementInput? input = null);
     Task<TikTokSettlementApprovalResult> ApproveAsync(Guid orderId, TikTokSettlementInput input, string expectedPlanHash);
+    Task<List<TikTokSettlementPreview>> PreviewPaidOrdersAsync(string reason);
+    Task<TikTokBulkSettlementResult> ApprovePaidOrdersAsync(List<TikTokBulkSettlementPlan> plans, string reason);
 }
 
 // Reads the registered cashback Creator identity without refreshing tokens or calling TikTok.

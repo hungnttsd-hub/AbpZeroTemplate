@@ -58,5 +58,17 @@ chỉ thao tác duyệt của admin mới chốt số tiền và cộng ví.
 Các bộ lọc kết hợp theo điều kiện AND và áp dụng ở cấp bản ghi trước phân trang.
 Danh sách batch, chi tiết batch, số lượng và tổng tiền đều tính theo các dòng phù hợp.
 Trạng thái nhãn batch vẫn mô tả trạng thái tổng thể của file nhập.
-Duyệt hàng loạt chỉ xử lý các dòng Shopee đã thanh toán của batch phù hợp bộ lọc,
-trên tất cả các trang. Sau duyệt, tải lại dữ liệu để đồng bộ bộ lọc và tổng tiền.
+Duyệt hàng loạt chỉ xử lý các dòng Shopee đã thanh toán phù hợp bộ lọc, trên tất cả
+các trang. Trong từng batch, nút duyệt chỉ xử lý batch đó. Ở mục **Tất cả đơn đối soát**,
+nút **Duyệt tất cả đơn Shopee đã thanh toán** xử lý mọi batch khớp bộ lọc; không giới
+hạn ở 20 batch hoặc 50 đơn đang hiển thị. Xóa bộ lọc để duyệt toàn bộ đơn đã thanh toán.
+
+Trang hiển thị số bản ghi đã thanh toán chưa duyệt trên toàn bộ phạm vi đang lọc;
+nút bị vô hiệu hóa khi số này bằng 0. Hộp xác nhận nêu rõ thao tác sẽ cộng ví.
+Backend chọn lại dữ liệu theo `PaidAt > UnixEpoch`, bỏ bản ghi `Approved`/`AlreadySettled`,
+ghép lại dữ liệu và dùng chung kiểm tra/phân bổ/chốt tiền với duyệt theo batch.
+Các bản ghi trùng đơn giữa các batch trong lượt duyệt được phát hiện cùng nhau và
+bỏ qua để kiểm tra; đơn thiếu dữ liệu nhận tiền cũng được bỏ qua. Không duyệt các
+đơn Shopee chưa thanh toán qua nút này. Kết quả báo số đã duyệt/số bỏ qua; sau duyệt,
+tải lại dữ liệu để đồng bộ bộ lọc và tổng tiền. Quyền `Affiliate.Admin.Orders` và
+antiforgery token vẫn được kiểm tra. Không cần migration.

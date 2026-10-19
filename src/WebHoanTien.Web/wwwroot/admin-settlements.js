@@ -141,13 +141,14 @@
         if (!form) return;
         event.preventDefault();
         const bulk = form.hasAttribute("data-approve-all");
+        const allBatches = form.dataset.approvalScope === "all-batches";
         const manual = form.querySelector("[data-manual-amounts]:not(:disabled)");
         if (manual && !form.reportValidity()) return;
         const amount = manual ? previewManual(form) : bulk ? Number(form.dataset.amount) || 0 : Number(form.closest("[data-settlement-record]")?.dataset.paid) || 0;
         const confirmed = await window.CatsBackModal.confirm({
             variant: "info",
             title: bulk ? "Duyệt các đơn Shopee đã thanh toán?" : "Duyệt đơn đối soát?",
-            message: bulk ? "Duyệt các đơn Shopee đã thanh toán trong batch phù hợp với bộ lọc hiện tại, trên tất cả các trang, dù trạng thái đơn chưa hoàn thành. Khoản thuế/phí Shopee chưa trừ sẽ áp mặc định; khoản đã trừ giữ nguyên. Đơn Shopee chưa thanh toán cần duyệt riêng." : amount > 0
+            message: bulk ? `Duyệt các đơn Shopee đã thanh toán ${allBatches ? "trên mọi batch khớp" : "trong batch phù hợp với"} bộ lọc hiện tại, trên tất cả các trang, dù trạng thái đơn chưa hoàn thành. Thao tác sẽ cộng tiền vào ví người dùng. Đơn đã duyệt hoặc chưa đủ dữ liệu sẽ được bỏ qua. Khoản thuế/phí Shopee chưa trừ sẽ áp mặc định; khoản đã trừ giữ nguyên. Đơn Shopee chưa thanh toán cần duyệt riêng.` : amount > 0
                 ? `Thao tác sẽ cộng tiền vào ví người dùng. Tổng hoa hồng tương ứng: ${money.format(amount)}đ.`
                 : "Thao tác sẽ dùng giá trị đối soát đang hiển thị để cộng tiền vào ví người dùng.",
             cancelText: "Kiểm tra lại",
