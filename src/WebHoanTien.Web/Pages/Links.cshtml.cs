@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using WebHoanTien.Affiliates;
@@ -15,6 +16,7 @@ public class LinksModel : PageModel
     public const int PageSize = 10;
 
     private readonly IAffiliateLinkAppService _links;
+    private readonly ILogger<LinksModel> _logger;
 
     [BindProperty]
     public string LinkUrl { get; set; } = string.Empty;
@@ -22,7 +24,11 @@ public class LinksModel : PageModel
     public PagedResultDto<AffiliateTrackingDto> Links { get; private set; } = new();
     public bool HasMore => Links.Items.Count < Links.TotalCount;
 
-    public LinksModel(IAffiliateLinkAppService links) => _links = links;
+    public LinksModel(IAffiliateLinkAppService links, ILogger<LinksModel> logger)
+    {
+        _links = links;
+        _logger = logger;
+    }
 
     public async Task OnGetAsync() => Links = await GetPageAsync(0);
 
@@ -97,9 +103,11 @@ public class LinksModel : PageModel
                 ? BadRequest(new { success = false, error = exception.Message })
                 : RedirectToPage();
         }
-        catch (BusinessException)
+        catch (BusinessException exception)
         {
-            const string error = "Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.";
+            _logger.LogWarning(exception, "Affiliate link creation failed. Code: {ErrorCode}; Reason: {Reason}.",
+                exception.Code, exception.Data["Reason"]);
+            var error = AffiliateLinkErrorUi.MessageFor(exception);
             return IsAjaxRequest()
                 ? BadRequest(new { success = false, error })
                 : RedirectToPage();

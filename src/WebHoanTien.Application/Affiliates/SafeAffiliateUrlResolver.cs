@@ -28,6 +28,8 @@ public class SafeAffiliateUrlResolver : ISafeAffiliateUrlResolver, ITransientDep
 
     public async Task<(string NormalizedUrl, string? ItemId)> ResolveAsync(string input, CancellationToken cancellationToken = default)
     {
+        if (Uri.TryCreate(input, UriKind.Absolute, out var inputUri))
+            EnsureSupportedTarget(inputUri);
         if (!_normalizer.TryNormalize(input, out var normalized, out var itemId))
             throw new BusinessException(WebHoanTienDomainErrorCodes.InvalidAffiliateUrl);
 
@@ -44,6 +46,7 @@ public class SafeAffiliateUrlResolver : ISafeAffiliateUrlResolver, ITransientDep
             if ((int)response.StatusCode is >= 300 and < 400 && response.Headers.Location is not null)
             {
                 current = response.Headers.Location.IsAbsoluteUri ? response.Headers.Location : new Uri(current, response.Headers.Location);
+                EnsureSupportedTarget(current);
                 if (!_normalizer.TryNormalize(current.AbsoluteUri, out normalized, out itemId))
                     throw new BusinessException(WebHoanTienDomainErrorCodes.UnsafeRedirect);
                 current = new Uri(normalized);
@@ -56,6 +59,8 @@ public class SafeAffiliateUrlResolver : ISafeAffiliateUrlResolver, ITransientDep
             var resolvedUrl = await TryReadResolvedUrlAsync(response, cancellationToken);
             if (!string.IsNullOrWhiteSpace(resolvedUrl))
             {
+                if (Uri.TryCreate(resolvedUrl, UriKind.Absolute, out var resolvedUri))
+                    EnsureSupportedTarget(resolvedUri);
                 if (!_normalizer.TryNormalize(resolvedUrl, out normalized, out itemId) ||
                     ShopeeUrlNormalizer.IsShortHost(new Uri(normalized).IdnHost))
                 {
@@ -75,6 +80,13 @@ public class SafeAffiliateUrlResolver : ISafeAffiliateUrlResolver, ITransientDep
         }
 
         throw new BusinessException(WebHoanTienDomainErrorCodes.UnsafeRedirect).WithData("Reason", "TooManyRedirects");
+    }
+
+    private static void EnsureSupportedTarget(Uri uri)
+    {
+        if (ShopeeLinkTargetClassifier.IsVideoShareUrl(uri))
+            throw new UserFriendlyException(ShopeeLinkTargetClassifier.VideoShareUnsupportedMessage,
+                code: WebHoanTienDomainErrorCodes.AffiliateTargetUnsupported);
     }
 
     private static async Task<string?> TryReadResolvedUrlAsync(HttpResponseMessage response, CancellationToken cancellationToken)

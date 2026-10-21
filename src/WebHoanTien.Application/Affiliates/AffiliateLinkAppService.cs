@@ -62,6 +62,13 @@ public class AffiliateLinkAppService : WebHoanTienAppService, IAffiliateLinkAppS
     [AllowAnonymous]
     public Task<AffiliateUrlValidationDto> ValidateAsync(ValidateAffiliateUrlInput input)
     {
+        if (Uri.TryCreate(input.Url, UriKind.Absolute, out var inputUri) &&
+            ShopeeLinkTargetClassifier.IsVideoShareUrl(inputUri))
+        {
+            return Task.FromResult(InvalidValidation(WebHoanTienDomainErrorCodes.AffiliateTargetUnsupported,
+                ShopeeLinkTargetClassifier.VideoShareUnsupportedMessage));
+        }
+
         if (TikTokAffiliateUrl.TryNormalizeProductInput(input.Url, out var tikTokUrl, out var tikTokProductId))
         {
             if (input.TargetType == AffiliateLinkTargetType.Shop || !IsSupportedInputTargetType(input.TargetType))

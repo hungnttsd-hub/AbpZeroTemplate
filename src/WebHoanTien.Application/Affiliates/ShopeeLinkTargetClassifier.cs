@@ -7,6 +7,16 @@ namespace WebHoanTien.Affiliates;
 
 public class ShopeeLinkTargetClassifier : ITransientDependency
 {
+    public const string VideoShareUnsupportedMessage =
+        "Đây là link video Shopee. Vui lòng mở sản phẩm được gắn trong video và sao chép link sản phẩm để tạo link hoàn tiền.";
+
+    public static bool IsVideoShareUrl(Uri uri) =>
+        uri.IsAbsoluteUri &&
+        string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+        uri.IdnHost.Equals("sv.shopee.vn", StringComparison.OrdinalIgnoreCase) &&
+        string.IsNullOrEmpty(uri.UserInfo) && uri.IsDefaultPort &&
+        uri.AbsolutePath.StartsWith("/share-video/", StringComparison.OrdinalIgnoreCase);
+
     private static readonly Regex ShopUsernamePattern = new(
         @"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);

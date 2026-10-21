@@ -127,9 +127,11 @@ public class IndexModel : PageModel
                 await LoadDashboardAsync();
                 return Page();
             }
-            catch (BusinessException)
+            catch (BusinessException exception)
             {
-                Error = "Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.";
+                _logger.LogWarning(exception, "Affiliate link creation failed. Code: {ErrorCode}; Reason: {Reason}.",
+                    exception.Code, exception.Data["Reason"]);
+                Error = AffiliateLinkErrorUi.MessageFor(exception);
                 if (IsAjaxRequest()) return BadRequest(new { success = false, error = Error });
                 await LoadDashboardAsync();
                 return Page();

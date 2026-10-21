@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Volo.Abp;
 using WebHoanTien.Affiliates;
 
@@ -16,8 +17,10 @@ public class PendingAffiliateModel : PageModel
     private readonly IAffiliateLinkAppService _links;
     private readonly ITimeLimitedDataProtector _protector;
     private readonly IDistributedCache _cache;
-    public PendingAffiliateModel(IAffiliateLinkAppService links, IDataProtectionProvider dataProtection, IDistributedCache cache)
-    { _links = links; _cache = cache; _protector = dataProtection.CreateProtector("WebHoanTien.PendingAffiliate.v1").ToTimeLimitedDataProtector(); }
+    private readonly ILogger<PendingAffiliateModel> _logger;
+    public PendingAffiliateModel(IAffiliateLinkAppService links, IDataProtectionProvider dataProtection,
+        IDistributedCache cache, ILogger<PendingAffiliateModel> logger)
+    { _links = links; _cache = cache; _logger = logger; _protector = dataProtection.CreateProtector("WebHoanTien.PendingAffiliate.v1").ToTimeLimitedDataProtector(); }
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -47,11 +50,21 @@ public class PendingAffiliateModel : PageModel
             TempData["AffiliateLinkError"] = exception.Message;
             return RedirectToPage("/Index");
         }
-        catch
+        catch (BusinessException exception)
         {
+            _logger.LogWarning(exception, "Pending affiliate link creation failed. Code: {ErrorCode}; Reason: {Reason}.",
+                exception.Code, exception.Data["Reason"]);
             Response.Cookies.Delete("wht.pending");
             RestorePendingContext(action);
-            TempData["AffiliateLinkError"] = "Không thể tạo link mua hàng lúc này. Vui lòng thử lại sau.";
+            TempData["AffiliateLinkError"] = AffiliateLinkErrorUi.MessageFor(exception);
+            return RedirectToPage("/Index");
+        }
+        catch (System.Exception exception)
+        {
+            _logger.LogError(exception, "Unable to complete pending affiliate link creation.");
+            Response.Cookies.Delete("wht.pending");
+            RestorePendingContext(action);
+            TempData["AffiliateLinkError"] = AffiliateLinkErrorUi.DefaultMessage;
             return RedirectToPage("/Index");
         }
     }
