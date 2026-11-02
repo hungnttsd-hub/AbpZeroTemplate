@@ -18,8 +18,10 @@ hoàn tiền và từ chối. Vẫn kiểm tra đơn/conversion hợp lệ, ngư
 tổng tiền và chống duyệt trùng. Trạng thái trước khi duyệt được lưu trong
 `ExtraProperties.OrderStatusAtApproval`. Đơn đã chốt không bị import sau ghi đè trạng thái/số tiền.
 
-Duyệt hàng loạt vẫn chỉ áp dụng cho bảng kê **Shopee đã thanh toán**. Đơn Shopee chưa thanh toán
-có thể duyệt riêng với giá trị tự tính, hoặc bật "Tự nhập hoa hồng, thuế và phí" để ghi đè.
+Nút **Duyệt hàng loạt theo bộ lọc** áp dụng cho cả đơn Shopee đã thanh toán và chưa thanh toán
+phù hợp bộ lọc. Dùng giá trị tự tính đang hiển thị, cùng công thức với duyệt riêng;
+không ghi đè số tiền thủ công hàng loạt. Đơn Shopee chưa thanh toán vẫn có thể duyệt riêng
+và bật "Tự nhập hoa hồng, thuế và phí" để ghi đè.
 
 ## Thuế/phí mặc định
 
@@ -54,21 +56,36 @@ chỉ thao tác duyệt của admin mới chốt số tiền và cộng ví.
 - Thanh toán Shopee: tất cả, đã thanh toán, chưa thanh toán; dùng cùng điều kiện
   `PaidAt > UnixEpoch` như nhãn thanh toán trên mỗi dòng.
 - Affiliate ID: khớp chính xác `SourceAffiliateId` của bảng kê, bỏ khoảng trắng hai đầu.
+- Từ ngày đặt hàng / đến hết ngày: lọc `PurchaseTime` của conversion Shopee đã ghép,
+  theo ngày Việt Nam (UTC+7). Ngày bắt đầu được tính từ 00:00; ngày kết thúc bao gồm
+  cả ngày, bằng điều kiện nhỏ hơn 00:00 ngày kế tiếp. Cho phép chỉ nhập một mốc ngày;
+  để trống cả hai sẽ không giới hạn ngày. Khi có lọc ngày, bản ghi chưa ghép được
+  conversion có ngày đặt hàng sẽ bị loại khỏi kết quả. Không dùng ngày import hoặc ngày Shopee trả tiền.
+  Ngày phải từ năm 1900 đến 9998 và từ ngày không được sau đến ngày; bộ lọc không hợp lệ
+  hiển thị lỗi và không được dùng để duyệt hàng loạt.
 
 Các bộ lọc kết hợp theo điều kiện AND và áp dụng ở cấp bản ghi trước phân trang.
 Danh sách batch, chi tiết batch, số lượng và tổng tiền đều tính theo các dòng phù hợp.
+Khoảng ngày được giữ khi chuyển batch, phân trang và gửi yêu cầu duyệt hàng loạt;
+hộp xác nhận duyệt hiển thị lại khoảng ngày. Backend áp dụng cùng điều kiện ngày
+cho danh sách, thống kê và chọn các bản ghi để duyệt trên mọi trang. Không cần migration.
 Trạng thái nhãn batch vẫn mô tả trạng thái tổng thể của file nhập.
-Duyệt hàng loạt chỉ xử lý các dòng Shopee đã thanh toán phù hợp bộ lọc, trên tất cả
-các trang. Trong từng batch, nút duyệt chỉ xử lý batch đó. Ở mục **Tất cả đơn đối soát**,
-nút **Duyệt tất cả đơn Shopee đã thanh toán** xử lý mọi batch khớp bộ lọc; không giới
-hạn ở 20 batch hoặc 50 đơn đang hiển thị. Xóa bộ lọc để duyệt toàn bộ đơn đã thanh toán.
+Duyệt hàng loạt xử lý các dòng phù hợp bộ lọc, trên tất cả các trang. Trong từng batch,
+nút duyệt chỉ xử lý batch đó. Ở mục **Tất cả đơn đối soát**, nút **Duyệt hàng loạt theo
+bộ lọc** xử lý mọi batch khớp bộ lọc; không giới hạn ở 20 batch hoặc 50 đơn đang hiển thị.
+Chọn **Shopee đã thanh toán** để chỉ duyệt đơn đã thanh toán; chọn **Shopee chưa thanh toán**
+để chỉ duyệt đơn chưa thanh toán. Xóa bộ lọc sẽ bao gồm cả hai nhóm.
 
-Trang hiển thị số bản ghi đã thanh toán chưa duyệt trên toàn bộ phạm vi đang lọc;
-nút bị vô hiệu hóa khi số này bằng 0. Hộp xác nhận nêu rõ thao tác sẽ cộng ví.
-Backend chọn lại dữ liệu theo `PaidAt > UnixEpoch`, bỏ bản ghi `Approved`/`AlreadySettled`,
-ghép lại dữ liệu và dùng chung kiểm tra/phân bổ/chốt tiền với duyệt theo batch.
+Trang hiển thị số bản ghi chưa duyệt cần kiểm tra trên toàn bộ phạm vi đang lọc,
+không tính `Approved`/`AlreadySettled`; nút bị vô hiệu hóa khi số này bằng 0.
+Hộp xác nhận nêu rõ số bản ghi, phạm vi mọi trang, khả năng bao gồm đơn chưa thanh toán
+và thao tác sẽ cộng ví. Backend chọn lại dữ liệu theo bộ lọc, bỏ bản ghi
+`Approved`/`AlreadySettled`, ghép lại dữ liệu và dùng chung kiểm tra/phân bổ/chốt tiền
+với duyệt theo batch. Đơn chưa thanh toán dùng thời gian duyệt làm thời gian chốt,
+kể cả khi nguồn ghi `PaidAt` bằng UnixEpoch.
 Các bản ghi trùng đơn giữa các batch trong lượt duyệt được phát hiện cùng nhau và
-bỏ qua để kiểm tra; đơn thiếu dữ liệu nhận tiền cũng được bỏ qua. Không duyệt các
-đơn Shopee chưa thanh toán qua nút này. Kết quả báo số đã duyệt/số bỏ qua; sau duyệt,
+bỏ qua để kiểm tra; đơn thiếu dữ liệu nhận tiền cũng được bỏ qua.
+Các phương thức cũ `ApproveAllAsync`/`ApproveAllPaidAsync` vẫn chỉ duyệt đơn đã thanh toán;
+giao diện mới dùng `ApproveFilteredAsync`. Kết quả báo số đã duyệt/số bỏ qua; sau duyệt,
 tải lại dữ liệu để đồng bộ bộ lọc và tổng tiền. Quyền `Affiliate.Admin.Orders` và
 antiforgery token vẫn được kiểm tra. Không cần migration.

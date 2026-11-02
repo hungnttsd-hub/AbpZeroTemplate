@@ -20,13 +20,27 @@ public sealed class AdminShopeeSettlementManualInput
     public decimal? ServiceFeePercent { get; set; }
 }
 
-public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRequestDto
+public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRequestDto, IValidatableObject
 {
     [StringLength(256)] public string? Filter { get; set; }
     public ShopeeSettlementBatchStatus? Status { get; set; }
     public bool? IsApproved { get; set; }
     public bool? IsShopeePaid { get; set; }
     [StringLength(128)] public string? AffiliateId { get; set; }
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        foreach (var result in base.Validate(validationContext)) yield return result;
+        if ((FromDate.HasValue && FromDate.Value.Year is < 1900 or > 9998) ||
+            (ToDate.HasValue && ToDate.Value.Year is < 1900 or > 9998))
+            yield return new ValidationResult("Ngày lọc phải nằm trong khoảng năm 1900 đến 9998.",
+                new[] { nameof(FromDate), nameof(ToDate) });
+        if (FromDate.HasValue && ToDate.HasValue && FromDate.Value.Date > ToDate.Value.Date)
+            yield return new ValidationResult("Từ ngày phải nhỏ hơn hoặc bằng đến ngày.",
+                new[] { nameof(FromDate), nameof(ToDate) });
+    }
 }
 
 public sealed class AdminShopeeSettlementSummaryDto
@@ -42,6 +56,7 @@ public sealed class AdminShopeeSettlementSummaryDto
     public decimal TotalUserCommission { get; set; }
     public decimal TotalAdminCommission { get; set; }
     public int PaidUnapprovedCount { get; set; }
+    public int UnapprovedCount { get; set; }
 }
 
 public sealed class AdminShopeeSettlementBatchDto : CreationAuditedEntityDto<Guid>
@@ -164,5 +179,7 @@ public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
         AdminShopeeSettlementBatchListInput? input = null);
     Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveAllPaidAsync(
         AdminShopeeSettlementBatchListInput input);
+    Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveFilteredAsync(
+        AdminShopeeSettlementBatchListInput input, Guid? batchId = null);
     Task<AdminShopeeSettlementRefreshResultDto> RefreshMatchesAsync(Guid batchId);
 }

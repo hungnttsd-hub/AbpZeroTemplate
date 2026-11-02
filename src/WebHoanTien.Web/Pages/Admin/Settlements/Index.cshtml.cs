@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -24,6 +26,8 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)] public bool? IsApproved { get; set; }
     [BindProperty(SupportsGet = true)] public bool? IsShopeePaid { get; set; }
     [BindProperty(SupportsGet = true)] public string? AffiliateId { get; set; }
+    [BindProperty(SupportsGet = true), DataType(DataType.Date)] public DateTime? FromDate { get; set; }
+    [BindProperty(SupportsGet = true), DataType(DataType.Date)] public DateTime? ToDate { get; set; }
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     [BindProperty(SupportsGet = true)] public Guid? BatchId { get; set; }
     [BindProperty(SupportsGet = true)] public bool AllRecords { get; set; }
@@ -46,11 +50,30 @@ public class IndexModel : PageModel
         Filter = Filter,
         IsApproved = IsApproved,
         IsShopeePaid = IsShopeePaid,
-        AffiliateId = AffiliateId
+        AffiliateId = AffiliateId,
+        FromDate = FromDate,
+        ToDate = ToDate
     };
+
+    private bool ValidateFilters()
+    {
+        var input = CurrentFilters();
+        var errors = new List<ValidationResult>();
+        Validator.TryValidateObject(input, new ValidationContext(input), errors, validateAllProperties: true);
+        foreach (var error in errors)
+            ModelState.AddModelError(string.Empty, error.ErrorMessage ?? "Bộ lọc không hợp lệ.");
+        return ModelState.IsValid;
+    }
 
     public async Task OnGetAsync()
     {
+        if (!ValidateFilters())
+        {
+            AllRecords = true;
+            BatchId = null;
+            Records = new PagedResultDto<AdminShopeeSettlementRecordDto>();
+            return;
+        }
         PageNumber = Math.Max(1, PageNumber);
         RecordPageNumber = Math.Max(1, RecordPageNumber);
         var input = CurrentFilters();
@@ -112,6 +135,8 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostApproveAllAsync(Guid batchId)
     {
+        if (!ValidateFilters())
+            return BadRequest(new { success = false, error = "Bộ lọc không hợp lệ. Kiểm tra lại khoảng ngày và thử lại." });
         try
         {
             var result = await _settlements.ApproveAllAsync(batchId, CurrentFilters());
@@ -135,9 +160,36 @@ public class IndexModel : PageModel
         }
     }
 
+    public async Task<IActionResult> OnPostApproveFilteredAsync(Guid? batchId)
+    {
+        if (!ValidateFilters())
+            return BadRequest(new { success = false, error = "Bộ lọc không hợp lệ. Hãy tải lại trang và thử lại." });
+        try
+        {
+            var result = await _settlements.ApproveFilteredAsync(CurrentFilters(), batchId);
+            return new JsonResult(new
+            {
+                success = true,
+                message = (result.ApprovedCount > 0
+                    ? $"Đã duyệt {result.ApprovedCount} đơn theo bộ lọc và cộng tiền vào ví."
+                    : "Không còn đơn phù hợp đủ điều kiện để duyệt.") +
+                    (result.SkippedCount > 0 ? $" Có {result.SkippedCount} bản ghi được bỏ qua để kiểm tra lại." : string.Empty),
+                result
+            });
+        }
+        catch (UserFriendlyException exception)
+        {
+            return BadRequest(new { success = false, error = exception.Message });
+        }
+        catch (BusinessException exception)
+        {
+            return BadRequest(new { success = false, error = ErrorMessage(exception) });
+        }
+    }
+
     public async Task<IActionResult> OnPostApproveAllPaidAsync()
     {
-        if (!ModelState.IsValid)
+        if (!ValidateFilters())
             return BadRequest(new { success = false, error = "Bộ lọc không hợp lệ. Hãy tải lại trang và thử lại." });
         try
         {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -98,7 +99,9 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 TotalActualCommission = financial.ActualCommission,
                 TotalUserCommission = financial.UserCommission,
                 TotalAdminCommission = financial.AdminCommission,
-                PaidUnapprovedCount = paidUnapprovedCount
+                PaidUnapprovedCount = paidUnapprovedCount,
+                UnapprovedCount = counts.Where(group => group.Status != ShopeeSettlementRecordStatus.Approved &&
+                    group.Status != ShopeeSettlementRecordStatus.AlreadySettled).Sum(group => group.Count)
             },
             Batches = new PagedResultDto<AdminShopeeSettlementBatchDto>(totalCount,
                 batchDtos)
@@ -234,7 +237,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         var batch = await _batches.GetAsync(batchId);
         var candidates = await GetPaidApprovalCandidatesAsync(input, batchId);
-        var preparation = await ApprovePaidRecordsAsync(candidates);
+        var preparation = await ApproveRecordsAsync(candidates);
         return await BuildResultAsync(batch, preparation.Work, preparation.SkippedCount);
     }
 
@@ -244,7 +247,28 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         // Select across every matching batch/page, then prepare together to detect duplicate orders.
         var candidates = await GetPaidApprovalCandidatesAsync(input);
-        var preparation = await ApprovePaidRecordsAsync(candidates);
+        var preparation = await ApproveRecordsAsync(candidates);
+        return new AdminShopeeSettlementBulkApprovalResultDto
+        {
+            ApprovedCount = preparation.Work.Count,
+            SkippedCount = preparation.SkippedCount,
+            ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
+            CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+        };
+    }
+
+    [UnitOfWork]
+    public async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveFilteredAsync(
+        AdminShopeeSettlementBatchListInput input, Guid? batchId = null)
+    {
+        if (batchId.HasValue) await _batches.GetAsync(batchId.Value);
+        // Apply the same filters as the list, without its pagination or a paid-only restriction.
+        var records = await GetFilteredRecordsAsync(input);
+        var candidates = await AsyncExecuter.ToListAsync(records.Where(record =>
+            (!batchId.HasValue || record.BatchId == batchId.Value) &&
+            record.Status != ShopeeSettlementRecordStatus.Approved &&
+            record.Status != ShopeeSettlementRecordStatus.AlreadySettled));
+        var preparation = await ApproveRecordsAsync(candidates);
         return new AdminShopeeSettlementBulkApprovalResultDto
         {
             ApprovedCount = preparation.Work.Count,
@@ -267,7 +291,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             paidBills.Any(bill => bill.Id == record.BillId)));
     }
 
-    private async Task<BulkApprovalPreparation> ApprovePaidRecordsAsync(List<ShopeeSettlementRecord> candidates)
+    private async Task<BulkApprovalPreparation> ApproveRecordsAsync(List<ShopeeSettlementRecord> candidates)
     {
         if (candidates.Count == 0)
             return new BulkApprovalPreparation(new List<ApprovalWork>(), 0);
@@ -332,7 +356,6 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         foreach (var record in records)
         {
             if (record.Status is ShopeeSettlementRecordStatus.Approved or ShopeeSettlementRecordStatus.AlreadySettled) continue;
-            if (!bills[record.BillId].IsShopeePaid) continue;
             if (!record.AffiliateOrderId.HasValue || !record.AffiliateConversionId.HasValue)
             {
                 record.SetInvalid("Bản ghi không còn liên kết đầy đủ với đơn hàng CatsBack.");
@@ -628,6 +651,27 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         var records = await _records.GetQueryableAsync();
         if (input is null) return records;
+        var filterError = input.Validate(new ValidationContext(input)).FirstOrDefault();
+        if (filterError is not null) throw new UserFriendlyException(filterError.ErrorMessage!);
+        if (input.FromDate.HasValue || input.ToDate.HasValue)
+        {
+            var conversions = (await _conversions.GetQueryableAsync())
+                .Where(conversion => conversion.Platform == AffiliatePlatform.Shopee);
+            if (input.FromDate.HasValue)
+            {
+                var fromUtc = new DateTimeOffset(DateTime.SpecifyKind(input.FromDate.Value.Date,
+                    DateTimeKind.Unspecified), TimeSpan.FromHours(7)).UtcDateTime;
+                conversions = conversions.Where(conversion => conversion.PurchaseTime >= fromUtc);
+            }
+            if (input.ToDate.HasValue)
+            {
+                var toUtc = new DateTimeOffset(DateTime.SpecifyKind(input.ToDate.Value.Date.AddDays(1),
+                    DateTimeKind.Unspecified), TimeSpan.FromHours(7)).UtcDateTime;
+                conversions = conversions.Where(conversion => conversion.PurchaseTime < toUtc);
+            }
+            records = records.Where(record => conversions.Any(conversion =>
+                conversion.Id == record.AffiliateConversionId));
+        }
         var batches = await _batches.GetQueryableAsync();
         var bills = await _bills.GetQueryableAsync();
         if (!string.IsNullOrWhiteSpace(input.Filter))
@@ -812,7 +856,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             rows.Count(x => x.Status != AffiliateAttributionStatus.Matched || !x.UserId.HasValue));
     }
 
-    private DateTime SettlementTime(ShopeeSettlementBill bill) => bill.PaidAt ?? Clock.Now;
+    private DateTime SettlementTime(ShopeeSettlementBill bill) => bill.IsShopeePaid ? bill.PaidAt!.Value : Clock.Now;
 
     private static string SettlementReference(ShopeeSettlementBill bill) =>
         string.IsNullOrWhiteSpace(bill.PayoutId) ? $"validation:{bill.ValidationId}" : bill.PayoutId;
