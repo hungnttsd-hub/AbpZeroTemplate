@@ -1,5 +1,48 @@
 # Đối soát và duyệt Shopee
 
+## Tự động duyệt đơn hoàn thành sau 7 ngày
+
+Trang `/Admin/Settlements` có khu vực **Tự động duyệt đơn Shopee** với nút bật/tắt lịch
+và **Chạy ngay**. Mặc định lịch tắt. Khi bật, job chạy một lần mỗi ngày lúc **03:00
+giờ Việt Nam (UTC+7)**. Chạy ngay đưa công việc vào Hangfire để xử lý nền, dùng cùng
+điều kiện với lịch và có thể chạy khi lịch đang tắt. Hai nút đều yêu cầu quyền
+`Affiliate.Admin.Orders` và antiforgery token.
+
+Điều kiện đồng thời:
+
+- Đơn và conversion thuộc Shopee, trạng thái đơn đúng `Completed` (Hoàn thành), chưa chốt tiền.
+- `PurchaseTime < thời điểm chạy - 7 ngày`: hơn 7 × 24 giờ tính từ thời gian đặt hàng
+  Shopee, không phải ngày import vào CatBack. Đúng 7 ngày chưa đủ điều kiện.
+- Có bản ghi đối soát liên kết hợp lệ; không xử lý đơn chưa có dữ liệu đối soát.
+  Áp dụng trên toàn bộ batch, không dùng bộ lọc đang mở trên trang.
+- Không bắt buộc Shopee đã thanh toán. Các kiểm tra hoa hồng, conversion,
+  attribution/người nhận và trùng đơn vẫn dùng chung với duyệt hàng loạt hiện có.
+
+Số tiền/thuế/phí dùng chung `ShopeeSettlementAmounts`; không nhập tay khi job chạy.
+Ngay trước khi chuẩn bị chốt tiền, trạng thái `Completed` và mốc 7 ngày được kiểm tra lại.
+Nguồn duyệt được lưu trong `ExtraProperties.ApprovalSource`:
+`CompletedSevenDaysDaily` hoặc `CompletedSevenDaysManual`.
+
+Lịch đăng ký qua Hangfire với ID `shopee-completed-seven-days-daily`. Job đọc lại cờ bật/tắt
+khi thực thi, nên lượt theo lịch đã xếp hàng cũng bỏ qua nếu lịch đã tắt. Tắt lịch không hủy
+lượt đang xử lý. Ứng dụng/Hangfire Server cần đang chạy để thực thi lịch.
+
+Cấu hình lưu bằng ABP global settings: `CatBack.Shopee.AutoApproval.Enabled`,
+`ApprovedBy`, `LastRun`. Lượt tự động dùng tài khoản admin đã bật lịch; lượt bấm tay
+dùng tài khoản bấm nút. Job nạp claims hiện hành của tài khoản thật và dịch vụ duyệt
+vẫn kiểm tra quyền; tài khoản bị khóa/vô hiệu hóa/mất quyền sẽ không duyệt được.
+Sau đó có thể tắt/bật lại bằng admin hợp lệ để cập nhật tài khoản cho phép chạy lịch.
+
+Khóa PostgreSQL dùng chung cho duyệt riêng, hàng loạt và job được giữ tới khi transaction
+chốt tiền commit. Lượt khác đang duyệt sẽ bị từ chối và có thể chạy lại sau. Chống duyệt
+trùng, concurrency token và notification hiện có vẫn được giữ. Job không tự retry khi lỗi;
+kết quả gần nhất (thời gian, nguồn chạy, số duyệt/bỏ qua, tiền cộng ví hoặc lỗi) hiển thị
+trên trang sau khi tải lại. Hangfire lưu lịch sử các lượt chạy. Không cần migration.
+
+Tham khảo cơ chế lịch và concurrency của Hangfire:
+[Recurring tasks](https://docs.hangfire.io/en/latest/background-methods/performing-recurrent-tasks.html),
+[Concurrency](https://docs.hangfire.io/en/latest/background-processing/throttling.html).
+
 ## Tự ghép lại dữ liệu
 
 `ShopeeSettlementMatcher` được gọi sau khi import/cập nhật conversion Shopee, khi import lại

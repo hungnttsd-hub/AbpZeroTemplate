@@ -31,14 +31,14 @@
             <form method="post" asp-page-handler="Preview" data-turbo="false" class="tt-settlement-form">
                 <div class="tt-field tt-wide"><label asp-for="Input.Source">Nguồn hoa hồng</label>
                     <select asp-for="Input.Source">
-                        <option value="1">Dùng hoa hồng thực nhận TikTok — thuế TikTok bằng 0đ thì trừ bổ sung 10%</option>
+                        <option value="1">Dùng hoa hồng thực nhận TikTok — thiếu thuế hoặc thuế 0đ thì trừ bổ sung 10%</option>
                         <option value="2">Admin nhập hoa hồng trước thuế — thuế mặc định 10%</option>
                     </select>
                 </div>
                 <div class="tt-field"><label asp-for="Input.GrossCommission">Hoa hồng trước thuế (đ, chỉ dùng khi nhập tay)</label><input asp-for="Input.GrossCommission" type="number" min="0" max="1000000000000" step="0.0001" /><span asp-validation-for="Input.GrossCommission"></span></div>
                 <div class="tt-field"><label asp-for="Input.TaxPercent">Thuế nhập tay (% — nhập 0 sẽ tự áp dụng 10%)</label><input asp-for="Input.TaxPercent" type="number" min="0" max="100" step="0.0001" required /><span asp-validation-for="Input.TaxPercent"></span></div>
                 <div class="tt-field tt-wide"><label asp-for="Input.Reason">Lý do duyệt / ghi chú đối soát</label><input asp-for="Input.Reason" minlength="10" maxlength="1000" required placeholder="Căn cứ và lý do admin duyệt khoản hoàn tiền này" /><span asp-validation-for="Input.Reason"></span></div>
-                <p class="tt-caption tt-wide">Có thể duyệt nhập tay ở mọi trạng thái TikTok. Khi dùng hoa hồng thực nhận, SKU có thuế TikTok pit = 0đ được trừ bổ sung 10%; SKU đã có thuế khấu trừ không bị trừ thêm. Quy tắc này do CatBack áp dụng cho đối soát.</p>
+                <p class="tt-caption tt-wide">Có thể duyệt nhập tay ở mọi trạng thái TikTok. Khi dùng hoa hồng thực nhận, SKU chưa có thông tin thuế TikTok hoặc pit = 0đ được trừ bổ sung 10%; SKU đã có thuế khấu trừ không bị trừ thêm. Quy tắc này do CatBack áp dụng cho đối soát.</p>
                 <button type="submit" class="button">Xem trước số tiền cộng ví</button>
             </form>
         </section>
@@ -57,6 +57,7 @@
         <dl class="tt-meta">
             <dt>Hoa hồng dùng để đối soát</dt><dd>@SettlementUi.Precise(Model.Preview.GrossCommission)</dd>
             @if (Model.Preview.ProviderTaxAmount.HasValue) { <dt>Thuế TikTok đã khấu trừ</dt><dd>@SettlementUi.Precise(Model.Preview.ProviderTaxAmount.Value)</dd> }
+            @if (Model.Preview.MissingTaxSkuCount > 0) { <dt>SKU thiếu thông tin thuế</dt><dd>@Model.Preview.MissingTaxSkuCount SKU · đã áp dụng thuế bổ sung 10%</dd> }
             <dt>Hoa hồng áp dụng thuế bổ sung</dt><dd>@SettlementUi.Precise(Model.Preview.AdditionalTaxBase)</dd>
             <dt>Thuế bổ sung (@Model.Preview.TaxPercent%)</dt><dd>@SettlementUi.Precise(Model.Preview.TaxAmount)</dd>
             <dt>Còn lại sau thuế</dt><dd>@SettlementUi.Precise(Model.Preview.NetCommission)</dd>
@@ -74,7 +75,7 @@
         <p class="tt-caption">Tỷ lệ chia dùng theo từng phân bổ đã lưu của đơn. Tiền cộng ví làm tròn đến đồng, không vượt hoa hồng sau thuế của người nhận.</p>
         @if (Model.Preview.AlreadySettled)
         {
-            <dl class="tt-meta"><dt>Thời gian duyệt (UTC+7)</dt><dd>@SettlementUi.LocalTime(Model.Preview.SettledAt)</dd><dt>Admin duyệt</dt><dd>@Model.Preview.ApprovedBy</dd><dt>Mã đối soát</dt><dd><code>@Model.Preview.SettlementReference</code></dd><dt>Lý do</dt><dd>@Model.Preview.ApprovalReason</dd></dl>
+            <dl class="tt-meta"><dt>Thời gian duyệt (UTC+7)</dt><dd>@SettlementUi.LocalTime(Model.Preview.SettledAt)</dd><dt>Người / tác vụ duyệt</dt><dd>@(Model.Preview.ApprovalSource == "OrderSyncJob" ? "Job đồng bộ TikTok" : Model.Preview.ApprovedBy?.ToString())</dd><dt>Mã đối soát</dt><dd><code>@Model.Preview.SettlementReference</code></dd><dt>Lý do</dt><dd>@Model.Preview.ApprovalReason</dd></dl>
         }
         else if (Model.ShowConfirmation && Model.Preview.CanApprove)
         {

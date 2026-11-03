@@ -32,6 +32,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     private readonly AffiliateCommissionCalculator _calculator;
     private readonly CustomerNotificationManager _notificationManager;
     private readonly ShopeeSettlementMatcher _matcher;
+    private readonly ShopeeSettlementApprovalRunner _approvalRunner;
 
     public AdminShopeeSettlementApprovalAppService(IRepository<ShopeeSettlementBatch, Guid> batches,
         IRepository<ShopeeSettlementBill, Guid> bills, IRepository<ShopeeSettlementRecord, Guid> records,
@@ -39,7 +40,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         IRepository<AffiliateOrderItemAttribution, Guid> attributions,
         IRepository<AffiliateConversion, Guid> conversions, IRepository<IdentityUser, Guid> users,
         AffiliateCommissionCalculator calculator, CustomerNotificationManager notificationManager,
-        ShopeeSettlementMatcher matcher)
+        ShopeeSettlementMatcher matcher, ShopeeSettlementApprovalRunner approvalRunner)
     {
         _batches = batches;
         _bills = bills;
@@ -52,6 +53,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         _calculator = calculator;
         _notificationManager = notificationManager;
         _matcher = matcher;
+        _approvalRunner = approvalRunner;
     }
 
     [UnitOfWork]
@@ -209,73 +211,117 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 attributionsByOrder, users, grossByOrder)).ToList());
     }
 
-    [UnitOfWork]
+    [UnitOfWork(IsDisabled = true)]
     public async Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId, AdminShopeeSettlementManualInput? manual = null)
     {
-        var record = await _records.GetAsync(recordId);
-        var batch = await _batches.GetAsync(record.BatchId);
-        if (record.Status is ShopeeSettlementRecordStatus.Approved or ShopeeSettlementRecordStatus.AlreadySettled)
-            return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 1);
-        await _matcher.RefreshAsync(new[] { record });
-        var bill = await _bills.GetAsync(record.BillId);
-        if (bill.IsShopeePaid && manual is not null)
-            throw new UserFriendlyException("Đơn Shopee đã thanh toán phải dùng số tiền đối soát.");
-        var work = await TryPrepareAsync(record, bill, manual);
-        if (work is null)
+        return await _approvalRunner.RunAsync(async () =>
         {
+            var record = await _records.GetAsync(recordId);
+            var batch = await _batches.GetAsync(record.BatchId);
+            if (record.Status is ShopeeSettlementRecordStatus.Approved or ShopeeSettlementRecordStatus.AlreadySettled)
+                return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 1);
+            await _matcher.RefreshAsync(new[] { record });
+            var bill = await _bills.GetAsync(record.BillId);
+            if (bill.IsShopeePaid && manual is not null)
+                throw new UserFriendlyException("Đơn Shopee đã thanh toán phải dùng số tiền đối soát.");
+            var work = await TryPrepareAsync(record, bill, manual);
+            if (work is null)
+            {
+                await RefreshBatchAsync(batch);
+                return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 1);
+            }
+            await ApplyAsync(work);
             await RefreshBatchAsync(batch);
-            return await BuildResultAsync(batch, Array.Empty<ApprovalWork>(), skippedCount: 1);
-        }
-        await ApplyAsync(work);
-        await RefreshBatchAsync(batch);
-        return await BuildResultAsync(batch, new[] { work }, skippedCount: 0);
+            return await BuildResultAsync(batch, new[] { work }, skippedCount: 0);
+        });
     }
 
-    [UnitOfWork]
+    [UnitOfWork(IsDisabled = true)]
     public async Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId,
         AdminShopeeSettlementBatchListInput? input = null)
     {
-        var batch = await _batches.GetAsync(batchId);
-        var candidates = await GetPaidApprovalCandidatesAsync(input, batchId);
-        var preparation = await ApproveRecordsAsync(candidates);
-        return await BuildResultAsync(batch, preparation.Work, preparation.SkippedCount);
+        return await _approvalRunner.RunAsync(async () =>
+        {
+            var batch = await _batches.GetAsync(batchId);
+            var candidates = await GetPaidApprovalCandidatesAsync(input, batchId);
+            var preparation = await ApproveRecordsAsync(candidates);
+            return await BuildResultAsync(batch, preparation.Work, preparation.SkippedCount);
+        });
     }
 
-    [UnitOfWork]
+    [UnitOfWork(IsDisabled = true)]
     public async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveAllPaidAsync(
         AdminShopeeSettlementBatchListInput input)
     {
-        // Select across every matching batch/page, then prepare together to detect duplicate orders.
-        var candidates = await GetPaidApprovalCandidatesAsync(input);
-        var preparation = await ApproveRecordsAsync(candidates);
-        return new AdminShopeeSettlementBulkApprovalResultDto
+        return await _approvalRunner.RunAsync(async () =>
         {
-            ApprovedCount = preparation.Work.Count,
-            SkippedCount = preparation.SkippedCount,
-            ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
-            CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
-        };
+            // Select across every matching batch/page, then prepare together to detect duplicate orders.
+            var candidates = await GetPaidApprovalCandidatesAsync(input);
+            var preparation = await ApproveRecordsAsync(candidates);
+            return new AdminShopeeSettlementBulkApprovalResultDto
+            {
+                ApprovedCount = preparation.Work.Count,
+                SkippedCount = preparation.SkippedCount,
+                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
+                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+            };
+        });
     }
 
-    [UnitOfWork]
+    [UnitOfWork(IsDisabled = true)]
     public async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveFilteredAsync(
         AdminShopeeSettlementBatchListInput input, Guid? batchId = null)
     {
-        if (batchId.HasValue) await _batches.GetAsync(batchId.Value);
-        // Apply the same filters as the list, without its pagination or a paid-only restriction.
-        var records = await GetFilteredRecordsAsync(input);
-        var candidates = await AsyncExecuter.ToListAsync(records.Where(record =>
-            (!batchId.HasValue || record.BatchId == batchId.Value) &&
-            record.Status != ShopeeSettlementRecordStatus.Approved &&
-            record.Status != ShopeeSettlementRecordStatus.AlreadySettled));
-        var preparation = await ApproveRecordsAsync(candidates);
-        return new AdminShopeeSettlementBulkApprovalResultDto
+        return await _approvalRunner.RunAsync(async () =>
         {
-            ApprovedCount = preparation.Work.Count,
-            SkippedCount = preparation.SkippedCount,
-            ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
-            CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
-        };
+            if (batchId.HasValue) await _batches.GetAsync(batchId.Value);
+            // Apply the same filters as the list, without its pagination or a paid-only restriction.
+            var records = await GetFilteredRecordsAsync(input);
+            var candidates = await AsyncExecuter.ToListAsync(records.Where(record =>
+                (!batchId.HasValue || record.BatchId == batchId.Value) &&
+                record.Status != ShopeeSettlementRecordStatus.Approved &&
+                record.Status != ShopeeSettlementRecordStatus.AlreadySettled));
+            var preparation = await ApproveRecordsAsync(candidates);
+            return new AdminShopeeSettlementBulkApprovalResultDto
+            {
+                ApprovedCount = preparation.Work.Count,
+                SkippedCount = preparation.SkippedCount,
+                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
+                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+            };
+        });
+    }
+
+    [UnitOfWork(IsDisabled = true)]
+    public async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveCompletedOlderThanSevenDaysAsync(bool isManual)
+    {
+        return await _approvalRunner.RunAsync(async () =>
+        {
+            await _matcher.RefreshUnmatchedAsync();
+            var cutoff = Clock.Now.AddDays(-7);
+            var orders = (await _orders.GetQueryableAsync()).Where(order =>
+                order.Platform == AffiliatePlatform.Shopee && order.Status == AffiliateOrderStatus.Completed &&
+                !order.SettledAt.HasValue);
+            var conversions = (await _conversions.GetQueryableAsync()).Where(conversion =>
+                conversion.Platform == AffiliatePlatform.Shopee && conversion.PurchaseTime < cutoff &&
+                conversion.PurchaseTime > DateTime.UnixEpoch);
+            var query = from record in await _records.GetQueryableAsync()
+                        join order in orders on record.AffiliateOrderId equals order.Id
+                        join conversion in conversions on order.ConversionId equals conversion.Id
+                        where record.Status != ShopeeSettlementRecordStatus.Approved &&
+                              record.Status != ShopeeSettlementRecordStatus.AlreadySettled
+                        select record;
+            var candidates = await AsyncExecuter.ToListAsync(query);
+            var preparation = await ApproveRecordsAsync(candidates, cutoff,
+                isManual ? "CompletedSevenDaysManual" : "CompletedSevenDaysDaily");
+            return new AdminShopeeSettlementBulkApprovalResultDto
+            {
+                ApprovedCount = preparation.Work.Count,
+                SkippedCount = preparation.SkippedCount,
+                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
+                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+            };
+        });
     }
 
     private async Task<List<ShopeeSettlementRecord>> GetPaidApprovalCandidatesAsync(
@@ -291,18 +337,20 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             paidBills.Any(bill => bill.Id == record.BillId)));
     }
 
-    private async Task<BulkApprovalPreparation> ApproveRecordsAsync(List<ShopeeSettlementRecord> candidates)
+    private async Task<BulkApprovalPreparation> ApproveRecordsAsync(List<ShopeeSettlementRecord> candidates,
+        DateTime? completedBefore = null, string? approvalSource = null)
     {
         if (candidates.Count == 0)
             return new BulkApprovalPreparation(new List<ApprovalWork>(), 0);
         await _matcher.RefreshAsync(candidates);
         var billIds = candidates.Select(record => record.BillId).Distinct().ToList();
         var bills = (await _bills.GetListAsync(bill => billIds.Contains(bill.Id))).ToDictionary(bill => bill.Id);
-        var preparation = await PrepareManyAsync(candidates, bills);
+        var preparation = await PrepareManyAsync(candidates, bills, completedBefore);
         var adminId = CurrentUser.Id ??
             throw new AbpAuthorizationException("Không xác định được admin duyệt đối soát.");
         foreach (var item in preparation.Work)
         {
+            if (approvalSource is not null) item.Record.ExtraProperties["ApprovalSource"] = approvalSource;
             foreach (var allocation in item.Allocations)
                 allocation.Attribution.Settle(allocation.SettledNetCommission, allocation.SettledUserCommission);
             item.Order.Settle(item.Record.ActualPaidCommission, item.TotalUserCommission,
@@ -325,7 +373,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     }
 
     private async Task<BulkApprovalPreparation> PrepareManyAsync(List<ShopeeSettlementRecord> records,
-        IReadOnlyDictionary<Guid, ShopeeSettlementBill> bills)
+        IReadOnlyDictionary<Guid, ShopeeSettlementBill> bills, DateTime? completedBefore = null)
     {
         var duplicatedOrderIds = records.Where(record => record.AffiliateOrderId.HasValue)
             .GroupBy(record => record.AffiliateOrderId!.Value)
@@ -383,6 +431,9 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 record.SetAlreadySettled(order.Id, conversion.Id, record.UserId);
                 continue;
             }
+            if (completedBefore.HasValue && (order.Platform != AffiliatePlatform.Shopee ||
+                order.Status != AffiliateOrderStatus.Completed || conversion.PurchaseTime <= DateTime.UnixEpoch ||
+                conversion.PurchaseTime >= completedBefore.Value)) continue;
             var bill = bills[record.BillId];
             if (bill.HasAuthoritativeEligibleCommission &&
                 !CloseMoney(record.EligibleCommission, order.NetCommission))

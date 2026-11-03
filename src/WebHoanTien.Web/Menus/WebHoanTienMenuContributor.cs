@@ -53,6 +53,9 @@ public class WebHoanTienMenuContributor : IMenuContributor
         context.Menu.Items.Add(new ApplicationMenuItem(
             "Affiliate.Admin", l["Menu:AffiliateAdmin"], "~/Admin/Affiliates", "fas fa-chart-line", 50,
             requiredPermissionName: WebHoanTienPermissions.Admin.Default));
+        context.Menu.Items.Add(new ApplicationMenuItem(
+            "Affiliate.UserAffiliateIds", "Affiliate ID theo tài khoản", "~/Admin/AffiliateIds", "fas fa-link", 51,
+            requiredPermissionName: WebHoanTienPermissions.Admin.Settings));
         if (principal.IsInRole("admin"))
         {
             context.Menu.Items.Add(new ApplicationMenuItem(

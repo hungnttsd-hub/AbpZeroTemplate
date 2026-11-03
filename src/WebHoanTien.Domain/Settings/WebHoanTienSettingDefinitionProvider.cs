@@ -21,6 +21,10 @@ public class WebHoanTienSettingDefinitionProvider : SettingDefinitionProvider
 
     public override void Define(ISettingDefinitionContext context)
     {
+        context.Add(
+            new SettingDefinition(ShopeeAutoApprovalSettings.Enabled, "false", isVisibleToClients: false),
+            new SettingDefinition(ShopeeAutoApprovalSettings.ApprovedBy, "", isVisibleToClients: false),
+            new SettingDefinition(ShopeeAutoApprovalSettings.LastRun, "", isVisibleToClients: false));
         SetDefault(context, LocalizationSettingNames.DefaultLanguage, "vi");
         SetDefault(context, EmailSettingNames.DefaultFromAddress, _configuration["Smtp:FromAddress"]);
         SetDefault(context, EmailSettingNames.DefaultFromDisplayName, _configuration["Smtp:FromName"] ?? "CatBack");

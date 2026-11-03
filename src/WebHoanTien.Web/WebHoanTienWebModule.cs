@@ -569,6 +569,12 @@ public class WebHoanTienWebModule : AbpModule
             job => job.ExecuteAsync(new AffiliateRetentionJobArgs()),
             retentionCron);
 
+        RecurringJob.AddOrUpdate<ShopeeAutoApprovalJob>(
+            ShopeeAutoApprovalJob.RecurringJobId,
+            job => job.ExecuteAsync(false, null),
+            Cron.Daily(3),
+            new RecurringJobOptions { TimeZone = ShopeeAutoApprovalJob.VietnamTimeZone });
+
         // Retire the old RioHub schedule; only the Creator API imports TikTok orders.
         RecurringJob.RemoveIfExists("riohub-tiktok-orders");
         var tikTokSync = context.ServiceProvider

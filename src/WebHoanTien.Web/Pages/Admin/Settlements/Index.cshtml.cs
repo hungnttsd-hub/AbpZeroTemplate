@@ -2,13 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.SettingManagement;
+using Volo.Abp.Users;
+using WebHoanTien.Settings;
+using WebHoanTien.Web.Operations;
 using WebHoanTien.Admin;
 using WebHoanTien.Affiliates;
 using WebHoanTien.Permissions;
@@ -21,6 +27,9 @@ public class IndexModel : PageModel
     private const int BatchPageSize = 20;
     private const int RecordPageSize = 50;
     private readonly IAdminShopeeSettlementApprovalAppService _settlements;
+    private readonly ISettingManager _settings;
+    private readonly IBackgroundJobClient _jobs;
+    private readonly ICurrentUser _currentUser;
 
     [BindProperty(SupportsGet = true)] public string? Filter { get; set; }
     [BindProperty(SupportsGet = true)] public bool? IsApproved { get; set; }
@@ -36,6 +45,8 @@ public class IndexModel : PageModel
     public AdminShopeeSettlementPageDto Data { get; private set; } = new();
     public AdminShopeeSettlementBatchDetailsDto? Details { get; private set; }
     public PagedResultDto<AdminShopeeSettlementRecordDto>? Records { get; private set; }
+    public bool AutoApprovalEnabled { get; private set; }
+    public ShopeeAutoApprovalRunDto? AutoApprovalLastRun { get; private set; }
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(Data.Batches.TotalCount / (double)BatchPageSize));
     public int TotalRecordPages => Details is null && Records is null
         ? 1
@@ -43,7 +54,9 @@ public class IndexModel : PageModel
             ? Records!.TotalCount
             : Details!.Records.TotalCount) / (double)RecordPageSize));
 
-    public IndexModel(IAdminShopeeSettlementApprovalAppService settlements) => _settlements = settlements;
+    public IndexModel(IAdminShopeeSettlementApprovalAppService settlements, ISettingManager settings,
+        IBackgroundJobClient jobs, ICurrentUser currentUser)
+    { _settlements = settlements; _settings = settings; _jobs = jobs; _currentUser = currentUser; }
 
     private AdminShopeeSettlementBatchListInput CurrentFilters() => new()
     {
@@ -67,6 +80,7 @@ public class IndexModel : PageModel
 
     public async Task OnGetAsync()
     {
+        await LoadAutoApprovalAsync();
         if (!ValidateFilters())
         {
             AllRecords = true;
@@ -90,6 +104,44 @@ public class IndexModel : PageModel
         if (!AllRecords && BatchId.HasValue)
             Details = await _settlements.GetAsync(BatchId.Value,
                 (RecordPageNumber - 1) * RecordPageSize, RecordPageSize, input);
+    }
+
+    private async Task LoadAutoApprovalAsync()
+    {
+        AutoApprovalEnabled = string.Equals(await _settings.GetOrNullGlobalAsync(ShopeeAutoApprovalSettings.Enabled),
+            "true", StringComparison.OrdinalIgnoreCase);
+        var lastRun = await _settings.GetOrNullGlobalAsync(ShopeeAutoApprovalSettings.LastRun);
+        if (!string.IsNullOrWhiteSpace(lastRun))
+        {
+            try { AutoApprovalLastRun = JsonSerializer.Deserialize<ShopeeAutoApprovalRunDto>(lastRun); }
+            catch (JsonException) { AutoApprovalLastRun = null; }
+        }
+    }
+
+    public async Task<IActionResult> OnPostConfigureAutoApprovalAsync(bool? enabled)
+    {
+        if (!enabled.HasValue || !ModelState.IsValid)
+            return BadRequest(new { success = false, error = "Cấu hình không hợp lệ. Hãy tải lại trang và thử lại." });
+        if (enabled.Value)
+            await _settings.SetGlobalAsync(ShopeeAutoApprovalSettings.ApprovedBy, _currentUser.GetId().ToString());
+        await _settings.SetGlobalAsync(ShopeeAutoApprovalSettings.Enabled, enabled.Value ? "true" : "false");
+        return new JsonResult(new
+        {
+            success = true,
+            message = enabled.Value ? "Đã bật tự động duyệt Shopee lúc 03:00 mỗi ngày (giờ Việt Nam)."
+                : "Đã tắt lịch tự động duyệt Shopee. Lượt đang xử lý, nếu có, vẫn hoàn tất."
+        });
+    }
+
+    public IActionResult OnPostRunAutoApproval()
+    {
+        var adminId = _currentUser.GetId();
+        _jobs.Enqueue<ShopeeAutoApprovalJob>(job => job.ExecuteAsync(true, adminId));
+        return new JsonResult(new
+        {
+            success = true,
+            message = "Đã đưa lượt duyệt vào hàng chờ. Job chạy nền; tải lại trang để xem kết quả."
+        });
     }
 
     public async Task<IActionResult> OnPostApproveAsync(Guid recordId, bool useManualAmounts)

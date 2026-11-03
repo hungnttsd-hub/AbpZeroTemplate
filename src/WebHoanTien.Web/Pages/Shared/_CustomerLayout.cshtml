@@ -202,6 +202,7 @@
 {
     var desktopAdminItems = new System.Collections.Generic.List<WebHoanTien.Web.Pages.Shared.CustomerDesktopNavigationItem>();
     if (canManageAffiliates) { desktopAdminItems.Add(new("/Admin/Affiliates", "Quản trị hoàn tiền", "fa-solid fa-chart-line")); }
+    if (canManageSettings) { desktopAdminItems.Add(new("/Admin/AffiliateIds", "Affiliate ID theo tài khoản", "fa-solid fa-link")); }
     if (canManageSettlements) { desktopAdminItems.Add(new("/Admin/Settlements", "Duyệt đối soát Shopee", "fa-solid fa-file-invoice-dollar")); }
     if (hasAdminOrdersPermission) { desktopAdminItems.Add(new("/Admin/TikTokOrders", "Đơn hàng TikTok Shop", "fa-brands fa-tiktok")); }
     if (hasAdminSettingsPermission) { desktopAdminItems.Add(new("/Admin/TikTokCreator", "Kết nối TikTok Creator", "fa-brands fa-tiktok")); }
@@ -299,6 +300,12 @@
                             {
                                 <a class="account-navigation-item @(currentPath.StartsWith("/Admin/Affiliates", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/Affiliates" data-account-navigation-link>
                                     <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span><span class="account-navigation-label">Quản trị hoàn tiền</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
+                                </a>
+                            }
+                            @if (canManageSettings)
+                            {
+                                <a class="account-navigation-item @(currentPath.StartsWith("/Admin/AffiliateIds", StringComparison.OrdinalIgnoreCase) ? "is-active" : null)" href="/Admin/AffiliateIds" data-account-navigation-link>
+                                    <span class="account-navigation-icon" aria-hidden="true"><i class="fa-solid fa-link"></i></span><span class="account-navigation-label">Affiliate ID theo tài khoản</span><i class="fa-solid fa-chevron-right account-navigation-chevron" aria-hidden="true"></i>
                                 </a>
                             }
                             @if (canManageSettlements)

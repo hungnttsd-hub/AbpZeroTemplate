@@ -56,7 +56,8 @@ public class TikTokOrderSyncService : ITransientDependency
         _clicks = clicks; _rules = rules; _runs = runs; _upserter = upserter;
     }
 
-    public async Task<TikTokManualSyncResult> SyncOrdersAsync(TikTokManualSyncInput input, CancellationToken ct = default)
+    public async Task<TikTokManualSyncResult> SyncOrdersAsync(TikTokManualSyncInput input, CancellationToken ct = default,
+        bool fromScheduledJob = false)
     {
         if (_tenant.Id.HasValue) throw new UserFriendlyException("Chức năng này chỉ dành cho tài khoản hệ thống CatBack.");
         if (input.FromUtc >= input.ToUtc || input.ToUtc - input.FromUtc > TimeSpan.FromDays(90)
@@ -74,7 +75,7 @@ public class TikTokOrderSyncService : ITransientDependency
                 input.FromUtc.UtcDateTime, input.ToUtc.UtcDateTime, _clock.Now));
             await work.CompleteAsync(ct);
         }
-        var result = new TikTokManualSyncResult();
+        var result = new TikTokManualSyncResult { SyncRunId = runId };
         var review = new HashSet<string>(StringComparer.Ordinal);
         var unmatched = new HashSet<string>(StringComparer.Ordinal);
         var failures = 0;
@@ -126,6 +127,7 @@ public class TikTokOrderSyncService : ITransientDependency
                     order.SetProperty(ReviewProperty, normalized.ReviewNote);
                     await _orders.UpdateAsync(order);
                     await work.CompleteAsync(ct);
+                    if (snapshot.Status == "SETTLED") result.SyncedSettledOrderIds.Add(order.Id);
                     if (upsert.Inserted) result.InsertedOrders++; else result.UpdatedOrders++;
                     if (upsert.UnmatchedItemCount > 0) unmatched.Add(snapshot.Id);
                     if (normalized.NeedsReview || upsert.ConflictMessage is not null) review.Add(snapshot.Id);
@@ -140,7 +142,9 @@ public class TikTokOrderSyncService : ITransientDependency
             result.UnmatchedOrders = unmatched.Count;
             result.NeedsReview = review.Count;
             result.FailedOrders = failures;
-            result.Notice = "Đã lấy và lưu đơn hàng TikTok. Đồng bộ không tự cộng ví; admin vào Đối soát để xem trước và duyệt từng đơn.";
+            result.Notice = fromScheduledJob
+                ? "Job đã lưu dữ liệu đơn TikTok; bước đối soát tự động chưa hoàn tất. Kiểm tra trạng thái job và sổ đơn nếu lượt chạy bị gián đoạn."
+                : "Đã lấy và lưu đơn hàng TikTok. Đồng bộ thủ công không tự cộng ví; admin vào Đối soát để xem trước và duyệt từng đơn.";
             if (review.Count > 0) result.Notice += " Cần kiểm tra đơn: " + string.Join(", ", review.Take(10)) + ".";
             await CompleteRunAsync(runId, result, failures, result.Notice);
             return result;
@@ -236,6 +240,15 @@ public class TikTokOrderSyncService : ITransientDependency
         return new(new(source.Id, null, source.CreatedAt, clickTime, conversionStatus, net, net,
             CommissionSource.NetCommission, new[] { order }), reviewReasons.Count > 0,
             Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprint.ToString()))), string.Join(" ", reviewReasons));
+    }
+
+    public async Task RecordAutoSettlementResultAsync(TikTokManualSyncResult sync, TikTokAutoSettlementResult settlement)
+    {
+        var notice = $"Job đồng bộ {sync.FetchedOrders} đơn TikTok; tự động đối soát {settlement.ApprovedCount} đơn, " +
+            $"đã chốt trước đó {settlement.AlreadySettledCount}, bỏ qua {settlement.SkippedCount}, lỗi đối soát {settlement.FailedCount}. " +
+            $"Tổng cộng ví {settlement.CreditedAmount.ToString("0.####", CultureInfo.InvariantCulture)} VND. " +
+            $"Đơn cần kiểm tra khi đồng bộ: {sync.NeedsReview}; lỗi đồng bộ: {sync.FailedOrders}.";
+        await CompleteRunAsync(sync.SyncRunId, sync, sync.FailedOrders + settlement.FailedCount, notice);
     }
 
     private async Task CompleteRunAsync(Guid id, TikTokManualSyncResult result, int errors, string? notice)

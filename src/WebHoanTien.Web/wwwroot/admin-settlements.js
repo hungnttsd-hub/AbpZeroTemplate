@@ -53,6 +53,46 @@
         throw new Error(data.error?.message || data.error || data.message || "Không thể xử lý yêu cầu.");
     }
 
+    document.addEventListener("submit", async event => {
+        const form = event.target.closest("[data-auto-approval]");
+        if (!form) return;
+        event.preventDefault();
+        const runNow = form.dataset.autoApproval === "run";
+        const enabled = form.dataset.enabled === "true";
+        const confirmed = await window.CatsBackModal.confirm({
+            variant: "info",
+            title: runNow ? "Chạy duyệt đơn Shopee ngay?" : enabled ? "Bật tự động duyệt Shopee?" : "Tắt tự động duyệt Shopee?",
+            message: runNow || enabled
+                ? `${runNow ? "Lượt này" : "Mỗi ngày lúc 03:00 (giờ Việt Nam), job"} sẽ duyệt đơn Shopee Hoàn thành đã đặt hơn 7 × 24 giờ, kể cả chưa thanh toán. Áp dụng trên toàn bộ dữ liệu đối soát, không phụ thuộc bộ lọc hiện tại. Thao tác sẽ cộng ví theo số tiền sau thuế/phí. Đơn đã duyệt, trùng hoặc thiếu dữ liệu sẽ được bỏ qua.`
+                : "Dừng các lượt tự động tiếp theo. Lượt đang xử lý, nếu có, vẫn hoàn tất. Bạn vẫn có thể bấm Chạy ngay.",
+            cancelText: "Để sau",
+            confirmText: runNow ? "Chạy ngay" : enabled ? "Bật tự động duyệt" : "Tắt tự động duyệt"
+        });
+        if (!confirmed) return;
+        const button = form.querySelector('button[type="submit"]');
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = "Đang gửi...";
+        try {
+            const payload = await parse(await fetch(form.action, {
+                method: "POST", body: new FormData(form),
+                headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin"
+            }));
+            if (runNow) {
+                const status = document.querySelector(".admin-settlement-automation-result");
+                if (status) status.textContent = payload.message;
+                button.textContent = "Đã gửi lượt chạy";
+            } else {
+                notify(payload.message);
+                window.setTimeout(() => window.location.reload(), 700);
+            }
+        } catch (error) {
+            button.disabled = false;
+            button.textContent = original;
+            notify(error.message, true);
+        }
+    });
+
     function numeric(selector, fallback = 0) {
         const element = document.querySelector(selector);
         return { element, value: Number(element?.dataset.value ?? element?.textContent ?? fallback) || fallback };

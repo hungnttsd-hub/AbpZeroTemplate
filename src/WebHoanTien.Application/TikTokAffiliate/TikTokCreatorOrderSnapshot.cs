@@ -92,6 +92,23 @@ internal sealed class TikTokCreatorOrderSnapshot
             && amount >= 0 && amount <= 1_000_000_000_000m;
     }
 
+    // Missing withholding is distinct from a malformed or non-VND amount.
+    public static bool TryWithholding(JsonElement sku, out decimal? withheld)
+    {
+        withheld = null;
+        if (!sku.TryGetProperty("pit", out var pit) || pit.ValueKind == JsonValueKind.Null) return true;
+        if (pit.ValueKind != JsonValueKind.Object) return false;
+        if (pit.TryGetProperty("currency", out var currencyValue) &&
+            currencyValue.ValueKind is not (JsonValueKind.String or JsonValueKind.Null)) return false;
+        var currency = String(pit, "currency");
+        if (!string.IsNullOrWhiteSpace(currency) && currency != "VND") return false;
+        if (!pit.TryGetProperty("amount", out var amount) || amount.ValueKind == JsonValueKind.Null ||
+            (amount.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(amount.GetString()))) return true;
+        if (!TryMoney(sku, "pit", out var value)) return false;
+        withheld = value;
+        return true;
+    }
+
     public static int Quantity(JsonElement sku) => sku.TryGetProperty("quantity", out var value)
         && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var quantity) && quantity > 0
         ? quantity : throw InvalidResponse();

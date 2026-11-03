@@ -9,7 +9,7 @@
 <section class="tt-management">
     <header class="tt-page-heading">
         <div><span class="tt-eyebrow">CatBack · Quản trị TikTok</span><h1>Đơn hàng TikTok Shop</h1>
-        <p>Lấy đơn từ Creator chính của CatBack. Bấm Đối soát tại từng đơn để xem trước và duyệt hoàn tiền.</p></div>
+        <p>Job đồng bộ tự động đối soát đơn SETTLED đủ dữ liệu của Creator chính. Đơn cần kiểm tra có thể mở Đối soát để admin duyệt.</p></div>
         <div class="tt-actions"><a href="/Admin/TikTokSettlements/Bulk" class="button">Duyệt toàn bộ đơn TikTok đã thanh toán</a>
             <a href="/Admin/TikTokCreator" class="button button-ghost">Kết nối Creator</a></div>
     </header>
@@ -29,7 +29,7 @@
             @if (Model.CanSync) { <button type="submit" asp-page-handler="Sync" class="button">Lấy đơn hàng từ TikTok</button> }
             <span data-operation-progress hidden role="status">Đang gọi TikTok và xử lý đơn hàng…</span>
         </form>
-        <p class="tt-caption">Chọn tối đa 90 ngày mỗi lần. Lấy lại sẽ cập nhật đơn đã có. Đồng bộ không tự cộng ví; chỉ ghi nhận hoàn tiền sau khi admin duyệt đối soát.</p>
+        <p class="tt-caption">Chọn tối đa 90 ngày mỗi lần. Nút lấy đơn chỉ cập nhật dữ liệu. Job đồng bộ mỗi giờ tự đối soát đơn SETTLED đủ dữ liệu; SKU chưa có thông tin thuế hoặc thuế bằng 0đ được trừ bổ sung 10%, SKU đã khấu trừ thuế được giữ nguyên.</p>
     </section>
     <section class="cb-card" aria-labelledby="tt-orders-heading">
         <h2 id="tt-orders-heading">@Model.Orders.TotalCount đơn trong khoảng ngày</h2>

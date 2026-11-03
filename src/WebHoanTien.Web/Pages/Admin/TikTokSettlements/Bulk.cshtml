@@ -30,7 +30,7 @@
     }
     <section class="cb-card">
         <h2>1. Xem trước tất cả đơn đã thanh toán</h2>
-        <p>SKU có thuế TikTok khấu trừ bằng 0đ sẽ được áp dụng thuế bổ sung 10% trên hoa hồng thực nhận. SKU đã bị khấu trừ thuế được giữ nguyên. Chỉ các đơn đủ dữ liệu và có người nhận hợp lệ mới được duyệt.</p>
+        <p>SKU chưa có thông tin thuế TikTok hoặc thuế khấu trừ bằng 0đ sẽ được áp dụng thuế bổ sung 10% trên hoa hồng thực nhận. SKU đã bị khấu trừ thuế được giữ nguyên. Thuế sai định dạng hoặc không phải VND cần kiểm tra lại. Chỉ các đơn đủ dữ liệu và có người nhận hợp lệ mới được duyệt.</p>
         <form method="post" asp-page-handler="Preview" data-turbo="false" class="tt-settlement-form">
             <div class="tt-field tt-wide"><label asp-for="Reason">Lý do duyệt chung</label><input asp-for="Reason" minlength="10" maxlength="1000" required /><span asp-validation-for="Reason"></span></div>
             <button type="submit" class="button button-ghost">Xem trước toàn bộ đơn đã thanh toán</button>

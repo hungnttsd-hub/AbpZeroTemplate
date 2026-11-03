@@ -29,6 +29,7 @@ public sealed class TikTokSettlementPreview
     public DateTime? SettledAt { get; set; }
     public Guid? ApprovedBy { get; set; }
     public string? ApprovalReason { get; set; }
+    public string? ApprovalSource { get; set; }
     public string? SettlementReference { get; set; }
     public decimal? ActualCommission { get; set; }
     public decimal? EstimatedCommission { get; set; }
@@ -36,6 +37,7 @@ public sealed class TikTokSettlementPreview
     public decimal TaxPercent { get; set; }
     public decimal TaxAmount { get; set; }
     public decimal? ProviderTaxAmount { get; set; }
+    public int MissingTaxSkuCount { get; set; }
     public decimal AdditionalTaxBase { get; set; }
     public decimal NetCommission { get; set; }
     public decimal UserCommission { get; set; }

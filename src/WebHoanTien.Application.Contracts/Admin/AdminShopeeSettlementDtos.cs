@@ -167,6 +167,18 @@ public sealed class AdminShopeeSettlementBulkApprovalResultDto
     public decimal CreditedUserCommission { get; set; }
 }
 
+public sealed class ShopeeAutoApprovalRunDto
+{
+    public DateTime StartedAtUtc { get; set; }
+    public DateTime? FinishedAtUtc { get; set; }
+    public bool IsManual { get; set; }
+    public string Status { get; set; } = "Running";
+    public int ApprovedCount { get; set; }
+    public int SkippedCount { get; set; }
+    public decimal CreditedUserCommission { get; set; }
+    public string? Message { get; set; }
+}
+
 public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
 {
     Task<AdminShopeeSettlementPageDto> GetListAsync(AdminShopeeSettlementBatchListInput input);
@@ -181,5 +193,6 @@ public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
         AdminShopeeSettlementBatchListInput input);
     Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveFilteredAsync(
         AdminShopeeSettlementBatchListInput input, Guid? batchId = null);
+    Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveCompletedOlderThanSevenDaysAsync(bool isManual);
     Task<AdminShopeeSettlementRefreshResultDto> RefreshMatchesAsync(Guid batchId);
 }

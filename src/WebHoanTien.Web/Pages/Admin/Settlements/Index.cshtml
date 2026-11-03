@@ -3,6 +3,7 @@
 @using WebHoanTien.Admin
 @using System.Globalization
 @using WebHoanTien.Web.Pages.Admin.Settlements
+@using WebHoanTien.Web.Operations
 @model WebHoanTien.Web.Pages.Admin.Settlements.IndexModel
 @{ ViewData["Title"] = "Duyệt đối soát Shopee"; }
 
@@ -11,6 +12,43 @@
         <div><span>CATBACK OPERATIONS</span><h1>Duyệt đối soát Shopee</h1><p>Import lưu mọi trạng thái Shopee. Admin kiểm tra dữ liệu và quyết định bản ghi nào được cộng ví.</p></div>
         <a href="/Admin/Affiliates">Quản trị affiliate</a>
     </header>
+
+    <section class="admin-settlement-automation" aria-labelledby="shopee-auto-approval-title">
+        <div>
+            <h2 id="shopee-auto-approval-title">Tự động duyệt đơn Shopee</h2>
+            <p><strong>@(Model.AutoApprovalEnabled ? "Đang bật" : "Đang tắt")</strong> · Chạy lúc 03:00 mỗi ngày, giờ Việt Nam (UTC+7).</p>
+            <p>Chỉ duyệt đơn trong dữ liệu đối soát có trạng thái Hoàn thành và đã đặt hơn 7 × 24 giờ, kể cả Shopee chưa thanh toán. Dùng cùng cách tính hoa hồng, thuế/phí và cộng ví như duyệt từng đơn.</p>
+            <p>Lượt chạy này áp dụng cho mọi batch, không phụ thuộc bộ lọc bên dưới. Đơn đã duyệt, trùng hoặc thiếu dữ liệu nhận tiền sẽ được bỏ qua.</p>
+        </div>
+        <div class="admin-settlement-automation-actions">
+            <form method="post" asp-page-handler="ConfigureAutoApproval" data-auto-approval="configure" data-enabled="@((!Model.AutoApprovalEnabled).ToString().ToLowerInvariant())">
+                <input type="hidden" name="enabled" value="@((!Model.AutoApprovalEnabled).ToString().ToLowerInvariant())" />
+                <button type="submit">@(Model.AutoApprovalEnabled ? "Tắt tự động duyệt" : "Bật tự động duyệt")</button>
+            </form>
+            <form method="post" asp-page-handler="RunAutoApproval" data-auto-approval="run">
+                <button type="submit" class="secondary">Chạy ngay</button>
+            </form>
+        </div>
+        <div class="admin-settlement-automation-result" role="status">
+            @if (Model.AutoApprovalLastRun is { } run)
+            {
+                <strong>Lượt gần nhất: @(run.IsManual ? "Bấm tay" : "Tự động") · @TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(run.StartedAtUtc, DateTimeKind.Utc), ShopeeAutoApprovalJob.VietnamTimeZone).ToString("dd/MM/yyyy HH:mm") (UTC+7)</strong>
+                @if (run.Status == "Running")
+                {
+                    <p>Đang xử lý hoặc bị gián đoạn. Tải lại trang để cập nhật; nếu trạng thái kéo dài, kiểm tra lịch sử job.</p>
+                }
+                else
+                {
+                    <p>@(run.Status == "Succeeded" ? "Hoàn tất" : "Không hoàn tất"): @run.Message</p>
+                    <p>Đã cộng ví: @SettlementPageUi.Money(run.CreditedUserCommission).</p>
+                }
+            }
+            else
+            {
+                <p>Chưa có lượt chạy. Có thể bấm Chạy ngay kể cả khi lịch tự động đang tắt.</p>
+            }
+        </div>
+    </section>
 
     <div class="admin-settlement-stats">
         <article class="pending"><span>Chờ duyệt</span><strong data-summary-pending-count>@Model.Data.Summary.PendingCount</strong><small data-summary-pending-amount data-value="@Model.Data.Summary.PendingAmount">@SettlementPageUi.Money(Model.Data.Summary.PendingAmount)</small></article>
