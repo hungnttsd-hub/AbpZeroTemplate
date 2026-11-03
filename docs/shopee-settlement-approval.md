@@ -27,6 +27,13 @@ Lịch đăng ký qua Hangfire với ID `shopee-completed-seven-days-daily`. Job
 khi thực thi, nên lượt theo lịch đã xếp hàng cũng bỏ qua nếu lịch đã tắt. Tắt lịch không hủy
 lượt đang xử lý. Ứng dụng/Hangfire Server cần đang chạy để thực thi lịch.
 
+Lịch được lưu là **20:00 UTC** (`0 20 * * *`, `TimeZoneInfo.Utc`), tương đương 03:00 ngày
+kế tiếp tại Việt Nam. Không truyền múi giờ tự tạo vào Hangfire: Hangfire chỉ lưu ID rồi tra
+lại từ hệ điều hành. Bản sửa lỗi khởi động do ID `CatBack Vietnam` dùng cùng recurring job ID;
+`AddOrUpdate` ghi đè cron/timezone thành UTC trước khi tính lượt tiếp theo, nên deploy lại
+sẽ sửa cấu hình lịch cũ mà không cần xóa lịch hoặc chỉnh database thủ công. Thời gian kết quả
+trên giao diện được đổi trực tiếp sang offset +07:00, không phụ thuộc timezone của máy chủ.
+
 Cấu hình lưu bằng ABP global settings: `CatBack.Shopee.AutoApproval.Enabled`,
 `ApprovedBy`, `LastRun`. Lượt tự động dùng tài khoản admin đã bật lịch; lượt bấm tay
 dùng tài khoản bấm nút. Job nạp claims hiện hành của tài khoản thật và dịch vụ duyệt

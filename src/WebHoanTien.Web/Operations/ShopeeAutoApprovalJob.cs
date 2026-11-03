@@ -22,8 +22,6 @@ namespace WebHoanTien.Web.Operations;
 public class ShopeeAutoApprovalJob : ITransientDependency
 {
     public const string RecurringJobId = "shopee-completed-seven-days-daily";
-    public static readonly TimeZoneInfo VietnamTimeZone = TimeZoneInfo.CreateCustomTimeZone(
-        "CatBack Vietnam", TimeSpan.FromHours(7), "Vietnam", "Vietnam");
     private readonly IAdminShopeeSettlementApprovalAppService _settlements;
     private readonly ISettingManager _settings;
     private readonly IUnitOfWorkManager _uow;

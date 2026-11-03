@@ -318,6 +318,8 @@ public static class SettlementPageUi
     public static string Money(decimal value) => $"{value:N0}đ";
     public static string Deduction(decimal value) => value == 0m ? Money(0m) : $"-{Money(value)}";
     public static string Date(DateTime value) => value.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
+    public static string VietnamTime(DateTime value) => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc))
+        .ToOffset(TimeSpan.FromHours(7)).ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
     public static string PaymentTime(DateTime? value) => value.HasValue
         ? $"Shopee trả {Date(value.Value)}"
         : "Shopee chưa ghi nhận thời gian thanh toán";

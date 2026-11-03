@@ -32,7 +32,7 @@
         <div class="admin-settlement-automation-result" role="status">
             @if (Model.AutoApprovalLastRun is { } run)
             {
-                <strong>Lượt gần nhất: @(run.IsManual ? "Bấm tay" : "Tự động") · @TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(run.StartedAtUtc, DateTimeKind.Utc), ShopeeAutoApprovalJob.VietnamTimeZone).ToString("dd/MM/yyyy HH:mm") (UTC+7)</strong>
+                <strong>Lượt gần nhất: @(run.IsManual ? "Bấm tay" : "Tự động") · @SettlementPageUi.VietnamTime(run.StartedAtUtc) (UTC+7)</strong>
                 @if (run.Status == "Running")
                 {
                     <p>Đang xử lý hoặc bị gián đoạn. Tải lại trang để cập nhật; nếu trạng thái kéo dài, kiểm tra lịch sử job.</p>

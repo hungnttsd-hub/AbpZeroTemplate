@@ -572,8 +572,10 @@ public class WebHoanTienWebModule : AbpModule
         RecurringJob.AddOrUpdate<ShopeeAutoApprovalJob>(
             ShopeeAutoApprovalJob.RecurringJobId,
             job => job.ExecuteAsync(false, null),
-            Cron.Daily(3),
-            new RecurringJobOptions { TimeZone = ShopeeAutoApprovalJob.VietnamTimeZone });
+            // 20:00 UTC is 03:00 the next day in Vietnam (UTC+7).
+            // Hangfire persists the zone ID and resolves it again on every server.
+            Cron.Daily(20),
+            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
         // Retire the old RioHub schedule; only the Creator API imports TikTok orders.
         RecurringJob.RemoveIfExists("riohub-tiktok-orders");
