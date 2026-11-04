@@ -20,16 +20,18 @@ public class WalletBalanceCalculator : ITransientDependency
     private readonly IRepository<AffiliateOrderItem, Guid> _items;
     private readonly IRepository<AffiliateOrderItemAttribution, Guid> _attributions;
     private readonly IRepository<WithdrawalRequest, Guid> _withdrawals;
+    private readonly TikTokCashbackEstimateCalculator _estimates;
 
     public WalletBalanceCalculator(IRepository<AffiliateOrder, Guid> orders,
         IRepository<AffiliateOrderItem, Guid> items,
         IRepository<AffiliateOrderItemAttribution, Guid> attributions,
-        IRepository<WithdrawalRequest, Guid> withdrawals)
+        IRepository<WithdrawalRequest, Guid> withdrawals, TikTokCashbackEstimateCalculator estimates)
     {
         _orders = orders;
         _items = items;
         _attributions = attributions;
         _withdrawals = withdrawals;
+        _estimates = estimates;
     }
 
     public async Task<WalletBalanceSnapshot> GetAsync(Guid userId)
@@ -49,6 +51,7 @@ public class WalletBalanceCalculator : ITransientDependency
             await _orders.GetListAsync(x => orderIds.Contains(x.Id));
         var orderByItem = items.ToDictionary(x => x.Id, x => x.OrderId);
         var orderById = orders.ToDictionary(x => x.Id);
+        var estimates = _estimates.Calculate(orders, items, attributions);
         var withdrawals = await _withdrawals.GetListAsync(x => ids.Contains(x.UserId));
         var attributionsByUser = attributions.ToLookup(x => x.UserId!.Value);
         var withdrawalsByUser = withdrawals.ToLookup(x => x.UserId);
@@ -61,7 +64,7 @@ public class WalletBalanceCalculator : ITransientDependency
                     orderById.TryGetValue(orderId, out var order) &&
                     order.Status is AffiliateOrderStatus.Unpaid or AffiliateOrderStatus.Pending
                         or AffiliateOrderStatus.Completed)
-                .Sum(x => x.UserCommissionSnapshot),
+                .Sum(x => estimates.GetValueOrDefault(x.Id, x.UserCommissionSnapshot)),
             withdrawalsByUser[userId].Where(x => x.Status == WithdrawalRequestStatus.Pending).Sum(x => x.Amount),
             withdrawalsByUser[userId].Where(x => x.Status == WithdrawalRequestStatus.Paid).Sum(x => x.Amount)));
     }

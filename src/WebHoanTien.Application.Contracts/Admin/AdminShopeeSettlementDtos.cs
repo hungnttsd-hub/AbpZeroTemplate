@@ -46,6 +46,7 @@ public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRe
 public sealed class AdminShopeeSettlementSummaryDto
 {
     public int TotalCount { get; set; }
+    public int OrdersWithoutSettlementCount { get; set; }
     public int CommissionOrderCount { get; set; }
     public int PendingCount { get; set; }
     public decimal PendingAmount { get; set; }
@@ -81,6 +82,8 @@ public sealed class AdminShopeeSettlementBatchDto : CreationAuditedEntityDto<Gui
 
 public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Guid>
 {
+    public bool HasSettlementRecord { get; set; } = true;
+    public AffiliateOrderStatus? OrderStatus { get; set; }
     public Guid BatchId { get; set; }
     public Guid BillId { get; set; }
     public string SourceAffiliateId { get; set; } = string.Empty;

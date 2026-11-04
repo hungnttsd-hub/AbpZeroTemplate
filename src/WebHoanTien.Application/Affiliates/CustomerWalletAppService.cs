@@ -31,6 +31,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
     private readonly CustomerNotificationManager _notificationManager;
     private readonly AdminWithdrawalRequestNotifier _adminWithdrawalRequestNotifier;
     private readonly IdentityUserManager _users;
+    private readonly TikTokCashbackEstimateCalculator _estimates;
 
     public CustomerWalletAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
@@ -39,7 +40,8 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         IRepository<WithdrawalPaymentProof, Guid> proofs, IRepository<UserPayoutAccount, Guid> payoutAccounts,
         WalletBalanceCalculator balanceCalculator, IUnitOfWorkManager unitOfWorkManager,
         CustomerNotificationManager notificationManager,
-        AdminWithdrawalRequestNotifier adminWithdrawalRequestNotifier, IdentityUserManager users)
+        AdminWithdrawalRequestNotifier adminWithdrawalRequestNotifier, IdentityUserManager users,
+        TikTokCashbackEstimateCalculator estimates)
     {
         _conversions = conversions;
         _orders = orders;
@@ -53,6 +55,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         _notificationManager = notificationManager;
         _adminWithdrawalRequestNotifier = adminWithdrawalRequestNotifier;
         _users = users;
+        _estimates = estimates;
     }
 
     public async Task<CustomerWalletOverviewDto> GetOverviewAsync()
@@ -196,6 +199,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
         var orders = orderIds.Count == 0 ? new List<AffiliateOrder>() :
             await _orders.GetListAsync(x => orderIds.Contains(x.Id));
         var orderById = orders.ToDictionary(x => x.Id);
+        var estimates = _estimates.Calculate(orders, items, attributions);
         var conversionIds = orders.Select(x => x.ConversionId).Distinct().ToList();
         var conversionById = (await _conversions.GetListAsync(x => conversionIds.Contains(x.Id)))
             .ToDictionary(x => x.Id);
@@ -205,7 +209,7 @@ public class CustomerWalletAppService : WebHoanTienAppService, ICustomerWalletAp
                 conversionById.ContainsKey(orderById[group.Key].ConversionId))
             .Select(group => MapOrderMovement(orderById[group.Key],
                 conversionById[orderById[group.Key].ConversionId],
-                group.Sum(x => x.UserCommissionSnapshot), group.Sum(x => x.SettledUserCommission ?? 0m)))
+                group.Sum(x => estimates.GetValueOrDefault(x.Id, x.UserCommissionSnapshot)), group.Sum(x => x.SettledUserCommission ?? 0m)))
             .ToList();
         movements.AddRange(withdrawals.Select(x => MapWithdrawalMovement(x, proofRequestIds.Contains(x.Id))));
         return movements.OrderByDescending(x => x.OccurredAt).ThenByDescending(x => x.Id).ToList();

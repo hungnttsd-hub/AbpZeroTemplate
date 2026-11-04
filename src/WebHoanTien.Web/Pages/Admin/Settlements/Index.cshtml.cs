@@ -325,6 +325,17 @@ public static class SettlementPageUi
         : "Shopee chưa ghi nhận thời gian thanh toán";
     public static string Code(int? value) => value?.ToString() ?? "-";
     public static string ShopeePaymentLabel(bool isPaid) => isPaid ? "Đã thanh toán" : "Chờ xử lý";
+    public static string OrderLabel(AffiliateOrderStatus status) => status switch
+    {
+        AffiliateOrderStatus.Unpaid => "Chưa thanh toán",
+        AffiliateOrderStatus.Pending => "Đang xử lý",
+        AffiliateOrderStatus.Completed => "Hoàn thành",
+        AffiliateOrderStatus.Cancelled => "Đã hủy",
+        AffiliateOrderStatus.Refunded => "Đã hoàn trả",
+        AffiliateOrderStatus.Rejected => "Bị từ chối",
+        AffiliateOrderStatus.Settled => "Đã duyệt hoàn tiền",
+        _ => status.ToString()
+    };
 
     public static string BatchLabel(ShopeeSettlementBatchStatus status) => status switch
     {

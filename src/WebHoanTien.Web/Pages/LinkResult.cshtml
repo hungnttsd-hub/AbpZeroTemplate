@@ -38,6 +38,7 @@
             @if (Model.Tracking.EstimatedCommission.HasValue)
             {
                 <p class="estimate">Hoàn lại dự kiến @CustomerLinkUi.MoneyRange(Model.Tracking.EstimatedCommission, Model.Tracking.EstimatedCommissionMaximum)</p>
+                <p class="fine-print">Đã trừ thuế dự phòng 10% trước khi chia hoàn tiền. Số thực nhận được xác định khi đối soát.</p>
             }
         }
         else if (Model.Tracking.EstimatedCommission.HasValue)

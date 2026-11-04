@@ -65,6 +65,7 @@ public class IndexModel : PageModel
             ? string.Empty
             : $" Chi tiết: {string.Join(" | ", result.Errors.Take(3))}";
         TempData["ImportMessage"] = $"Đã xử lý {result.ImportedRowCount} dòng: thêm {result.InsertedCount}, cập nhật {result.UpdatedCount}, " +
+            $"bỏ qua đơn đã duyệt {result.SkippedSettledCount}, " +
             $"item đã ghép {result.MatchedItemCount}, item chưa ghép {result.UnmatchedItemCount}, " +
             $"đơn nhiều link {result.MultiTrackingOrderCount}, lỗi {result.ErrorCount}.{errorDetails}";
         return RedirectToPage();

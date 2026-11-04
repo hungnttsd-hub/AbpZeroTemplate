@@ -59,6 +59,7 @@ public class ShopeeReportParser : ITransientDependency
         var rows = new List<ReportRow>();
         for (var recordIndex = 1; recordIndex < records.Count; recordIndex++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var record = records[recordIndex];
             if (record.All(string.IsNullOrWhiteSpace)) continue;
 

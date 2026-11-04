@@ -23,11 +23,13 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
     private readonly IRepository<AffiliateTracking, Guid> _trackings;
     private readonly IRepository<IdentityUser, Guid> _users;
     private readonly ITikTokCreatorApi _tikTokCreator;
+    private readonly TikTokCashbackEstimateCalculator _estimates;
 
     public AffiliateOrderAppService(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
         IRepository<AffiliateOrderItemAttribution, Guid> attributions,
-        IRepository<AffiliateTracking, Guid> trackings, IRepository<IdentityUser, Guid> users, ITikTokCreatorApi tikTokCreator)
+        IRepository<AffiliateTracking, Guid> trackings, IRepository<IdentityUser, Guid> users, ITikTokCreatorApi tikTokCreator,
+        TikTokCashbackEstimateCalculator estimates)
     {
         _conversions = conversions;
         _orders = orders;
@@ -36,6 +38,7 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         _trackings = trackings;
         _users = users;
         _tikTokCreator = tikTokCreator;
+        _estimates = estimates;
     }
 
     public async Task<PagedResultDto<AffiliateOrderDto>> GetListAsync(AffiliateOrderListInput input)
@@ -130,6 +133,24 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
             expectedCashback = (await AsyncExecuter.ToListAsync(valuesQuery)).Sum();
         }
 
+        // Re-project existing TikTok pending rows too; no import/backfill or wallet mutation is needed.
+        var pendingTikTokOrders = await AsyncExecuter.ToListAsync(orders.Where(x => x.Platform == AffiliatePlatform.TikTok &&
+            (x.Status == AffiliateOrderStatus.Unpaid || x.Status == AffiliateOrderStatus.Pending || x.Status == AffiliateOrderStatus.Completed)));
+        if (pendingTikTokOrders.Count > 0)
+        {
+            var pendingIds = pendingTikTokOrders.Select(x => x.Id).ToList();
+            var pendingItems = await _items.GetListAsync(x => pendingIds.Contains(x.OrderId));
+            var pendingItemIds = pendingItems.Select(x => x.Id).ToList();
+            var pendingRows = pendingItemIds.Count == 0 ? new List<AffiliateOrderItemAttribution>() :
+                await _attributions.GetListAsync(x => pendingItemIds.Contains(x.OrderItemId));
+            var estimates = _estimates.Calculate(pendingTikTokOrders, pendingItems, pendingRows);
+            var visibleRows = pendingRows.Where(x => !scopedUserId.HasValue ||
+                (x.UserId == scopedUserId.Value && x.Status != AffiliateAttributionStatus.Unmatched)).ToList();
+            var beforeTax = scopedUserId.HasValue ? visibleRows.Sum(x => x.UserCommissionSnapshot)
+                : pendingTikTokOrders.Sum(x => x.UserCommissionSnapshot);
+            expectedCashback += visibleRows.Sum(x => estimates.GetValueOrDefault(x.Id)) - beforeTax;
+        }
+
         return new AffiliateOrderSummaryDto
         {
             PendingCount = pendingCount,
@@ -197,6 +218,9 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
         var allAttributions = itemIds.Count == 0
             ? new List<AffiliateOrderItemAttribution>()
             : await _attributions.GetListAsync(x => itemIds.Contains(x.OrderItemId));
+        var estimates = _estimates.Calculate(rows.Select(x => x.Order), items, allAttributions);
+        decimal Expected(AffiliateOrderItemAttribution attribution) => estimates.GetValueOrDefault(attribution.Id,
+            attribution.UserCommissionSnapshot);
         var visibleAttributions = scopedUserId.HasValue
             ? allAttributions.Where(x => x.UserId == scopedUserId &&
                 x.Status != AffiliateAttributionStatus.Unmatched).ToList()
@@ -233,7 +257,7 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
                     ImageUrl = imageUrl,
                     PurchaseAmount = scopedUserId.HasValue ? itemAttributions.Sum(x => x.PurchaseAmount) : item.PurchaseAmount,
                     Quantity = scopedUserId.HasValue ? itemAttributions.Sum(x => x.Quantity) : item.Quantity,
-                    ExpectedUserCommission = itemAttributions.Sum(x => x.UserCommissionSnapshot),
+                    ExpectedUserCommission = itemAttributions.Sum(Expected),
                     SettledUserCommission = itemAttributions.Any(x => x.SettledUserCommission.HasValue)
                         ? itemAttributions.Sum(x => x.SettledUserCommission ?? 0m)
                         : null,
@@ -250,7 +274,7 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
                                     : null,
                                 AllocatedNetCommission = x.AllocatedNetCommission,
                                 SettledNetCommission = x.SettledNetCommission,
-                                ExpectedUserCommission = x.UserCommissionSnapshot,
+                                ExpectedUserCommission = Expected(x),
                                 SettledUserCommission = x.SettledUserCommission
                             }).ToList()
                         : new List<AffiliateOrderItemAttributionDto>()
@@ -264,14 +288,15 @@ public class AffiliateOrderAppService : WebHoanTienAppService, IAffiliateOrderAp
                 {
                     UserId = group.Key,
                     UserEmail = userEmails.GetValueOrDefault(group.Key),
-                    ExpectedUserCommission = group.Sum(x => x.UserCommissionSnapshot),
+                    ExpectedUserCommission = group.Sum(Expected),
                     SettledUserCommission = group.Any(x => x.SettledUserCommission.HasValue)
                         ? group.Sum(x => x.SettledUserCommission ?? 0m)
                         : null
                 }).OrderBy(x => x.UserEmail ?? x.UserId.ToString(), StringComparer.OrdinalIgnoreCase).ToList();
             var expected = scopedUserId.HasValue
-                ? orderVisibleAttributions.Sum(x => x.UserCommissionSnapshot)
-                : row.Order.UserCommissionSnapshot;
+                ? orderVisibleAttributions.Sum(Expected)
+                : row.Order.Platform == AffiliatePlatform.TikTok && !row.Order.SettledAt.HasValue && row.Order.Status != AffiliateOrderStatus.Settled
+                    ? orderAllAttributions.Sum(Expected) : row.Order.UserCommissionSnapshot;
             var payable = scopedUserId.HasValue
                 ? orderVisibleAttributions.Sum(x => x.SettledUserCommission ?? 0m)
                 : row.Order.PayableUserCommission;

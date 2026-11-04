@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Linq;
 using WebHoanTien.Notifications;
 
 namespace WebHoanTien.Affiliates;
@@ -18,13 +19,14 @@ public class AffiliateUserShareRateResolver : ITransientDependency
     private readonly AffiliateCommissionRuleManager _commissionRuleManager;
     private readonly AffiliateCommissionCalculator _calculator;
     private readonly CustomerNotificationManager _notificationManager;
+    private readonly IAsyncQueryableExecuter _queryExecuter;
 
     public AffiliateUserShareRateResolver(IRepository<AffiliateConversion, Guid> conversions,
         IRepository<AffiliateOrder, Guid> orders, IRepository<AffiliateOrderItem, Guid> items,
         IRepository<AffiliateOrderItemAttribution, Guid> attributions,
         AffiliateCommissionRuleManager commissionRuleManager,
         AffiliateCommissionCalculator calculator,
-        CustomerNotificationManager notificationManager)
+        CustomerNotificationManager notificationManager, IAsyncQueryableExecuter queryExecuter)
     {
         _conversions = conversions;
         _orders = orders;
@@ -33,6 +35,7 @@ public class AffiliateUserShareRateResolver : ITransientDependency
         _commissionRuleManager = commissionRuleManager;
         _calculator = calculator;
         _notificationManager = notificationManager;
+        _queryExecuter = queryExecuter;
     }
 
     public async Task<decimal> GetForNextOrderAsync(Guid userId, AffiliatePlatform platform, DateTime purchaseTime,
@@ -80,17 +83,26 @@ public class AffiliateUserShareRateResolver : ITransientDependency
         var conversionIds = ownedOrders.Select(x => x.ConversionId).Distinct().ToList();
         var conversions = (await _conversions.GetListAsync(x => conversionIds.Contains(x.Id)))
             .ToDictionary(x => x.Id);
+        var ownedOrderById = ownedOrders.ToDictionary(x => x.Id);
+        var attributionsByUser = ownedAttributions.Where(x => x.UserId.HasValue &&
+                orderIdByItemId.ContainsKey(x.OrderItemId))
+            .ToLookup(x => x.UserId!.Value);
+        var matchedRowsByUserOrder = ownedAttributions.Where(x => x.UserId.HasValue &&
+                x.Status == AffiliateAttributionStatus.Matched && x.TrackingId.HasValue &&
+                orderIdByItemId.ContainsKey(x.OrderItemId))
+            .ToLookup(x => (x.UserId!.Value, orderIdByItemId[x.OrderItemId]));
         var configuredRateByPurchaseTime = new Dictionary<DateTime, decimal>();
+        List<AffiliateCommissionRule>? rules = null;
         var changedAttributions = new Dictionary<Guid, AffiliateOrderItemAttribution>();
         var changedOrderIds = new HashSet<Guid>();
         var changedRecipients = new HashSet<(Guid UserId, Guid OrderId)>();
 
         foreach (var userId in affectedUserIds)
         {
-            var userOrderIds = ownedAttributions.Where(x => x.UserId == userId &&
-                    orderIdByItemId.ContainsKey(x.OrderItemId))
+            var userOrderIds = attributionsByUser[userId]
                 .Select(x => orderIdByItemId[x.OrderItemId]).Distinct().ToHashSet();
-            var sequence = ownedOrders.Where(x => userOrderIds.Contains(x.Id) && IsQualifying(x.Status) &&
+            var sequence = userOrderIds.Where(ownedOrderById.ContainsKey).Select(id => ownedOrderById[id])
+                .Where(x => IsQualifying(x.Status) &&
                     conversions.ContainsKey(x.ConversionId))
                 .OrderBy(x => conversions[x.ConversionId].PurchaseTime)
                 .ThenBy(x => x.ExternalOrderId, StringComparer.Ordinal)
@@ -100,10 +112,8 @@ public class AffiliateUserShareRateResolver : ITransientDependency
             for (var index = 0; index < sequence.Count; index++)
             {
                 var order = sequence[index];
-                if (order.Status == AffiliateOrderStatus.Settled) continue;
-                var userRows = ownedAttributions.Where(x => x.UserId == userId &&
-                        x.Status == AffiliateAttributionStatus.Matched && x.TrackingId.HasValue &&
-                        orderIdByItemId.GetValueOrDefault(x.OrderItemId) == order.Id)
+                if (order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue) continue;
+                var userRows = matchedRowsByUserOrder[(userId, order.Id)]
                     .OrderBy(x => x.OrderItemId).ThenBy(x => x.AttributionValue, StringComparer.Ordinal)
                     .ThenBy(x => x.Id).ToList();
                 if (userRows.Count == 0) continue;
@@ -111,8 +121,8 @@ public class AffiliateUserShareRateResolver : ITransientDependency
                 var purchaseTime = conversions[order.ConversionId].PurchaseTime;
                 if (!configuredRateByPurchaseTime.TryGetValue(purchaseTime, out var configuredRate))
                 {
-                    configuredRate = (await _commissionRuleManager.GetForPurchaseAsync(platform, purchaseTime))
-                        .UserShareRate;
+                    rules ??= await _commissionRuleManager.GetActiveRulesAsync(platform);
+                    configuredRate = AffiliateCommissionRuleManager.ResolveForPurchase(rules, purchaseTime).UserShareRate;
                     configuredRateByPurchaseTime[purchaseTime] = configuredRate;
                 }
                 var rate = AffiliateUserShareRatePolicy.Resolve(index + 1, configuredRate);
@@ -125,11 +135,13 @@ public class AffiliateUserShareRateResolver : ITransientDependency
                     .ToDictionary(x => x.Key, x => x.Amount, StringComparer.Ordinal);
                 foreach (var attribution in userRows)
                 {
+                    if (attribution.UserShareRate == rate &&
+                        attribution.UserCommissionSnapshot == allocations[keys[attribution.Id]]) continue;
                     attribution.Match(attribution.TrackingId!.Value, userId, rate, allocations[keys[attribution.Id]]);
                     changedAttributions[attribution.Id] = attribution;
+                    changedOrderIds.Add(order.Id);
+                    changedRecipients.Add((userId, order.Id));
                 }
-                changedOrderIds.Add(order.Id);
-                changedRecipients.Add((userId, order.Id));
             }
         }
 
@@ -141,30 +153,33 @@ public class AffiliateUserShareRateResolver : ITransientDependency
         var allAttributions = allItemIds.Count == 0
             ? new List<AffiliateOrderItemAttribution>()
             : await _attributions.GetListAsync(x => allItemIds.Contains(x.OrderItemId));
+        var attributionsByItem = allAttributions.ToLookup(x => x.OrderItemId);
         foreach (var item in allItems)
         {
             item.Update(item.ProductName, item.PurchaseAmount, item.Quantity, item.ItemTotalCommission,
                 item.AllocatedNetCommission,
-                allAttributions.Where(x => x.OrderItemId == item.Id).Sum(x => x.UserCommissionSnapshot),
+                attributionsByItem[item.Id].Sum(x => x.UserCommissionSnapshot),
                 item.RefundAmount, item.IsFraud, item.ProviderStatus);
         }
         await _items.UpdateManyAsync(allItems, autoSave: false);
 
         var changedOrders = ownedOrders.Where(x => changedOrderIds.Contains(x.Id)).ToList();
+        var itemsByOrder = allItems.ToLookup(x => x.OrderId);
         foreach (var order in changedOrders)
         {
             order.Update(order.Status, order.ShopType, order.PurchaseAmount, order.NetCommission,
-                allItems.Where(x => x.OrderId == order.Id).Sum(x => x.UserCommissionSnapshot));
+                itemsByOrder[order.Id].Sum(x => x.UserCommissionSnapshot));
         }
         await _orders.UpdateManyAsync(changedOrders, autoSave: false);
 
         var changedOrderById = changedOrders.ToDictionary(x => x.Id);
         var orderIdByAllItemId = allItems.ToDictionary(x => x.Id, x => x.OrderId);
+        var recipientAmounts = allAttributions.Where(x => x.UserId.HasValue)
+            .GroupBy(x => (x.UserId!.Value, orderIdByAllItemId[x.OrderItemId]))
+            .ToDictionary(group => group.Key, group => group.Sum(x => x.UserCommissionSnapshot));
         foreach (var recipient in changedRecipients)
         {
-            var expected = allAttributions.Where(x => x.UserId == recipient.UserId &&
-                    orderIdByAllItemId.GetValueOrDefault(x.OrderItemId) == recipient.OrderId)
-                .Sum(x => x.UserCommissionSnapshot);
+            var expected = recipientAmounts.GetValueOrDefault((recipient.UserId, recipient.OrderId));
             await _notificationManager.NotifyOrderStatusAsync(recipient.UserId,
                 changedOrderById[recipient.OrderId], expected, null);
         }
@@ -180,19 +195,20 @@ public class AffiliateUserShareRateResolver : ITransientDependency
         var conversionIdByOrderId = conversionOrders.ToDictionary(x => x.Id, x => x.ConversionId);
         var conversionIdByItemId = conversionItems.ToDictionary(x => x.Id,
             x => conversionIdByOrderId[x.OrderId]);
+        var rowsByConversion = conversionAttributions.Where(x => x.UserId.HasValue &&
+                x.Status != AffiliateAttributionStatus.Unmatched)
+            .ToLookup(x => conversionIdByItemId[x.OrderItemId]);
+        var ordersByConversion = conversionOrders.ToLookup(x => x.ConversionId);
         foreach (var conversionId in changedConversionIds)
         {
             var conversion = conversions[conversionId];
-            var conversionRows = conversionAttributions.Where(x =>
-                    conversionIdByItemId.GetValueOrDefault(x.OrderItemId) == conversionId &&
-                    x.UserId.HasValue && x.Status != AffiliateAttributionStatus.Unmatched)
-                .ToList();
+            var conversionRows = rowsByConversion[conversionId].ToList();
             var distinctUsers = conversionRows.Select(x => x.UserId!.Value).Distinct().ToList();
             var distinctRates = conversionRows.Select(x => x.UserShareRate).Distinct().ToList();
             conversion.ApplyAttributedCommission(conversion.GrossCommission, conversion.NetCommission,
                 conversion.CommissionSource,
                 distinctUsers.Count == 1 && distinctRates.Count == 1 ? distinctRates[0] : null,
-                conversionOrders.Where(x => x.ConversionId == conversionId).Sum(x => x.UserCommissionSnapshot));
+                ordersByConversion[conversionId].Sum(x => x.UserCommissionSnapshot));
         }
         await _conversions.UpdateManyAsync(changedConversionIds.Select(x => conversions[x]), autoSave: true);
     }
@@ -207,22 +223,22 @@ public class AffiliateUserShareRateResolver : ITransientDependency
 
     private async Task<List<OrderSequenceValue>> GetQualifyingOrdersAsync(Guid userId, AffiliatePlatform platform)
     {
-        var attributions = await _attributions.GetListAsync(x => x.UserId == userId &&
-            x.Status != AffiliateAttributionStatus.Unmatched);
-        var itemIds = attributions.Select(x => x.OrderItemId).Distinct().ToList();
-        if (itemIds.Count == 0) return new List<OrderSequenceValue>();
-
-        var items = await _items.GetListAsync(x => itemIds.Contains(x.Id));
-        var orderIds = items.Select(x => x.OrderId).Distinct().ToList();
-        var orders = await _orders.GetListAsync(x => orderIds.Contains(x.Id) && x.Platform == platform &&
-            x.Status != AffiliateOrderStatus.Cancelled && x.Status != AffiliateOrderStatus.Refunded &&
-            x.Status != AffiliateOrderStatus.Rejected);
-        var conversionIds = orders.Select(x => x.ConversionId).Distinct().ToList();
-        var conversions = (await _conversions.GetListAsync(x => conversionIds.Contains(x.Id)))
-            .ToDictionary(x => x.Id);
-        return orders.Where(x => conversions.ContainsKey(x.ConversionId))
-            .Select(x => new OrderSequenceValue(x.Id, conversions[x.ConversionId].PurchaseTime, x.ExternalOrderId))
-            .ToList();
+        var attributions = await _attributions.GetQueryableAsync();
+        var items = await _items.GetQueryableAsync();
+        var orders = await _orders.GetQueryableAsync();
+        var conversions = await _conversions.GetQueryableAsync();
+        // Project only the sequence keys in one query; do not load/track the user's entire item history.
+        var query = (from attribution in attributions
+                     join item in items on attribution.OrderItemId equals item.Id
+                     join order in orders on item.OrderId equals order.Id
+                     join conversion in conversions on order.ConversionId equals conversion.Id
+                     where attribution.UserId == userId &&
+                         attribution.Status != AffiliateAttributionStatus.Unmatched && order.Platform == platform &&
+                         order.Status != AffiliateOrderStatus.Cancelled && order.Status != AffiliateOrderStatus.Refunded &&
+                         order.Status != AffiliateOrderStatus.Rejected
+                     select new { order.Id, conversion.PurchaseTime, order.ExternalOrderId }).Distinct();
+        return (await _queryExecuter.ToListAsync(query))
+            .Select(x => new OrderSequenceValue(x.Id, x.PurchaseTime, x.ExternalOrderId)).ToList();
     }
 
     private static int Compare(OrderSequenceValue left, OrderSequenceValue right)

@@ -38,6 +38,10 @@
                 <div class="cb-detail-cashback"><dt>@(order.Status == AffiliateOrderStatus.Settled ? "Bạn nhận được" : "Hoàn tiền dự kiến")</dt><dd>+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</dd></div>
             </dl>
             <p class="cb-detail-note"><img src="~/orders-icons/shield-check.svg" alt="" /> @(order.Status == AffiliateOrderStatus.Settled ? $"Số tiền đã được chốt theo hoa hồng thực nhận từ {platformName}." : $"Số tiền này chưa được rút cho đến khi {platformName} xác nhận hoa hồng và CatBack đối soát.")</p>
+            @if (order.Platform == AffiliatePlatform.TikTok && CustomerOrderUi.IsPending(order.Status))
+            {
+                <p class="cb-detail-note">Hoàn tiền dự kiến đã dự phòng thuế 10% với SKU chưa có thuế hoặc thuế bằng 0; SKU đã khấu trừ thuế không bị trừ thêm.</p>
+            }
             @if (Model.IsAdminOrderView && !string.IsNullOrWhiteSpace(order.ReviewNote)) { <p class="text-danger">@order.ReviewNote</p> }
         </div>
     </header>

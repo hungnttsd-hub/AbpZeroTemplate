@@ -1,5 +1,30 @@
 # Đối soát và duyệt Shopee
 
+## Danh sách ở tất cả trạng thái
+
+Danh sách tổng hợp mặc định ở `/Admin/Settlements` gồm cả các bản ghi trong bảng kê
+và đơn Shopee từ báo cáo chuyển đổi chưa có bảng kê, không giới hạn `Completed`.
+Hiển thị riêng trạng thái đơn hàng (chưa thanh toán, đang xử lý, hoàn thành, hủy,
+hoàn trả, từ chối, đã duyệt hoàn tiền) và trạng thái duyệt/đối soát.
+
+Đơn chưa có bảng kê được ghi rõ **Chưa có bảng kê**, có liên kết xem chi tiết và
+không có nút duyệt/cộng ví. Việc hiển thị không tạo bản ghi đối soát giả hoặc số
+tiền thuế/phí giả. Khi bảng kê được import, danh sách chỉ hiển thị bản ghi đối soát
+của đơn đó, không hiển thị trùng. Phân trang và tổng số dòng tính trên danh sách gộp.
+
+Bộ lọc ngày đặt hàng áp dụng cho cả hai nguồn. Bộ lọc batch, Affiliate ID và
+Shopee đã thanh toán chỉ khớp dữ liệu có bảng kê tương ứng. Khi mở một batch cụ thể,
+danh sách vẫn chỉ gồm các bản ghi thuộc batch. Thống kê tiền và duyệt hàng loạt
+vẫn tính trên các bản ghi đối soát, không đưa đơn chưa có bảng kê vào tiền chờ duyệt.
+
+## Import lại báo cáo chuyển đổi
+
+Import CSV/TXT ở trang quản trị và qua API automation bỏ qua các đơn đã duyệt
+(`Settled` hoặc đã có `SettledAt`), kể cả khi file mới thay đổi Sub ID hoặc số tiền.
+Các đơn này không bị đánh dấu conflict hay ghi đè dữ liệu. Kết quả import hiển thị
+riêng số đơn đã duyệt được bỏ qua. Các đơn còn lại xử lý theo lô 100 đơn, hoàn tất
+tính lại tỷ lệ hoàn tiền và ghép đối soát trước khi lưu từng lô.
+
 ## Tự động duyệt đơn hoàn thành sau 7 ngày
 
 Trang `/Admin/Settlements` có khu vực **Tự động duyệt đơn Shopee** với nút bật/tắt lịch

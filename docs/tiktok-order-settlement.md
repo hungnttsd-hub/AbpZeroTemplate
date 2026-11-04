@@ -37,6 +37,29 @@ Triển khai source ngày 15/10/2026, cập nhật duyệt hàng loạt ngày 18
 Không đổi endpoint/version/request Creator API, không thêm scope và không gọi API đối soát mới.
 Build Web thành công; chưa chạy test, trình duyệt, job hoặc đối soát/cộng ví thật trong lần sửa này.
 
+## Hoàn tiền dự kiến sau thuế dự phòng — 03/11/2026
+
+- Link sản phẩm: hoa hồng sản phẩm gốc được trừ thuế dự phòng 10% (làm tròn 4 số thập phân),
+  rồi chia theo chính sách 80% cho hai đơn hợp lệ đầu trên TikTok, hoặc tỷ lệ rule hiện hành
+  từ đơn thứ ba (hiện tại 60%). Áp dụng cho cả đầu min/max của khoảng tiền hoàn, làm tròn
+  tiền user nhận theo đồng và không vượt phần net. Khoản hoa hồng Creator hiển thị vẫn là số gốc.
+- Ví dụ: 112.800đ hoa hồng → dự phòng 11.280đ thuế → net 101.520đ → user 80% nhận dự kiến
+  81.216đ; tỷ lệ 60% nhận dự kiến 60.912đ.
+- `TikTokCashbackEstimateCalculator` tính dự kiến đơn đang chờ từ `AllocatedNetCommission`
+  gốc và tỷ lệ đã lưu của từng attribution. Snapshot có `pit > 0` VND hợp lệ thì không trừ thêm;
+  thiếu/0/chưa đọc được thuế thì dự phòng 10%. Dữ liệu thuế lỗi vẫn bị dịch vụ đối soát chặn
+  khi chốt tiền. Dự kiến không phải xác nhận đơn đủ điều kiện duyệt.
+- Danh sách đơn, chi tiết SKU/người nhận, tổng hoàn tiền dự kiến, phần chờ hoàn và lịch sử
+  chờ hoàn trong ví cùng dùng projection này. Đơn cũ chưa có snapshot cũng được dự phòng 10%
+  ngay khi đọc; không cần đồng bộ đơn hoặc chạy backfill trước. Không lấy số dự kiến đã làm tròn
+  để trừ thuế lần nữa; mỗi lần đọc đều tính từ tiền gốc. Các snapshot nghiệp vụ gốc được giữ để
+  phục vụ đối soát và truy vết, không ghi đè lịch sử thông báo.
+- Link đã lưu được tính lại từ min/max hoa hồng gốc khi tạo/mở lại/xem danh sách link,
+  kể cả khi metadata còn trong cache 15 phút. Không cần tạo lại link.
+- Dùng chung `TikTokCashbackTaxPolicy` với đối soát actual, nhưng không ghi chốt ledger,
+  không sửa đơn đã đối soát hoặc số dư có thể rút. Quyền xem theo user hiện có giữ nguyên.
+  Chính sách Shopee không thay đổi. Không cần migration hoặc gọi thêm API TikTok.
+
 ## Thao tác
 
 1. Admin có quyền `Affiliate.Admin.Orders` vào `/Admin/TikTokOrders`. Job Creator API đồng bộ mỗi giờ (mặc định đọc lại 90 ngày), sau đó tự đối soát các đơn SETTLED đủ điều kiện như trên. Có thể lấy lại đơn qua nút đồng bộ nếu có quyền Sync; nút này chỉ lưu dữ liệu. Xem [cấu hình job](tiktok-shop-creator-api.md#tự-động-đồng-bộ-đơn-hàng-mỗi-giờ--16102026).

@@ -59,6 +59,7 @@
             @if (isTikTok && item.EstimatedCommission.HasValue)
             {
                 <p class="affiliate-estimate">Hoàn lại dự kiến @CustomerLinkUi.MoneyRange(item.EstimatedCommission, item.EstimatedCommissionMaximum)</p>
+                <p class="fine-print">Đã dự phòng thuế 10% trước khi chia hoàn tiền.</p>
             }
             else if (isTikTok)
             {

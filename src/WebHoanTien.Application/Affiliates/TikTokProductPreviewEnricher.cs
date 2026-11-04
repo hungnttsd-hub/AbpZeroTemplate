@@ -15,13 +15,13 @@ public class TikTokProductPreviewEnricher : ITransientDependency
 {
     private readonly ITikTokCreatorApi _api;
     private readonly AffiliateUserShareRateResolver _rates;
-    private readonly AffiliateCommissionCalculator _calculator;
+    private readonly TikTokCashbackEstimateCalculator _estimates;
     private readonly IClock _clock;
     private readonly ILogger<TikTokProductPreviewEnricher> _logger;
 
     public TikTokProductPreviewEnricher(ITikTokCreatorApi api, AffiliateUserShareRateResolver rates,
-        AffiliateCommissionCalculator calculator, IClock clock, ILogger<TikTokProductPreviewEnricher> logger)
-    { _api = api; _rates = rates; _calculator = calculator; _clock = clock; _logger = logger; }
+        TikTokCashbackEstimateCalculator estimates, IClock clock, ILogger<TikTokProductPreviewEnricher> logger)
+    { _api = api; _rates = rates; _estimates = estimates; _clock = clock; _logger = logger; }
 
     public async Task<IReadOnlyList<AffiliateTracking>> EnrichAsync(IEnumerable<AffiliateTracking> input,
         bool force = false, CancellationToken ct = default)
@@ -77,8 +77,8 @@ public class TikTokProductPreviewEnricher : ITransientDependency
                 {
                     var min = link.GetProperty<decimal?>(TikTokProductPreview.CommissionMinimum);
                     var max = link.GetProperty<decimal?>(TikTokProductPreview.CommissionMaximum);
-                    decimal? cashback = min.HasValue ? _calculator.CalculateUserCommission(min.Value, rate) : null;
-                    decimal? cashbackMax = max.HasValue ? _calculator.CalculateUserCommission(max.Value, rate) : null;
+                    decimal? cashback = min.HasValue ? _estimates.ProductCashback(min.Value, rate) : null;
+                    decimal? cashbackMax = max.HasValue ? _estimates.ProductCashback(max.Value, rate) : null;
                     if (link.EstimatedCommission == cashback && link.GetProperty<decimal?>(TikTokProductPreview.CashbackMaximum) == cashbackMax) continue;
                     link.SetProduct(link.ProductId, link.ShopId, link.ProductName, link.ImageUrl, cashback);
                     link.SetProperty(TikTokProductPreview.CashbackMaximum, cashbackMax);

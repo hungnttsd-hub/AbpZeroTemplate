@@ -157,6 +157,7 @@ public sealed class ShopeeReportImportResultDto
     public int ConversionCount { get; set; }
     public int InsertedCount { get; set; }
     public int UpdatedCount { get; set; }
+    public int SkippedSettledCount { get; set; }
     public int UnmatchedCount { get; set; }
     public int MatchedItemCount { get; set; }
     public int UnmatchedItemCount { get; set; }

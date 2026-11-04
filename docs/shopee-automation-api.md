@@ -71,3 +71,20 @@ curl.exe -X POST "$baseUrl/api/public/shopee-automation/reports/import" `
 ```
 
 Token chỉ dùng được cho API import Shopee, không có quyền Admin và không đăng nhập được vào giao diện quản trị.
+
+## Xử lý báo cáo lớn
+
+API và màn hình quản trị dùng chung luồng import theo lô 100 đơn. Mỗi lô tính lại tỷ lệ
+hoàn tiền và ghép đối soát một lần, sau đó commit cùng giao dịch; không lưu lô khi hai
+bước này chưa hoàn tất. Nếu lô lỗi, hệ thống rollback và thử từng đơn trong giao dịch
+riêng để vẫn nhập được các đơn hợp lệ.
+
+Đơn đã duyệt (`Status = Settled` hoặc có `SettledAt`) được lọc trước khi upsert và
+bỏ qua hoàn toàn: không ghi lại conversion, item, attribution, số tiền hay trạng thái
+conflict. Kết quả trả thêm `skippedSettledCount`, tính theo số đơn đã duyệt bị bỏ qua;
+không cộng các đơn này vào `updatedCount`, `unmatchedCount` hoặc `errorCount`.
+`importedRowCount` vẫn là tổng số dòng hợp lệ đọc từ file, `conversionCount` vẫn là
+tổng số đơn phân nhóm trong file, gồm cả các đơn bỏ qua.
+
+Log hoàn tất import ghi số dòng, thêm/cập nhật/bỏ qua/lỗi và tổng thời gian xử lý
+để theo dõi hiệu năng trên báo cáo thực tế.

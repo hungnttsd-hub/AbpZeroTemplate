@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp;
@@ -27,7 +28,15 @@ public class AffiliateCommissionRuleManager : ITransientDependency
 
     public async Task<AffiliateCommissionRule> GetForPurchaseAsync(AffiliatePlatform platform, DateTime purchaseTime)
     {
-        var rules = await _repository.GetListAsync(x => x.Platform == platform && x.IsActive);
+        return ResolveForPurchase(await GetActiveRulesAsync(platform), purchaseTime);
+    }
+
+    public Task<List<AffiliateCommissionRule>> GetActiveRulesAsync(AffiliatePlatform platform) =>
+        _repository.GetListAsync(x => x.Platform == platform && x.IsActive);
+
+    public static AffiliateCommissionRule ResolveForPurchase(IEnumerable<AffiliateCommissionRule> rules,
+        DateTime purchaseTime)
+    {
         var rule = rules.Where(x => x.AppliesAt(purchaseTime)).OrderByDescending(x => x.EffectiveFrom).FirstOrDefault();
         return rule ?? throw new BusinessException(WebHoanTienDomainErrorCodes.CommissionRuleNotFound);
     }

@@ -61,6 +61,8 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         await _matcher.RefreshUnmatchedAsync();
         var filteredRecords = await GetFilteredRecordsAsync(input);
+        var ordersWithoutSettlementCount = await AsyncExecuter.CountAsync(
+            await GetFilteredOrdersWithoutSettlementAsync(input));
         var query = (await _batches.GetQueryableAsync())
             .Where(batch => filteredRecords.Any(record => record.BatchId == batch.Id));
 
@@ -90,14 +92,15 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         {
             Summary = new AdminShopeeSettlementSummaryDto
             {
-                TotalCount = counts.Sum(group => group.Count),
+                TotalCount = counts.Sum(group => group.Count) + ordersWithoutSettlementCount,
+                OrdersWithoutSettlementCount = ordersWithoutSettlementCount,
                 CommissionOrderCount = financial.OrderCount,
                 PendingCount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.PendingApproval).Sum(group => group.Count),
                 PendingAmount = financial.PendingCommission,
                 ApprovedCount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count),
                 ApprovedAmount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.Approved).Sum(group => group.Amount),
                 IssueCount = counts.Where(group => group.Status != ShopeeSettlementRecordStatus.PendingApproval &&
-                    group.Status != ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count),
+                    group.Status != ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count) + ordersWithoutSettlementCount,
                 TotalActualCommission = financial.ActualCommission,
                 TotalUserCommission = financial.UserCommission,
                 TotalAdminCommission = financial.AdminCommission,
@@ -125,9 +128,9 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         var bills = (await _bills.GetListAsync(bill => bill.BatchId == batchId)).ToDictionary(bill => bill.Id);
         var orderIds = rows.Where(row => row.AffiliateOrderId.HasValue)
             .Select(row => row.AffiliateOrderId!.Value).Distinct().ToList();
-        var grossByOrder = orderIds.Count == 0 ? new Dictionary<Guid, decimal>() :
+        var ordersById = orderIds.Count == 0 ? new Dictionary<Guid, AffiliateOrder>() :
             (await _orders.GetListAsync(order => orderIds.Contains(order.Id)))
-                .ToDictionary(order => order.Id, order => order.NetCommission);
+                .ToDictionary(order => order.Id);
         var detailItems = orderIds.Count == 0 ? new List<AffiliateOrderItem>() :
             await _items.GetListAsync(item => orderIds.Contains(item.OrderId));
         var productNamesByOrder = detailItems
@@ -157,7 +160,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             Batch = batchDto,
             Records = new PagedResultDto<AdminShopeeSettlementRecordDto>(count,
                 rows.Select(row => MapRecord(row, bills[row.BillId], productNamesByOrder,
-                        attributionsByOrder, users, grossByOrder))
+                        attributionsByOrder, users, ordersById))
                     .ToList())
         };
     }
@@ -168,21 +171,34 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     {
         await _matcher.RefreshUnmatchedAsync();
         var query = await GetFilteredRecordsAsync(input);
-        var count = await AsyncExecuter.CountAsync(query);
-        var rows = await AsyncExecuter.ToListAsync(query
-            .OrderBy(record => record.Status == ShopeeSettlementRecordStatus.PendingApproval ? 0 : 1)
-            .ThenByDescending(record => record.CreationTime)
-            .ThenBy(record => record.ExternalOrderId).Skip(Math.Max(0, skipCount))
+        var ordersWithoutSettlement = await GetFilteredOrdersWithoutSettlementAsync(input);
+        // Merge identifiers before paging in SQL; never materialize all conversion orders on this page.
+        var entries = query.Select(record => new SettlementListEntry
+        {
+            Id = record.Id, HasSettlementRecord = true, OrderId = record.AffiliateOrderId,
+            CreationTime = record.CreationTime, ExternalOrderId = record.ExternalOrderId
+        }).Concat(ordersWithoutSettlement.Select(order => new SettlementListEntry
+        {
+            Id = order.Id, HasSettlementRecord = false, OrderId = (Guid?)order.Id,
+            CreationTime = order.CreationTime, ExternalOrderId = order.ExternalOrderId
+        }));
+        var count = await AsyncExecuter.CountAsync(entries);
+        var page = await AsyncExecuter.ToListAsync(entries.OrderByDescending(entry => entry.CreationTime)
+            .ThenBy(entry => entry.ExternalOrderId)
+            .ThenBy(entry => entry.Id).Skip(Math.Max(0, skipCount))
             .Take(Math.Clamp(maxResultCount, 1, 200)));
+        var recordIds = page.Where(entry => entry.HasSettlementRecord).Select(entry => entry.Id).ToList();
+        var rows = recordIds.Count == 0 ? new List<ShopeeSettlementRecord>() :
+            await _records.GetListAsync(record => recordIds.Contains(record.Id));
         var billIds = rows.Select(row => row.BillId).Distinct().ToList();
         var bills = billIds.Count == 0
             ? new Dictionary<Guid, ShopeeSettlementBill>()
             : (await _bills.GetListAsync(bill => billIds.Contains(bill.Id))).ToDictionary(bill => bill.Id);
-        var orderIds = rows.Where(row => row.AffiliateOrderId.HasValue)
-            .Select(row => row.AffiliateOrderId!.Value).Distinct().ToList();
-        var grossByOrder = orderIds.Count == 0 ? new Dictionary<Guid, decimal>() :
+        var orderIds = page.Where(entry => entry.OrderId.HasValue)
+            .Select(entry => entry.OrderId!.Value).Distinct().ToList();
+        var ordersById = orderIds.Count == 0 ? new Dictionary<Guid, AffiliateOrder>() :
             (await _orders.GetListAsync(order => orderIds.Contains(order.Id)))
-                .ToDictionary(order => order.Id, order => order.NetCommission);
+                .ToDictionary(order => order.Id);
         var detailItems = orderIds.Count == 0 ? new List<AffiliateOrderItem>() :
             await _items.GetListAsync(item => orderIds.Contains(item.OrderId));
         var productNamesByOrder = detailItems
@@ -206,9 +222,11 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         var users = userIds.Count == 0
             ? new Dictionary<Guid, IdentityUser>()
             : (await _users.GetListAsync(user => userIds.Contains(user.Id))).ToDictionary(user => user.Id);
-        return new PagedResultDto<AdminShopeeSettlementRecordDto>(count,
-            rows.Select(row => MapRecord(row, bills[row.BillId], productNamesByOrder,
-                attributionsByOrder, users, grossByOrder)).ToList());
+        var mappedRecords = rows.ToDictionary(row => row.Id, row => MapRecord(row, bills[row.BillId],
+            productNamesByOrder, attributionsByOrder, users, ordersById));
+        return new PagedResultDto<AdminShopeeSettlementRecordDto>(count, page.Select(entry =>
+            entry.HasSettlementRecord ? mappedRecords[entry.Id] : MapOrderWithoutSettlement(
+                ordersById[entry.Id], productNamesByOrder, attributionsByOrder, users)).ToList());
     }
 
     [UnitOfWork(IsDisabled = true)]
@@ -614,8 +632,10 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
     private AdminShopeeSettlementRecordDto MapRecord(ShopeeSettlementRecord record, ShopeeSettlementBill bill,
         IReadOnlyDictionary<Guid, List<string>> productNamesByOrder,
         IReadOnlyDictionary<Guid, List<AffiliateOrderItemAttribution>> attributionsByOrder,
-        IReadOnlyDictionary<Guid, IdentityUser> users, IReadOnlyDictionary<Guid, decimal> grossByOrder)
+        IReadOnlyDictionary<Guid, IdentityUser> users, IReadOnlyDictionary<Guid, AffiliateOrder> ordersById)
     {
+        var order = record.AffiliateOrderId.HasValue
+            ? ordersById.GetValueOrDefault(record.AffiliateOrderId.Value) : null;
         var amounts = ShopeeSettlementAmounts.For(record, bill);
         var actualPaidCommission = amounts.Net;
         var orderAttributions = record.AffiliateOrderId.HasValue
@@ -640,6 +660,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         return new AdminShopeeSettlementRecordDto
         {
             Id = record.Id,
+            OrderStatus = order?.Status,
             CreationTime = record.CreationTime,
             BatchId = record.BatchId,
             BillId = record.BillId,
@@ -659,9 +680,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             HasBonus = bill.HasBonus,
             HasPpp = bill.HasPpp,
             ExternalOrderId = record.ExternalOrderId,
-            DefaultGrossCommission = record.AffiliateOrderId.HasValue
-                ? grossByOrder.GetValueOrDefault(record.AffiliateOrderId.Value, record.EligibleCommission)
-                : record.EligibleCommission,
+            DefaultGrossCommission = order?.NetCommission ?? record.EligibleCommission,
             EligibleCommission = record.EligibleCommission,
             AllocatedServiceFee = amounts.Fee,
             AllocatedTax = amounts.Tax,
@@ -695,6 +714,85 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             ApprovedAt = record.ApprovedAt,
             Issue = record.Issue
         };
+    }
+
+    private static AdminShopeeSettlementRecordDto MapOrderWithoutSettlement(AffiliateOrder order,
+        IReadOnlyDictionary<Guid, List<string>> productNamesByOrder,
+        IReadOnlyDictionary<Guid, List<AffiliateOrderItemAttribution>> attributionsByOrder,
+        IReadOnlyDictionary<Guid, IdentityUser> users)
+    {
+        var recipients = attributionsByOrder.GetValueOrDefault(order.Id,
+                new List<AffiliateOrderItemAttribution>())
+            .Where(row => row.Status == AffiliateAttributionStatus.Matched && row.UserId.HasValue)
+            .GroupBy(row => row.UserId!.Value)
+            .Select(group => new AdminShopeeSettlementRecipientDto
+            {
+                UserId = group.Key,
+                UserEmail = users.TryGetValue(group.Key, out var user)
+                    ? string.IsNullOrWhiteSpace(user.Email) ? user.UserName : user.Email : null
+            }).ToList();
+        return new AdminShopeeSettlementRecordDto
+        {
+            Id = order.Id,
+            CreationTime = order.CreationTime,
+            HasSettlementRecord = false,
+            OrderStatus = order.Status,
+            ExternalOrderId = order.ExternalOrderId,
+            AffiliateOrderId = order.Id,
+            Status = order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue
+                ? ShopeeSettlementRecordStatus.AlreadySettled : ShopeeSettlementRecordStatus.Unmatched,
+            ProductNames = productNamesByOrder.GetValueOrDefault(order.Id, new List<string>()),
+            Recipients = recipients,
+            UserId = recipients.Count == 1 ? recipients[0].UserId : null,
+            UserEmail = recipients.Count == 1 ? recipients[0].UserEmail : null,
+            Issue = "Đơn chưa có trong bảng kê đối soát. Import bảng kê để có dữ liệu duyệt và cộng ví."
+        };
+    }
+
+    private async Task<IQueryable<AffiliateOrder>> GetFilteredOrdersWithoutSettlementAsync(
+        AdminShopeeSettlementBatchListInput input)
+    {
+        var orders = (await _orders.GetQueryableAsync()).Where(order => order.Platform == AffiliatePlatform.Shopee);
+        var records = await _records.GetQueryableAsync();
+        // Exclude against all records, regardless of the current filters, to avoid showing the same order twice.
+        orders = orders.Where(order => !records.Any(record => record.AffiliateOrderId == order.Id ||
+            record.ExternalOrderId == order.ExternalOrderId));
+        // These filters identify settlement metadata that conversion-only orders do not have.
+        if (!string.IsNullOrWhiteSpace(input.Filter) || input.Status.HasValue ||
+            !string.IsNullOrWhiteSpace(input.AffiliateId) || input.IsShopeePaid == true)
+            return orders.Where(order => false);
+        if (input.IsApproved.HasValue)
+            orders = input.IsApproved.Value
+                ? orders.Where(order => order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue)
+                : orders.Where(order => order.Status != AffiliateOrderStatus.Settled && !order.SettledAt.HasValue);
+        if (input.FromDate.HasValue || input.ToDate.HasValue)
+        {
+            var conversions = (await _conversions.GetQueryableAsync())
+                .Where(conversion => conversion.Platform == AffiliatePlatform.Shopee);
+            if (input.FromDate.HasValue)
+            {
+                var fromUtc = new DateTimeOffset(DateTime.SpecifyKind(input.FromDate.Value.Date,
+                    DateTimeKind.Unspecified), TimeSpan.FromHours(7)).UtcDateTime;
+                conversions = conversions.Where(conversion => conversion.PurchaseTime >= fromUtc);
+            }
+            if (input.ToDate.HasValue)
+            {
+                var toUtc = new DateTimeOffset(DateTime.SpecifyKind(input.ToDate.Value.Date.AddDays(1),
+                    DateTimeKind.Unspecified), TimeSpan.FromHours(7)).UtcDateTime;
+                conversions = conversions.Where(conversion => conversion.PurchaseTime < toUtc);
+            }
+            orders = orders.Where(order => conversions.Any(conversion => conversion.Id == order.ConversionId));
+        }
+        return orders;
+    }
+
+    private sealed class SettlementListEntry
+    {
+        public Guid Id { get; set; }
+        public bool HasSettlementRecord { get; set; }
+        public Guid? OrderId { get; set; }
+        public DateTime CreationTime { get; set; }
+        public string ExternalOrderId { get; set; } = string.Empty;
     }
 
     private async Task<IQueryable<ShopeeSettlementRecord>> GetFilteredRecordsAsync(

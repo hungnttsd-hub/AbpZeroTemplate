@@ -129,6 +129,11 @@
         item.dataset.status = "approved";
         const badge = item.querySelector("[data-record-status]");
         if (badge) { badge.className = "admin-settlement-status approved"; badge.textContent = "Đã duyệt"; }
+        const orderBadge = item.querySelector("[data-order-status]");
+        if (orderBadge) {
+            orderBadge.className = "admin-settlement-status settled";
+            orderBadge.textContent = "Đơn: Đã duyệt hoàn tiền";
+        }
         item.querySelector("[data-approve-record]")?.remove();
     }
 

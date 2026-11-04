@@ -337,7 +337,7 @@ public class TikTokSettlementService : ITransientDependency
                     if (!withheld.HasValue) preview.MissingTaxSkuCount++;
                     providerTax += withheld ?? 0;
                     var needsTax = !withheld.HasValue || withheld.Value == 0;
-                    var tax = needsTax ? Round(amount * 10m / 100m) : 0;
+                    var tax = TikTokCashbackTaxPolicy.AdditionalTax(amount, withheld);
                     if (needsTax) { hasAdditionalTax = true; taxBase += amount; }
                     additionalTax += tax;
                     var itemRows = rows.Where(x => x.Attribution.OrderItemId == item.Id).ToList();

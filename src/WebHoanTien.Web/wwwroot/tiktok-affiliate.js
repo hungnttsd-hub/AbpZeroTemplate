@@ -110,7 +110,7 @@
       text('[data-tt-product-price]', product?.price != null ? moneyRange(product.price, product.priceMaximum) : 'TikTok chưa cung cấp giá bán');
       text('[data-tt-product-commission]', moneyRange(product?.commissionAmount, product?.commissionMaximum));
       text('[data-tt-product-cashback]', moneyRange(product?.estimatedCashback, product?.estimatedCashbackMaximum));
-      text('[data-tt-rate-note]', 'Tiền hoàn dự kiến phụ thuộc SKU, ưu đãi và hoa hồng thực tế khi đối soát. Hiện chưa cộng tiền vào ví.');
+      text('[data-tt-rate-note]', 'Tiền hoàn dự kiến đã trừ thuế dự phòng 10% trước khi chia theo tỷ lệ của bạn. Số thực nhận còn phụ thuộc SKU, ưu đãi và dữ liệu thuế khi đối soát; hiện chưa cộng ví.');
       const image = find('[data-tt-product-image]');
       const imageUrl = safeProductImageUrl(product?.imageUrl);
       image.hidden = !imageUrl;

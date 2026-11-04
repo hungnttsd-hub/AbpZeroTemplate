@@ -15,7 +15,15 @@ namespace WebHoanTien.Operations;
 
 public sealed record AffiliateConversionUpsertResult(bool Inserted, bool Matched,
     int MatchedItemCount = 0, int UnmatchedItemCount = 0, int MultiTrackingOrderCount = 0,
-    string? ConflictMessage = null);
+    string? ConflictMessage = null, bool SkippedSettled = false);
+
+// Scoped to one import transaction. Never reuse after a rollback.
+public sealed class AffiliateConversionImportBatch
+{
+    internal HashSet<Guid> AffectedUserIds { get; } = new();
+    internal HashSet<string> ExternalOrderIds { get; } = new(StringComparer.Ordinal);
+    internal List<AffiliateCommissionRule>? CommissionRules { get; set; }
+}
 
 public class AffiliateConversionUpserter : ITransientDependency
 {
@@ -55,7 +63,7 @@ public class AffiliateConversionUpserter : ITransientDependency
     }
 
     public async Task<AffiliateConversionUpsertResult> UpsertAsync(AffiliatePlatform platform,
-        NormalizedAffiliateConversion source)
+        NormalizedAffiliateConversion source, AffiliateConversionImportBatch? importBatch = null)
     {
         var sourceOrderIds = source.Orders.Select(x => x.ExternalOrderId)
             .Distinct(StringComparer.Ordinal).ToList();
@@ -63,6 +71,12 @@ public class AffiliateConversionUpserter : ITransientDependency
             ? new List<AffiliateOrder>()
             : await _orders.GetListAsync(x => x.Platform == platform &&
                 sourceOrderIds.Contains(x.ExternalOrderId));
+        // Report imports must leave approved orders entirely untouched, including their attributions.
+        // Recheck here as an order may have been approved since the import's bulk prefilter.
+        if (importBatch is not null && platform == AffiliatePlatform.Shopee && sourceOrderIds.Count > 0 &&
+            sourceOrderIds.All(id => canonicalOrders.Any(order => order.ExternalOrderId == id &&
+                (order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue))))
+            return new AffiliateConversionUpsertResult(false, false, SkippedSettled: true);
         var canonicalConversionIds = canonicalOrders.Select(x => x.ConversionId).Distinct().ToList();
         AffiliateConversion? conversion = canonicalConversionIds.Count == 1
             ? await _conversions.FindAsync(canonicalConversionIds[0])
@@ -89,7 +103,10 @@ public class AffiliateConversionUpserter : ITransientDependency
                 .GroupBy(x => x.TrackingToken, StringComparer.Ordinal)
                 .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
 
-        var rule = await _ruleManager.GetForPurchaseAsync(platform, source.PurchaseTime);
+        var rule = importBatch is null
+            ? await _ruleManager.GetForPurchaseAsync(platform, source.PurchaseTime)
+            : AffiliateCommissionRuleManager.ResolveForPurchase(
+                importBatch.CommissionRules ??= await _ruleManager.GetActiveRulesAsync(platform), source.PurchaseTime);
         var allRates = new Dictionary<Guid, decimal>();
         decimal aggregateUserCommission = 0m;
         var matchedItemCount = 0;
@@ -115,6 +132,9 @@ public class AffiliateConversionUpserter : ITransientDependency
                 : await _attributions.GetListAsync(x => existingItemIds.Contains(x.OrderItemId));
             var existingUserIds = existingAttributions.Where(x => x.UserId.HasValue)
                 .Select(x => x.UserId!.Value).ToHashSet();
+            var previousCommissionByUser = existingAttributions.Where(x => x.UserId.HasValue)
+                .GroupBy(x => x.UserId!.Value)
+                .ToDictionary(group => group.Key, group => group.Sum(x => x.UserCommissionSnapshot));
             affectedUserIds.UnionWith(existingUserIds);
             var previousStatus = isNewOrder ? (AffiliateOrderStatus?)null : order.Status;
 
@@ -210,7 +230,7 @@ public class AffiliateConversionUpserter : ITransientDependency
                 item.Update(sourceItem.ProductName, sourceItem.PurchaseAmount, sourceItem.Quantity,
                     sourceItem.ItemTotalCommission, itemAllocatedNet, itemUserCommission,
                     sourceItem.RefundAmount, sourceItem.IsFraud, sourceItem.ProviderStatus);
-                if (isNewItem) await _items.InsertAsync(item, autoSave: true);
+                if (isNewItem) await _items.InsertAsync(item, autoSave: importBatch is null);
                 else await _items.UpdateAsync(item);
                 seenItemIds.Add(item.Id);
 
@@ -261,9 +281,10 @@ public class AffiliateConversionUpserter : ITransientDependency
             foreach (var userGroup in flat.Where(x => x.Tracking is not null).GroupBy(x => x.Tracking!.UserId))
             {
                 var userId = userGroup.Key;
-                if (isNewOrder || previousStatus != order.Status || !existingUserIds.Contains(userId))
+                var expected = userGroup.Sum(x => userCommissionByKey.GetValueOrDefault(x.Key));
+                if (isNewOrder || previousStatus != order.Status || !existingUserIds.Contains(userId) ||
+                    previousCommissionByUser.GetValueOrDefault(userId) != expected)
                 {
-                    var expected = userGroup.Sum(x => userCommissionByKey.GetValueOrDefault(x.Key));
                     await _notificationManager.NotifyOrderStatusAsync(userId, order, expected, 0m);
                 }
             }
@@ -288,14 +309,30 @@ public class AffiliateConversionUpserter : ITransientDependency
             soleRate, aggregateUserCommission);
         conversion.ChangeStatus(source.Status, _clock.Now);
         await _conversions.UpdateAsync(conversion, autoSave: true);
-        await _shareRateResolver.RecalculateUnsettledOrdersAsync(affectedUserIds, platform);
-        if (platform == AffiliatePlatform.Shopee)
-            await _settlementMatcher.RefreshForOrdersAsync(sourceOrderIds);
+        if (importBatch is null)
+        {
+            await _shareRateResolver.RecalculateUnsettledOrdersAsync(affectedUserIds, platform);
+            if (platform == AffiliatePlatform.Shopee)
+                await _settlementMatcher.RefreshForOrdersAsync(sourceOrderIds);
+        }
+        else
+        {
+            importBatch.AffectedUserIds.UnionWith(affectedUserIds);
+            importBatch.ExternalOrderIds.UnionWith(sourceOrderIds);
+        }
 
         return new AffiliateConversionUpsertResult(inserted,
             hasMatchedAttribution, matchedItemCount,
             unmatchedItemCount, multiTrackingOrderCount,
             conflicts.Count == 0 ? null : string.Join(" ", conflicts));
+    }
+
+    public async Task CompleteImportBatchAsync(AffiliatePlatform platform, AffiliateConversionImportBatch batch)
+    {
+        // The caller commits only after both steps succeed, so no partial rate correction is published.
+        await _shareRateResolver.RecalculateUnsettledOrdersAsync(batch.AffectedUserIds, platform);
+        if (platform == AffiliatePlatform.Shopee)
+            await _settlementMatcher.RefreshForOrdersAsync(batch.ExternalOrderIds);
     }
 
     private static string AttributionKey(string externalItemId, string? modelId, string attributionValue) =>

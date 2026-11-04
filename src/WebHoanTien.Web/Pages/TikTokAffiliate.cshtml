@@ -112,7 +112,7 @@
             <button class="tt-button tt-button-secondary" type="submit">Lọc đơn hàng</button>
             @if (Model.CanSync) { <button class="tt-button" type="button" data-tt-sync-orders disabled="@(Model.Creator is null)">Lấy đơn từ TikTok</button> }
         </form>
-        <p class="tt-caption">Ngày đặt đơn theo giờ Việt Nam, tối đa 90 ngày mỗi lượt. Làm mới danh sách đọc dữ liệu đã lưu; bấm Lấy đơn từ TikTok để đồng bộ qua API. Chưa có job tự động hoặc xử lý cộng ví.</p>
+        <p class="tt-caption">Ngày đặt đơn theo giờ Việt Nam, tối đa 90 ngày mỗi lượt. Làm mới danh sách đọc dữ liệu đã lưu; bấm Lấy đơn từ TikTok để đồng bộ qua API. Job mỗi giờ tự đối soát đơn SETTLED đủ điều kiện. Hoàn tiền dự kiến đã dự phòng thuế 10% khi chưa có thuế khấu trừ.</p>
         <p class="tt-feedback" role="status" data-tt-orders-error hidden></p>
         <div class="tt-empty" data-tt-orders-empty><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><h3>Chưa có đơn hàng phù hợp</h3><p>Chọn khoảng ngày đặt đơn hoặc cập nhật dữ liệu từ TikTok.</p></div>
         <div class="tt-table-scroll" data-tt-orders-table hidden><table><thead><tr><th scope="col">Mã đơn</th><th scope="col">Sản phẩm</th><th scope="col">Giá trị đơn</th>

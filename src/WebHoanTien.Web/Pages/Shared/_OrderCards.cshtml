@@ -50,7 +50,7 @@
                 <dd>@CustomerOrderUi.FormatMoney(order.PurchaseAmount)</dd>
             </div>
             <div>
-                <dt>@(CustomerOrderUi.IsConfirmed(order.Status) ? "Bạn nhận được" : "Hoàn tiền dự kiến")</dt>
+                <dt>@(CustomerOrderUi.IsConfirmed(order.Status) ? "Bạn nhận được" : order.Platform == AffiliatePlatform.TikTok ? "Hoàn dự kiến sau thuế" : "Hoàn tiền dự kiến")</dt>
                 <dd class="cb-cashback-value">+@CustomerOrderUi.FormatMoney(CustomerOrderUi.DisplayCommission(order))</dd>
             </div>
             <div>
