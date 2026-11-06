@@ -191,6 +191,9 @@
         const candidateCount = Number(form.dataset.count) || 0;
         const fromDate = form.querySelector('input[name="FromDate"]')?.value;
         const toDate = form.querySelector('input[name="ToDate"]')?.value;
+        const orderReview = form.querySelector('input[name="OrderReview"]')?.value;
+        const reviewLabels = { Completed: "Hoàn thành", Unprocessed: "Chưa xử lý", CompletedUnprocessed: "Hoàn thành + chưa xử lý" };
+        const reviewContext = reviewLabels[orderReview] ? ` (xử lý đơn hàng: ${reviewLabels[orderReview]})` : "";
         const dateRange = fromDate || toDate
             ? ` (ngày đặt hàng: ${fromDate || "không giới hạn"} đến hết ${toDate || "không giới hạn"}, UTC+7)`
             : "";
@@ -201,8 +204,8 @@
             variant: "info",
             title: bulk ? includeUnpaid ? "Duyệt hàng loạt theo bộ lọc?" : "Duyệt các đơn Shopee đã thanh toán?" : "Duyệt đơn đối soát?",
             message: bulk ? includeUnpaid
-                ? `Kiểm tra và duyệt ${candidateCount} bản ghi chưa duyệt ${allBatches ? "trên mọi batch khớp" : "trong batch phù hợp với"} bộ lọc hiện tại${dateRange}, trên tất cả các trang. Bao gồm cả đơn Shopee chưa thanh toán và đơn chưa hoàn thành nếu phù hợp bộ lọc. Thao tác sẽ cộng tiền vào ví theo số tiền tự tính đang hiển thị, dùng cùng cách tính với duyệt từng đơn. Đơn đã duyệt, trùng hoặc chưa đủ dữ liệu sẽ được bỏ qua. Khoản thuế/phí Shopee chưa trừ sẽ áp mặc định; khoản đã trừ giữ nguyên.`
-                : `Duyệt các đơn Shopee đã thanh toán ${allBatches ? "trên mọi batch khớp" : "trong batch phù hợp với"} bộ lọc hiện tại${dateRange}, trên tất cả các trang, dù trạng thái đơn chưa hoàn thành. Thao tác sẽ cộng tiền vào ví người dùng. Đơn đã duyệt hoặc chưa đủ dữ liệu sẽ được bỏ qua. Khoản thuế/phí Shopee chưa trừ sẽ áp mặc định; khoản đã trừ giữ nguyên. Đơn Shopee chưa thanh toán cần duyệt riêng.` : amount > 0
+                ? `Kiểm tra và duyệt ${candidateCount} đơn/bản ghi chưa duyệt theo bộ lọc hiện tại${dateRange}${reviewContext}, trên tất cả các trang${allBatches ? " và mọi batch" : " trong batch đang chọn"}. Gồm đơn có dữ liệu đối soát và đơn hoàn thành đã đặt hơn 7 ngày chưa có bảng kê. Đơn chưa có bảng kê áp thuế dự phòng 10% và phí 0,98% trước khi chia cho user. Đơn có bảng kê giữ khoản Shopee đã trừ. Đơn đã duyệt, trùng hoặc chưa đủ dữ liệu sẽ được bỏ qua.`
+                : `Duyệt các đơn Shopee đã thanh toán ${allBatches ? "trên mọi batch khớp" : "trong batch phù hợp với"} bộ lọc hiện tại${dateRange}${reviewContext}, trên tất cả các trang, dù trạng thái đơn chưa hoàn thành. Thao tác sẽ cộng tiền vào ví người dùng. Đơn đã duyệt hoặc chưa đủ dữ liệu sẽ được bỏ qua. Khoản thuế/phí Shopee chưa trừ sẽ áp mặc định; khoản đã trừ giữ nguyên. Đơn Shopee chưa thanh toán cần duyệt riêng.` : amount > 0
                 ? `Thao tác sẽ cộng tiền vào ví người dùng. Tổng hoa hồng tương ứng: ${money.format(amount)}đ.`
                 : "Thao tác sẽ dùng giá trị đối soát đang hiển thị để cộng tiền vào ví người dùng.",
             cancelText: "Kiểm tra lại",
@@ -229,7 +232,7 @@
                 headers: { "X-Requested-With": "XMLHttpRequest" },
                 credentials: "same-origin"
             }));
-            if (manual || bulk || document.querySelector('.admin-settlement-shell[data-filtered="true"]')) {
+            if (manual || bulk || form.dataset.directApproval === "true" || document.querySelector('.admin-settlement-shell[data-filtered="true"]')) {
                 notify(payload.message);
                 // Re-read the filtered totals and records after an approval changes membership.
                 const url = new URL(window.location.href);

@@ -8,6 +8,7 @@ using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Authorization;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Data;
 using Volo.Abp.Identity;
 using Volo.Abp.Uow;
 using WebHoanTien.Affiliates;
@@ -63,6 +64,7 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         var filteredRecords = await GetFilteredRecordsAsync(input);
         var ordersWithoutSettlementCount = await AsyncExecuter.CountAsync(
             await GetFilteredOrdersWithoutSettlementAsync(input));
+        var directSummary = await BuildDirectApprovalSummaryAsync(input);
         var query = (await _batches.GetQueryableAsync())
             .Where(batch => filteredRecords.Any(record => record.BatchId == batch.Id));
 
@@ -94,19 +96,19 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             {
                 TotalCount = counts.Sum(group => group.Count) + ordersWithoutSettlementCount,
                 OrdersWithoutSettlementCount = ordersWithoutSettlementCount,
-                CommissionOrderCount = financial.OrderCount,
-                PendingCount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.PendingApproval).Sum(group => group.Count),
-                PendingAmount = financial.PendingCommission,
-                ApprovedCount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count),
-                ApprovedAmount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.Approved).Sum(group => group.Amount),
+                CommissionOrderCount = financial.OrderCount + directSummary.Financial.OrderCount,
+                PendingCount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.PendingApproval).Sum(group => group.Count) + directSummary.PendingCount,
+                PendingAmount = financial.PendingCommission + directSummary.Financial.PendingCommission,
+                ApprovedCount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count) + directSummary.ApprovedCount,
+                ApprovedAmount = counts.Where(group => group.Status == ShopeeSettlementRecordStatus.Approved).Sum(group => group.Amount) + directSummary.ApprovedCommission,
                 IssueCount = counts.Where(group => group.Status != ShopeeSettlementRecordStatus.PendingApproval &&
-                    group.Status != ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count) + ordersWithoutSettlementCount,
-                TotalActualCommission = financial.ActualCommission,
-                TotalUserCommission = financial.UserCommission,
-                TotalAdminCommission = financial.AdminCommission,
+                    group.Status != ShopeeSettlementRecordStatus.Approved).Sum(group => group.Count) + ordersWithoutSettlementCount - directSummary.PendingCount - directSummary.ApprovedCount,
+                TotalActualCommission = financial.ActualCommission + directSummary.Financial.ActualCommission,
+                TotalUserCommission = financial.UserCommission + directSummary.Financial.UserCommission,
+                TotalAdminCommission = financial.AdminCommission + directSummary.Financial.AdminCommission,
                 PaidUnapprovedCount = paidUnapprovedCount,
                 UnapprovedCount = counts.Where(group => group.Status != ShopeeSettlementRecordStatus.Approved &&
-                    group.Status != ShopeeSettlementRecordStatus.AlreadySettled).Sum(group => group.Count)
+                    group.Status != ShopeeSettlementRecordStatus.AlreadySettled).Sum(group => group.Count) + directSummary.PendingCount
             },
             Batches = new PagedResultDto<AdminShopeeSettlementBatchDto>(totalCount,
                 batchDtos)
@@ -224,9 +226,15 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             : (await _users.GetListAsync(user => userIds.Contains(user.Id))).ToDictionary(user => user.Id);
         var mappedRecords = rows.ToDictionary(row => row.Id, row => MapRecord(row, bills[row.BillId],
             productNamesByOrder, attributionsByOrder, users, ordersById));
+        var conversionIds = page.Where(entry => !entry.HasSettlementRecord)
+            .Select(entry => ordersById[entry.Id].ConversionId).Distinct().ToList();
+        var conversions = conversionIds.Count == 0 ? new Dictionary<Guid, AffiliateConversion>() :
+            (await _conversions.GetListAsync(conversion => conversionIds.Contains(conversion.Id) &&
+                conversion.Platform == AffiliatePlatform.Shopee)).ToDictionary(conversion => conversion.Id);
         return new PagedResultDto<AdminShopeeSettlementRecordDto>(count, page.Select(entry =>
             entry.HasSettlementRecord ? mappedRecords[entry.Id] : MapOrderWithoutSettlement(
-                ordersById[entry.Id], productNamesByOrder, attributionsByOrder, users)).ToList());
+                ordersById[entry.Id], productNamesByOrder, attributionsByOrder, users,
+                conversions.GetValueOrDefault(ordersById[entry.Id].ConversionId)?.PurchaseTime)).ToList());
     }
 
     [UnitOfWork(IsDisabled = true)]
@@ -251,6 +259,19 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             await ApplyAsync(work);
             await RefreshBatchAsync(batch);
             return await BuildResultAsync(batch, new[] { work }, skippedCount: 0);
+        });
+    }
+
+    [UnitOfWork(IsDisabled = true)]
+    public async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveOrderAsync(Guid orderId)
+    {
+        return await _approvalRunner.RunAsync(async () =>
+        {
+            var order = await _orders.GetAsync(orderId);
+            var result = await ApproveOrdersWithoutSettlementAsync(new[] { order }, "CompletedSevenDaysIndividual");
+            if (result.ApprovedCount == 0)
+                throw new UserFriendlyException("Đơn phải hoàn thành, được đặt hơn 7 ngày, chưa duyệt và có affiliate link hợp lệ. Nếu đã có bảng kê, hãy tải lại trang để duyệt theo dữ liệu đối soát.");
+            return result;
         });
     }
 
@@ -300,12 +321,16 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
                 record.Status != ShopeeSettlementRecordStatus.Approved &&
                 record.Status != ShopeeSettlementRecordStatus.AlreadySettled));
             var preparation = await ApproveRecordsAsync(candidates);
+            var direct = batchId.HasValue
+                ? new AdminShopeeSettlementBulkApprovalResultDto()
+                : await ApproveOrdersWithoutSettlementAsync(await AsyncExecuter.ToListAsync(
+                    await GetEligibleOrdersWithoutSettlementAsync(input)), "CompletedSevenDaysFiltered");
             return new AdminShopeeSettlementBulkApprovalResultDto
             {
-                ApprovedCount = preparation.Work.Count,
-                SkippedCount = preparation.SkippedCount,
-                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
-                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+                ApprovedCount = preparation.Work.Count + direct.ApprovedCount,
+                SkippedCount = preparation.SkippedCount + direct.SkippedCount,
+                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission) + direct.ApprovedCommission,
+                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission) + direct.CreditedUserCommission
             };
         });
     }
@@ -332,15 +357,109 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             var candidates = await AsyncExecuter.ToListAsync(query);
             var preparation = await ApproveRecordsAsync(candidates, cutoff,
                 isManual ? "CompletedSevenDaysManual" : "CompletedSevenDaysDaily");
+            var direct = await ApproveOrdersWithoutSettlementAsync(await AsyncExecuter.ToListAsync(
+                    await GetEligibleOrdersWithoutSettlementAsync(new AdminShopeeSettlementBatchListInput())),
+                isManual ? "CompletedSevenDaysManual" : "CompletedSevenDaysDaily");
             return new AdminShopeeSettlementBulkApprovalResultDto
             {
-                ApprovedCount = preparation.Work.Count,
-                SkippedCount = preparation.SkippedCount,
-                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission),
-                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission)
+                ApprovedCount = preparation.Work.Count + direct.ApprovedCount,
+                SkippedCount = preparation.SkippedCount + direct.SkippedCount,
+                ApprovedCommission = preparation.Work.Sum(item => item.Record.ActualPaidCommission) + direct.ApprovedCommission,
+                CreditedUserCommission = preparation.Work.Sum(item => item.TotalUserCommission) + direct.CreditedUserCommission
             };
         });
     }
+
+    private async Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveOrdersWithoutSettlementAsync(
+        IReadOnlyCollection<AffiliateOrder> candidates, string approvalSource)
+    {
+        if (candidates.Count == 0) return new AdminShopeeSettlementBulkApprovalResultDto();
+        var conversionIds = candidates.Select(order => order.ConversionId).Distinct().ToList();
+        var conversions = (await _conversions.GetListAsync(conversion => conversionIds.Contains(conversion.Id) &&
+            conversion.Platform == AffiliatePlatform.Shopee)).ToDictionary(conversion => conversion.Id);
+        var orderIds = candidates.Select(order => order.Id).ToList();
+        var externalIds = candidates.Select(order => order.ExternalOrderId).ToList();
+        // Recheck under the same approval lock/transaction used by bill-based approvals.
+        var competingRecords = await _records.GetListAsync(record =>
+            (record.AffiliateOrderId.HasValue && orderIds.Contains(record.AffiliateOrderId.Value)) ||
+            externalIds.Contains(record.ExternalOrderId));
+        var blockedIds = competingRecords.Where(record => record.AffiliateOrderId.HasValue)
+            .Select(record => record.AffiliateOrderId!.Value).ToHashSet();
+        var blockedExternalIds = competingRecords.Select(record => record.ExternalOrderId)
+            .ToHashSet(StringComparer.Ordinal);
+        var attributions = await LoadAttributionsByOrderAsync(orderIds);
+        var now = Clock.Now;
+        var work = new List<DirectApprovalWork>();
+        foreach (var order in candidates)
+        {
+            if (blockedIds.Contains(order.Id) || blockedExternalIds.Contains(order.ExternalOrderId)) continue;
+            var prepared = PrepareOrderWithoutSettlement(order,
+                conversions.GetValueOrDefault(order.ConversionId)?.PurchaseTime,
+                attributions.GetValueOrDefault(order.Id, new List<AffiliateOrderItemAttribution>()), now.AddDays(-7));
+            if (prepared is not null) work.Add(prepared);
+        }
+        var adminId = CurrentUser.Id ?? throw new AbpAuthorizationException("Không xác định được admin duyệt đối soát.");
+        foreach (var item in work)
+        {
+            foreach (var allocation in item.Plan.Allocations)
+                allocation.Attribution.Settle(allocation.SettledNetCommission, allocation.SettledUserCommission);
+            // Keep an auditable approval snapshot on the order; no provider bill/record is fabricated.
+            item.Order.ExtraProperties["ApprovalSource"] = approvalSource;
+            item.Order.ExtraProperties["ApprovalBasis"] = "ShopeeConversionReport";
+            item.Order.ExtraProperties["ApprovedBy"] = adminId;
+            item.Order.ExtraProperties["ApprovedAtUtc"] = now;
+            item.Order.ExtraProperties["OrderStatusAtApproval"] = (int)item.Order.Status;
+            item.Order.ExtraProperties["GrossCommissionAtApproval"] = item.Amounts.Gross;
+            item.Order.ExtraProperties["ServiceFeeAtApproval"] = item.Amounts.Fee;
+            item.Order.ExtraProperties["TaxAtApproval"] = item.Amounts.Tax;
+            item.Order.ExtraProperties["DefaultTaxPercent"] = AdminShopeeSettlementManualInput.DefaultTaxPercent;
+            item.Order.ExtraProperties["DefaultServiceFeePercent"] = AdminShopeeSettlementManualInput.DefaultServiceFeePercent;
+            item.Order.Settle(item.Amounts.Net, item.Plan.Recipients.Sum(recipient => recipient.UserCommission),
+                $"catback:completed-seven-days:{item.Order.Id:N}", now);
+        }
+        if (work.Count > 0)
+        {
+            await _orders.UpdateManyAsync(work.Select(item => item.Order), autoSave: false);
+            await _attributions.UpdateManyAsync(work.SelectMany(item => item.Plan.Allocations)
+                .Select(allocation => allocation.Attribution), autoSave: false);
+            await _notificationManager.NotifySettledOrdersAsync(work.SelectMany(item =>
+                item.Plan.Recipients.Select(recipient => (recipient.UserId, item.Order, recipient.UserCommission))));
+        }
+        return new AdminShopeeSettlementBulkApprovalResultDto
+        {
+            ApprovedCount = work.Count,
+            SkippedCount = candidates.Count - work.Count,
+            ApprovedCommission = work.Sum(item => item.Amounts.Net),
+            CreditedUserCommission = work.Sum(item => item.Plan.Recipients.Sum(recipient => recipient.UserCommission))
+        };
+    }
+
+    private DirectApprovalWork? PrepareOrderWithoutSettlement(AffiliateOrder order, DateTime? purchaseTime,
+        List<AffiliateOrderItemAttribution> attributions, DateTime cutoff)
+    {
+        if (order.Platform != AffiliatePlatform.Shopee || order.Status != AffiliateOrderStatus.Completed ||
+            order.SettledAt.HasValue || !purchaseTime.HasValue || purchaseTime.Value <= DateTime.UnixEpoch ||
+            purchaseTime.Value >= cutoff || order.NetCommission < 0m ||
+            attributions.Any(row => row.SettledNetCommission.HasValue || row.SettledUserCommission.HasValue)) return null;
+        var amounts = ShopeeSettlementAmounts.FromConversion(order.NetCommission);
+        var plan = BuildAllocationPlan(amounts.Net, attributions);
+        return plan is null ? null : new DirectApprovalWork(order, amounts, plan);
+    }
+
+    private async Task<IQueryable<AffiliateOrder>> GetEligibleOrdersWithoutSettlementAsync(
+        AdminShopeeSettlementBatchListInput input)
+    {
+        var cutoff = Clock.Now.AddDays(-7);
+        var conversions = (await _conversions.GetQueryableAsync()).Where(conversion =>
+            conversion.Platform == AffiliatePlatform.Shopee && conversion.PurchaseTime > DateTime.UnixEpoch &&
+            conversion.PurchaseTime < cutoff);
+        return (await GetFilteredOrdersWithoutSettlementAsync(input)).Where(order =>
+            order.Status == AffiliateOrderStatus.Completed && !order.SettledAt.HasValue &&
+            conversions.Any(conversion => conversion.Id == order.ConversionId));
+    }
+
+    private sealed record DirectApprovalWork(AffiliateOrder Order, ShopeeSettlementAmounts Amounts,
+        SettlementAllocationPlan Plan);
 
     private async Task<List<ShopeeSettlementRecord>> GetPaidApprovalCandidatesAsync(
         AdminShopeeSettlementBatchListInput? input, Guid? batchId = null)
@@ -716,36 +835,60 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         };
     }
 
-    private static AdminShopeeSettlementRecordDto MapOrderWithoutSettlement(AffiliateOrder order,
+    private AdminShopeeSettlementRecordDto MapOrderWithoutSettlement(AffiliateOrder order,
         IReadOnlyDictionary<Guid, List<string>> productNamesByOrder,
         IReadOnlyDictionary<Guid, List<AffiliateOrderItemAttribution>> attributionsByOrder,
-        IReadOnlyDictionary<Guid, IdentityUser> users)
+        IReadOnlyDictionary<Guid, IdentityUser> users, DateTime? purchaseTime)
     {
-        var recipients = attributionsByOrder.GetValueOrDefault(order.Id,
-                new List<AffiliateOrderItemAttribution>())
+        var attributions = attributionsByOrder.GetValueOrDefault(order.Id, new List<AffiliateOrderItemAttribution>());
+        var settled = order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue;
+        var amounts = settled ? ApprovedDirectAmounts(order) : ShopeeSettlementAmounts.FromConversion(Math.Max(0m, order.NetCommission));
+        var prepared = PrepareOrderWithoutSettlement(order, purchaseTime, attributions, Clock.Now.AddDays(-7));
+        var plan = settled ? null : BuildAllocationPlan(amounts.Net, attributions);
+        var recipients = attributions
             .Where(row => row.Status == AffiliateAttributionStatus.Matched && row.UserId.HasValue)
             .GroupBy(row => row.UserId!.Value)
             .Select(group => new AdminShopeeSettlementRecipientDto
             {
                 UserId = group.Key,
                 UserEmail = users.TryGetValue(group.Key, out var user)
-                    ? string.IsNullOrWhiteSpace(user.Email) ? user.UserName : user.Email : null
+                    ? string.IsNullOrWhiteSpace(user.Email) ? user.UserName : user.Email : null,
+                ProjectedUserCommission = settled ? group.Sum(row => row.SettledUserCommission ?? 0m)
+                    : plan?.Recipients.FirstOrDefault(recipient => recipient.UserId == group.Key)?.UserCommission ?? 0m,
+                ApprovedUserCommission = settled ? group.Sum(row => row.SettledUserCommission ?? 0m) : 0m
             }).ToList();
         return new AdminShopeeSettlementRecordDto
         {
             Id = order.Id,
             CreationTime = order.CreationTime,
             HasSettlementRecord = false,
+            CanApproveWithoutSettlement = prepared is not null,
             OrderStatus = order.Status,
             ExternalOrderId = order.ExternalOrderId,
             AffiliateOrderId = order.Id,
-            Status = order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue
-                ? ShopeeSettlementRecordStatus.AlreadySettled : ShopeeSettlementRecordStatus.Unmatched,
+            Status = settled ? ShopeeSettlementRecordStatus.Approved : prepared is not null
+                ? ShopeeSettlementRecordStatus.PendingApproval : ShopeeSettlementRecordStatus.Unmatched,
+            DefaultGrossCommission = amounts.Gross,
+            EligibleCommission = amounts.Gross,
+            AllocatedServiceFee = amounts.Fee,
+            AllocatedTax = amounts.Tax,
+            ActualPaidCommission = amounts.Net,
+            ProjectedUserCommission = settled ? order.SettledUserCommission ?? 0m
+                : plan?.Recipients.Sum(recipient => recipient.UserCommission) ?? 0m,
+            ApprovedUserCommission = settled ? order.SettledUserCommission ?? 0m : 0m,
+            ApprovedAt = settled ? order.SettledAt : null,
+            UsesDefaultTax = amounts.DefaultTax,
+            UsesDefaultServiceFee = amounts.DefaultFee,
             ProductNames = productNamesByOrder.GetValueOrDefault(order.Id, new List<string>()),
             Recipients = recipients,
             UserId = recipients.Count == 1 ? recipients[0].UserId : null,
             UserEmail = recipients.Count == 1 ? recipients[0].UserEmail : null,
-            Issue = "Đơn chưa có trong bảng kê đối soát. Import bảng kê để có dữ liệu duyệt và cộng ví."
+            Issue = settled ? null : prepared is not null
+                ? "Đơn hoàn thành, đã đặt hơn 7 ngày; có thể duyệt và cộng ví, không cần bảng kê."
+                : order.Status != AffiliateOrderStatus.Completed ? "Chưa đủ điều kiện: đơn chưa hoàn thành."
+                : !purchaseTime.HasValue || purchaseTime.Value <= DateTime.UnixEpoch ? "Chưa có ngày đặt hàng hợp lệ để xét mốc 7 ngày."
+                : purchaseTime.Value >= Clock.Now.AddDays(-7) ? "Chưa đủ điều kiện: thời gian đặt hàng phải hơn 7 ngày."
+                : "Cần kiểm tra affiliate link/người nhận hoặc dữ liệu đã chốt tiền của đơn."
         };
     }
 
@@ -761,6 +904,10 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         if (!string.IsNullOrWhiteSpace(input.Filter) || input.Status.HasValue ||
             !string.IsNullOrWhiteSpace(input.AffiliateId) || input.IsShopeePaid == true)
             return orders.Where(order => false);
+        if (input.OrderReview is AdminShopeeOrderReviewFilter.Completed or AdminShopeeOrderReviewFilter.CompletedUnprocessed)
+            orders = orders.Where(order => order.Status == AffiliateOrderStatus.Completed && !order.SettledAt.HasValue);
+        if (input.OrderReview is AdminShopeeOrderReviewFilter.Unprocessed or AdminShopeeOrderReviewFilter.CompletedUnprocessed)
+            orders = orders.Where(order => order.Status != AffiliateOrderStatus.Settled && !order.SettledAt.HasValue);
         if (input.IsApproved.HasValue)
             orders = input.IsApproved.Value
                 ? orders.Where(order => order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue)
@@ -802,6 +949,18 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
         if (input is null) return records;
         var filterError = input.Validate(new ValidationContext(input)).FirstOrDefault();
         if (filterError is not null) throw new UserFriendlyException(filterError.ErrorMessage!);
+        if (input.OrderReview.HasValue)
+        {
+            var orders = (await _orders.GetQueryableAsync()).Where(order => order.Platform == AffiliatePlatform.Shopee);
+            if (input.OrderReview is AdminShopeeOrderReviewFilter.Completed or AdminShopeeOrderReviewFilter.CompletedUnprocessed)
+                records = records.Where(record => orders.Any(order => order.Id == record.AffiliateOrderId &&
+                    order.Status == AffiliateOrderStatus.Completed && !order.SettledAt.HasValue));
+            if (input.OrderReview is AdminShopeeOrderReviewFilter.Unprocessed or AdminShopeeOrderReviewFilter.CompletedUnprocessed)
+                records = records.Where(record => record.Status != ShopeeSettlementRecordStatus.Approved &&
+                    record.Status != ShopeeSettlementRecordStatus.AlreadySettled &&
+                    !orders.Any(order => order.Id == record.AffiliateOrderId &&
+                        (order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue)));
+        }
         if (input.FromDate.HasValue || input.ToDate.HasValue)
         {
             var conversions = (await _conversions.GetQueryableAsync())
@@ -925,6 +1084,60 @@ public class AdminShopeeSettlementApprovalAppService : WebHoanTienAppService,
             .GroupBy(x => orderByItem[x.OrderItemId])
             .ToDictionary(group => group.Key, group => group.ToList());
     }
+
+    private static ShopeeSettlementAmounts ApprovedDirectAmounts(AffiliateOrder order) => new(
+        order.GetProperty<decimal?>("GrossCommissionAtApproval") ?? order.NetCommission,
+        order.GetProperty<decimal?>("ServiceFeeAtApproval") ?? 0m,
+        order.GetProperty<decimal?>("TaxAtApproval") ?? 0m,
+        order.SettledNetCommission ?? 0m,
+        order.ExtraProperties.ContainsKey("DefaultServiceFeePercent"),
+        order.ExtraProperties.ContainsKey("DefaultTaxPercent"));
+
+    private async Task<DirectApprovalSummary> BuildDirectApprovalSummaryAsync(AdminShopeeSettlementBatchListInput input)
+    {
+        var orders = await GetFilteredOrdersWithoutSettlementAsync(input);
+        var conversions = (await _conversions.GetQueryableAsync())
+            .Where(conversion => conversion.Platform == AffiliatePlatform.Shopee);
+        var cutoff = Clock.Now.AddDays(-7);
+        var candidates = await AsyncExecuter.ToListAsync(orders.Where(order =>
+            order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue ||
+            (order.Status == AffiliateOrderStatus.Completed && conversions.Any(conversion =>
+                conversion.Id == order.ConversionId && conversion.PurchaseTime > DateTime.UnixEpoch &&
+                conversion.PurchaseTime < cutoff))));
+        if (candidates.Count == 0)
+            return new DirectApprovalSummary(0, 0, 0m, new SettlementFinancialSummary(0, 0m, 0m, 0m, 0m));
+        var conversionIds = candidates.Select(order => order.ConversionId).Distinct().ToList();
+        var conversionRows = (await _conversions.GetListAsync(conversion => conversionIds.Contains(conversion.Id) &&
+            conversion.Platform == AffiliatePlatform.Shopee)).ToDictionary(conversion => conversion.Id);
+        var attributions = await LoadAttributionsByOrderAsync(candidates.Select(order => order.Id).ToList());
+        var pendingCount = 0;
+        var approvedCount = 0;
+        decimal pendingAmount = 0m, approvedAmount = 0m, userAmount = 0m;
+        foreach (var order in candidates)
+        {
+            if (order.Status == AffiliateOrderStatus.Settled || order.SettledAt.HasValue)
+            {
+                approvedCount++;
+                approvedAmount += order.SettledNetCommission ?? 0m;
+                userAmount += order.SettledUserCommission ?? 0m;
+                continue;
+            }
+            var prepared = PrepareOrderWithoutSettlement(order,
+                conversionRows.GetValueOrDefault(order.ConversionId)?.PurchaseTime,
+                attributions.GetValueOrDefault(order.Id, new List<AffiliateOrderItemAttribution>()), cutoff);
+            if (prepared is null) continue;
+            pendingCount++;
+            pendingAmount += prepared.Amounts.Net;
+            userAmount += prepared.Plan.Recipients.Sum(recipient => recipient.UserCommission);
+        }
+        var total = pendingAmount + approvedAmount;
+        return new DirectApprovalSummary(pendingCount, approvedCount, approvedAmount,
+            new SettlementFinancialSummary(pendingCount + approvedCount, total, userAmount,
+                Math.Max(0m, total - userAmount), pendingAmount));
+    }
+
+    private sealed record DirectApprovalSummary(int PendingCount, int ApprovedCount, decimal ApprovedCommission,
+        SettlementFinancialSummary Financial);
 
     private async Task<SettlementFinancialSummary> BuildFinancialSummaryAsync(
         IQueryable<ShopeeSettlementRecord> records)

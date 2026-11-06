@@ -38,6 +38,17 @@ internal sealed record ShopeeSettlementAmounts(decimal Gross, decimal Fee, decim
         return new(gross, fee, tax, gross - fee - tax);
     }
 
+    public static ShopeeSettlementAmounts FromConversion(decimal commission)
+    {
+        var amounts = Manual(new AdminShopeeSettlementManualInput
+        {
+            GrossCommission = commission,
+            TaxPercent = AdminShopeeSettlementManualInput.DefaultTaxPercent,
+            ServiceFeePercent = AdminShopeeSettlementManualInput.DefaultServiceFeePercent
+        });
+        return amounts with { DefaultFee = true, DefaultTax = true };
+    }
+
     public void Apply(ShopeeSettlementRecord row)
     {
         if (row.Status == ShopeeSettlementRecordStatus.Approved) return;

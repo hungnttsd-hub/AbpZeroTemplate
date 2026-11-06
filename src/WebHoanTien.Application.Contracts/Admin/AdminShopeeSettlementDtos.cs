@@ -20,12 +20,20 @@ public sealed class AdminShopeeSettlementManualInput
     public decimal? ServiceFeePercent { get; set; }
 }
 
+public enum AdminShopeeOrderReviewFilter
+{
+    Completed = 1,
+    Unprocessed = 2,
+    CompletedUnprocessed = 3
+}
+
 public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRequestDto, IValidatableObject
 {
     [StringLength(256)] public string? Filter { get; set; }
     public ShopeeSettlementBatchStatus? Status { get; set; }
     public bool? IsApproved { get; set; }
     public bool? IsShopeePaid { get; set; }
+    public AdminShopeeOrderReviewFilter? OrderReview { get; set; }
     [StringLength(128)] public string? AffiliateId { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
@@ -33,6 +41,8 @@ public sealed class AdminShopeeSettlementBatchListInput : PagedAndSortedResultRe
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         foreach (var result in base.Validate(validationContext)) yield return result;
+        if (OrderReview.HasValue && !Enum.IsDefined(OrderReview.Value))
+            yield return new ValidationResult("Trạng thái xử lý đơn hàng không hợp lệ.", new[] { nameof(OrderReview) });
         if ((FromDate.HasValue && FromDate.Value.Year is < 1900 or > 9998) ||
             (ToDate.HasValue && ToDate.Value.Year is < 1900 or > 9998))
             yield return new ValidationResult("Ngày lọc phải nằm trong khoảng năm 1900 đến 9998.",
@@ -83,6 +93,7 @@ public sealed class AdminShopeeSettlementBatchDto : CreationAuditedEntityDto<Gui
 public sealed class AdminShopeeSettlementRecordDto : CreationAuditedEntityDto<Guid>
 {
     public bool HasSettlementRecord { get; set; } = true;
+    public bool CanApproveWithoutSettlement { get; set; }
     public AffiliateOrderStatus? OrderStatus { get; set; }
     public Guid BatchId { get; set; }
     public Guid BillId { get; set; }
@@ -190,6 +201,7 @@ public interface IAdminShopeeSettlementApprovalAppService : IApplicationService
     Task<AdminShopeeSettlementBatchDetailsDto> GetAsync(Guid batchId, int skipCount = 0,
         int maxResultCount = 50, AdminShopeeSettlementBatchListInput? input = null);
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAsync(Guid recordId, AdminShopeeSettlementManualInput? manual = null);
+    Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveOrderAsync(Guid orderId);
     Task<AdminShopeeSettlementApprovalResultDto> ApproveAllAsync(Guid batchId,
         AdminShopeeSettlementBatchListInput? input = null);
     Task<AdminShopeeSettlementBulkApprovalResultDto> ApproveAllPaidAsync(

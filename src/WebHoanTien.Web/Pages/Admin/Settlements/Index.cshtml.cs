@@ -34,6 +34,7 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)] public string? Filter { get; set; }
     [BindProperty(SupportsGet = true)] public bool? IsApproved { get; set; }
     [BindProperty(SupportsGet = true)] public bool? IsShopeePaid { get; set; }
+    [BindProperty(SupportsGet = true)] public AdminShopeeOrderReviewFilter? OrderReview { get; set; }
     [BindProperty(SupportsGet = true)] public string? AffiliateId { get; set; }
     [BindProperty(SupportsGet = true), DataType(DataType.Date)] public DateTime? FromDate { get; set; }
     [BindProperty(SupportsGet = true), DataType(DataType.Date)] public DateTime? ToDate { get; set; }
@@ -63,6 +64,7 @@ public class IndexModel : PageModel
         Filter = Filter,
         IsApproved = IsApproved,
         IsShopeePaid = IsShopeePaid,
+        OrderReview = OrderReview,
         AffiliateId = AffiliateId,
         FromDate = FromDate,
         ToDate = ToDate
@@ -142,6 +144,23 @@ public class IndexModel : PageModel
             success = true,
             message = "Đã đưa lượt duyệt vào hàng chờ. Job chạy nền; tải lại trang để xem kết quả."
         });
+    }
+
+    public async Task<IActionResult> OnPostApproveOrderAsync(Guid orderId)
+    {
+        try
+        {
+            var result = await _settlements.ApproveOrderAsync(orderId);
+            return new JsonResult(new { success = true, message = "Đã duyệt đơn hoàn thành hơn 7 ngày và cộng tiền vào ví.", result });
+        }
+        catch (UserFriendlyException exception)
+        {
+            return BadRequest(new { success = false, error = exception.Message });
+        }
+        catch (BusinessException exception)
+        {
+            return BadRequest(new { success = false, error = ErrorMessage(exception) });
+        }
     }
 
     public async Task<IActionResult> OnPostApproveAsync(Guid recordId, bool useManualAmounts)

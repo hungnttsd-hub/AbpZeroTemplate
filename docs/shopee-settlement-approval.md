@@ -7,15 +7,46 @@ và đơn Shopee từ báo cáo chuyển đổi chưa có bảng kê, không gi�
 Hiển thị riêng trạng thái đơn hàng (chưa thanh toán, đang xử lý, hoàn thành, hủy,
 hoàn trả, từ chối, đã duyệt hoàn tiền) và trạng thái duyệt/đối soát.
 
-Đơn chưa có bảng kê được ghi rõ **Chưa có bảng kê**, có liên kết xem chi tiết và
-không có nút duyệt/cộng ví. Việc hiển thị không tạo bản ghi đối soát giả hoặc số
-tiền thuế/phí giả. Khi bảng kê được import, danh sách chỉ hiển thị bản ghi đối soát
-của đơn đó, không hiển thị trùng. Phân trang và tổng số dòng tính trên danh sách gộp.
+Bộ lọc **Xử lý đơn hàng** có các lựa chọn **Tất cả**, **Hoàn thành**, **Chưa xử lý**
+và **Hoàn thành + chưa xử lý**. Chưa xử lý nghĩa là chưa duyệt/cộng ví, loại cả
+đơn đã chốt tiền và bản ghi đã ghi nhận trước. Lựa chọn kết hợp yêu cầu đồng thời
+trạng thái đơn `Completed` và chưa xử lý. Bộ lọc áp dụng cho cả đơn có/chưa có bảng kê,
+thống kê và duyệt hàng loạt, được giữ khi chuyển trang hoặc mở batch. Bộ lọc không
+tự giới hạn tuổi đơn; điều kiện hơn 7 ngày vẫn được kiểm tra khi duyệt đơn không có bảng kê.
+
+Đơn chưa có bảng kê vẫn có nút **Duyệt và cộng ví** khi đã hoàn thành và được đặt
+hơn 7 ngày, chưa chốt tiền và có attribution/người nhận hợp lệ. Đơn chưa đủ điều kiện
+hiển thị lý do cụ thể. Khi bảng kê được import sau đó, danh sách chỉ hiển thị bản ghi
+đối soát của đơn đó, không hiển thị trùng. Phân trang và tổng số dòng tính trên danh sách gộp.
 
 Bộ lọc ngày đặt hàng áp dụng cho cả hai nguồn. Bộ lọc batch, Affiliate ID và
 Shopee đã thanh toán chỉ khớp dữ liệu có bảng kê tương ứng. Khi mở một batch cụ thể,
-danh sách vẫn chỉ gồm các bản ghi thuộc batch. Thống kê tiền và duyệt hàng loạt
-vẫn tính trên các bản ghi đối soát, không đưa đơn chưa có bảng kê vào tiền chờ duyệt.
+danh sách vẫn chỉ gồm các bản ghi thuộc batch. Thống kê tiền và duyệt hàng loạt ở
+danh sách tổng hợp bao gồm đơn hoàn thành hơn 7 ngày đủ điều kiện dù chưa có bảng kê.
+
+## Duyệt không cần bảng kê
+
+Duyệt riêng, duyệt hàng loạt theo bộ lọc và job hằng ngày dùng chung điều kiện:
+đơn Shopee `Completed`, `PurchaseTime < thời điểm duyệt - 7 ngày`, chưa duyệt và
+có affiliate attribution hợp lệ. Mốc tuổi đơn tính theo ngày đặt hàng, không phải
+ngày chuyển sang hoàn thành hay ngày import. Đúng 7 ngày chưa đủ điều kiện.
+
+Nếu chưa có bảng kê, lấy hoa hồng của đơn (`NetCommission`, cùng nguồn mặc định
+trong màn hình duyệt trước đây), trừ **thuế dự phòng 10%** và **phí dịch vụ 0,98%**
+trên nguồn hoa hồng này, rồi phân bổ phần còn lại theo tỷ lệ từng người nhận của đơn.
+Làm tròn thuế/phí tới 4 chữ số, tiền cộng ví theo VND nguyên và không vượt phần
+thực nhận của người dùng. Affiliate link chưa khớp không được chuyển phần tiền đó
+sang người dùng khác. Nếu đã có bảng kê, dùng luồng duyệt bảng kê hiện có.
+
+Không tạo bảng kê hoặc bản ghi Shopee giả. Snapshot nguồn hoa hồng, thuế, phí,
+admin duyệt, thời gian và nguồn duyệt lưu trong `AffiliateOrder.ExtraProperties`;
+tiền đã chốt lưu trên order và attribution như luồng cộng ví hiện có. Các nguồn
+duyệt gồm `CompletedSevenDaysIndividual`, `CompletedSevenDaysFiltered`,
+`CompletedSevenDaysManual`, `CompletedSevenDaysDaily`.
+
+Mọi đường duyệt dùng chung khóa duyệt Shopee và giao dịch database. Trước khi chốt
+tiền kiểm tra lại trạng thái/tuổi đơn, dữ liệu đã chốt và bảng kê cạnh tranh. Duyệt
+lại hoặc import bảng kê sau khi đã duyệt không cộng ví lần thứ hai.
 
 ## Import lại báo cáo chuyển đổi
 
@@ -38,14 +69,16 @@ giờ Việt Nam (UTC+7)**. Chạy ngay đưa công việc vào Hangfire để x
 - Đơn và conversion thuộc Shopee, trạng thái đơn đúng `Completed` (Hoàn thành), chưa chốt tiền.
 - `PurchaseTime < thời điểm chạy - 7 ngày`: hơn 7 × 24 giờ tính từ thời gian đặt hàng
   Shopee, không phải ngày import vào CatBack. Đúng 7 ngày chưa đủ điều kiện.
-- Có bản ghi đối soát liên kết hợp lệ; không xử lý đơn chưa có dữ liệu đối soát.
-  Áp dụng trên toàn bộ batch, không dùng bộ lọc đang mở trên trang.
+- Không yêu cầu bảng kê. Nếu đã có bản ghi đối soát thì dùng dữ liệu đối soát;
+  nếu chưa có thì dùng hoa hồng đơn và thuế/phí dự phòng như duyệt riêng.
+  Áp dụng cho toàn bộ đơn đủ điều kiện, không dùng bộ lọc đang mở trên trang.
 - Không bắt buộc Shopee đã thanh toán. Các kiểm tra hoa hồng, conversion,
   attribution/người nhận và trùng đơn vẫn dùng chung với duyệt hàng loạt hiện có.
 
 Số tiền/thuế/phí dùng chung `ShopeeSettlementAmounts`; không nhập tay khi job chạy.
 Ngay trước khi chuẩn bị chốt tiền, trạng thái `Completed` và mốc 7 ngày được kiểm tra lại.
-Nguồn duyệt được lưu trong `ExtraProperties.ApprovalSource`:
+Nguồn duyệt được lưu trong `ExtraProperties.ApprovalSource` trên bản ghi đối soát
+hoặc trên order nếu duyệt không có bảng kê:
 `CompletedSevenDaysDaily` hoặc `CompletedSevenDaysManual`.
 
 Lịch đăng ký qua Hangfire với ID `shopee-completed-seven-days-daily`. Job đọc lại cờ bật/tắt
